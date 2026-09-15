@@ -1,0 +1,1 @@
+# JASIM — Generative Product Operating System Build Plan v1.0

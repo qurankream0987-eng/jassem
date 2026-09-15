@@ -1,0 +1,1475 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM SMART GENERATIVE EXPERIENCE
+
+# TASK 8A — MOBILE SEMANTIC RUNTIME PARITY + SHARED CONTRACT WIRING
+
+MODE INTENT:
+Focused Mobile semantic/runtime integration only.
+
+DO NOT redesign the Mobile UI yet.
+
+Task 1 = CLOSED / PASS
+Task 2 = CLOSED / PASS
+Task 3 = CLOSED / PASS
+Task 4A = CLOSED / PASS
+Task 4B = CLOSED / PASS
+Task 5A = CLOSED / PASS
+Task 5B = CLOSED / PASS
+Task 6A = CLOSED / PASS
+Task 6B = CLOSED / PASS
+Task 7A = CLOSED / PASS
+Task 7B = CLOSED / PASS subject to its report counters remaining at zero for active consequential bypasses / legacy fallbacks.
+
+Accepted current Web/runtime architecture:
+
+Conversation
+→ Semantic Presentation Decision
+→ validated PresentationDefinition
+→ generic Renderer
+→ ActiveWorkspaceProjection
+→ UI Morphing
+→ LivingObjectProjection
+→ Trusted Action Dispatcher
+→ existing trusted runtime
+→ canonical state
+→ projection refresh
+
+Mobile must consume the SAME semantics.
+
+It must NOT become a separate JASIM implementation.
+
+Relevant reports:
+
+.local/tasks/smart-ui-task-1-report.md
+.local/tasks/smart-ui-task-2-report.md
+.local/tasks/smart-ui-task-3-report.md
+.local/tasks/smart-ui-task-4a-report.md
+.local/tasks/smart-ui-task-4b-report.md
+.local/tasks/smart-ui-task-5a-report.md
+.local/tasks/smart-ui-task-5b-report.md
+.local/tasks/smart-ui-task-6a-report.md
+.local/tasks/smart-ui-task-6b-report.md
+.local/tasks/smart-ui-task-7a-report.md
+.local/tasks/smart-ui-task-7b-report.md
+
+READ Task 7B report first.
+
+Do not reopen prior tasks.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. GOAL
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Bring Mobile onto the SAME semantic runtime contracts as Web.
+
+Task 8A must establish:
+
+SAME Conversation truth
+
+SAME PresentationDefinition
+
+SAME Presentation Decision result
+
+SAME ActiveWorkspaceProjection
+
+SAME LivingObjectProjection
+
+SAME stable references
+
+SAME presentationVersion semantics
+
+SAME Trusted Action contract
+
+SAME server canonical truth
+
+while allowing:
+
+DIFFERENT MOBILE PRESENTATION POLICY
+
+Task 8A is semantic/data/action parity.
+
+Task 8B will build the visible Mobile generative experience.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. PERMANENT ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Required:
+
+```
+             CANONICAL SERVER RUNTIME
+                      │
+          ┌───────────┴───────────┐
+          │                       │
+         WEB                    MOBILE
+          │                       │
+Web presentation policy   Mobile presentation policy
+          │                       │
+     Web renderer            Mobile renderer
+```
+
+NOT:
+
+Web Runtime
++
+Mobile Runtime
+
+NOT:
+
+Web PresentationDefinition
++
+MobilePresentationDefinition
+
+NOT:
+
+Web Actions
++
+Mobile business actions
+
+One semantic system.
+
+Different device renderer/presentation composition only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. DO NOT PORT WEB DOM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT:
+
+copy Web React components blindly into React Native
+
+use WebView to render Smart UI
+
+serialize HTML to Mobile
+
+port CSS layouts into Native
+
+build a mini browser inside Mobile
+
+Mobile should consume semantic contracts and render natively later.
+
+Task 8A only prepares that contract/wiring.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. AUDIT CURRENT MOBILE PATH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect the current Mobile conversation/runtime data path.
+
+Identify:
+
+conversation API
+
+message contract
+
+runtime responses
+
+presentation awareness
+
+action handling
+
+reference handling
+
+current generated UI or Bubble handling
+
+current canonical data duplicated locally
+
+navigation assumptions
+
+Create a focused parity map:
+
+WEB SEMANTIC CONTRACT
+CURRENT MOBILE SUPPORT
+STATUS
+REQUIRED MINIMAL CHANGE
+
+Do not perform a broad Mobile rewrite.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. SHARED PRESENTATION CONTRACT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mobile must import/reuse the canonical shared:
+
+PresentationDefinition
+
+semantic presentation types
+
+runtime validation schema
+
+action metadata
+
+presentationVersion
+
+Do NOT create:
+
+MobilePresentationDefinition
+
+NativePresentationV2
+
+ExpoPresentationSchema
+
+If current shared package boundaries make direct import impossible:
+
+move only truly shared contracts to appropriate shared module.
+
+Do not duplicate their definitions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. RUNTIME VALIDATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mobile must treat incoming presentation data as untrusted.
+
+Use/reuse the same runtime validation contract from Task 1.
+
+Required:
+
+server response
+→ shared schema validation
+→ Mobile presentation layer
+
+Invalid presentation:
+
+must not crash app
+
+must not render arbitrary data as privileged UI
+
+must not execute action
+
+safe fallback allowed.
+
+Do not rely only on TypeScript.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. PRESENTATION DECISION IS SERVER/SHARED TRUTH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 2 already decides semantic presentation.
+
+Mobile does NOT independently decide:
+
+cars → cards
+
+jobs → list
+
+hotel → map
+
+Do not reproduce Presentation Decision logic on Mobile.
+
+Mobile receives semantic type:
+
+SEARCH_RESULTS
+
+COMPARISON
+
+FORM
+
+APPROVAL
+
+STATUS
+
+etc.
+
+Then Task 8B decides native composition.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. ACTIVE WORKSPACE PROJECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Wire Mobile data layer to consume:
+
+runtime.workspaceProjection
+
+or exact existing shared endpoint.
+
+Mobile should have access to:
+
+active Goal reference
+
+ResultSet
+
+selected references
+
+ReferenceBindings where safely projected
+
+current PresentationDefinition
+
+Run/action/approval context
+
+World reference
+
+status
+
+attention
+
+presentationVersion
+
+Do NOT create canonical Workspace state locally.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. WORKSPACE REMAINS OPTIONAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mobile must preserve smallest-sufficient-output.
+
+Simple response:
+
+conversation only.
+
+No permanent rich Workspace object required.
+
+Rich search/comparison/approval:
+
+Workspace projection available.
+
+Task 8B will decide whether this is:
+
+inline surface
+
+bottom sheet
+
+full-screen workspace
+
+Do not decide visual form yet.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. RESULTSET CONTINUITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mobile must preserve same stable ResultSet/reference semantics as Web.
+
+Example:
+
+User:
+"أعطني خمسة خيارات."
+
+Then:
+"قارن الثاني والرابع."
+
+Same ResultSet / candidate identities.
+
+Do not rely on FlatList position as canonical identity.
+
+Use stable reference keys.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. REFERENCE BINDINGS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Reuse existing server Reference Resolution.
+
+Mobile must not create its own:
+
+"second item" resolution
+
+pronoun resolution
+
+entity title matching
+
+ReferenceBindings belong to shared/runtime semantics.
+
+Presentation components later merely emit stable references.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. SELECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Canonical selection remains server projection truth.
+
+Allowed Mobile local state:
+
+pressed/highlighted
+
+temporary UI selection
+
+form draft
+
+Forbidden Mobile canonical authority:
+
+selectedEntityId as independent business truth
+
+selectedOrder
+
+selectedWorld state
+
+selected transaction
+
+unless explicitly server-derived/projection-backed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. UI MORPHING SEMANTICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 5A defines:
+
+ENTER
+UPDATE
+MORPH
+EXIT
+NO_CHANGE
+
+Mobile should consume/reuse the same generic classification/identity semantics if shared.
+
+Do NOT implement animations in 8A.
+
+Task 8B will render Mobile transitions.
+
+But Mobile must know:
+
+previous presentation identity
+
+current presentation identity
+
+presentation version
+
+transition classification
+
+without duplicating canonical state.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. STALE PRESENTATION PROTECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Same as Web.
+
+Older Mobile response must not overwrite newer projection.
+
+Example:
+
+P5 arrives
+
+P6 becomes current
+
+late P5 response returns
+
+Expected:
+
+P6 remains current.
+
+Reuse Task 5 version/freshness semantics.
+
+Do not build timestamp-only alternative.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. LIVING OBJECT PROJECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Wire Mobile data layer to consume Task 6A:
+
+LivingObjectProjection[]
+
+Same underlying references.
+
+Same eligibility.
+
+Same status.
+
+Same attention.
+
+Same bounded set.
+
+Same deduplication.
+
+Mobile must NOT independently decide what becomes a Living Object.
+
+Do not create mobile-only persistent object store.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. ACTIVE OBJECTS SEMANTICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 6B Rail is Web-specific presentation.
+
+Mobile should NOT copy Rail layout.
+
+Task 8A only exposes Living Object semantic collection to Mobile.
+
+Task 8B may render it as:
+
+compact horizontal strip
+
+sheet
+
+stack
+
+activity row
+
+or another Mobile-native form.
+
+Semantic object identity remains shared.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. TRUSTED ACTION CONTRACT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mobile must use/reuse Task 7A:
+
+trusted-action.ts
+
+typed action envelope
+
+semantic action types
+
+expectedPresentationVersion
+
+stable target references
+
+Do NOT create:
+
+mobile-action.ts with separate business semantics
+
+native-dispatcher
+
+Expo executor
+
+Mobile must route canonical/consequential actions through:
+
+runtime.dispatchAction
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. ONE SERVER DISPATCHER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Permanent invariant:
+
+WEB
+→ runtime.dispatchAction
+
+MOBILE
+→ runtime.dispatchAction
+
+There must NOT be:
+
+runtime.dispatchMobileAction
+
+or:
+
+mobile direct business endpoints
+
+for generated UI actions.
+
+Legacy existing Mobile feature APIs may remain if unrelated to the new Smart UI path.
+
+Report them separately.
+
+Do not rewrite whole Mobile app.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. LOCAL MOBILE ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mobile may keep safe local presentation actions.
+
+Examples:
+
+open bottom sheet
+
+close sheet
+
+expand surface
+
+collapse surface
+
+switch visual tab
+
+scroll/focus
+
+These do not enter trusted dispatcher.
+
+Consequential action:
+
+approve
+
+cancel canonical process
+
+submit canonical form
+
+execute
+
+pay
+
+book
+
+mutate World
+
+must route through dispatcher.
+
+Use same semantic local/canonical distinction from Task 7A.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. MOBILE ACTION HELPER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Build/reuse a small Mobile helper/hook around shared Trusted Action contract.
+
+Conceptually:
+
+useMobileTrustedAction()
+
+is acceptable only as an ergonomic client wrapper.
+
+It must still call SAME server:
+
+runtime.dispatchAction
+
+Do not put business logic inside the hook.
+
+Do not create a second route registry.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. PROJECTION REFRESH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After accepted Mobile canonical action:
+
+invalidate/refetch relevant:
+
+workspace projection
+
+Living Objects
+
+runtime presentation/conversation state
+
+Do NOT locally set:
+
+approved
+paid
+completed
+running
+delivered
+
+Canonical server state updates first.
+
+Then Mobile projection updates.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. FINANCIAL TRUTH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mobile must preserve Block 3 invariants.
+
+No Mobile code may claim:
+
+PAID
+
+VERIFIED
+
+SETTLED
+
+PAYOUT_COMPLETED
+
+based on button press or provider browser return.
+
+All financial truth remains server canonical.
+
+Task 8A should add a focused negative test if Mobile Smart UI can carry financial actions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. APPROVAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mobile Approval action:
+
+must include current trusted:
+
+approval reference
+
+target reference
+
+expectedPresentationVersion
+
+typed action payload
+
+and call runtime.dispatchAction.
+
+Do not call legacy approval mutation directly from generated Mobile UI.
+
+Task 8B will render buttons.
+
+8A establishes action wiring contract.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. FORM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mobile generic form later emits same:
+
+SUBMIT_INPUT
+
+or exact Task 7 semantic action.
+
+Do not create separate form mutation semantics.
+
+Task 8A should provide typed adapter/model for future native form renderer.
+
+No visual form implementation required yet.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. OPEN / RESUME LIVING OBJECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mobile Living Object open/resume uses:
+
+OPEN_REFERENCE
+
+or exact shared semantic action.
+
+No cloning.
+
+No local lifecycle mutation.
+
+No Mobile-specific World reopening logic.
+
+Same canonical underlying object.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. AUTHENTICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use existing Mobile authenticated API/session infrastructure.
+
+Do NOT redesign login/auth.
+
+Do NOT add separate Smart UI authentication.
+
+Trusted action server authorization remains authoritative.
+
+If current Mobile auth prevents integration tests:
+
+report exact blocker.
+
+Do not fake owner/session.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. OFFLINE / NETWORK FAILURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 8A does NOT need full offline-first architecture.
+
+But generated Smart UI must fail truthfully.
+
+If consequential action cannot reach server:
+
+do not mark completed.
+
+Possible local state:
+
+pending request
+
+network error
+
+retry available
+
+Do not queue unknown external effect blindly unless current runtime explicitly supports durable safe queuing.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. APP RESTART
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Mobile restart:
+
+current Workspace/Living Objects should reconstruct from server canonical projections after authenticated fetch.
+
+Do not require locally persisted canonical copies.
+
+Local query cache may accelerate rendering, but server projection wins.
+
+Focused test around rehydration semantics if practical.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. DEVICE NEUTRALITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Confirm shared contracts contain no Web-only assumptions such as:
+
+DOM node
+
+CSS class
+
+window coordinate
+
+hover state
+
+browser event
+
+HTML component name
+
+Web-only route callback
+
+Presentation semantics should be device-neutral.
+
+If such assumptions exist:
+
+refactor only the shared contract boundary.
+
+Do not redesign Web visuals.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. REMOVE WEB EVENT ASSUMPTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 7B removed:
+
+jasim:bubble-action
+jasim:bubble-submit
+
+Ensure Mobile Smart UI does not rely on equivalent browser CustomEvent patterns.
+
+Use typed shared actions.
+
+No DOM/event bridge.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. ARTIFACT ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 7B moved artifact attachment to:
+
+ATTACH_ARTIFACT
+
+Ensure Mobile can construct/use the same shared semantic action where supported.
+
+Do not create native attach bypass.
+
+Actual file picker UX belongs to existing Mobile infrastructure / Task 8B only where required.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. TARGET-SPECIFIC VERSIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 7B introduced/confirmed target-specific versions for:
+
+task
+
+run
+
+proposal
+
+bubble
+
+to prevent stale false positives.
+
+This decision is canonical.
+
+Mobile must preserve those semantics.
+
+Do NOT collapse back into one generic version if target requires its specific version.
+
+Do not invent Mobile version counters.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. SERVER CONTRACTS ONLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Avoid importing server implementation files into Mobile.
+
+Import only shared/client-safe contracts.
+
+Task 4B already encountered a Web white screen due server runtime import.
+
+Do not reproduce that on Expo.
+
+Required:
+
+shared contract package
+or client-safe schema module
+
+NOT:
+
+api/runtime server implementation imports.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. BUNDLE SAFETY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Check that new shared imports do not pull into Mobile:
+
+Node-only modules
+
+database drivers
+
+server secrets
+
+Express/tRPC server internals
+
+filesystem
+
+crypto implementation incompatible with Expo
+
+provider SDKs
+
+Only client-safe types/schemas/helpers.
+
+This is critical.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. NO NEW SDK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expected:
+
+NEW_EXTERNAL_SDKS = 0
+
+Use current:
+
+React Native / Expo
+
+query/tRPC client
+
+validation/shared contract system
+
+Do not install UI library.
+
+Task 8B will use existing Mobile component stack.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. NO DATABASE CHANGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expected:
+
+NEW_DATABASE_TABLES = 0
+NEW_MIGRATIONS = 0
+
+Mobile parity must not require backend persistence changes.
+
+If it appears to:
+
+STOP and report exact architectural blocker.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. DOMAIN GENERICITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+No:
+
+CarMobileRenderer
+
+JobsMobileRuntime
+
+ShoppingMobileActions
+
+DeliveryMobileObject
+
+The same semantic contracts must handle:
+
+search
+
+comparison
+
+document
+
+World
+
+monitor
+
+order
+
+booking
+
+generic Run
+
+without domain-specific runtime wiring.
+
+Target:
+
+DOMAIN_SPECIFIC_MOBILE_SEMANTIC_ROUTES_ADDED = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. LEGACY MOBILE PATHS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT rewrite every existing Mobile screen.
+
+Audit only:
+
+new Smart Generative Experience paths
+
+If old Mobile feature screens use direct APIs unrelated to generated UI:
+
+report:
+
+LEGACY_NON_SMART_UI_MOBILE_ACTION_PATHS
+
+Do not count them as Task 8A failure.
+
+The requirement is:
+
+ACTIVE_MOBILE_SMART_UI_CONSEQUENTIAL_BYPASSES = 0
+
+for new Smart UI semantic path.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. FOCUSED PARITY SCENARIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given SAME server conversation/state:
+
+Web semantic response:
+
+Goal G1
+ResultSet R1
+Presentation SEARCH_RESULTS P1
+Living Objects L1
+presentationVersion V1
+
+Mobile must receive equivalent semantic identity:
+
+G1
+R1
+P1
+L1
+V1
+
+It may later render them differently.
+
+No semantic drift.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. MORPH PARITY SCENARIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Server state:
+
+SEARCH_RESULTS
+→ COMPARISON
+→ APPROVAL
+→ STATUS
+
+Mobile data layer must observe:
+
+same presentation transitions
+
+same current canonical context
+
+same stable references
+
+same version semantics
+
+Do not test visual animation yet.
+
+Task 8B.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. ACTION PARITY SCENARIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Approval exists.
+
+Same canonical approval reference.
+
+Web:
+dispatchAction
+
+Mobile:
+dispatchAction
+
+Both reach same server trusted boundary.
+
+Neither may bypass policy/approval/runtime.
+
+Add parity test using shared fixtures if practical.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. LIVING OBJECT PARITY SCENARIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Canonical active process exists.
+
+Web receives Living Object L1.
+
+Mobile receives same semantic:
+
+underlyingReference
+status
+attention
+title/summary
+presentation action metadata
+
+Rendering differs later.
+
+Identity must match.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. SIMPLE TEXT NEGATIVE TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Simple response:
+
+Mobile should not manufacture:
+
+Workspace
+
+Living Object
+
+cards
+
+World
+
+No rich UI unless semantic projection says so.
+
+Preserve smallest-sufficient-output.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. SECURITY NEGATIVE TESTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mobile Smart UI cannot:
+
+set owner
+
+set policy override
+
+set PAID
+
+set VERIFIED
+
+provide handler path
+
+provide provider URL
+
+skip expectedPresentationVersion where required
+
+execute unsupported action locally
+
+Cross-owner tampering remains server-blocked.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. FOCUSED TESTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add focused tests proving at minimum:
+
+1. Mobile imports same PresentationDefinition contract.
+
+2. Mobile validates PresentationDefinition at runtime.
+
+3. invalid presentation fails safely.
+
+4. Mobile consumes workspaceProjection.
+
+5. Goal identity preserved.
+
+6. ResultSet identity preserved.
+
+7. selected references preserved.
+
+8. ReferenceBindings preserved where projected.
+
+9. presentationVersion preserved.
+
+10. target-specific task/run/proposal/bubble versions preserved.
+
+11. stale older projection cannot overwrite newer Mobile state.
+
+12. LivingObjectProjection contract is shared.
+
+13. Living Object underlying identity matches server/Web semantics.
+
+14. simple text creates no fake Workspace/Living Object.
+
+15. Mobile canonical action uses runtime.dispatchAction.
+
+16. Mobile local presentation action stays local.
+
+17. Mobile consequential action cannot run locally.
+
+18. stale Mobile action blocked.
+
+19. cross-owner Mobile tamper blocked.
+
+20. Mobile cannot set PAID.
+
+21. Mobile cannot set VERIFIED.
+
+22. accepted action causes projection refresh.
+
+23. app/query reconstruction prefers current server projection.
+
+24. no server-only implementation imported into Mobile bundle.
+
+25. no browser CustomEvent dependency.
+
+26. no domain-specific semantic route.
+
+27. Web shared-contract regression.
+
+28. Task 7 dispatcher regression.
+
+29. Task 6 Living Object contract regression.
+
+30. Task 5 morph identity regression.
+
+Keep tests focused.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. TYPESCRIPT / EXPO SAFETY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run:
+
+Mobile TypeScript
+
+Expo export/type safety check only if existing project workflow supports it cheaply
+
+Web TypeScript if shared contracts changed
+
+Server TypeScript
+
+Do not start full App Store build.
+
+Do not launch EAS/TestFlight.
+
+Task 8A is source/runtime parity only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+47. EXPECTED FILES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expected areas:
+
+shared/client-safe contracts
+
+Mobile Smart UI data hooks/adapters
+
+Mobile trusted action helper
+
+Mobile projection query wiring
+
+focused tests
+
+possibly shared semantic helper extraction
+
+Do NOT build final Mobile Workspace UI.
+
+Do NOT create many screens.
+
+Do NOT copy Web components.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+48. REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create exactly:
+
+.local/tasks/smart-ui-task-8a-report.md
+
+Required sections:
+
+CAUSE
+
+CURRENT_MOBILE_RUNTIME_PATH
+
+WEB_MOBILE_PARITY_MAP
+
+SHARED_PRESENTATION_CONTRACT
+
+RUNTIME_VALIDATION
+
+WORKSPACE_PROJECTION_WIRING
+
+RESULTSET_REFERENCE_PARITY
+
+PRESENTATION_VERSION_PARITY
+
+TARGET_SPECIFIC_VERSION_PARITY
+
+LIVING_OBJECT_PROJECTION_WIRING
+
+TRUSTED_ACTION_WIRING
+
+LOCAL_VS_CANONICAL_ACTIONS
+
+PROJECTION_REFRESH
+
+MORPH_SEMANTICS
+
+APP_RESTART_RECONSTRUCTION
+
+DEVICE_NEUTRALITY
+
+BUNDLE_SAFETY
+
+LEGACY_MOBILE_PATHS
+
+DOMAIN_GENERICITY
+
+FILES_CHANGED
+
+TESTS
+
+Final counters:
+
+SMART_UI_TASK_8A =
+PASS / PARTIAL / FAIL
+
+MOBILE_SEMANTIC_RUNTIME_PARITY =
+PASS / FAIL
+
+SHARED_PRESENTATION_DEFINITION =
+YES / NO
+
+MOBILE_PRESENTATION_RUNTIME_VALIDATION =
+PASS / FAIL
+
+WORKSPACE_PROJECTION_SHARED =
+YES / NO
+
+GOAL_REFERENCE_PARITY =
+PASS / FAIL
+
+RESULTSET_IDENTITY_PARITY =
+PASS / FAIL
+
+REFERENCE_BINDING_PARITY =
+PASS / FAIL
+
+PRESENTATION_VERSION_PARITY =
+PASS / FAIL
+
+TARGET_SPECIFIC_VERSION_PARITY =
+PASS / FAIL
+
+LIVING_OBJECT_SEMANTIC_PARITY =
+PASS / FAIL
+
+MOBILE_TRUSTED_ACTIONS_USE_SAME_DISPATCHER =
+YES / NO
+
+ACTIVE_MOBILE_SMART_UI_CONSEQUENTIAL_BYPASSES = <number>
+
+MOBILE_CLIENT_CAN_SET_PAID =
+NO / YES
+
+MOBILE_CLIENT_CAN_SET_VERIFIED =
+NO / YES
+
+STALE_MOBILE_ACTION_BLOCKED =
+YES / NO
+
+CROSS_OWNER_MOBILE_TAMPER_BLOCKED =
+YES / NO
+
+SERVER_ONLY_IMPORTS_IN_MOBILE_SMART_UI = <number>
+
+BROWSER_EVENT_DEPENDENCIES_IN_MOBILE_SMART_UI = <number>
+
+DOMAIN_SPECIFIC_MOBILE_SEMANTIC_ROUTES_ADDED = <number>
+
+CLIENT_CANONICAL_TRUTH_ADDED = <number>
+
+LEGACY_NON_SMART_UI_MOBILE_ACTION_PATHS = <number>
+
+NEW_DATABASE_TABLES =
+0
+
+NEW_MIGRATIONS =
+0
+
+NEW_EXTERNAL_SDKS =
+0
+
+TASK_7_DISPATCHER_REGRESSION =
+PASS / FAIL
+
+TASK_6_LIVING_OBJECT_REGRESSION =
+PASS / FAIL
+
+TASK_5_MORPH_IDENTITY_REGRESSION =
+PASS / FAIL
+
+MOBILE_TYPESCRIPT =
+PASS / FAIL
+
+WEB_TYPESCRIPT =
+PASS / FAIL / NOT_TOUCHED
+
+SERVER_TYPESCRIPT =
+PASS / FAIL
+
+MOBILE_BUNDLE_SAFETY =
+PASS / FAIL
+
+BLOCKS_0_TO_3_1_REMAIN_CLOSED =
+YES / NO
+
+READY_FOR_SMART_UI_TASK_8B =
+YES / NO
+
+If NO:
+list only exact blocker.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+49. PASS GATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 8A may be PASS only if:
+
+SHARED_PRESENTATION_DEFINITION = YES
+
+WORKSPACE_PROJECTION_SHARED = YES
+
+MOBILE_TRUSTED_ACTIONS_USE_SAME_DISPATCHER = YES
+
+ACTIVE_MOBILE_SMART_UI_CONSEQUENTIAL_BYPASSES = 0
+
+SERVER_ONLY_IMPORTS_IN_MOBILE_SMART_UI = 0
+
+BROWSER_EVENT_DEPENDENCIES_IN_MOBILE_SMART_UI = 0
+
+DOMAIN_SPECIFIC_MOBILE_SEMANTIC_ROUTES_ADDED = 0
+
+CLIENT_CANONICAL_TRUTH_ADDED = 0
+
+and affected tests pass.
+
+Legacy unrelated Mobile screens do not fail Task 8A.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+50. STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Task 8A:
+
+STOP.
+
+DO NOT build final Mobile visual Workspace.
+
+DO NOT implement Mobile visual Morphing.
+
+DO NOT create native Living Object Rail/strip yet.
+
+DO NOT redesign navigation.
+
+DO NOT start Task 8B.
+
+DO NOT deploy.
+
+Return only:
+
+Task 8A verdict
+
+semantic parity status
+
+shared PresentationDefinition status
+
+Mobile trusted dispatcher status
+
+active Mobile Smart UI bypass count
+
+server-only import count
+
+browser event dependency count
+
+domain-specific semantic route count
+
+focused test count
+
+Mobile TypeScript status
+
+READY_FOR_SMART_UI_TASK_8B
+
+BEGIN TASK 8A.

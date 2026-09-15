@@ -1,0 +1,1149 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM SMART GENERATIVE EXPERIENCE
+
+# TASK 4B — WEB ACTIVE GENERATIVE WORKSPACE SHELL + COMPOSITION
+
+MODE INTENT:
+Focused Web UI implementation only.
+
+Task 1 = CLOSED / PASS
+Task 2 = CLOSED / PASS
+Task 3 = CLOSED / PASS
+Task 4A = CLOSED / PASS
+
+Accepted Task 4A result:
+
+* ActiveWorkspaceProjection exists
+* strict Zod validation exists
+* runtime.workspaceProjection endpoint exists
+* Workspace is projection, not canonical truth
+* Conversation / Goal / Run / ResultSet / ReferenceBindings / Presentation / Actions / Approvals / World references are projected
+* ResultSet identity is preserved
+* stale/unprovable references are removed
+* unauthorized/non-owned conversation returns safe empty projection
+* no Workspace table
+* no migration
+* no client canonical truth
+* no Morphing
+* no Living Objects
+* no Mobile renderer
+* no Action Dispatcher
+
+Relevant reports:
+
+.local/tasks/smart-ui-task-1-report.md
+.local/tasks/smart-ui-task-2-report.md
+.local/tasks/smart-ui-task-3-report.md
+.local/tasks/smart-ui-task-4a-report.md
+.local/tasks/jasim-smart-interface-delta-mapping.md
+
+Do NOT redo Tasks 1–4A.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. GOAL
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Build the first REAL visible Web implementation of:
+
+ACTIVE GENERATIVE WORKSPACE
+
+using the existing:
+
+* ActiveWorkspaceProjection
+* PresentationRenderer
+* SchemaRenderer
+* generic primitives from Task 3
+* existing conversation UI
+* existing Soap Glass / Bubble visual language
+
+The goal is:
+
+Conversation remains primary
+
+*
+
+Workspace appears only when useful
+
+*
+
+Current validated PresentationDefinition is rendered inside it
+
+*
+
+Workspace reflects server projection
+
+*
+
+No client business truth
+
+This is NOT UI Morphing yet.
+
+Task 5 will implement Morphing.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. FINAL UX RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Permanent rule:
+
+CONVERSATION FIRST
+WORKSPACE WHEN USEFUL
+LIVING OBJECTS LATER
+
+Do NOT turn JASIM into a dashboard.
+
+Simple response:
+
+"2 + 2؟"
+
+Expected:
+
+Conversation only.
+
+No large Workspace.
+
+Search:
+
+"ابحث لي عن خمسة خيارات."
+
+Expected:
+
+Conversation
++
+Workspace containing Search Results presentation
+
+Comparison:
+
+Workspace can display Comparison presentation
+
+but Task 4B does NOT yet implement automatic Morphing transitions.
+
+It only renders the current projected presentation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. TARGET WEB COMPOSITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Desktop conceptual layout:
+
+┌────────────────────────────────────────────┐
+│                 JASIM                      │
+├───────────────────┬────────────────────────┤
+│                   │                        │
+│   Conversation    │  Active Workspace      │
+│                   │                        │
+│   messages        │  current presentation  │
+│                   │                        │
+│                   │                        │
+├───────────────────┴────────────────────────┤
+│              Main input                    │
+└────────────────────────────────────────────┘
+
+But do NOT mechanically force 50/50 layout.
+
+Workspace width should adapt to content.
+
+Possible behavior:
+
+No meaningful Workspace:
+Conversation occupies most/all space.
+
+Workspace active:
+Conversation remains available while Workspace expands.
+
+Large Workspace:
+May use wider panel.
+
+The implementation should feel like ONE interface.
+
+Not two unrelated applications side-by-side.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. MOBILE IS OUT OF SCOPE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT redesign Mobile.
+
+Do NOT copy Desktop layout to Mobile.
+
+Task 8 handles Mobile semantic renderer/parity.
+
+If shared types affect Mobile compilation, keep compatibility.
+
+But Task 4B is Web only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. USE THE REAL WORKSPACE ENDPOINT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use:
+
+runtime.workspaceProjection
+
+or the existing generated typed client equivalent.
+
+Do NOT create local fake Workspace data.
+
+Do NOT hardcode:
+
+search results
+comparison
+approval
+World
+transaction
+
+The visible Workspace must derive from the real projection.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. WORKSPACE OPTIONALITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Workspace must be optional.
+
+If projection indicates no meaningful active presentation/context:
+
+do not render an empty giant panel.
+
+Use:
+
+collapsed
+hidden
+or minimal state
+
+according to existing UX architecture.
+
+Do NOT show:
+
+"Workspace empty"
+
+permanently.
+
+Conversation should expand naturally.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. WORKSPACE SHELL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Implement one generic shell/component equivalent to:
+
+ActiveGenerativeWorkspace
+
+It may accept:
+
+projection
+
+current presentation
+
+status
+
+attention
+
+loading
+
+error
+
+Do NOT create:
+
+SearchWorkspace
+ComparisonWorkspace
+CheckoutWorkspace
+WorldWorkspace
+
+as separate architectural shells.
+
+One Workspace shell.
+
+Many semantic presentations inside it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. CURRENT PRESENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inside Workspace render the current:
+
+validated PresentationDefinition
+
+through:
+
+PresentationRenderer
+→ SchemaRenderer
+
+Do NOT add special domain rendering.
+
+Examples:
+
+SEARCH_RESULTS
+→ Task 3 collection primitive
+
+COMPARISON
+→ Task 3 comparison primitive
+
+FORM
+→ Task 3 form primitive
+
+APPROVAL
+→ Task 3 approval primitive
+
+STATUS
+→ Task 3 status primitive
+
+TIMELINE
+→ Task 3 timeline primitive
+
+If presentation type only has safe fallback:
+
+render safe fallback honestly.
+
+Do not invent a richer surface.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. CONVERSATION MUST REMAIN USABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Workspace opening must NOT disable chat.
+
+User should be able to type while Workspace is visible.
+
+Examples:
+
+Search results shown.
+
+User types:
+"احذف الثالث."
+
+Comparison shown.
+
+User types:
+"الأول أفضل."
+
+Approval shown.
+
+User types:
+"لا، غيّر الكمية."
+
+Do not force all interactions through buttons.
+
+Conversation remains universal control plane.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. SOAP GLASS VISUAL INTEGRATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Reuse existing:
+
+Soap Glass
+
+Glass Window
+
+Pop
+
+surface tokens
+
+radius
+
+spacing
+
+motion
+
+glow
+
+depth
+
+Do NOT redesign the visual system from scratch.
+
+Task 4B should establish visual coherence only.
+
+Avoid excessive glow or decorative noise.
+
+The Workspace should look like a natural extension of JASIM.
+
+Not a foreign admin panel.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. BUBBLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Keep existing RuntimeBubbleLayer / RuntimeBubbleRenderer working.
+
+Permanent rule:
+
+Bubble is presentation.
+
+Workspace is context.
+
+They can coexist.
+
+Do NOT remove Bubble rendering.
+
+Do NOT make Workspace itself a giant Bubble data model.
+
+A Workspace may visually use a glass/bubble shell.
+
+But architecture remains generic.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. LOADING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Render a clean loading state while workspaceProjection is loading.
+
+Do not block the whole conversation if possible.
+
+Use existing Skeleton/Loading primitives if available.
+
+No fake progress percentages.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. SAFE EMPTY STATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If Workspace is expected but projection safely contains no current presentation:
+
+render minimal neutral state only if useful.
+
+Do not leak:
+
+internal IDs
+raw JSON
+runtime schemas
+
+Do not show empty placeholder permanently.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. ERROR STATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If workspaceProjection fails:
+
+Conversation must continue to work where possible.
+
+Render safe user-facing error.
+
+No raw:
+
+Zod errors
+stack traces
+SQL
+tRPC internals
+
+Use Task 3 ErrorState if suitable.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. STATUS / ATTENTION HEADER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Workspace may show subtle generic context at top if projection has meaningful:
+
+status
+attention
+
+Examples:
+
+بانتظار موافقتك
+
+قيد التنفيذ
+
+يحتاج إدخالاً منك
+
+تعذر التنفيذ
+
+But:
+
+do not expose technical state vocabulary unnecessarily.
+
+No domain wording.
+
+Do not make this a full dashboard header.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. GOAL / CONTEXT LABEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If current goal has a safe user-facing summary/title:
+
+Workspace may show it.
+
+Example:
+
+"اختيار لابتوب مناسب"
+
+But do not show:
+
+goal UUID
+planner objective JSON
+technical intent names
+
+If no good summary exists:
+
+omit.
+
+Do not generate fake labels in frontend.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. RESULTSET IDENTITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When rendering Search Results or Comparison:
+
+use stable candidate/reference keys from projection/presentation.
+
+Do NOT use:
+
+array index
+
+as canonical React/action identity.
+
+Array index may be display number only.
+
+Example:
+
+#2
+
+may visually appear.
+
+But React/action identity uses stable reference.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. SELECTION DISPLAY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If projection identifies selected canonical entities:
+
+visually indicate selected item(s).
+
+But:
+
+do not mutate canonical selection in local React state.
+
+Task 4B may use local visual state only for transient interaction.
+
+Server projection remains truth.
+
+If click selection currently emits existing safe action:
+
+keep it.
+
+Full Trusted Action Dispatcher comes Task 7.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. PRESENTATION VERSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Pass through existing:
+
+presentationVersion
+expectedPresentationVersion
+
+where current action rendering requires it.
+
+Do not silently drop stale-action protection.
+
+Do not invent a Workspace-only version.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. APPROVAL PRESENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If current PresentationDefinition is APPROVAL:
+
+render Task 3 generic Approval primitive inside Workspace.
+
+Do NOT implement new approval logic.
+
+Buttons use current safe action path only.
+
+Task 7 will unify dispatch later.
+
+Do not bypass runtime.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. WORLD PRESENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If projection references a World:
+
+do NOT create a domain Dashboard.
+
+If current semantic presentation is:
+
+WORLD_SUMMARY
+
+or:
+WORKSPACE
+
+render generic semantic sections supported by PresentationDefinition.
+
+Do not add:
+
+TransportDashboard
+
+ShopDashboard
+
+JobDashboard
+
+etc.
+
+Task 4B only proves generic Workspace shell can contain World presentation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. SIMPLE QUERY MUST STAY SIMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Test explicitly:
+
+simple text response
+
+Expected:
+
+Conversation remains dominant.
+
+No rich Workspace panel unless runtime projection genuinely justifies one.
+
+This is critical.
+
+Do not render Workspace simply because endpoint always returns an object.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. SEARCH EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use a test fixture/runtime setup, not domain implementation.
+
+Current presentation:
+
+SEARCH_RESULTS
+
+Workspace should show:
+
+generic collection/cards
+
+while Conversation remains available.
+
+No domain branch.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. COMPARISON EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Current presentation:
+
+COMPARISON
+
+Workspace should show:
+
+Task 3 Comparison primitive
+
+using stable references.
+
+Do not implement transition animation from Search to Comparison yet.
+
+Task 5.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. FORM EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Current presentation:
+
+FORM
+
+Workspace should render generic Form.
+
+Conversation remains available.
+
+Submitting may use existing action path.
+
+Do NOT build Task 7 dispatcher.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. STATUS EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Current presentation:
+
+STATUS / TIMELINE
+
+Workspace should show canonical status/events.
+
+No fake steps.
+
+No fake progress.
+
+No fake location.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. RESPONSIVE WEB BEHAVIOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 4B is Web, but should be responsive within Web breakpoints.
+
+Desktop:
+Conversation + Workspace side-by-side when useful.
+
+Medium width:
+Workspace may resize or stack sensibly.
+
+Narrow Web:
+Workspace may become overlay/panel/sheet if existing web patterns support it.
+
+Do NOT attempt full native Mobile implementation.
+
+Avoid horizontal clipping.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. USER CONTROL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Workspace may support:
+
+close/collapse
+expand
+
+if useful.
+
+But collapsing Workspace must NOT:
+
+cancel Task
+delete Goal
+clear ResultSet
+change transaction state
+
+It is presentation state only.
+
+Reopening should reconstruct from projection.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. NO CLIENT CANONICAL STATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Allowed local state:
+
+workspace open/collapsed
+
+panel width
+
+active visual section
+
+temporary form draft
+
+hover
+
+scroll
+
+animation
+
+Forbidden local authority:
+
+goal
+
+canonical selection
+
+transaction status
+
+approval status
+
+World state
+
+Run status
+
+payment status
+
+ResultSet identity
+
+These come from projection.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. NO MORPH ENGINE YET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT implement automatic:
+
+Search → Comparison
+
+Comparison → Detail
+
+Detail → Approval
+
+Approval → Status
+
+transitions.
+
+If projection changes due server response, Workspace may simply re-render the new current presentation.
+
+Task 5 will implement deliberate Morphing and continuity/transition behavior.
+
+Do not broaden.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. NO LIVING OBJECTS YET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT add:
+
+Active Objects Rail
+
+persistent Orb
+
+monitor object
+
+World Orb
+
+Run Orb
+
+Those are Task 6.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. NO NAVIGATION REDESIGN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not redesign all JASIM navigation.
+
+Do not add permanent tabs for:
+
+cars
+jobs
+shopping
+travel
+delivery
+
+Task 4B touches only:
+
+Conversation + Workspace composition.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. ACCESSIBILITY BASICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+New Workspace shell must support:
+
+keyboard focus
+
+semantic region labels
+
+buttons with accessible labels
+
+visible focus
+
+no critical hover-only controls
+
+Do not perform full final accessibility closure yet.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. PERFORMANCE BASICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Avoid:
+
+rendering all historical presentations inside Workspace
+
+duplicating whole chat history
+
+continuous canvas effects
+
+heavy nested blur layers
+
+Workspace should render:
+
+CURRENT relevant projection
+
+not all historical states.
+
+Use stable keys.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. FOCUSED TESTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add focused tests proving at minimum:
+
+1. No meaningful projection → no giant Workspace.
+
+2. SEARCH_RESULTS projection renders inside Workspace.
+
+3. COMPARISON projection renders inside same generic Workspace shell.
+
+4. FORM projection renders.
+
+5. APPROVAL projection renders.
+
+6. STATUS/TIMELINE projection renders.
+
+7. Conversation remains rendered/usable when Workspace is active.
+
+8. selected entity projection is visually reflected.
+
+9. stable references are used as identity.
+
+10. Workspace collapse does not mutate canonical state.
+
+11. projection re-fetch reconstructs Workspace.
+
+12. unauthorized/empty projection renders safely.
+
+13. invalid presentation remains blocked by Task 1 validation.
+
+14. Task 2 decision semantics remain unchanged.
+
+15. Task 3 generic primitives remain the renderer.
+
+16. existing Smart Bubbles still render.
+
+17. plain-text chat still works.
+
+18. no domain-specific Workspace component exists.
+
+19. no new client canonical truth introduced.
+
+20. presentation version is preserved where applicable.
+
+Keep tests focused.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. VISUAL SMOKE CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run/inspect the active Web UI enough to verify:
+
+Conversation visible
+
+Workspace appears when appropriate
+
+Workspace disappears/collapses when not needed
+
+SEARCH_RESULTS visually usable
+
+COMPARISON visually usable
+
+FORM visually usable
+
+APPROVAL visually usable
+
+STATUS visually usable
+
+No obvious layout overflow
+
+No startup error
+
+Do not attempt full aesthetic redesign.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. VERIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run:
+
+Task 4B focused tests
+
+Tasks 1–4A affected regressions
+
+Web TypeScript
+
+Server TypeScript if shared types changed
+
+git diff --check
+
+Web dev/start smoke check
+
+Do NOT run:
+
+all JASIM blocks
+
+Mobile suite
+
+full production acceptance
+
+deployment
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. EXPECTED CHANGE SIZE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expected:
+
+Web conversation shell/layout
+
+ActiveGenerativeWorkspace component
+
+projection query hook/wiring
+
+small reusable layout styles
+
+focused tests
+
+Maybe small shared type import/adaptation
+
+Expected:
+
+NEW_DATABASE_TABLES = 0
+NEW_MIGRATIONS = 0
+NEW_EXTERNAL_SDKS = 0
+
+If a database/schema migration appears required:
+
+STOP and report blocker.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create exactly:
+
+.local/tasks/smart-ui-task-4b-report.md
+
+Sections:
+
+CAUSE
+
+REUSED_WEB_COMPONENTS
+
+WORKSPACE_SHELL
+
+WORKSPACE_QUERY_WIRING
+
+CONVERSATION_COMPOSITION
+
+PRESENTATION_RENDERING
+
+OPTIONAL_WORKSPACE_BEHAVIOR
+
+SELECTION_DISPLAY
+
+STATUS_ATTENTION_DISPLAY
+
+SOAP_GLASS_REUSE
+
+RESPONSIVE_WEB
+
+ACCESSIBILITY
+
+CLIENT_STATE_BOUNDARY
+
+DOMAIN_GENERICITY
+
+FILES_CHANGED
+
+TESTS
+
+VISUAL_SMOKE_CHECK
+
+Final counters:
+
+SMART_UI_TASK_4B =
+PASS / PARTIAL / FAIL
+
+ACTIVE_GENERATIVE_WORKSPACE_WEB =
+PASS / FAIL
+
+CONVERSATION_REMAINS_PRIMARY =
+YES / NO
+
+WORKSPACE_OPTIONAL =
+YES / NO
+
+SEARCH_RESULTS_IN_WORKSPACE =
+PASS / FAIL
+
+COMPARISON_IN_WORKSPACE =
+PASS / FAIL
+
+FORM_IN_WORKSPACE =
+PASS / FAIL
+
+APPROVAL_IN_WORKSPACE =
+PASS / FAIL
+
+STATUS_TIMELINE_IN_WORKSPACE =
+PASS / FAIL
+
+GENERIC_WORKSPACE_SHELLS = <number>
+
+DOMAIN_SPECIFIC_WORKSPACE_COMPONENTS = <number>
+
+CLIENT_CANONICAL_TRUTH_ADDED = <number>
+
+RESULTSET_STABLE_REFERENCES_USED =
+YES / NO
+
+PRESENTATION_VERSION_PRESERVED =
+YES / NO
+
+SMART_BUBBLE_REGRESSION =
+PASS / FAIL
+
+PLAIN_TEXT_REGRESSION =
+PASS / FAIL
+
+TASK_1_REGRESSION =
+PASS / FAIL
+
+TASK_2_REGRESSION =
+PASS / FAIL
+
+TASK_3_REGRESSION =
+PASS / FAIL
+
+TASK_4A_REGRESSION =
+PASS / FAIL
+
+WEB_TYPESCRIPT =
+PASS / FAIL
+
+SERVER_TYPESCRIPT =
+PASS / FAIL / NOT_NEEDED
+
+WEB_STARTUP_SMOKE =
+PASS / FAIL
+
+NEW_DATABASE_TABLES =
+0
+
+NEW_MIGRATIONS =
+0
+
+NEW_EXTERNAL_SDKS =
+0
+
+BLOCKS_0_TO_3_1_REMAIN_CLOSED =
+YES / NO
+
+READY_FOR_SMART_UI_TASK_5 =
+YES / NO
+
+If NO:
+list only exact blocker.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Task 4B:
+
+STOP.
+
+DO NOT implement UI Morphing.
+
+DO NOT implement Living Objects.
+
+DO NOT build Active Objects Rail.
+
+DO NOT redesign Mobile.
+
+DO NOT start Trusted Action Dispatcher.
+
+Return only:
+
+Task 4B verdict
+
+Workspace Web status
+
+test count
+
+domain-specific Workspace count
+
+client canonical truth added
+
+READY_FOR_SMART_UI_TASK_5
+
+BEGIN TASK 4B.

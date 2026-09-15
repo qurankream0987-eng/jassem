@@ -1,0 +1,1166 @@
+# JASIM — CANONICAL SOURCE RE-IMPORT + PROVEN RUNTIME MERGE
+# STRICT MIGRATION MODE — DO NOT REBUILD FROM SCRATCH
+
+هذا هو مجلد JASIM الأصلي الحقيقي الذي أرسلته لك الآن من جديد، واسمه:
+
+جاسم
+
+اعتبر هذه النسخة الجديدة التي رفعتها الآن هي:
+
+CANONICAL JASIM SOURCE
+
+ولا تعتمد على أي نسخة سابقة تحت:
+reference/jasim-source
+أو artifacts/*
+على أنها المصدر الأصلي النهائي.
+
+الهدف الحالي ليس بناء جاسم من الصفر.
+
+الهدف هو:
+
+ORIGINAL JASIM SOURCE
++
+PROVEN RUNTIME WORK COMPLETED SO FAR
+↓
+ONE CANONICAL WORKING JASIM
+
+المطلوب أن تحافظ على ما يعمل في جاسم الأصلي،
+وتدمج فيه فقط المكونات الجديدة التي تم بناؤها واختبارها بالفعل.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 0 — FREEZE FEATURE DEVELOPMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+قبل أي شيء:
+
+أوقف مؤقتًا كل تطوير Feature جديد.
+
+لا تبدأ الآن:
+
+- Trusted Executor
+- Execution Receipts
+- Independent Verifier
+- External Providers
+- New Scheduler features
+- Multi-user expansion
+- Cross-Bubble expansion
+- Commercial Runtime
+- Capability Lab
+- iOS release
+- Android release
+- UI redesign
+
+السبب:
+
+نحتاج أولًا جعل جاسم الأصلي هو الـCanonical Runtime الحقيقي.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 1 — IDENTIFY THE NEWLY UPLOADED ORIGINAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ابحث عن المجلد الذي رفعته الآن واسمه:
+
+جاسم
+
+حدد:
+
+CANONICAL_UPLOAD_PATH=<full absolute path>
+
+لا تفترض أن:
+reference/jasim-source
+
+هو الأصل.
+
+لا تستخدم الاسم وحده.
+
+تحقق من:
+
+- عدد الملفات
+- package files
+- source folders
+- README
+- db files
+- api files
+- mobile files
+- contracts
+- configuration
+- tests
+- timestamps/hashes عند الحاجة
+
+الهدف فقط:
+
+تأكيد أن المجلد الذي رفعته الآن هو النسخة الأصلية الكاملة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 2 — DO NOT MODIFY THE ORIGINAL IMMEDIATELY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+قبل كتابة أي ملف:
+
+افحص الأصل الجديد.
+
+ثم افحص Runtime التي بنيتها سابقًا في:
+
+/home/runner/workspace/artifacts/api-server
+/home/runner/workspace/artifacts/jasim
+/home/runner/workspace/artifacts/jasim-mobile
+/home/runner/workspace/lib/db
+/home/runner/workspace/lib/api-spec
+/home/runner/workspace/scripts
+
+لا تبدأ copy عشوائي.
+
+أولًا ابنِ خريطة Mapping.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 3 — BUILD A SOURCE-TO-SOURCE MAPPING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أنشئ داخليًا جدولًا مختصرًا:
+
+PROVEN CURRENT IMPLEMENTATION
+→
+CANONICAL ORIGINAL DESTINATION
+
+مثال فقط:
+
+Conversation Runtime
+→ canonical api/core or equivalent
+
+Runtime routes
+→ canonical api/routers or equivalent
+
+DB schema
+→ canonical db
+
+Contracts
+→ canonical contracts
+
+Mobile client logic
+→ canonical mobile
+
+لا تستخدم هذه الأمثلة حرفيًا إذا البنية الأصلية مختلفة.
+
+افحص البنية الأصلية أولًا.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 4 — CLASSIFY EACH SUBSYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لكل subsystem صنفه إلى واحدة فقط:
+
+KEEP_ORIGINAL
+MERGE
+ADAPT
+REPLACE_WITH_PROVEN_IMPLEMENTATION
+DEPRECATE_AFTER_PROOF
+
+طبّق ذلك على:
+
+- Auth
+- Sessions
+- Conversation
+- Messages
+- Smart Bubbles
+- World
+- Task
+- Run
+- Reference Resolution
+- Output Router
+- Execution Proposals
+- Fingerprints
+- Approvals
+- Capability Registry
+- Events
+- DAG
+- DB schema
+- API routes
+- Web
+- Mobile
+- Contracts
+
+لا تسمح أن يبقى لكل concept نسختان canonical.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 5 — PRESERVE ORIGINAL JASIM FIRST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تستبدل subsystem أصلية إذا كانت تعمل ويمكن توسيعها.
+
+القاعدة:
+
+KEEP
+→ EXTEND
+→ ADAPT
+→ MERGE
+→ REPLACE ONLY WHEN NECESSARY
+
+مثال:
+
+إذا جاسم الأصلي لديه Capability Registry جيدة:
+اربط Runtime الجديدة بها.
+
+لا تنشئ Registry ثانية.
+
+إذا الأصل لديه Event model جيدة:
+ادمج DAG events داخلها.
+
+لا تبنِ Event Bus ثانية.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 6 — PRESERVE ALL ORIGINAL BUSINESS-GENERAL CAPABILITIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تحذف قدرات جاسم الأصلية لمجرد أنها لم تكن ضمن Runtime الجديدة.
+
+افحص:
+
+api/core
+api/connectors
+api/routers
+contracts
+db
+mobile
+
+وأي folders مقابلة.
+
+لكل capability أو engine قديم:
+
+PRESERVE
+أو
+MIGRATE
+أو
+REPLACE_WITH_REASON
+
+لا تعمل:
+DELETE OLD JASIM
+ثم COPY NEW RUNTIME
+
+هذا ممنوع.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 7 — DATABASE MERGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هذه أهم مرحلة حساسة.
+
+قارن:
+
+canonical JASIM DB schema
+
+مع:
+
+/home/runner/workspace/lib/db
+
+حدد:
+
+- الجداول المتطابقة
+- الجداول المتداخلة
+- الجداول الجديدة
+- العلاقات المختلفة
+- enum/state differences
+- foreign keys
+- unique constraints
+- indexes
+
+ادمج بدون data destruction.
+
+يجب أن نحتفظ بمفاهيم مثل:
+
+users
+sessions
+conversations
+messages
+tasks
+worlds
+events
+
+إذا كانت موجودة أصلًا.
+
+ثم نضيف/نوحد:
+
+smart_bubbles
+runs
+execution_proposals
+approvals
+dag_nodes
+dag_dependencies
+
+حسب التصميم النهائي.
+
+ممنوع إنشاء duplicate canonical concepts مثل:
+
+tasks + runtime_tasks
+worlds + new_worlds
+events + runtime_events
+
+إلا migration مؤقتة ومعلّمة بوضوح.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 8 — MIGRATIONS MUST BE NON-DESTRUCTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Default:
+
+ADD
+ALTER SAFELY
+BACKFILL
+VALIDATE
+SWITCH
+
+وليس:
+
+DROP
+TRUNCATE
+RECREATE
+
+لا تحذف جدولًا أو column أصلية إلا بعد إثبات أن البديل يعمل وأن البيانات غير مطلوبة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 9 — AUTH / OWNERSHIP MUST STAY CANONICAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تنشئ Auth جديدة إذا الأصل لديه Auth صحيحة.
+
+كل:
+
+Conversation
+Bubble
+Run
+Proposal
+Approval
+DAG node
+
+يجب أن تستخدم نفس User/Session truth الأصلية.
+
+ممنوع وجود:
+
+original user identity
++
+runtime user identity
+
+كمصدرين مختلفين.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 10 — CONVERSATION RUNTIME MERGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ادمج ما تم إثباته:
+
+- Persistent conversations
+- Persistent messages
+- Ordering
+- Ownership isolation
+- Resume
+- Conversation Turn endpoint
+- no automatic Task per prompt
+
+داخل canonical API.
+
+اختبار إلزامي:
+
+send Arabic message
+↓
+persist
+↓
+restart
+↓
+reload conversation
+↓
+same message exists
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 11 — SEMANTIC OUTPUT ROUTER MERGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ادمج الأنواع:
+
+text
+structured_result
+ephemeral_bubble
+interactive_bubble
+direct_action
+workflow
+durable_run
+persistent_smart_bubble
+
+داخل الـCanonical Runtime.
+
+لا تجعل Router موجودة فقط في artifacts/api-server.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 12 — SMART BUBBLE MERGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ادمج:
+
+bubble identity
+ownership
+persistence
+optional world binding
+projection
+
+مع الحفاظ على:
+
+Bubble may exist without World
+
+و:
+
+World may back a persistent Bubble
+
+لا تجعل Bubble = World حرفيًا.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 13 — WORLD PRESERVATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+World الأصلية يجب ألا تضيع.
+
+إذا original JASIM لديه World Runtime بالفعل:
+
+PRESERVE IT
+
+ثم اربطها بـSmart Bubble.
+
+العلاقة:
+
+Smart Bubble
+→ optional World Runtime
+
+ولا:
+
+Every Bubble → mandatory World
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 14 — TASK / RUN ALIGNMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+افحص Task الأصلية.
+
+حافظ على الفرق:
+
+Task
+= planned work / orchestration concept
+
+Run
+= durable execution lifecycle
+
+إذا كان يمكن تمثيل الاثنين في abstraction واحدة بدون فقدان semantics:
+يمكن التوحيد.
+
+لكن لا تفعل ذلك لمجرد تقليل عدد الجداول.
+
+الأولوية لصحة المعنى.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 15 — GENERAL REFERENCE RESOLUTION MERGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ادمج Resolver المثبتة بحيث تستطيع حل:
+
+Conversation
+Message
+Bubble
+World
+Entity
+Task
+Run
+Proposal
+
+من نفس canonical DB.
+
+لا تعتمد على IDs من Runtime جانبية بعد الدمج.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 16 — EXECUTION PROPOSALS MERGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ادمج:
+
+proposal
+normalized inputs
+capability reference
+target reference
+policy context
+fingerprint
+approval binding
+
+مع invariant:
+
+INTENT
+!=
+PROPOSAL
+!=
+APPROVAL
+!=
+EXECUTION
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 17 — APPROVAL SECURITY MERGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+حافظ على:
+
+approval tied to exact fingerprint
+
+إذا تغير:
+
+capability
+target
+critical input
+amount
+policy-relevant value
+
+→ old approval invalid
+
+لا تبسط Approval إلى boolean أثناء الدمج.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 18 — CAPABILITY SYSTEM MERGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هذه نقطة شديدة الأهمية.
+
+افحص:
+
+canonical api/connectors
+canonical api/core
+
+وقارنها بالـCapability Registry التي بُنيت لاحقًا.
+
+الهدف:
+
+ONE CAPABILITY SYSTEM
+
+لا:
+
+ORIGINAL CONNECTORS
++
+NEW CAPABILITY REGISTRY
++
+THIRD PROVIDER SYSTEM
+
+حدد canonical layer واحدة.
+
+يمكن أن تكون:
+
+Capability Definition
+↓
+Capability Registry
+↓
+Provider/Connector adapters
+
+بحيث تستفيد من connectors الأصلية بدل رميها.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 19 — DURABLE DAG MERGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+انقل الـDAG التي تم إثباتها بدون إعادة تصميم:
+
+- nodes
+- SUCCESS_REQUIRED dependencies
+- readiness
+- atomic claims
+- leases
+- heartbeat
+- fencing
+- stale worker rejection
+- retry
+- recovery
+- cancellation
+- owner isolation
+- approved normalized input binding
+
+اربطها بـCanonical Run/Proposal/Capability system.
+
+لا تعِد بناء DAG من الصفر.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 20 — DO NOT BREAK DAG SAFETY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بعد الدمج يجب أن تبقى invariants:
+
+AT MOST ONE VALID CLAIM
+
+STALE WORKER CANNOT WRITE
+
+LEASE EXPIRY USES DB TIME
+
+APPROVED INPUTS CANNOT BE SUBSTITUTED
+
+CANCELLED RUN DOES NOT START NEW WORK
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 21 — EVENT MODEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+استخدم Event model الأصلية إذا كانت صالحة.
+
+ادمج فيها:
+
+RUN events
+PROPOSAL events
+APPROVAL events
+DAG events
+
+لا تنشئ Event system ثانية.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 22 — CONTRACTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+اجعل هناك مصدر Canonical واحد فقط للContracts.
+
+يفضل canonical contracts إذا كانت موجودة أصلًا.
+
+ادمج فيها:
+
+Output Envelope
+Conversation
+Bubble
+Run
+Proposal
+Approval
+DAG projection
+
+ثم اجعل Web/Mobile تستخدم نفس generated contracts إذا كان المشروع يعتمد OpenAPI أو codegen.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 23 — API ROUTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بعد دمج Core:
+
+اجعل canonical API هي source of truth لـ:
+
+/conversations
+/conversations/:id/turns
+/messages
+/bubbles
+/runs
+/proposals
+/approvals
+/dag status
+
+استخدم routing style الأصلية.
+
+لا تنشئ API موازية إذا الأصل يستطيع استضافة نفس المسارات.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 24 — WEB MERGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+قارن Web الحالية في:
+
+artifacts/jasim
+
+مع Web الأصلية إن وجدت في canonical JASIM.
+
+حدد:
+
+KEEP ORIGINAL UI
+MERGE NEW MAIN CHAT
+MERGE NEW RUNTIME BUBBLES
+ADAPT API CLIENT
+
+لا تنسخ المشروع Web كاملًا فوق الأصل بلا تحليل.
+
+في النهاية:
+
+Web
+↓
+Canonical JASIM API
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 25 — MOBILE MERGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+قارن:
+
+canonical JASIM mobile
+
+مع:
+
+artifacts/jasim-mobile
+
+ادمج أفضل working implementation.
+
+حافظ على:
+
+Main Chat
+persistent Conversation
+run status
+bubble display
+secure session
+server truth
+
+لا تبقِ Mobileين مختلفين لجاسم.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 26 — DO NOT MAKE EXPO GO THE PRODUCT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أثناء الدمج يمكن استخدام Expo/Metro للتطوير.
+
+لكن لا تغيّر Architecture لخدمة Expo Go.
+
+Mobile canonical يجب أن يبقى صالحًا لاحقًا لـStandalone iOS/Android.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 27 — ORIGINAL FEATURES INVENTORY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أنشئ inventory مختصر فقط للFeatures/Capabilities الموجودة في JASIM الأصلي والتي ليست في Runtime الجديدة.
+
+لكل عنصر:
+
+PRESERVED
+MIGRATED
+CONNECTED
+DEFERRED_WITH_REASON
+
+لا تكتب تقريرًا طويلًا.
+
+الهدف منع فقدان أي قدرة أصلية.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 28 — NO DOMAIN HARD-CODING IMPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا JASIM الأصلي يحتوي أمثلة Domain-specific:
+
+تحقق هل هي:
+
+examples/tests
+أم
+core runtime logic
+
+إذا كانت أمثلة فقط:
+ابقها.
+
+إذا Core يعتمد عليها:
+GENERALIZE.
+
+لا تنقل Domain hardcoding إلى Runtime الجديدة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 29 — INCREMENTAL MERGE ORDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+نفذ تقريبًا بهذا الترتيب:
+
+1. Canonical source verification
+2. Contracts
+3. DB schema
+4. Auth/ownership
+5. Conversation/messages
+6. Output Router
+7. Bubble/World
+8. Run
+9. Reference Resolution
+10. Proposal/Approval
+11. Capability system
+12. Events
+13. DAG
+14. API routes
+15. Web
+16. Mobile
+17. Runtime scripts/start commands
+18. Full regression
+19. Active runtime switch
+
+عدّل الترتيب فقط إذا dependency حقيقية تتطلب ذلك.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 30 — AFTER EACH SUBSYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تعمل full build بعد كل file.
+
+بعد كل subsystem:
+
+run targeted typecheck/test
+
+إذا PASS:
+continue
+
+عند نهاية merge:
+run full relevant regression once.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 31 — ACTIVE RUNTIME SWITCH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هذه خطوة إلزامية.
+
+لا يكفي نقل الملفات.
+
+يجب أن تتحول:
+
+start scripts
+API boot path
+Web API target
+Mobile API target
+runtime imports
+
+إلى canonical merged JASIM.
+
+أثبت أن runtime المستخدمة فعليًا ليست artifacts المنفصلة القديمة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 32 — CALL PATH PROOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أعطني proof مختصر:
+
+Web
+↓
+Canonical API
+↓
+Canonical Conversation Runtime
+↓
+Canonical Output Router
+↓
+Canonical Run/Bubble/World
+↓
+Canonical DB
+
+و:
+
+Mobile
+↓
+same Canonical API
+↓
+same Runtime
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 33 — DUPLICATE RUNTIME CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بعد نجاح switch ابحث عن:
+
+duplicate Conversation runtime
+duplicate Bubble runtime
+duplicate Run runtime
+duplicate Task runtime
+duplicate World model
+duplicate Capability registry
+duplicate Event system
+duplicate API contracts
+duplicate DB truth
+
+النتيجة النهائية المطلوبة:
+
+ONE CANONICAL OWNER PER CONCEPT
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 34 — DO NOT DELETE OLD IMPLEMENTATION IMMEDIATELY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بعد switch:
+
+لا تحذف artifacts/* فورًا.
+
+أولًا:
+
+run regression
+run active path proof
+confirm no import/runtime dependency
+
+ثم صنف القديم:
+
+SAFE_TO_REMOVE
+BUILD_ARTIFACT_ONLY
+CLIENT_ONLY
+STILL_REFERENCED
+
+بعدها فقط نظف ما هو آمن.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 35 — REAL REGRESSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+في النهاية شغّل:
+
+Schema validation
+DB migration validation
+API typecheck
+Web typecheck
+Mobile typecheck
+OpenAPI/codegen if used
+Build
+
+Runtime tests:
+
+Conversation persistence
+Message ordering
+Owner isolation
+Smart Bubble persistence
+Bubble without World
+Bubble with World
+Run persistence
+Run idempotency
+Run restart durability
+Semantic Output Router
+Reference Resolution
+Proposal persistence
+Canonical fingerprint
+Approval binding
+Approval invalidation
+DAG persistence
+Dependency scheduling
+Fan-out/fan-in
+Atomic claim
+Heartbeat
+Fencing
+Stale worker rejection
+Retry
+Permanent failure
+Restart recovery
+Cancellation
+Approved-input binding
+
+وشغّل tests الأصلية المهمة لجاسم أيضًا.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 36 — PRESERVATION TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أثبت أن الدمج لم يحذف functionality الأصلية المهمة.
+
+قارن قبل/بعد لكل subsystem مهم.
+
+إذا Feature أصلية تعطلت:
+FIX قبل الانتقال.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 37 — NO NEW FEATURES DURING MERGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ممنوع حتى إغلاق merge:
+
+Trusted Executor
+Receipts
+Verifier
+External Providers
+Transactions
+Multi-user expansion
+Cross-Bubble expansion
+Capability Lab
+New commercial features
+
+هذه تأتي بعد توحيد source.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 38 — TOKEN / TIME CONTROL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تهدر Tokens.
+
+ممنوع:
+
+- إعادة تحليل Product Vision.
+- قراءة repository كامل بلا داعٍ.
+- عدة Agents لنفس subsystem.
+- تقارير طويلة.
+- speculative refactors.
+- UI polish.
+- formatting cleanup unrelated.
+- dependency upgrades غير مطلوبة.
+- إعادة كتابة tests تعمل بالفعل.
+
+استخدم targeted inspection وtargeted edits.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 39 — NO BIG-BANG COPY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ممنوع:
+
+cp -R artifacts/* canonical/
+ثم إصلاح الأخطاء لاحقًا.
+
+استخدم merge واعيًا subsystem-by-subsystem.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 40 — SAFETY BACKUP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+قبل التعديلات الكبيرة:
+
+احفظ snapshot/commit/branch آمنة ضمن Git الحالي إذا كان ذلك ممكنًا.
+
+لا تنشئ architecture ثانية.
+
+الهدف فقط إمكانية الرجوع عند merge failure.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 41 — GIT HYGIENE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تخلط generated files والsource migrations بشكل عشوائي.
+
+حافظ على commits أو change groups مفهومة حسب subsystem إن كانت البيئة تسمح.
+
+لا تحتاج عشرات commits.
+
+لكن اجعل rollback ممكنًا.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 42 — CANONICAL PATH DECISION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بعد رفع مجلد `جاسم` قد يكون مساره داخل uploads/reference/temp.
+
+لا تشترط أن يبقى production source داخل ذلك المسار.
+
+إذا الأفضل نقل canonical source إلى root structured location:
+افعل ذلك بعد التحقق.
+
+لكن لا تنشئ نسخة جديدة من الصفر.
+
+يجب أن تكون نتيجة النقل مشتقة مباشرة من مجلد `جاسم` الأصلي + merged runtime.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 43 — FINAL STATUS REQUIRED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+عند الانتهاء أعطني فقط:
+
+CANONICAL ORIGINAL RECEIVED:
+YES / NO
+
+CANONICAL SOURCE PATH:
+<path>
+
+ORIGINAL FILES PRESERVED:
+PASS / FAIL
+
+PROVEN RUNTIME MERGED:
+PASS / PARTIAL / FAIL
+
+CONVERSATION:
+PASS / FAIL
+
+SMART BUBBLES:
+PASS / FAIL
+
+WORLD:
+PASS / FAIL
+
+RUNS:
+PASS / FAIL
+
+REFERENCE RESOLUTION:
+PASS / FAIL
+
+EXECUTION PROPOSALS:
+PASS / FAIL
+
+FINGERPRINT + APPROVAL:
+PASS / FAIL
+
+DURABLE DAG:
+PASS / FAIL
+
+CAPABILITY SYSTEM UNIFIED:
+YES / NO
+
+EVENT MODEL UNIFIED:
+YES / NO
+
+DB SOURCE OF TRUTH UNIFIED:
+YES / NO
+
+API SOURCE OF TRUTH UNIFIED:
+YES / NO
+
+WEB USES CANONICAL RUNTIME:
+YES / NO
+
+MOBILE USES CANONICAL RUNTIME:
+YES / NO
+
+DUPLICATE ACTIVE RUNTIME REMAINS:
+YES / NO
+
+FULL RELEVANT REGRESSION:
+PASS / FAIL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 44 — HARD EXIT CONDITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هذه المرحلة لا تعتبر مكتملة إذا:
+
+DUPLICATE ACTIVE RUNTIME REMAINS = YES
+
+أو:
+
+WEB USES CANONICAL RUNTIME = NO
+
+أو:
+
+MOBILE USES CANONICAL RUNTIME = NO
+
+أو:
+
+DURABLE DAG = FAIL
+
+أو:
+
+ORIGINAL FEATURES PRESERVED = FAIL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 45 — AFTER MERGE ONLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+فقط بعد:
+
+ONE CANONICAL JASIM
++
+FULL REGRESSION PASS
+
+استأنف Task #14 من آخر نقطة:
+
+Trusted Executor
+↓
+Execution Receipts
+↓
+Independent Verifier
+↓
+Recovery hardening
+↓
+Scheduler/Event Resume
+↓
+Real Provider E2E
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL DIRECTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تبنِ جاسم مرة أخرى.
+
+لا ترمِ Runtime الجديدة.
+
+لا تستبدل الأصل كاملًا.
+
+ادمج الاثنين بوعي:
+
+ORIGINAL JASIM
++
+PROVEN NEW RUNTIME
+↓
+ONE CANONICAL JASIM
+
+كل feature تم إثباتها يجب أن تبقى.
+
+كل feature أصلية مهمة يجب أن تبقى.
+
+كل duplicate runtime يجب أن يختفي من active execution path.
+
+ابدأ الآن بعد رفع مجلد `جاسم` الأصلي.
+
+لا تبدأ أي Feature جديدة حتى يصبح جاسم واحدًا فقط ويعمل من الـCanonical Source.

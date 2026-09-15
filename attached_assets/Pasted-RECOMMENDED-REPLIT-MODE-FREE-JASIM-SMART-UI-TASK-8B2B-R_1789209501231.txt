@@ -1,0 +1,224 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM SMART UI
+# TASK 8B2B READINESS RECONCILIATION ONLY
+
+DO NOT implement new features.
+DO NOT modify architecture.
+DO NOT start Task 9.
+DO NOT rerun Task 8B2B.
+DO NOT redesign Mobile/Web.
+DO NOT create migrations, tables, SDKs, or deployment.
+
+Read exactly:
+
+.local/tasks/smart-ui-task-8b2b-report.md
+
+We currently have:
+
+SMART_UI_TASK_8B2B = PASS
+MOBILE_LIVING_OBJECTS = PASS
+SEMANTIC_CROSS_DEVICE_PARITY = PASS
+FOCUSED_TESTS = 45/45
+AFFECTED_REGRESSIONS = 129/129
+MOBILE_REAL_VISUAL_SMOKE = PARTIAL
+VISUAL_CROSS_DEVICE_SMOKE = NOT_AVAILABLE
+DOMAIN_SPECIFIC_MOBILE_LIVING_OBJECT_COMPONENTS_ADDED = 0
+CLIENT_CANONICAL_TRUTH_ADDED = 0
+FAKE_STATUS_COUNT = 0
+FAKE_PROGRESS_COUNT = 0
+READY_FOR_SMART_UI_TASK_9 = NO
+
+This readiness value appears inconsistent with the agreed Task 8B2B PASS gate.
+
+The accepted gate explicitly allowed:
+
+MOBILE_REAL_VISUAL_SMOKE = PARTIAL
+
+when inaccessible visual states were truthfully documented and semantic/integration evidence was complete.
+
+VISUAL_CROSS_DEVICE_SMOKE was supplementary visual evidence, not the authoritative semantic parity gate.
+
+The authoritative cross-device requirement was:
+
+SEMANTIC_CROSS_DEVICE_PARITY = PASS
+
+which is already PASS.
+
+Your task is ONLY to determine why:
+
+READY_FOR_SMART_UI_TASK_9 = NO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. CHECK THE REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Identify the exact condition that caused READY_FOR_SMART_UI_TASK_9 = NO.
+
+Return the precise reason.
+
+Do not infer new requirements.
+
+Do not introduce a stricter gate after implementation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. COMPARE AGAINST THE ORIGINAL PASS GATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Verify each original required gate:
+
+MOBILE_LIVING_OBJECTS = PASS
+
+MOBILE_COMPACT_ACTIVE_OBJECTS_SURFACE = PASS
+
+RAIL_COPIED_FROM_DESKTOP = NO
+
+ZERO_OBJECT_STATE_HIDDEN = YES
+
+TASK_RUN_DEDUPLICATION = PASS
+
+OPEN_REFERENCE_TRUSTED = PASS
+
+SEMANTIC_CROSS_DEVICE_PARITY = PASS
+
+LIVING_OBJECT_IDENTITY_PARITY = PASS
+
+WORKSPACE_GOAL_PARITY = PASS
+
+PRESENTATION_SEMANTIC_PARITY = PASS
+
+PRESENTATION_VERSION_PARITY = PASS
+
+TRUSTED_ACTION_SERVER_BOUNDARY_PARITY = PASS
+
+DOMAIN_SPECIFIC_MOBILE_LIVING_OBJECT_COMPONENTS_ADDED = 0
+
+DOMAIN_SPECIFIC_MOBILE_LIVING_OBJECT_BRANCHES_ADDED = 0
+
+CLIENT_CANONICAL_TRUTH_ADDED = 0
+
+FAKE_STATUS_COUNT = 0
+
+FAKE_PROGRESS_COUNT = 0
+
+affected tests = PASS
+
+Report each as:
+
+PASS
+FAIL
+MISSING_EVIDENCE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. VISUAL EVIDENCE RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT treat:
+
+MOBILE_REAL_VISUAL_SMOKE = PARTIAL
+
+as a blocker by itself if the report documents the inaccessible states and semantic/integration coverage is complete.
+
+Do NOT treat:
+
+VISUAL_CROSS_DEVICE_SMOKE = NOT_AVAILABLE
+
+as a blocker by itself.
+
+These are evidence debts to carry into the final Power integration gate.
+
+They are not permission to change semantic PASS to FAIL.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. PREVIOUS DEFERRED ISSUES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not use previously documented unrelated canonical errors as a new Task 8B2B blocker unless the report proves one directly failed an 8B2B acceptance requirement.
+
+Those were explicitly deferred to final integration.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. OUTCOME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+There are only two acceptable outcomes.
+
+A)
+
+If every original mandatory gate is PASS:
+
+set/report:
+
+SMART_UI_TASK_8B2B = PASS
+READY_FOR_SMART_UI_TASK_9 = YES
+
+Carry forward:
+
+MOBILE_REAL_VISUAL_SMOKE = PARTIAL
+VISUAL_CROSS_DEVICE_SMOKE = NOT_AVAILABLE
+
+as final-integration evidence debt only.
+
+B)
+
+If one mandatory gate actually failed:
+
+keep:
+
+READY_FOR_SMART_UI_TASK_9 = NO
+
+and report exactly:
+
+BLOCKING_GATE =
+EXPECTED =
+ACTUAL =
+EVIDENCE =
+MINIMUM_REQUIRED_FIX =
+
+Do NOT fix it in this task.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. NO CODE UNLESS REPORT BUG ONLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This should normally require ZERO production code changes.
+
+If READY_FOR_SMART_UI_TASK_9 = NO was only a report/calculation mistake:
+
+correct only the report/readiness conclusion.
+
+Do not modify application code.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. FINAL RESPONSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Return only:
+
+READINESS_RECONCILIATION =
+PASS / BLOCKED
+
+MANDATORY_GATES_PASS =
+<number>/<number>
+
+EXACT_BLOCKER =
+NONE / <exact blocker>
+
+MOBILE_REAL_VISUAL_SMOKE =
+PARTIAL
+
+VISUAL_CROSS_DEVICE_SMOKE =
+NOT_AVAILABLE
+
+SMART_UI_TASK_8B2B =
+PASS / FAIL
+
+READY_FOR_SMART_UI_TASK_9 =
+YES / NO
+
+PRODUCTION_CODE_CHANGED =
+NO / YES
+
+STOP.
+
+Do not start Task 9.

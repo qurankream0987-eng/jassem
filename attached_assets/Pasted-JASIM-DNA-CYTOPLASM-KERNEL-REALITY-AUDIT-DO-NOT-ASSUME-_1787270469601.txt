@@ -1,0 +1,690 @@
+JASIM — DNA / CYTOPLASM / KERNEL REALITY AUDIT
+DO NOT ASSUME THESE LAYERS EXIST — VERIFY THEM IN THE CURRENT CANONICAL CODE
+
+أريد الآن مراجعة محددة جدًا لطبقات JASIM البيولوجية/التوليدية التي ناقشناها سابقًا:
+
+DNA
+Cytoplasm
+Kernel / Nucleus
+World
+Bubble
+Run
+
+لا أريد شرحًا نظريًا فقط.
+
+أريد أن تحدد هل هذه المفاهيم موجودة فعليًا في الكود الحالي، وما الذي يقابل كل واحدة منها.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. DNA — VERIFY WHETHER IT EXISTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+استخدم التعريف التالي كمرجع معماري:
+
+JASIM DNA
+=
+A GENERAL, COMPOSABLE, VERSIONED DESCRIPTION
+OF WHAT A GENERATED BUBBLE/WORLD IS AND HOW IT BEHAVES.
+
+يجب أن يستطيع DNA تمثيل مفاهيم عامة مثل:
+
+- entities
+- entity types
+- relationships
+- capabilities
+- workflows
+- policies
+- permissions
+- views
+- actions
+- constraints
+- business rules
+- commercial rules
+- presentation schema
+- lifecycle rules
+- validation rules
+- references
+
+المطلوب:
+
+ابحث هل يوجد حاليًا:
+
+DNA schema
+DNA compiler
+DNA builder
+World schema generator
+Bubble schema generator
+declarative runtime definition
+أو أي implementation مكافئة
+
+ثم صنف:
+
+DNA:
+REAL / PARTIAL / LEGACY_ONLY / MISSING
+
+واذكر المسار الفعلي.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. DNA MUST NOT BE DOMAIN TEMPLATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا الموجود عبارة عن:
+
+CarDNA
+RestaurantDNA
+JobsDNA
+StoreDNA
+
+كـCore ثابت:
+
+هذا ليس DNA general حقيقي.
+
+الـDNA الصحيح يجب أن يكون composable.
+
+مثال:
+
+"أنشئ سوق سيارات"
+
+لا يحتاج CarsTemplate ثابتة.
+
+بل يمكن أن يولد DNA مثل:
+
+Entities:
+Listing
+Seller
+Buyer
+Offer
+
+Relationships:
+Seller owns Listing
+Buyer makes Offer
+
+Capabilities:
+create
+search
+compare
+message
+offer
+
+Policies:
+ownership
+visibility
+approval
+
+Views:
+list
+detail
+comparison
+
+ثم Runtime تجعلها Bubble/World حيّة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. DNA COMPILATION PATH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+تحقق هل يوجد path فعلي:
+
+User Intent
+↓
+Semantic Understanding
+↓
+World/Bubble Requirement
+↓
+DNA Generation
+↓
+DNA Validation
+↓
+DNA Normalization
+↓
+Runtime Schema
+↓
+Bubble/World Creation
+
+إذا غير موجود:
+حدد أين تنقطع السلسلة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. DNA MUST BE VERSIONED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا المستخدم يقول:
+
+"أضف تقييمات"
+"أضف موظفًا"
+"أي طلب فوق 500 يحتاج موافقتي"
+
+هذا ليس مجرد تعديل UI.
+
+يجب أن ينتج:
+
+DNA / structural state evolution
+
+أو equivalent canonical structural version.
+
+أثبت هل هذا موجود.
+
+المطلوب:
+
+DNA VERSIONING:
+REAL / PARTIAL / MISSING
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. CYTOPLASM — DEFINE AND VERIFY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+استخدم هذا التعريف:
+
+CYTOPLASM
+=
+THE LIVE EXECUTION ENVIRONMENT IN WHICH DNA OPERATES.
+
+ويشمل مفاهيم مثل:
+
+- runtime context
+- current state
+- events
+- memory access
+- capability access
+- execution resources
+- scheduler access
+- temporary working state
+- references
+- active runs
+- approvals
+- runtime projections
+
+المطلوب:
+
+حدد ما يقابل Cytoplasm الآن في الكود.
+
+هل هي:
+
+World Runtime؟
+Runtime Context؟
+Task Runtime؟
+Event/Memory environment؟
+عدة أجزاء منفصلة؟
+
+صنف:
+
+CYTOPLASM:
+REAL / PARTIAL / FRAGMENTED / MISSING
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. CYTOPLASM MUST NOT BE THE WORLD ITSELF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تخلط:
+
+World
+مع
+Cytoplasm.
+
+World:
+durable application/domain state behind persistent Bubble.
+
+Cytoplasm:
+runtime environment that lets World/DNA operate.
+
+يمكن أن تكون:
+
+World
+lives inside / uses Cytoplasm
+
+لكن:
+
+World != Cytoplasm.
+
+إذا implementation الحالية تخلطهما:
+اذكرها كـarchitecture gap.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. KERNEL / NUCLEUS — VERIFY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+استخدم التعريف:
+
+KERNEL / NUCLEUS
+=
+THE TRUSTED SOVEREIGN CORE THAT ENFORCES RUNTIME RULES.
+
+يجب أن يملك أو يفرض:
+
+- identity
+- ownership
+- lifecycle
+- persistence
+- canonical state transitions
+- versioning
+- policy
+- approval boundaries
+- capability authorization
+- execution boundaries
+- recovery rules
+- invariants
+
+حدد ما يقابله الآن.
+
+هل هو:
+
+jasim-runtime.ts
+Runtime Core
+عدة services
+أم غير واضح؟
+
+صنف:
+
+KERNEL:
+REAL / PARTIAL / GOD_FILE / FRAGMENTED / MISSING
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. KERNEL MUST NOT BECOME THE AGENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ثبت:
+
+Agent/LLM:
+decides/proposes what should happen.
+
+Kernel:
+decides what is allowed, where state lives, and how transitions occur safely.
+
+لا:
+
+LLM directly mutates DB
+LLM bypasses policy
+LLM chooses provider and executes directly
+
+أثبت هل الفصل موجود.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. BUBBLE / WORLD / DNA RELATIONSHIP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+المطلوب architecture semantics:
+
+Persistent Smart Bubble
+↓
+optional World
+↓
+World instantiated/configured by DNA
+↓
+World operates through Cytoplasm
+↓
+Kernel enforces rules
+
+لكن:
+
+Simple Bubble
+may have no World
+
+Run
+may have no Bubble
+
+Run
+may have no World
+
+أثبت هذه العلاقات في الكود.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. DNA MUST BE MUTABLE THROUGH NATURAL LANGUAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+اختبر مفهومياً:
+
+"متجري أضف له تقييمات"
+
+Expected:
+
+resolve Bubble
+↓
+resolve World
+↓
+understand STRUCTURAL_MUTATION
+↓
+generate DNA/structural ChangeSet
+↓
+validate
+↓
+preview
+↓
+approval if required
+↓
+apply new structural version
+↓
+runtime projection refresh
+
+إذا النظام فقط يغير JSON field:
+DNA evolution غير مكتملة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. DATA VS DNA MUTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+فرق بوضوح بين:
+
+DATA MUTATION
+مثال:
+"خفض سعر الآيفون إلى 280"
+
+و:
+
+DNA / STRUCTURAL MUTATION
+مثال:
+"أضف نظام تقييمات"
+
+و:
+
+POLICY MUTATION
+مثال:
+"أي طلب فوق 500 يحتاج موافقتي"
+
+و:
+
+VIEW MUTATION
+مثال:
+"اعرض المنتجات كجدول"
+
+يجب ألا تكون كلها نفس النوع من update.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. DNA COMPILER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+تحقق هل يوجد أو نحتاج:
+
+DNA Compiler
+
+وظيفته:
+
+Generative Definition
+↓
+Canonical Validated Runtime Definition
+
+يجب ألا ينفذ مباشرة.
+
+المراحل:
+
+GENERATE
+VALIDATE
+NORMALIZE
+RESOLVE CAPABILITIES
+RESOLVE REFERENCES
+CHECK POLICIES
+COMPILE
+VERSION
+ACTIVATE
+
+إذا لا يوجد:
+حدد هل نحتاج component جديدًا
+أم يمكن توسيع subsystem موجودة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. CYTOPLASM CONTEXT BOUNDARIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+تحقق أن runtime context لا يصبح global mutable blob.
+
+يجب أن يكون scoped حسب الحاجة:
+
+user
+conversation
+bubble
+world
+run
+task
+
+مع owner isolation.
+
+لا context leakage بين المستخدمين.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. DNA GENERALIZATION TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+اختبر 5 أفكار غير مرتبطة:
+
+1. نظام لإدارة مزرعة
+2. منصة تبادل كتب
+3. مساحة إدارة عيادة
+4. نظام متابعة شحنات
+5. منصة دورات مصغرة
+
+السؤال:
+
+هل نفس DNA primitives تستطيع وصف الخمسة؟
+
+إذا يحتاج لكل واحد Domain Schema جديدة في Core:
+DNA GENERALIZATION = FAIL.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. DNA SHOULD COMPOSE CAPABILITIES, NOT IMPLEMENT THEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DNA تقول مثلًا:
+
+requires:
+data.read
+data.write
+notification.send
+schedule.create
+
+ولا تحتوي implementation provider نفسها.
+
+Capability implementation تبقى منفصلة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. WORLD INSTANTIATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+تحقق هل لدينا:
+
+DNA Definition
+↓
+World Instance
+
+أو أن World تُبنى يدويًا مباشرة من handlers.
+
+إذا handlers هي التي تنشئ World schema:
+حددها كـgap.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. BUBBLE PROJECTION FROM DNA/WORLD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+تحقق أن Bubble Renderer تستطيع مستقبلًا أو حاليًا أن تعتمد على:
+
+DNA/view schema
++
+World state
++
+permissions
++
+presentation state
+
+بدل components domain-specific.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. DNA + VERSION + ROLLBACK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا structural DNA تتغير:
+
+V1
+→ ChangeSet
+→ V2
+
+يجب الاحتفاظ بما يكفي لـ:
+
+audit
+diff
+rollback if safe
+
+حدد الموجود الآن.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. CYTOPLASM + EVENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+تحقق أن Events جزء من البيئة التشغيلية،
+وليست مجرد logging.
+
+Event يمكن أن يحرّك:
+
+projection
+resume
+scheduler
+notification
+verification
+memory update
+
+لكن لا:
+
+Event = Receipt
+Event = State
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. KERNEL + RUNS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Kernel يجب أن يدير lifecycle للRuns بدون أن يفرض Bubble.
+
+اختبر:
+
+"بع سيارتي"
+
+Expected:
+
+Run
+↓
+Kernel lifecycle
+↓
+Capabilities
+
+NO Bubble required.
+NO World required unless execution truly needs one.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. KERNEL + BUBBLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Persistent Bubble:
+
+Bubble identity
+↓
+optional World
+↓
+DNA
+↓
+Cytoplasm
+↓
+Kernel-controlled lifecycle
+
+لا تجعل Bubble مجرد Renderer.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. CURRENT IMPLEMENTATION MAPPING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أريد جدولًا:
+
+| Concept | Current Files/Subsystem | Status | Gap |
+
+للآتي:
+
+DNA
+DNA Compiler
+Cytoplasm
+Kernel
+World
+Bubble
+Run
+Task
+Agent/Planner
+Capability Registry
+Events
+Memory
+Renderer
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. FIND OLD IMPLEMENTATION VALUE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+افحص Early Replit Implementation أيضًا.
+
+ابحث عن:
+
+DNA
+DNA compiler
+cytoplasm
+world builder
+schema compiler
+runtime context
+kernel
+generative UI
+
+إذا يوجد implementation قديمة قوية:
+لا تعِد بنائها.
+
+صنف:
+
+REUSE
+ADAPT
+REJECT
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. DO NOT CREATE NEW ABSTRACTIONS JUST FOR NAMES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+مهم جدًا:
+
+لا تنشئ class اسمها:
+
+DNAEngine
+CytoplasmService
+NucleusKernel
+
+فقط لكي يبدو أننا نملك هذه الطبقات.
+
+إذا semantics موجودة تحت أسماء أخرى:
+استخدمها.
+
+نحن نهتم بالوظيفة، لا بالمجاز البيولوجي.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. FINAL VERDICT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أعطني في النهاية:
+
+DNA:
+REAL / PARTIAL / MISSING
+
+DNA COMPILER:
+REAL / PARTIAL / MISSING
+
+CYTOPLASM:
+REAL / PARTIAL / FRAGMENTED / MISSING
+
+KERNEL:
+REAL / PARTIAL / FRAGMENTED / GOD_FILE / MISSING
+
+WORLD:
+REAL / PARTIAL / MISSING
+
+SMART BUBBLE:
+REAL / PARTIAL / MISSING
+
+RUN:
+REAL / PARTIAL / MISSING
+
+ثم:
+
+DOES CURRENT ARCHITECTURE SUPPORT THE FULL DNA → RUNTIME → SMART BUBBLE MODEL?
+
+YES
+YES_WITH_GAPS
+NO
+
+واذكر الـgaps فقط.
+
+لا تبدأ التنفيذ في هذا التدقيق.

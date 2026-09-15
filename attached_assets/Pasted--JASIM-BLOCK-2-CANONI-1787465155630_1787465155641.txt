@@ -1,0 +1,2568 @@
+# =====================================================================
+# JASIM — BLOCK 2
+# CANONICAL PRE-IMPLEMENTATION MAPPING
+#
+# AGENT-NATIVE REAL-WORLD EXECUTION
+# + COORDINATION FABRIC
+#
+# MAPPING ONLY — NO IMPLEMENTATION
+# =====================================================================
+
+
+BEGIN THE BLOCK 2 CANONICAL MAPPING PHASE ONLY.
+
+
+DO NOT IMPLEMENT BLOCK 2.
+
+DO NOT MODIFY SOURCE CODE.
+
+DO NOT CREATE MIGRATIONS.
+
+DO NOT INSTALL SDKs.
+
+DO NOT CONNECT REAL PROVIDERS.
+
+DO NOT CONNECT PRODUCTION MAPS.
+
+DO NOT CONNECT PRODUCTION NOTIFICATIONS.
+
+DO NOT IMPLEMENT PAYMENT.
+
+DO NOT IMPLEMENT COMPUTER USE.
+
+DO NOT START BLOCK 3.
+
+DO NOT RESUME PHASE 12.
+
+
+Accepted baseline:
+
+BLOCK_0   = CLOSED / PASS
+BLOCK_1   = CLOSED / PASS
+BLOCK_1_1 = CLOSED / PASS
+
+
+Treat those Blocks as accepted architectural foundations.
+
+Do NOT reopen them unless you discover a DIRECT,
+concrete incompatibility that makes Block 2 impossible.
+
+A hypothetical concern is not enough.
+
+The authoritative architectural reference for this mapping is:
+
+JASIM — BLOCK 2 MASTER ARCHITECTURAL TEACHING CONSTITUTION
+
+Use it as a target architecture.
+
+Use the ACTUAL repository as the source of truth for current state.
+
+
+# =====================================================================
+# 1. PURPOSE OF THIS MAPPING
+# =====================================================================
+
+We need to determine the MINIMUM coherent delta required to move JASIM
+from:
+
+    "I understand what must happen and where capabilities may come from."
+
+to:
+
+    "I can coordinate what must happen through time,
+     people,
+     agents,
+     resources,
+     availability,
+     capacity,
+     reservations,
+     events,
+     notifications,
+     observations,
+     tracking,
+     and trusted providers."
+
+
+The mapping must answer:
+
+WHAT ALREADY EXISTS?
+
+WHAT CAN BE REUSED?
+
+WHAT NEEDS A SMALL EXTENSION?
+
+WHAT NEEDS A NEW GENERIC PRIMITIVE?
+
+WHAT ONLY NEEDS AN ADAPTER?
+
+WHAT SHOULD BE DEFERRED?
+
+WHAT SHOULD NOT BE BUILT AT ALL?
+
+
+The final result must identify:
+
+MINIMUM_BLOCK_2_DELTA
+
+
+not:
+
+maximum feature count.
+
+
+# =====================================================================
+# 2. CENTRAL BLOCK 2 PRINCIPLE
+# =====================================================================
+
+Do not map Block 2 as separate applications:
+
+Maps
+Delivery
+Booking
+Transport
+Technicians
+Warehouses
+Appointments
+
+
+Instead map the general operational primitives:
+
+AUTHORITY
+PARTICIPATION
+MEMBERSHIP
+ROLE
+PERMISSION
+SCOPE
+DELEGATION
+REVOCATION
+
+TIME
+TEMPORAL_TRIGGER
+DURABLE_WAIT
+DEADLINE
+RECURRENCE
+CONDITION_WATCH
+
+EVENT
+EVENT_SUBSCRIPTION
+
+RESOURCE
+AVAILABILITY
+CAPACITY
+RESERVATION
+ALLOCATION
+CONCURRENCY
+
+NOTIFICATION
+
+OBSERVATION
+LOCATION_OBSERVATION
+TRACK_SESSION
+
+PROVIDER_HEALTH
+PROVIDER_OPERATIONAL_RESOLUTION
+
+REMOTE_TASK
+
+ASSIGNMENT
+
+BOOKING_COMPOSITION
+DISPATCH_COMPOSITION
+DELIVERY_COMPOSITION
+
+MULTI_PARTY_COORDINATION
+
+
+If a concept is already represented by existing generic runtime
+contracts, classify it as REUSE or EXTEND.
+
+Do not create a new concept merely because the Constitution uses a
+different name.
+
+
+# =====================================================================
+# 3. REPOSITORY INSPECTION SCOPE
+# =====================================================================
+
+Inspect only canonical code relevant to Block 2.
+
+Prioritize actual active paths for:
+
+- runtime schema
+- canonical Run/DAG
+- DAG node states
+- leases/fencing
+- workers / durable jobs
+- runtime semantic events
+- event persistence
+- event ownership
+- timers/schedules if any
+- restart recovery
+- proposals
+- approvals
+- fingerprints
+- authorization/policy
+- capabilities
+- provider registry from Block 1.1
+- ProviderBinding
+- provider catalog
+- external action sessions
+- verifier
+- reconciliation
+- Offering / Need / Match / Engagement / Proposal / TransactionIntent
+- visibility / sharing
+- entities/resources
+- generic unit handling
+- any existing scheduling/time utilities
+- notification-related code
+- location/tracking-related code
+- Web realtime transport
+- Mobile realtime transport
+- Web/Mobile projections
+- telemetry / logging / metrics
+- legacy provider adapters ONLY for reusable patterns
+
+
+Do not broadly audit unrelated application code.
+
+
+# =====================================================================
+# 4. INSPECT LEGACY CODE CAREFULLY
+# =====================================================================
+
+The repository may contain older code for:
+
+notifications
+delivery
+Moyasar
+Shipday
+maps
+tracking
+scheduling
+workers
+webhooks
+roles
+subscriptions
+transport
+commercial flows
+
+
+Do NOT reactivate legacy architecture automatically.
+
+
+For each relevant legacy component classify it as one of:
+
+REUSABLE_GENERIC_PRIMITIVE
+REUSABLE_ADAPTER_LOGIC
+REUSABLE_VALIDATION
+REUSABLE_SIGNATURE_VERIFICATION
+REUSABLE_SCHEMA
+LEGACY_DOMAIN_LOGIC
+LEGACY_EXECUTION_BYPASS
+DO_NOT_REUSE
+
+
+Especially preserve the existing rule:
+
+legacy provider code must not bypass:
+
+Proposal
+→ Policy
+→ Approval
+→ Attempt
+→ Trusted Executor
+→ Receipt
+→ Verifier
+→ Reconciliation
+
+
+# =====================================================================
+# 5. REQUIRED STATUS CLASSIFICATION
+# =====================================================================
+
+Every target concept must receive exactly one primary ACTION:
+
+REUSE
+EXTEND
+ADAPTER_ONLY
+NEW_GENERIC_PRIMITIVE_REQUIRED
+DEFER_BLOCK_3
+DEFER_LATER
+NO_CHANGE
+
+
+Also assign CURRENT STATUS:
+
+REAL
+PARTIAL
+MISSING
+LEGACY_ONLY
+NOT_REQUIRED
+
+
+# =====================================================================
+# 6. REQUIRED MASTER MAPPING TABLE
+# =====================================================================
+
+Produce one table covering at least the following concepts.
+
+
+# ---------- PARTICIPATION / AUTHORITY ----------
+
+1. Participant / Actor representation
+2. Membership
+3. Role
+4. Permission
+5. Scope
+6. Invitation
+7. Explicit SHARED grants
+8. Revocation
+9. DelegationGrant
+10. Purpose-bound delegation
+11. Delegation expiry
+12. Delegation depth
+13. Authority subset / monotonicity validation
+14. Resource-scoped authority
+15. Monetary constraint representation
+16. Delegation fingerprint / immutable binding
+
+
+# ---------- TIME ----------
+
+17. TemporalTrigger
+18. AT trigger
+19. AFTER trigger
+20. Deadline
+21. Recurring schedule
+22. Timezone persistence
+23. ConditionWatch
+24. Event-triggered wake
+25. DurableWait
+26. Pause
+27. Resume
+28. Cancel
+29. nextFireAt / equivalent
+30. restart durability
+31. wake-up worker / polling mechanism
+32. deduplication after wake
+
+
+# ---------- EVENTS ----------
+
+33. canonical semantic event
+34. EventSubscription
+35. external event ingestion
+36. webhook/provider event identity
+37. event idempotency
+38. stale event detection
+39. event ordering/version protection
+40. event → Run continuation
+41. callback ownership/correlation
+
+
+# ---------- RESOURCES / CAPACITY ----------
+
+42. Resource representation
+43. Availability
+44. AvailabilityWindow
+45. Capacity
+46. typed quantity
+47. units
+48. unit normalization
+49. Allocation
+50. Reservation
+51. Reservation status
+52. Reservation idempotency
+53. Reservation versioning
+54. Reservation expiry
+55. release
+56. atomic reservation
+57. concurrency protection
+58. composite reservation
+59. compensation / rollback capability
+
+
+# ---------- NOTIFICATION ----------
+
+60. NOTIFY semantic capability
+61. NotificationIntent
+62. recipient semantics
+63. purpose binding
+64. channel preference
+65. notification provider resolution
+66. notification state model
+67. delivery/read distinction
+68. notification scheduling
+69. notification retry/reconciliation
+
+
+# ---------- OBSERVATION / LOCATION / TRACKING ----------
+
+70. generic Observation
+71. provenance/evidence reuse
+72. observedAt
+73. freshness/expiry
+74. LocationObservation
+75. coordinate representation
+76. accuracy
+77. semantic/non-coordinate location
+78. location privacy
+79. TrackSession
+80. track subject/purpose
+81. current observation reference
+82. tracking expiry/end
+83. route observation
+84. ETA observation
+85. map projection boundary
+
+
+# ---------- PROVIDER OPERATIONS ----------
+
+86. ProviderHealth
+87. availability states
+88. operational provider selection
+89. recent verified success metadata
+90. cost metadata
+91. latency metadata
+92. privacy metadata
+93. jurisdiction metadata
+94. safe fallback
+95. sensitive-provider substitution restriction
+
+
+# ---------- MCP ----------
+
+96. MCP adapter execution boundary
+97. remote tool invocation
+98. MCP Task handle
+99. WAITING_REMOTE state
+100. remote Task persistence
+101. task polling/update
+102. remote task cancellation
+103. restart recovery
+104. MCP result → receipt
+105. MCP result → verifier
+106. remote task ownership
+
+
+# ---------- A2A ----------
+
+107. AgentCard reuse from Block 1.1
+108. A2A skill/provider binding
+109. delegation request contract
+110. minimum-data projection
+111. delegated authority
+112. max delegation depth
+113. remote task reference
+114. remote cancellation
+115. typed result validation
+116. remote result verification
+117. agent authority escalation prevention
+
+
+# ---------- REALTIME ----------
+
+118. canonical realtime event source
+119. Web realtime mechanism
+120. Mobile realtime mechanism
+121. reconnect semantics
+122. canonical snapshot
+123. delta projection
+124. AG-UI adapter fit
+125. hidden reasoning protection
+
+
+# ---------- COMPOSITIONS ----------
+
+126. Assignment
+127. Assignment lifecycle
+128. Booking composition
+129. Dispatch composition
+130. Delivery composition
+131. multi-party coordination
+132. ParticipantObligation / equivalent
+133. partial multi-party failure
+134. compensation
+135. real-world resource blockers
+
+
+# ---------- OBSERVABILITY ----------
+
+136. request correlation
+137. Run tracing
+138. provider tracing
+139. scheduler tracing
+140. reservation tracing
+141. external-agent tracing
+142. provider cost observability
+143. AI cost observability
+144. OpenTelemetry compatibility
+
+
+# ---------- LONG-TAIL ----------
+
+145. Computer Use abstraction
+146. browser/session sandbox
+147. credentials boundary
+148. allowed origins
+149. consequential action gate
+150. computer-use verification
+
+
+For every row report:
+
+TARGET_CONCEPT
+CURRENT_IMPLEMENTATION
+CURRENT_FILES
+CURRENT_CONTRACT
+CURRENT_STATUS
+ACTION
+BLOCK_2_PRIORITY
+WHY
+DEPENDENCIES
+REUSE_RISK
+
+
+# =====================================================================
+# 7. P0 FIRST — DEEPER ANALYSIS
+# =====================================================================
+
+Do not give equal analytical depth to all 150 concepts.
+
+Go deepest on P0:
+
+A. authority/delegation
+B. temporal execution
+C. events
+D. availability/capacity/reservation
+
+
+These determine the rest of Block 2.
+
+
+# =====================================================================
+# 8. AUTHORITY / DELEGATION MAPPING
+# =====================================================================
+
+Inspect existing:
+
+ownership
+sharing
+visibility
+approval
+policy
+fingerprints
+provider bindings
+external action purpose binding
+
+
+Determine whether DelegationGrant requires:
+
+a new table
+
+an extension of current approval model
+
+an extension of membership/grant model
+
+or some combination.
+
+
+Do NOT create a second authorization truth.
+
+
+Preferred:
+
+Existing Authorization Truth
+    +
+bounded delegation extension
+
+
+not:
+
+New AgentAuthorizationSystem
+
+
+Answer explicitly:
+
+
+CAN_EXISTING_APPROVAL_MODEL_REPRESENT_DELEGATION:
+YES / PARTIAL / NO
+
+
+CAN_EXISTING_POLICY_MODEL_VALIDATE_DELEGATED_SCOPE:
+YES / PARTIAL / NO
+
+
+CAN_CURRENT_FINGERPRINT_BIND_DELEGATION_PURPOSE:
+YES / PARTIAL / NO
+
+
+# =====================================================================
+# 9. SHARED GRANTS MAPPING
+# =====================================================================
+
+Deferred follow-up #35 belongs here.
+
+
+Inspect current:
+
+PRIVATE
+UNLISTED
+SHARED
+PUBLIC
+
+
+Determine the minimum server-side model required so:
+
+SHARED
+
+means:
+
+explicitly authorized participant/grant
+
+
+not:
+
+URL possession.
+
+
+Map:
+
+grant target
+resource
+scope
+permissions
+expiry
+revocation
+
+
+Do not implement yet.
+
+
+# =====================================================================
+# 10. TEMPORAL / SCHEDULER MAPPING
+# =====================================================================
+
+This is critical.
+
+
+Inspect existing:
+
+DurableJobWorker
+leases
+recoverExpired
+worker boot
+DAG node state
+retry scheduling
+timestamps
+cron libraries
+background workers
+runtime jobs
+automation primitives if any
+
+
+Determine whether Block 2 needs:
+
+a new Scheduler subsystem
+
+or:
+
+a thin persisted temporal layer on top of the existing worker/DAG.
+
+
+Strongly prefer reuse.
+
+
+Answer:
+
+
+CAN_CURRENT_DAG_ENTER_DURABLE_WAIT:
+YES / PARTIAL / NO
+
+
+CAN_WAIT_SURVIVE_RESTART:
+YES / PARTIAL / NO
+
+
+CAN_EXISTING_WORKER_WAKE_DUE_RUNS:
+YES / PARTIAL / NO
+
+
+CAN_EXISTING_RUNTIME_SUPPORT_RECURRING_RULE:
+YES / PARTIAL / NO
+
+
+CAN_EXISTING_RUNTIME_SUPPORT_CONDITION_WATCH:
+YES / PARTIAL / NO
+
+
+NEW_WORKFLOW_ENGINE_REQUIRED:
+YES / NO
+
+
+Expected:
+
+NO
+
+unless hard evidence proves otherwise.
+
+
+# =====================================================================
+# 11. SCHEDULER DESIGN OPTIONS
+# =====================================================================
+
+If gaps exist, compare at least:
+
+OPTION A:
+extend existing DAG + durable worker
+
+OPTION B:
+new lightweight persisted trigger subsystem
+
+OPTION C:
+external workflow/scheduler framework
+
+
+Recommend the smallest safe option.
+
+
+Do NOT propose Temporal.io / BullMQ / another workflow engine merely
+because one exists.
+
+Only if current architecture objectively cannot satisfy durability.
+
+
+# =====================================================================
+# 12. TIMEZONE / RECURRENCE
+# =====================================================================
+
+Inspect current date/time representation.
+
+Report whether there is already support for:
+
+IANA timezone
+UTC persisted timestamps
+recurrence rules
+DST-safe behavior
+
+
+Do not invent timezone semantics.
+
+
+Identify what library support already exists.
+
+If a new library is recommended:
+
+explain exactly why native/current stack is insufficient.
+
+
+# =====================================================================
+# 13. EVENT MODEL MAPPING
+# =====================================================================
+
+Block 0/1 already established semantic events.
+
+Do NOT create Event Bus v2.
+
+
+Inspect whether existing events can support:
+
+subscriptions
+wakeup
+external provider event correlation
+remote task updates
+location updates
+notification results
+
+
+The preferred architecture is:
+
+existing canonical semantic events
++
+subscription/continuation semantics
+
+
+not:
+
+second event system.
+
+
+Answer:
+
+
+CANONICAL_EVENTS_REUSED:
+YES / NO
+
+
+NEW_EVENT_BUS_REQUIRED:
+YES / NO
+
+
+EVENT_SUBSCRIPTION_NEW_PRIMITIVE_REQUIRED:
+YES / NO
+
+
+# =====================================================================
+# 14. WEBHOOK / EXTERNAL EVENT MAPPING
+# =====================================================================
+
+Inspect old provider/webhook logic if present.
+
+Especially reusable:
+
+signature verification
+payload normalization
+provider reference extraction
+idempotency hints
+
+
+Map future:
+
+External Event
+↓
+verify source
+↓
+normalize
+↓
+bind owner/run/provider
+↓
+deduplicate
+↓
+canonical event
+↓
+wake/continue Run
+
+
+Do not activate payment or delivery side effects now.
+
+
+# =====================================================================
+# 15. RESOURCE MODEL MAPPING
+# =====================================================================
+
+Determine whether Block 1 generic entities / Offering semantics already
+represent resources sufficiently.
+
+
+Question:
+
+Do we need a new universal Resource table?
+
+or can Resource remain:
+
+generic entity
++
+typed resource semantics?
+
+
+Prefer the latter if correct.
+
+
+Avoid a giant ontology rewrite.
+
+
+# =====================================================================
+# 16. CAPACITY MAPPING
+# =====================================================================
+
+Determine how existing Block 1 Economic Fabric represents:
+
+quantity
+units
+constraints
+Offering capacity
+Need quantities
+composite matches
+
+
+Then map the smallest extension required for operational:
+
+available capacity
+reserved capacity
+allocated capacity
+
+
+Do not duplicate matching quantity semantics.
+
+
+# =====================================================================
+# 17. RESERVATION — CRITICAL DESIGN STUDY
+# =====================================================================
+
+Reservation may be one of the most important genuinely new Block 2
+primitives.
+
+Analyze deeply.
+
+
+Determine:
+
+canonical owner
+
+resource binding
+
+requester binding
+
+time window
+
+quantity
+
+unit
+
+state
+
+version
+
+expiry
+
+idempotency
+
+transaction/concurrency strategy
+
+release
+
+compensation
+
+
+Evaluate whether Reservation deserves:
+
+its own canonical table
+
+or another existing entity/state mechanism.
+
+
+Do not force either answer.
+
+
+# =====================================================================
+# 18. RESERVATION CONCURRENCY
+# =====================================================================
+
+Inspect actual PostgreSQL/Drizzle capabilities and current patterns.
+
+
+We need proof that:
+
+capacity = 10
+
+reservation A = 7
+
+reservation B = 5 concurrently
+
+
+cannot both succeed.
+
+
+Compare possible mechanisms already compatible with repository:
+
+row locking
+serializable transaction
+conditional update
+optimistic versioning
+reservation ledger
+
+
+Recommend one based on current schema/runtime.
+
+
+Do not let application-level:
+
+read → calculate → write
+
+be the only protection.
+
+
+# =====================================================================
+# 19. COMPOSITE RESERVATION
+# =====================================================================
+
+Block 1 supports composite matching.
+
+Map how Block 2 would reserve:
+
+6 tons Provider A
++
+4 tons Provider B
+
+
+Study:
+
+atomicity limits
+partial failure
+compensation
+release
+
+
+Do not pretend separate providers can share one DB transaction.
+
+
+We need explicit real-world semantics.
+
+
+# =====================================================================
+# 20. NOTIFICATION MAPPING
+# =====================================================================
+
+Search current code for:
+
+in-app notifications
+email
+SMS
+push
+notification tables
+notification preferences
+delivery states
+
+
+Classify all legacy/channel-specific implementations.
+
+
+Target:
+
+NOTIFY semantic capability
+↓
+NotificationIntent
+↓
+Provider Resolution
+
+
+Determine:
+
+what can be reused
+
+what needs a new generic state model
+
+what provider execution is worth proving in Block 2.
+
+
+Do NOT decide yet to connect Twilio/SendGrid/etc.
+
+
+# =====================================================================
+# 21. LOCATION / TRACKING MAPPING
+# =====================================================================
+
+Search for:
+
+latitude
+longitude
+location
+geo
+tracking
+route
+ETA
+map
+GPS
+
+
+Identify current state representations.
+
+
+We need to know whether current implementation incorrectly treats:
+
+current location
+
+as permanent mutable truth.
+
+
+Map toward:
+
+Observation
+→ LocationObservation
+→ TrackSession
+→ Map projection
+
+
+Do not implement yet.
+
+
+# =====================================================================
+# 22. LOCATION PRIVACY MAPPING
+# =====================================================================
+
+Identify whether current permission model can express:
+
+who may see location
+
+for which subject
+
+for what purpose
+
+with what precision
+
+for how long.
+
+
+Example:
+
+customer may see technician's approximate live progress
+
+but not historical/private location.
+
+
+Determine minimum extension.
+
+
+# =====================================================================
+# 23. PROVIDER HEALTH MAPPING
+# =====================================================================
+
+Block 1.1 already has:
+
+catalog
+freshness
+availability metadata
+
+
+Block 2 needs:
+
+operational health.
+
+
+Map the minimum distinction between:
+
+REGISTERED
+CATALOG_FRESH
+
+and:
+
+OPERATIONALLY_AVAILABLE
+
+
+Study whether provider health needs persistence or can be derived from:
+
+recent verified Attempts
+health observations
+temporary in-memory cache
+provider status observations
+
+
+Avoid a new infrastructure system unless necessary.
+
+
+# =====================================================================
+# 24. PROVIDER SELECTION V2
+# =====================================================================
+
+Map how existing deterministic resolver can be EXTENDED,
+not replaced, to consider:
+
+health
+jurisdiction
+privacy
+historical verified success
+cost
+latency
+
+
+Do not create AI provider ranking.
+
+
+Explain exactly which metadata already exists from Block 1.1.
+
+
+# =====================================================================
+# 25. FOLLOW-UP #36 — PROVIDER EXTERNAL LINKS
+# =====================================================================
+
+This deferred task belongs to Block 2.
+
+
+Map safe provider-originated external resources.
+
+
+Any URL/reference must be:
+
+provider-bound
+purpose-bound
+owner/run-bound where relevant
+HTTPS where appropriate
+validated
+time-limited if sensitive
+
+
+Determine whether existing ExternalActionSession can absorb this.
+
+
+Prefer reuse.
+
+
+# =====================================================================
+# 26. MCP REAL EXECUTION MAPPING
+# =====================================================================
+
+Block 1.1 only normalized MCP metadata.
+
+
+Block 2 may add runtime execution.
+
+
+Inspect current:
+
+ProviderBinding
+Trusted Executor
+Attempt Ledger
+Verifier
+Reconciliation
+
+
+Identify the smallest adapter seam for:
+
+MCP Tool call.
+
+
+Do not replace executor.
+
+
+Target:
+
+RunNode
+→ ProviderBinding
+→ MCP Adapter
+→ Attempt
+→ Receipt
+→ Verifier
+
+
+Answer:
+
+
+MCP_TOOL_RUNTIME_ADAPTER_REQUIRED:
+YES / NO
+
+
+MCP_SDK_REQUIRED:
+YES / NO
+
+
+Do not assume SDK is required.
+
+
+# =====================================================================
+# 27. MCP TASK MAPPING
+# =====================================================================
+
+Map remote long-running Task into canonical JASIM lifecycle.
+
+
+Need conceptually:
+
+remoteTaskId/reference
+providerBinding
+runId
+nodeId
+ownerId
+task state
+last observation
+next poll / callback
+cancel state
+
+
+Do not create a second Run model.
+
+
+Answer:
+
+CAN_EXISTING_DAG_NODE_REFERENCE_REMOTE_TASK:
+YES / PARTIAL / NO
+
+
+REMOTE_TASK_PERSISTENCE_REQUIRED:
+YES / NO
+
+
+# =====================================================================
+# 28. A2A DELEGATION MAPPING
+# =====================================================================
+
+Block 1.1 normalized AgentCard/Skill metadata.
+
+
+Block 2 may execute bounded delegation.
+
+
+Map:
+
+JASIM RunNode
+↓
+DelegationGrant
+↓
+ProviderBinding(A2A)
+↓
+remote task
+↓
+typed provider output
+↓
+Verifier
+
+
+Identify whether A2A task lifecycle can reuse the same generic:
+
+RemoteExecution / RemoteTask
+
+primitive as MCP.
+
+
+Strong preference:
+
+ONE generic remote execution model
+
+with protocol adapters.
+
+
+Not:
+
+McpTaskTable
++
+A2aTaskTable
+
+
+unless unavoidable.
+
+
+# =====================================================================
+# 29. REMOTE TASK UNIFICATION
+# =====================================================================
+
+Study whether MCP and A2A can share:
+
+
+RemoteExecutionRef {
+    owner
+    run
+    node
+    providerBinding
+    protocol
+    remoteReference
+    state
+    lastObservedAt
+    version
+}
+
+
+This is conceptual.
+
+Do not implement this exact type blindly.
+
+
+The important architectural question:
+
+CAN_MCP_AND_A2A_SHARE_ONE_REMOTE_EXECUTION_PRIMITIVE:
+YES / PARTIAL / NO
+
+
+# =====================================================================
+# 30. MINIMUM DISCLOSURE MAPPING
+# =====================================================================
+
+Determine how current runtime prepares:
+
+provider input
+tool context
+conversation context
+World state
+
+
+For remote agents/tools identify exactly how to prevent sending:
+
+full conversation
+full memory
+full World
+unrelated entities
+
+
+Map a:
+
+purpose-bound authorized projection
+
+boundary.
+
+
+# =====================================================================
+# 31. REALTIME MAPPING
+# =====================================================================
+
+Inspect Web and Mobile current transport.
+
+
+Search for:
+
+WebSocket
+SSE
+polling
+React Query refetch
+tRPC subscriptions
+event streaming
+
+
+Determine the smallest solution for live operational state.
+
+
+Do NOT assume WebSocket is necessary.
+
+Do NOT assume AG-UI is necessary.
+
+
+Return:
+
+CURRENT_REALTIME_TRANSPORT:
+...
+
+RECOMMENDED_REALTIME_TRANSPORT:
+...
+
+AG_UI_VALUE:
+HIGH / MEDIUM / LOW / NONE
+
+
+Explain with concrete code evidence.
+
+
+# =====================================================================
+# 32. AG-UI DECISION
+# =====================================================================
+
+Block 1.1 found ADAPTER_FIT.
+
+Now determine whether Block 2 actually benefits from implementing it.
+
+
+Question:
+
+Would AG-UI remove meaningful custom code for:
+
+run events
+step events
+tool events
+snapshots
+deltas
+Web/Mobile synchronization?
+
+
+If yes:
+
+ADOPT_ADAPTER
+
+
+If no:
+
+DEFER
+
+
+Do not adopt for standards compliance alone.
+
+
+# =====================================================================
+# 33. BOOKING MAPPING
+# =====================================================================
+
+Do not search for a BookingApp.
+
+
+Map whether generic composition is already expressible:
+
+
+Need
+→ Discover
+→ Match
+→ Availability
+→ Reservation
+→ Confirm
+→ Schedule
+→ Notify
+
+
+Identify missing primitives only.
+
+
+BOOKING_DOMAIN_ENGINE_REQUIRED must be:
+
+NO
+
+
+unless architecture is wrong.
+
+
+# =====================================================================
+# 34. DISPATCH MAPPING
+# =====================================================================
+
+Map generic:
+
+
+Need
+→ constraints
+→ available resource/participant
+→ Match
+→ Assignment
+→ Notify
+→ Track
+→ Completion
+
+
+Determine whether Assignment needs a new canonical primitive/table.
+
+
+Do not create:
+
+TechnicianAssignment
+DriverAssignment
+CourierAssignment
+
+
+# =====================================================================
+# 35. DELIVERY MAPPING
+# =====================================================================
+
+Map generic composition using:
+
+TransferRequirement
+pickup
+destination
+time
+constraints
+capacity
+Match
+Assignment
+Schedule
+Track
+Completion evidence
+
+
+Payment is out of scope.
+
+
+Legacy delivery code such as Shipday may be classified only as:
+
+ADAPTER_CANDIDATE
+
+if useful.
+
+
+Do not activate commercial delivery provider automatically.
+
+
+# =====================================================================
+# 36. MULTI-PARTY COORDINATION
+# =====================================================================
+
+Study whether existing:
+
+Engagement
+Proposal
+TransactionIntent
+Run/DAG
+Entity relationships
+
+
+are enough to represent:
+
+farmer
+restaurant
+carrier
+cold storage
+
+
+within one coordinated workflow.
+
+
+Identify whether a generic:
+
+ParticipantObligation
+
+or equivalent is genuinely necessary.
+
+
+Avoid overmodeling.
+
+
+# =====================================================================
+# 37. COMPUTER USE MAPPING — DO NOT IMPLEMENT
+# =====================================================================
+
+Block 2 Constitution allows Computer Use as P3 / safe deferred.
+
+
+Mapping only:
+
+determine what would be needed to fit it behind:
+
+CapabilityProvider
+→ ExternalActionSession
+→ Trusted Executor
+
+
+Map:
+
+sandbox
+origin restrictions
+credential injection
+approval
+receipts
+verification
+
+
+Return one:
+
+COMPUTER_USE_BLOCK_2_VALUE:
+HIGH
+MEDIUM
+LOW
+DEFER
+
+
+Do not install browser/agent tooling.
+
+
+# =====================================================================
+# 38. ECONOMIC LEVERAGE ANALYSIS
+# =====================================================================
+
+Use the previously supplied Universal Services + Economic Acceptance
+Atlas.
+
+
+Rank Block 2 primitives by:
+
+cross-domain reuse
+
+user value
+
+user revenue unlocked
+
+JASIM future revenue unlocked
+
+recurring business leverage
+
+B2B leverage
+
+resource monetization leverage
+
+network effect
+
+implementation complexity
+
+provider dependence
+
+regulatory risk
+
+
+Do NOT invent monetary prices.
+
+
+Return:
+
+P0
+P1
+P2
+P3/DEFER
+
+
+# =====================================================================
+# 39. EXPECTED ECONOMIC PRIORITY CANDIDATES
+# =====================================================================
+
+Do not blindly accept this ordering, but test it against the repository:
+
+
+VERY HIGH:
+
+Reservation / Capacity
+Scheduler / DurableWait
+Delegation
+EventSubscription
+
+
+HIGH:
+
+Notification
+Provider Operational Resolution
+Assignment
+Multi-party coordination
+
+
+MEDIUM/HIGH:
+
+Tracking / Location
+
+
+COMPOSITION:
+
+Booking
+Dispatch
+Delivery
+
+
+LATER:
+
+Computer Use
+advanced optimization
+
+
+Explain deviations.
+
+
+# =====================================================================
+# 40. ACCEPTANCE SCENARIO MAPPING
+# =====================================================================
+
+Do NOT execute the scenarios yet.
+
+
+For each scenario map:
+
+existing primitives
+missing primitives
+providers required
+resources required
+Block 3 dependencies
+
+
+Use at least:
+
+
+SCENARIO 1
+"I need a technician now."
+
+
+SCENARIO 2
+"Where is the technician?"
+
+
+SCENARIO 3
+"Reserve 10 tons of cold storage next week."
+
+
+SCENARIO 4
+10 tons from 6 + 4 composite capacity.
+
+
+SCENARIO 5
+"I need a bus every weekday at six."
+
+
+SCENARIO 6
+"Notify everyone one hour before departure."
+
+
+SCENARIO 7
+"Find suppliers and negotiate but do not buy."
+
+
+SCENARIO 8
+"If no supplier replies in two hours, try another."
+
+
+SCENARIO 9
+"Let three companies share this machine."
+
+
+SCENARIO 10
+"Book this time slot."
+
+
+SCENARIO 11
+"Arrange delivery after the sale."
+
+
+SCENARIO 12
+"Apply for this job but ask before submitting."
+
+
+SCENARIO 13
+farm → restaurant → delivery → cold storage.
+
+
+SCENARIO 14
+elderly medical transport.
+
+
+SCENARIO 15
+unknown idle-resource sharing case.
+
+
+For each:
+
+OUTPUT_FORM
+GENERAL_PRIMITIVES
+CURRENTLY_REUSABLE
+MISSING_GENERIC_PRIMITIVES
+REAL_WORLD_RESOURCES
+EXTERNAL_PROVIDERS
+REGULATORY_BOUNDARIES
+BLOCK_3_DEPENDENCIES
+DOMAIN_CODE_REQUIRED
+
+Expected:
+
+DOMAIN_CODE_REQUIRED = NO
+
+
+# =====================================================================
+# 41. DO NOT CONFUSE MODELING WITH EXECUTION
+# =====================================================================
+
+For each mapped feature distinguish:
+
+
+CAN_MODEL_NOW
+
+CAN_PERSIST_NOW
+
+CAN_SCHEDULE_NOW
+
+CAN_EXECUTE_LOCALLY_NOW
+
+CAN_EXECUTE_WITH_CONTROLLED_FIXTURE
+
+REQUIRES_REAL_PROVIDER
+
+REQUIRES_REAL_RESOURCE
+
+REQUIRES_BLOCK_3
+
+
+This distinction is mandatory.
+
+
+# =====================================================================
+# 42. REAL PROVIDER STRATEGY
+# =====================================================================
+
+Do NOT connect any provider in this mapping.
+
+
+Recommend later Block 2 proof strategy.
+
+
+We want the MINIMUM number of external integrations necessary to prove:
+
+provider execution
+remote task
+notification/location if necessary
+
+
+Evaluate whether local controlled providers are sufficient for most
+gates.
+
+
+Return:
+
+MINIMUM_REAL_PROVIDER_E2E_COUNT:
+<number>
+
+
+Do not maximize this number.
+
+
+# =====================================================================
+# 43. SDK / DEPENDENCY DISCIPLINE
+# =====================================================================
+
+For every possible new dependency report:
+
+
+DEPENDENCY:
+PURPOSE:
+CURRENT_STACK_CAN_DO_IT:
+WHAT_CODE_IT_REMOVES:
+LOCK_IN_RISK:
+OPERATIONAL_COST:
+RECOMMENDATION:
+
+
+Possible categories:
+
+MCP SDK
+A2A SDK
+AG-UI
+OpenTelemetry
+scheduler library
+timezone/recurrence library
+WebSocket library
+browser automation
+
+
+Do not install any now.
+
+
+# =====================================================================
+# 44. DATABASE DISCIPLINE
+# =====================================================================
+
+Report possible new canonical persistence needs.
+
+
+Potential areas:
+
+membership/grants
+delegation
+temporal triggers
+event subscriptions
+availability
+reservations
+remote execution refs
+observations/tracking
+assignments
+
+
+But do NOT assume each concept deserves a table.
+
+
+Find opportunities to reuse:
+
+generic entity model
+existing events
+Runs/DAG
+existing approvals
+existing provider catalog
+
+
+Return:
+
+MINIMUM_NEW_TABLES_ESTIMATE
+
+MAXIMUM_JUSTIFIED_NEW_TABLES_ESTIMATE
+
+
+with explanation.
+
+
+We specifically want to avoid:
+
+20 new tables because the Constitution named 20 nouns.
+
+
+# =====================================================================
+# 45. NEW PRIMITIVE BUDGET
+# =====================================================================
+
+Count only genuinely new generic concepts.
+
+
+Report:
+
+NEW_GENERIC_PRIMITIVES_REQUIRED:
+<number>
+
+
+For each:
+
+NAME
+WHY_EXISTING_PRIMITIVE_CANNOT_EXPRESS_IT
+HOW_MANY_SERVICE_FAMILIES_IT_UNLOCKS
+ECONOMIC_LEVERAGE
+PERSISTENCE_REQUIRED
+SECURITY_IMPACT
+
+
+This is one of the most important outputs.
+
+
+# =====================================================================
+# 46. SECURITY MAPPING
+# =====================================================================
+
+Do not redo general security.
+
+
+Analyze only Block 2 new threat surfaces:
+
+
+delegation escalation
+
+stale authority
+
+delegation after revocation
+
+shared-resource leak
+
+reservation race
+
+reservation replay
+
+event replay
+
+fake webhook
+
+stale event overwrite
+
+remote task hijack
+
+cross-owner remote task reuse
+
+location leak
+
+location over-precision
+
+stale location represented as live
+
+notification privacy leak
+
+provider substitution
+
+malicious MCP output
+
+malicious A2A output
+
+computer-use prompt injection
+
+credential exposure
+
+
+For each return:
+
+THREAT
+EXISTING_PROTECTION
+GAP
+NEW_GENERIC_PROTECTION_REQUIRED
+BLOCKING_PRIORITY
+
+
+# =====================================================================
+# 47. FAILURE / RECOVERY MAPPING
+# =====================================================================
+
+Map expected Block 2 failures onto current canonical state model.
+
+
+Examples:
+
+NO_RESOURCE
+NO_PROVIDER
+PROVIDER_UNAVAILABLE
+PROVIDER_TIMEOUT
+AUTHORITY_EXPIRED
+DELEGATION_REVOKED
+RESERVATION_CONFLICT
+REMOTE_TASK_FAILED
+REMOTE_TASK_UNKNOWN
+LOCATION_STALE
+NOTIFICATION_FAILED
+CONDITION_EXPIRED
+
+
+Do not create new state enums unless current taxonomy truly cannot
+represent them.
+
+
+# =====================================================================
+# 48. RECONCILIATION REVIEW FOR BLOCK 2 EFFECTS
+# =====================================================================
+
+Existing reconciliation is accepted.
+
+
+Do not redesign it.
+
+
+Map how it will handle:
+
+notification uncertain outcome
+remote task uncertain state
+reservation external side effect
+delivery provider uncertain action
+
+
+Identify only genuinely missing generic reconciliation adapters.
+
+
+# =====================================================================
+# 49. OBSERVABILITY MAPPING
+# =====================================================================
+
+Determine what current telemetry can already expose.
+
+
+Need later:
+
+run traces
+provider traces
+delegation traces
+scheduler traces
+reservation contention
+remote task latency
+provider cost
+AI cost
+
+
+Assess OpenTelemetry adoption only if it reduces custom code.
+
+
+Return:
+
+OPENTELEMETRY_VALUE:
+HIGH / MEDIUM / LOW / NONE
+
+
+No implementation.
+
+
+# =====================================================================
+# 50. WEB/MOBILE PRODUCT SURFACE
+# =====================================================================
+
+Do not design a new app.
+
+
+Map only the generic surfaces needed for Block 2:
+
+
+status
+timeline
+approval
+assignment
+reservation
+schedule
+tracker
+map if coordinates exist
+notification
+live progress
+
+
+Determine whether current Presentation IR/renderer from Block 1 can
+represent these.
+
+
+Return for each:
+
+REUSE
+EXTEND
+ADAPTER_ONLY
+NEW_RENDERER_PRIMITIVE_REQUIRED
+
+
+No domain components.
+
+
+# =====================================================================
+# 51. IMPORTANT OUTPUT FORM TEST
+# =====================================================================
+
+Block 2 must preserve smallest-sufficient-output behavior.
+
+
+Compare:
+
+
+"I need a bus to work."
+→ Search/Match/Run
+
+
+"I want to run a worker transport service."
+→ planning/operational workflow
+
+
+"Build a full platform for worker transport."
+→ persistent Smart Bubble/World
+
+
+Do not let Block 2 make everything a persistent Bubble.
+
+
+# =====================================================================
+# 52. BLOCK 3 BOUNDARY CHECK
+# =====================================================================
+
+Explicitly identify every mapped concept that must remain Block 3.
+
+
+At minimum:
+
+PaymentIntent
+payment method
+agentic payment mandate
+ACP
+AP2
+authorization/capture
+settlement
+payout
+refund
+commercial fees
+commissions
+JASIM subscriptions
+entitlements
+usage billing
+revenue accounting
+
+
+Do not let payment logic leak backward into Block 2.
+
+
+# =====================================================================
+# 53. MINIMUM IMPLEMENTATION DELTA
+# =====================================================================
+
+After all mapping, propose the smallest coherent Block 2 build.
+
+
+Organize:
+
+P0 IMPLEMENT
+P1 IMPLEMENT
+P2 IMPLEMENT
+P3 DEFER/OPTIONAL
+
+
+For each item:
+
+REUSED COMPONENTS
+NEW TYPES
+NEW TABLES
+NEW ROUTES
+NEW WORKERS
+NEW ADAPTERS
+NEW DEPENDENCIES
+TESTS REQUIRED
+
+
+Minimize all categories.
+
+
+# =====================================================================
+# 54. SUGGESTED BLOCK 2 INTERNAL PHASES
+# =====================================================================
+
+After mapping, determine whether these phases are still correct:
+
+
+PHASE 4
+PARTICIPATION + AUTHORITY + DELEGATION
+
+
+PHASE 5
+TIME + EVENTS + AVAILABILITY + CAPACITY
++ RESERVATION + NOTIFICATION + TRACKING
+
+
+PHASE 6
+REAL PROVIDER EXECUTION
++ MCP/A2A REMOTE TASKS
++ BOOKING/DISPATCH/DELIVERY
++ MULTI-PARTY COORDINATION
+
+
+Do not implement them.
+
+Only validate/refine boundaries.
+
+
+# =====================================================================
+# 55. COST / TOKEN DISCIPLINE
+# =====================================================================
+
+This mapping must not consume paid model/provider calls merely to
+demonstrate planning.
+
+
+Use:
+
+source inspection
+existing tests
+static analysis
+existing local proofs
+
+
+No paid external E2E.
+
+
+# =====================================================================
+# 56. REQUIRED FINAL REPORT
+# =====================================================================
+
+Create exactly one report:
+
+.local/tasks/block2-canonical-mapping.md
+
+
+Report structure:
+
+
+# JASIM BLOCK 2 CANONICAL PRE-IMPLEMENTATION MAPPING
+
+
+## A. EXECUTIVE VERDICT
+
+
+## B. CURRENT CANONICAL FOUNDATION
+
+
+## C. P0 AUTHORITY / DELEGATION MAP
+
+
+## D. P0 TIME / DURABLE WAIT / SCHEDULER MAP
+
+
+## E. P0 EVENTS MAP
+
+
+## F. P0 AVAILABILITY / CAPACITY / RESERVATION MAP
+
+
+## G. NOTIFICATION MAP
+
+
+## H. OBSERVATION / LOCATION / TRACKING MAP
+
+
+## I. PROVIDER HEALTH / OPERATIONAL RESOLUTION MAP
+
+
+## J. MCP EXECUTION / TASK MAP
+
+
+## K. A2A DELEGATION MAP
+
+
+## L. REALTIME / AG-UI MAP
+
+
+## M. BOOKING / DISPATCH / DELIVERY COMPOSITION MAP
+
+
+## N. MULTI-PARTY COORDINATION MAP
+
+
+## O. COMPUTER USE DECISION
+
+
+## P. OBSERVABILITY / OPENTELEMETRY DECISION
+
+
+## Q. WEB / MOBILE PRESENTATION MAP
+
+
+## R. SECURITY DELTA
+
+
+## S. ECONOMIC / PRODUCT LEVERAGE
+
+
+## T. DATABASE / MIGRATION DELTA
+
+
+## U. DEPENDENCY DELTA
+
+
+## V. ACCEPTANCE SCENARIO COVERAGE
+
+
+## W. BLOCK 3 BOUNDARY
+
+
+## X. MINIMUM BLOCK 2 IMPLEMENTATION DELTA
+
+
+# =====================================================================
+# 57. REQUIRED FINAL COUNTERS
+# =====================================================================
+
+Finish the report with exactly:
+
+
+BLOCK_0_REMAINS_CLOSED:
+YES / NO
+
+
+BLOCK_1_REMAINS_CLOSED:
+YES / NO
+
+
+BLOCK_1_1_REMAINS_CLOSED:
+YES / NO
+
+
+BLOCK_2_IMPLEMENTATION_READY:
+YES / NO
+
+
+BLOCK_2_REQUIRES_PREVIOUS_BLOCK_REWORK:
+YES / NO
+
+
+ONE_CANONICAL_RUNTIME_PRESERVED:
+YES / NO
+
+
+NEW_WORKFLOW_ENGINE_REQUIRED:
+YES / NO
+
+
+CANONICAL_EVENTS_REUSED:
+YES / NO
+
+
+NEW_EVENT_BUS_REQUIRED:
+YES / NO
+
+
+CAN_EXISTING_DAG_SUPPORT_DURABLE_WAIT:
+YES / PARTIAL / NO
+
+
+CAN_EXISTING_WORKER_SUPPORT_WAKEUP:
+YES / PARTIAL / NO
+
+
+DELEGATION_REQUIRES_NEW_AUTH_SYSTEM:
+YES / NO
+
+
+RESERVATION_REQUIRES_NEW_GENERIC_PRIMITIVE:
+YES / NO
+
+
+CAN_MCP_AND_A2A_SHARE_REMOTE_EXECUTION_PRIMITIVE:
+YES / PARTIAL / NO
+
+
+AG_UI_VALUE:
+HIGH / MEDIUM / LOW / NONE
+
+
+OPENTELEMETRY_VALUE:
+HIGH / MEDIUM / LOW / NONE
+
+
+COMPUTER_USE_BLOCK_2_VALUE:
+HIGH / MEDIUM / LOW / DEFER
+
+
+MINIMUM_NEW_TABLES_ESTIMATE:
+<number>
+
+
+MAXIMUM_JUSTIFIED_NEW_TABLES_ESTIMATE:
+<number>
+
+
+NEW_GENERIC_PRIMITIVES_REQUIRED:
+<number>
+
+
+NEW_EXTERNAL_SDKS_RECOMMENDED:
+<number>
+
+
+MINIMUM_REAL_PROVIDER_E2E_COUNT:
+<number>
+
+
+DOMAIN_SPECIFIC_OPERATIONAL_ENGINES_PROPOSED:
+<number>
+
+
+DOMAIN_SPECIFIC_AGENTS_PROPOSED:
+<number>
+
+
+DOMAIN_SPECIFIC_UI_COMPONENTS_PROPOSED:
+<number>
+
+
+EXPECTED_PRIMARY_FILES_TO_CHANGE:
+<number>
+
+
+P0_IMPLEMENTATION_ITEMS:
+1.
+2.
+3.
+...
+
+
+P1_IMPLEMENTATION_ITEMS:
+1.
+2.
+3.
+...
+
+
+P2_IMPLEMENTATION_ITEMS:
+1.
+2.
+3.
+...
+
+
+DEFERRED_TO_P3_OR_LATER:
+1.
+2.
+3.
+...
+
+
+DEFERRED_TO_BLOCK_3:
+1.
+2.
+3.
+...
+
+
+READY_FOR_OWNER_REVIEW:
+YES / NO
+
+
+# =====================================================================
+# 58. HARD MAPPING EXPECTATIONS
+# =====================================================================
+
+A good mapping should preferably conclude:
+
+BLOCK_2_REQUIRES_PREVIOUS_BLOCK_REWORK = NO
+
+NEW_WORKFLOW_ENGINE_REQUIRED = NO
+
+NEW_EVENT_BUS_REQUIRED = NO
+
+DOMAIN_SPECIFIC_OPERATIONAL_ENGINES_PROPOSED = 0
+
+DOMAIN_SPECIFIC_AGENTS_PROPOSED = 0
+
+DOMAIN_SPECIFIC_UI_COMPONENTS_PROPOSED = 0
+
+
+But do NOT fake these outcomes.
+
+If repository evidence proves otherwise:
+
+report the truth.
+
+
+# =====================================================================
+# 59. STOP
+# =====================================================================
+
+After producing:
+
+.local/tasks/block2-canonical-mapping.md
+
+
+STOP.
+
+
+DO NOT IMPLEMENT ANY BLOCK 2 CODE.
+
+DO NOT CREATE MIGRATIONS.
+
+DO NOT INSTALL DEPENDENCIES.
+
+DO NOT CONNECT MCP NETWORK SERVICES.
+
+DO NOT CONNECT A2A NETWORK AGENTS.
+
+DO NOT IMPLEMENT COMPUTER USE.
+
+DO NOT CONNECT MAPS.
+
+DO NOT CONNECT NOTIFICATION PROVIDERS.
+
+DO NOT IMPLEMENT PAYMENT.
+
+DO NOT START BLOCK 3.
+
+
+Wait for owner review.
+
+
+BEGIN BLOCK 2 CANONICAL PRE-IMPLEMENTATION MAPPING NOW.

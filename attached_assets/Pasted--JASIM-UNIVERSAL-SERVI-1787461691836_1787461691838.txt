@@ -1,0 +1,2791 @@
+"""
+=======================================================================
+JASIM
+UNIVERSAL SERVICES + ECONOMIC ACCEPTANCE ATLAS
+=======================================================================
+
+MASTER EXPANSION FOR:
+
+BLOCK 1.1
+BLOCK 2
+BLOCK 3
+
+PURPOSE:
+
+Teach Replit what JASIM is expected to be useful FOR,
+without teaching it to hard-code those use cases.
+
+This Atlas is:
+
+    PRODUCT INTELLIGENCE
+    +
+    GENERALIZATION SPECIFICATION
+    +
+    ECONOMIC PRIORITY MODEL
+    +
+    SERVICE ACCEPTANCE CATALOG
+
+It is NOT:
+
+    a list of features,
+    a list of domain modules,
+    a list of domain agents,
+    a database-table specification,
+    or a promise that every external provider already exists.
+
+
+=======================================================================
+PART I
+SOURCE INTERPRETATION RULES
+=======================================================================
+
+1. USE THE ATTACHED JASIM EXAMPLES AS PRODUCT EVIDENCE
+=======================================================================
+
+The historical project contains many examples involving:
+
+    commerce
+    services
+    employment
+    freelancing
+    delivery
+    logistics
+    transport
+    procurement
+    wholesale
+    property
+    equipment
+    generated businesses
+    recurring businesses
+    subscriptions
+    marketplaces
+    resource sharing
+    cross-domain coordination
+    multi-intent sessions
+
+
+These examples help us understand:
+
+    what humans may ask JASIM to accomplish,
+    what general capabilities must exist,
+    where real-world resources are required,
+    where providers are required,
+    where persistent state is required,
+    where economic value exists,
+    and where JASIM can eventually earn revenue.
+
+
+They do NOT dictate Core implementation names.
+
+
+=======================================================================
+2. NEWER ARCHITECTURE OVERRIDES OLD DOMAIN IMPLEMENTATIONS
+=======================================================================
+
+Some historical material contains abstractions such as:
+
+    FoodOrderAgent
+    CarSellerAgent
+    WholesaleAgent
+    JobSeekerAgent
+
+or:
+
+    BubbleType.JOB
+    BubbleType.FOOD
+    BubbleType.EMERGENCY
+
+
+These should be treated as:
+
+    HISTORICAL PRODUCT EXAMPLES
+
+not:
+
+    CURRENT CORE ARCHITECTURE.
+
+
+Extract from them:
+
+    user problem
+    required information
+    required capability
+    trust requirement
+    economic logic
+    UX expectation
+
+
+Discard:
+
+    hard-coded domain routing
+    hard-coded domain Agent class
+    hard-coded domain Bubble component
+    hard-coded domain pricing
+    hard-coded domain workflow
+
+
+=======================================================================
+3. EXAMPLES ARE ACCEPTANCE TESTS
+=======================================================================
+
+For every known example:
+
+    USER GOAL
+        ↓
+    SEMANTIC UNDERSTANDING
+        ↓
+    REQUIRED OUTCOMES
+        ↓
+    GENERAL CAPABILITIES
+        ↓
+    STATE / ECONOMIC OBJECTS
+        ↓
+    PROVIDERS / RESOURCES
+        ↓
+    RUN / WORKFLOW
+        ↓
+    CORRECT PRESENTATION
+        ↓
+    VERIFIED RESULT
+
+
+If a test requires:
+
+    CarService.ts
+    FoodAgent.ts
+    WorkerTransportHandler.ts
+    JobBubble.tsx
+    ColdStorageMatcher.ts
+
+
+the test should be considered:
+
+    GENERALIZATION FAILURE.
+
+
+=======================================================================
+PART II
+THE UNIVERSAL SERVICE MAP
+=======================================================================
+
+4. JASIM DOES NOT HAVE "DOMAINS"
+=======================================================================
+
+For product analysis only, use SERVICE FAMILIES.
+
+These families help us measure coverage.
+
+They must NOT become Core routers.
+
+
+SERVICE_FAMILIES = {
+
+    "COMMERCE": {
+        "examples": [
+            "sell an asset",
+            "buy an asset",
+            "resell",
+            "multi-item selling",
+            "local commerce",
+            "bulk commerce",
+        ],
+        "general_capabilities": [
+            "STRUCTURE",
+            "OFFER",
+            "NEED",
+            "PUBLISH",
+            "DISCOVER",
+            "MATCH",
+            "NEGOTIATE",
+            "PROPOSE",
+            "TRANSACT",
+        ],
+    },
+
+
+    "PROCUREMENT": {
+        "examples": [
+            "supplier sourcing",
+            "B2B purchasing",
+            "bulk purchasing",
+            "international purchasing",
+            "vendor comparison",
+            "automated procurement",
+        ],
+        "general_capabilities": [
+            "NEED",
+            "DISCOVER",
+            "SEARCH",
+            "VERIFY",
+            "COMPARE",
+            "NORMALIZE",
+            "MATCH",
+            "NEGOTIATE",
+            "CALCULATE",
+            "ORDER",
+        ],
+    },
+
+
+    "EMPLOYMENT": {
+        "examples": [
+            "find a job",
+            "hire a person",
+            "hire several workers",
+            "candidate screening",
+            "salary negotiation",
+            "application assistance",
+        ],
+        "general_capabilities": [
+            "PROFILE",
+            "OFFER",
+            "NEED",
+            "DISCOVER",
+            "MATCH",
+            "VERIFY",
+            "ENGAGE",
+            "APPLY",
+            "PROPOSE",
+            "HIRE",
+        ],
+    },
+
+
+    "PROFESSIONAL_SERVICES": {
+        "examples": [
+            "freelance project",
+            "design",
+            "consulting",
+            "technical work",
+            "legal research",
+            "document services",
+        ],
+        "general_capabilities": [
+            "NEED",
+            "DISCOVER",
+            "MATCH",
+            "ENGAGE",
+            "CONTRACT",
+            "MILESTONE",
+            "VERIFY",
+            "TRANSACT",
+        ],
+    },
+
+
+    "LOCAL_SERVICES": {
+        "examples": [
+            "plumber",
+            "air-conditioning repair",
+            "electrician",
+            "maintenance",
+            "emergency service",
+            "home service",
+        ],
+        "general_capabilities": [
+            "NEED",
+            "LOCATION",
+            "DISCOVER",
+            "MATCH",
+            "AVAILABILITY",
+            "ASSIGN",
+            "BOOK",
+            "TRACK",
+            "VERIFY_COMPLETION",
+        ],
+    },
+
+
+    "LOGISTICS": {
+        "examples": [
+            "delivery",
+            "shipping",
+            "pickup",
+            "courier",
+            "freight",
+            "cross-border shipping",
+        ],
+        "general_capabilities": [
+            "TRANSFER_REQUIREMENT",
+            "DISCOVER",
+            "CAPACITY",
+            "MATCH",
+            "QUOTE",
+            "ASSIGN",
+            "SCHEDULE",
+            "TRACK",
+            "VERIFY_COMPLETION",
+        ],
+    },
+
+
+    "PASSENGER_TRANSPORT": {
+        "examples": [
+            "worker transport",
+            "school transport",
+            "elderly transport",
+            "hotel shuttle",
+            "event shuttle",
+            "employee shuttle",
+        ],
+        "general_capabilities": [
+            "ROUTE_REQUIREMENT",
+            "CAPACITY",
+            "SCHEDULE",
+            "RESERVE",
+            "ASSIGN",
+            "NOTIFY",
+            "TRACK",
+            "SUBSCRIBE",
+        ],
+    },
+
+
+    "RESOURCE_CAPACITY": {
+        "examples": [
+            "cold storage",
+            "warehouse capacity",
+            "industrial oven",
+            "equipment",
+            "vehicles",
+            "workspace",
+            "laboratory equipment",
+        ],
+        "general_capabilities": [
+            "RESOURCE",
+            "CAPACITY",
+            "AVAILABILITY",
+            "OFFER",
+            "NEED",
+            "MATCH",
+            "RESERVE",
+            "ALLOCATE",
+        ],
+    },
+
+
+    "BOOKING": {
+        "examples": [
+            "appointment",
+            "service booking",
+            "equipment reservation",
+            "restaurant reservation",
+            "resource slot",
+        ],
+        "general_capabilities": [
+            "DISCOVER",
+            "MATCH",
+            "AVAILABILITY",
+            "RESERVE",
+            "CONFIRM",
+            "SCHEDULE",
+            "NOTIFY",
+        ],
+    },
+
+
+    "GENERATED_BUSINESS": {
+        "examples": [
+            "service marketplace",
+            "commerce business",
+            "transport operation",
+            "education business",
+            "rental business",
+            "B2B network",
+            "subscription platform",
+        ],
+        "general_capabilities": [
+            "GENERATE_WORLD",
+            "GENERATE_SCHEMA",
+            "GENERATE_WORKFLOW",
+            "CREATE_SMART_BUBBLE",
+            "PUBLISH",
+            "MONETIZE",
+            "EVOLVE",
+        ],
+    },
+
+
+    "RESOURCE_SHARING": {
+        "examples": [
+            "farm equipment sharing",
+            "laboratory equipment sharing",
+            "industrial capacity sharing",
+            "shared vehicles",
+            "book exchange",
+        ],
+        "general_capabilities": [
+            "RESOURCE",
+            "OFFER",
+            "NEED",
+            "AVAILABILITY",
+            "MATCH",
+            "RESERVE",
+            "TRUST",
+        ],
+    },
+
+
+    "NON_MONETARY_EXCHANGE": {
+        "examples": [
+            "skill exchange",
+            "community resource exchange",
+            "voluntary coordination",
+            "donation coordination",
+        ],
+        "general_capabilities": [
+            "OFFER",
+            "NEED",
+            "MATCH",
+            "ENGAGE",
+            "PROPOSE",
+            "TRANSACTION_INTENT",
+        ],
+    },
+
+
+    "INFORMATION_WORK": {
+        "examples": [
+            "research",
+            "analysis",
+            "comparison",
+            "document extraction",
+            "report generation",
+            "data transformation",
+        ],
+        "general_capabilities": [
+            "SEARCH",
+            "EXTRACT",
+            "ANALYZE",
+            "COMPARE",
+            "CALCULATE",
+            "GENERATE",
+            "VERIFY",
+        ],
+    },
+
+
+    "MONITORING": {
+        "examples": [
+            "track shipment",
+            "track driver",
+            "monitor price",
+            "monitor availability",
+            "monitor business metric",
+        ],
+        "general_capabilities": [
+            "OBSERVE",
+            "SUBSCRIBE",
+            "TRACK",
+            "CONDITION",
+            "NOTIFY",
+        ],
+    },
+
+
+    "BUSINESS_OPERATIONS": {
+        "examples": [
+            "inventory",
+            "customer management",
+            "staff management",
+            "orders",
+            "workflow automation",
+            "analytics",
+        ],
+        "general_capabilities": [
+            "CREATE",
+            "UPDATE",
+            "QUERY",
+            "SCHEDULE",
+            "POLICY",
+            "ANALYZE",
+            "NOTIFY",
+        ],
+    },
+}
+
+
+=======================================================================
+PART III
+SERVICE VALUE PRIORITY
+=======================================================================
+
+5. DO NOT PRIORITIZE BY EXAMPLE COUNT
+=======================================================================
+
+A service family appearing in 20 examples is not automatically more
+important than one appearing twice.
+
+Use:
+
+    GENERALITY
+    +
+    ECONOMIC LEVERAGE
+    +
+    NETWORK EFFECT
+    +
+    FREQUENCY
+    +
+    RETENTION
+    +
+    IMPLEMENTATION REUSE.
+
+
+=======================================================================
+6. PRIORITY TIER A — COMPOUNDING ECONOMIC VALUE
+=======================================================================
+
+These deserve the greatest strategic attention.
+
+TIER_A = [
+
+    "GENERATED BUSINESSES",
+
+    "B2B PROCUREMENT",
+
+    "B2B WHOLESALE",
+
+    "BUSINESS HIRING",
+
+    "RESOURCE CAPACITY MONETIZATION",
+
+    "RECURRING SERVICE OPERATIONS",
+
+    "TRANSPORT / LOGISTICS NETWORKS",
+
+]
+
+
+WHY:
+
+
+GENERATED BUSINESS
+
+One successful generated business can create:
+
+    recurring subscription
+    recurring transactions
+    usage revenue
+    provider activity
+    network supply
+    future API activity
+
+
+B2B PROCUREMENT / WHOLESALE
+
+Usually involves:
+
+    larger transaction value
+    repeated procurement
+    negotiation
+    supplier discovery
+    shipping
+    verification
+    contracts
+
+
+BUSINESS HIRING
+
+Can create:
+
+    recurring employer usage
+    candidate network growth
+    success-fee opportunity
+    verification services
+
+
+IDLE RESOURCE CAPACITY
+
+Turns:
+
+    unused physical capacity
+
+into:
+
+    revenue-producing Offering.
+
+
+This aligns:
+
+    USER PROFIT
+    +
+    JASIM PROFIT.
+
+
+=======================================================================
+7. PRIORITY TIER B — HIGH-FREQUENCY ECONOMIC VALUE
+=======================================================================
+
+TIER_B = [
+
+    "C2C selling",
+
+    "local services",
+
+    "booking",
+
+    "rentals",
+
+    "delivery",
+
+    "job seeking",
+
+]
+
+
+These may have smaller average transaction value.
+
+But they create:
+
+    frequency
+    habit
+    liquidity
+    trust history
+    network participation.
+
+
+=======================================================================
+8. PRIORITY TIER C — RETENTION / TRUST VALUE
+=======================================================================
+
+TIER_C = [
+
+    "emergency discovery",
+
+    "verification",
+
+    "research",
+
+    "comparison",
+
+    "document assistance",
+
+    "notifications",
+
+    "tracking",
+
+]
+
+
+Some may produce little direct revenue.
+
+They may significantly increase:
+
+    retention
+    perceived intelligence
+    transaction confidence
+    conversion.
+
+
+=======================================================================
+9. PRIORITY TIER D — LATER MONETIZATION
+=======================================================================
+
+TIER_D = [
+
+    "advertising",
+
+    "CPC",
+
+    "CPM",
+
+    "sponsored placement",
+
+    "premium analytics",
+
+    "developer marketplace",
+
+    "white-label",
+
+]
+
+
+DO NOT prioritize these before:
+
+    users create value,
+    transactions happen,
+    generated businesses work,
+    and the network has liquidity.
+
+
+=======================================================================
+PART IV
+ECONOMIC VALUE MODEL
+=======================================================================
+
+10. JASIM MUST MODEL THREE DIFFERENT ECONOMIC BENEFICIARIES
+=======================================================================
+
+Every monetizable workflow may involve:
+
+
+USER_VALUE
+
+    value received by end user.
+
+
+BUSINESS_OWNER_VALUE
+
+    revenue/profit received by owner of generated business.
+
+
+JASIM_VALUE
+
+    revenue received by JASIM.
+
+
+Do not combine them.
+
+
+Example:
+
+    generated transport business
+
+
+worker pays:
+
+    20 KWD subscription
+
+
+transport operator receives:
+
+    business revenue
+
+
+driver receives:
+
+    compensation
+
+
+payment provider receives:
+
+    processing fee
+
+
+JASIM may receive:
+
+    subscription
+    transaction fee
+    service fee
+
+
+All are different flows.
+
+
+=======================================================================
+11. ECONOMIC LEDGER CONCEPT
+=======================================================================
+
+Conceptually:
+
+
+@dataclass
+class EconomicFlow:
+    source_ref: str
+    destination_ref: str
+
+    amount: Money
+
+    purpose: str
+
+    related_transaction_ref: str | None
+
+    economic_class: str
+
+    verification_ref: str | None
+
+
+Possible economic_class:
+
+    CUSTOMER_PAYMENT
+
+    PROVIDER_COMPENSATION
+
+    OWNER_REVENUE
+
+    JASIM_REVENUE
+
+    PAYMENT_PROCESSING_COST
+
+    REFUND
+
+    PROMOTIONAL_SPEND
+
+    TAX
+
+    CREDIT
+
+
+Do not necessarily create this exact table.
+
+Reuse existing payment/economic primitives first.
+
+
+=======================================================================
+12. USER PROFITABILITY
+=======================================================================
+
+For generated commercial Worlds JASIM should eventually understand:
+
+    Revenue
+    Costs
+    Capacity
+    Utilization
+    Margin
+    Frequency
+    Retention
+    Conversion
+
+
+Conceptually:
+
+
+USER_BUSINESS_ECONOMICS = {
+
+    "revenue_units": [],
+
+    "fixed_costs": [],
+
+    "variable_costs": [],
+
+    "provider_costs": [],
+
+    "capacity_constraints": [],
+
+    "pricing_options": [],
+
+    "break_even_inputs": [],
+
+    "unknown_market_inputs": [],
+
+}
+
+
+JASIM may help calculate.
+
+JASIM may suggest.
+
+JASIM must NOT invent market prices.
+
+
+=======================================================================
+PART V
+DETAILED ACCEPTANCE ATLAS
+=======================================================================
+
+13. SCENARIO 01 — SELL A CAR
+=======================================================================
+
+GOAL:
+
+    "I want to sell my car."
+
+
+OUTPUT:
+
+    Run / Interactive Bubble depending persistence needs.
+
+
+GENERAL OBJECTS:
+
+    User
+    Asset
+    Offering
+    Artifact
+    Need
+    Match
+    Engagement
+    Proposal
+    TransactionIntent
+
+
+CAPABILITIES:
+
+    STRUCTURE
+    ATTACH_ARTIFACT
+    PRICE_ASSIST
+    CREATE_OFFERING
+    PUBLISH
+    DISCOVER
+    MATCH
+    NEGOTIATE
+    VERIFY
+    TRANSACT
+
+
+BLOCK 1.1 VALUE:
+
+    discover external valuation/verification capabilities.
+
+
+BLOCK 2 VALUE:
+
+    buyer coordination
+    inspection booking
+    delivery/transport if needed.
+
+
+BLOCK 3 VALUE:
+
+    payment
+    fee
+    verification fee
+    optional promotion.
+
+
+USER VALUE:
+
+    faster sale
+    lower fraud
+    less negotiation work
+    improved price discovery.
+
+
+POSSIBLE JASIM REVENUE:
+
+    transaction fee
+    verification fee
+    promotion
+    transport margin.
+
+
+FORBIDDEN:
+
+    CarAgent
+    CarSaleWorkflow
+    CarBubble.tsx
+
+
+=======================================================================
+14. SCENARIO 02 — BUY A DEVICE
+=======================================================================
+
+GOAL:
+
+    "Find me a gaming PC under 800 KWD."
+
+
+CAPABILITIES:
+
+    CREATE_NEED
+    SEARCH
+    DISCOVER
+    NORMALIZE
+    FILTER
+    COMPARE
+    VERIFY
+    RECOMMEND
+
+
+OPTIONAL:
+
+    NEGOTIATE
+    PURCHASE
+    DELIVERY
+
+
+ECONOMIC VALUE:
+
+    shopping assistance
+    affiliate/commerce opportunity
+    premium research
+
+without forcing a persistent Bubble.
+
+
+=======================================================================
+15. SCENARIO 03 — SELL MULTIPLE HOUSEHOLD ITEMS
+=======================================================================
+
+GOAL:
+
+    "Sell my phone, TV and shoes."
+
+
+IMPORTANT TEST:
+
+One conversation.
+
+Multiple Entities.
+
+Possibly multiple Offerings.
+
+Do NOT create three domain systems.
+
+
+CAPABILITIES:
+
+    MULTI_ENTITY_EXTRACTION
+    STRUCTURE
+    MEDIA
+    OFFER
+    PUBLISH
+    MATCH
+
+
+ECONOMIC VALUE:
+
+    transaction fees
+    promotion
+    optional generated media.
+
+
+=======================================================================
+16. SCENARIO 04 — B2B WHOLESALE
+=======================================================================
+
+GOAL:
+
+    "I have 500 phones / 500 cartons of dates to sell."
+
+
+GENERAL SEMANTICS:
+
+    Supply
+    Quantity
+    Unit
+    MOQ
+    Price terms
+    Logistics requirements
+    Buyer Need
+
+
+CAPABILITIES:
+
+    CREATE_OFFERING
+    PUBLISH
+    DISCOVER_NEEDS
+    MATCH
+    VERIFY_BUYER
+    NEGOTIATE
+    CONTRACT
+    LOGISTICS_REQUIREMENT
+    TRANSACT
+
+
+USER VALUE:
+
+    access to buyers
+    faster liquidation
+    bulk negotiation
+    reduced sales effort.
+
+
+JASIM VALUE:
+
+    B2B subscription
+    transaction fee
+    verification
+    logistics margin.
+
+
+STRATEGIC_PRIORITY:
+
+    VERY_HIGH
+
+
+=======================================================================
+17. SCENARIO 05 — INTERNATIONAL PROCUREMENT
+=======================================================================
+
+GOAL:
+
+    "Buy 1000 chairs from China for my restaurant."
+
+
+REQUIRED GRAPH MAY INCLUDE:
+
+    Need
+        →
+    Supplier Discovery
+        →
+    Structured Quote Extraction
+        →
+    Supplier Verification
+        →
+    MOQ Check
+        →
+    Price Comparison
+        →
+    Shipping
+        →
+    Customs
+        →
+    Total Landed Cost
+        →
+    Negotiation
+        →
+    Proposal
+        →
+    TransactionIntent
+        →
+    Payment
+
+
+BLOCK 1.1:
+
+    MCP/A2A supplier/logistics tools may be discovered.
+
+
+BLOCK 2:
+
+    logistics
+    external coordination.
+
+
+BLOCK 3:
+
+    commerce/payment.
+
+
+TRUTH:
+
+No China-specific service.
+
+No fake customs.
+
+No fake shipping price.
+
+
+STRATEGIC_PRIORITY:
+
+    VERY_HIGH
+
+
+=======================================================================
+18. SCENARIO 06 — "EMPLOY ME"
+=======================================================================
+
+GOAL:
+
+    obtain employment.
+
+
+STRUCTURE:
+
+    Person
+
+    Offering:
+        skills
+        experience
+        availability
+
+    Need:
+        suitable job
+        desired terms
+
+
+CAPABILITIES:
+
+    PROFILE
+    CV_PARSE
+    STRUCTURE
+    DISCOVER
+    MATCH
+    VERIFY
+    APPLY
+    ENGAGE
+    INTERVIEW
+    PROPOSE
+    HIRE
+
+
+JASIM REVENUE:
+
+    subscription
+    CV optimization
+    verification
+    configurable success fee.
+
+
+IMPORTANT:
+
+Success fee comes only from:
+
+    VERIFIED_HIRE.
+
+
+=======================================================================
+19. SCENARIO 07 — HIRE SEVERAL WORKERS
+=======================================================================
+
+GOAL:
+
+    "I need three workers for my restaurant."
+
+
+CAPABILITIES:
+
+    CREATE_NEED
+    DISCOVER
+    HARD_FILTER
+    MATCH
+    VERIFY
+    ENGAGE
+    INTERVIEW
+    PROPOSE
+    HIRE
+
+
+MULTI-PARTY:
+
+One employer may open several Engagements.
+
+
+ECONOMIC VALUE:
+
+    Business subscription
+    verified hiring success fee.
+
+
+STRATEGIC_PRIORITY:
+
+    HIGH
+
+
+=======================================================================
+20. SCENARIO 08 — FREELANCE PROJECT
+=======================================================================
+
+GOAL:
+
+    "I need somebody to build/design X."
+
+
+CAPABILITIES:
+
+    REQUIREMENT_STRUCTURE
+    DISCOVER
+    MATCH
+    PORTFOLIO_EVIDENCE
+    ENGAGE
+    NEGOTIATE
+    PROPOSE
+    CONTRACT
+    MILESTONE
+    VERIFY_DELIVERABLE
+
+
+BLOCK 3:
+
+    milestone payment
+    payout
+    refund/dispute.
+
+
+Do not inherit old fixed 10% commission.
+
+Fee comes from generic Economics Engine.
+
+
+=======================================================================
+21. SCENARIO 09 — EMERGENCY PLUMBER
+=======================================================================
+
+GOAL:
+
+    immediate help.
+
+
+CAPABILITIES:
+
+    LOCATION
+    NEED
+    DISCOVER
+    AVAILABILITY
+    TRUST_FILTER
+    MATCH
+    DISPATCH
+    NOTIFY
+    TRACK
+
+
+USER VALUE:
+
+    extremely high urgency.
+
+
+DIRECT REVENUE:
+
+    potentially low.
+
+
+STRATEGIC VALUE:
+
+    HIGH RETENTION.
+
+
+This scenario proves:
+
+    direct revenue
+    !=
+    total strategic value.
+
+
+=======================================================================
+22. SCENARIO 10 — SERVICE BUSINESS WANTS CUSTOMERS
+=======================================================================
+
+GOAL:
+
+    "I own an AC repair workshop and want customers."
+
+
+This is NOT simply:
+
+    Search.
+
+
+It may produce:
+
+    Service Offering
+    Public Projection
+    Discovery eligibility
+    Leads
+    Engagements
+
+
+Potential business model:
+
+    subscription
+    lead fee
+    completed service fee
+    promotion.
+
+
+=======================================================================
+23. SCENARIO 11 — DELIVERY AFTER SALE
+=======================================================================
+
+GOAL:
+
+    "Deliver it."
+
+
+REFERENCE RESOLUTION:
+
+    "it"
+        →
+    existing Transaction/Asset
+
+
+GENERAL COMPOSITION:
+
+    DeliveryRequirement
+        →
+    Discover transport capacity
+        →
+    Availability
+        →
+    Match
+        →
+    Quote
+        →
+    Select
+        →
+    Assign
+        →
+    Notify
+        →
+    Track
+        →
+    Completion proof
+
+
+No:
+
+    FruitDeliveryService
+    PhoneDeliveryService
+    FurnitureDeliveryService
+
+
+=======================================================================
+24. SCENARIO 12 — WORKER NEEDS DAILY TRANSPORT
+=======================================================================
+
+GOAL:
+
+    "I need a bus to work every day at 6."
+
+
+OUTPUT:
+
+    Search / Match / Durable Run
+
+
+NOT:
+
+    transport platform generation.
+
+
+CAPABILITIES:
+
+    CREATE_NEED
+    DISCOVER
+    ROUTE_MATCH
+    SCHEDULE_MATCH
+    CAPACITY_MATCH
+
+
+=======================================================================
+25. SCENARIO 13 — START A WORKER TRANSPORT BUSINESS
+=======================================================================
+
+GOAL:
+
+    "I want to operate daily transport for workers."
+
+
+OUTPUT:
+
+    Business setup workflow / Durable Run
+
+    possibly a Bubble when persistent management becomes justified.
+
+
+BUSINESS QUESTIONS:
+
+    Who pays?
+
+    Company or worker?
+
+    Monthly or per trip?
+
+    Fixed route or dynamic?
+
+    Own vehicles or independent drivers?
+
+    Capacity?
+
+    Starting zones?
+
+
+JASIM must use answers to construct the business.
+
+
+=======================================================================
+26. SCENARIO 14 — BUILD WORKER TRANSPORT PLATFORM
+=======================================================================
+
+GOAL:
+
+    persistent operating platform.
+
+
+OUTPUT:
+
+    Persistent Smart Bubble
+    +
+    optional World
+
+
+GENERATED SEMANTIC STRUCTURE may include:
+
+    people
+    vehicles
+    routes
+    stops
+    trips
+    schedules
+    reservations
+    subscriptions
+    incidents
+    capacity
+
+
+But JASIM may choose another logically valid model.
+
+
+BLOCK 2 is critical:
+
+    scheduler
+    reservation
+    availability
+    notifications
+    tracking.
+
+
+BLOCK 3:
+
+    recurring subscription
+    payments
+    driver payouts
+    commercial economics.
+
+
+STRATEGIC_PRIORITY:
+
+    VERY_HIGH GENERATED BUSINESS TEST
+
+
+=======================================================================
+27. SCENARIO 15 — ELDERLY MEDICAL TRANSPORT
+=======================================================================
+
+GOAL:
+
+    coordinate elderly transport to medical appointments.
+
+
+GENERAL:
+
+    transport
+    appointment
+    caregiver requirement
+    schedule
+    notification
+
+
+REQUIRES:
+
+    regulatory boundary
+    real drivers
+    real caregivers
+    medical-data privacy.
+
+
+If resources/providers absent:
+
+    BLOCKED_BY_RESOURCE
+    BLOCKED_BY_PROVIDER
+    REQUIRES_REGULATORY_REVIEW
+
+
+Do not fake medical fulfillment.
+
+
+=======================================================================
+28. SCENARIO 16 — BUILDING MAINTENANCE NETWORK
+=======================================================================
+
+GOAL:
+
+    residents report problems,
+    correct technician receives work.
+
+
+CAPABILITIES:
+
+    INCIDENT_CREATE
+    SKILL_MATCH
+    ZONE_MATCH
+    AVAILABILITY
+    ASSIGN
+    SCHEDULE
+    NOTIFY
+    REVIEW
+
+
+FOLLOW-UP:
+
+    "The technician who was late yesterday
+     should receive no new jobs today."
+
+
+Expected:
+
+    Reference Resolution
+        →
+    Policy Mutation
+        →
+    SAME World/Bubble.
+
+
+Excellent test of:
+
+    operational evolution.
+
+
+=======================================================================
+29. SCENARIO 17 — FARM EQUIPMENT SHARING
+=======================================================================
+
+PROBLEM:
+
+Expensive equipment sits unused.
+
+
+TRANSFORMATION:
+
+    Idle Resource
+        →
+    Capacity Offering
+        →
+    Availability
+        →
+    Need
+        →
+    Match
+        →
+    Reservation
+        →
+    Transaction
+
+
+USER VALUE:
+
+    owner earns from idle asset.
+
+    renter avoids purchase.
+
+
+JASIM VALUE:
+
+    recurring platform revenue
+    transaction fee
+    optional verification.
+
+
+STRATEGIC_PRIORITY:
+
+    VERY HIGH
+
+because:
+
+    USER PROFIT
+    and
+    JASIM PROFIT
+
+are aligned.
+
+
+=======================================================================
+30. SCENARIO 18 — SHARED COLD STORAGE
+=======================================================================
+
+OWNER:
+
+    available refrigerated capacity.
+
+
+BUYER:
+
+    "I need storage for two tons for one week."
+
+
+CAPABILITIES:
+
+    UNIT_NORMALIZATION
+    CAPACITY
+    AVAILABILITY
+    LOCATION
+    HARD_CONSTRAINT_MATCH
+    COMPOSITE_MATCH
+    RESERVATION
+
+
+IMPORTANT:
+
+A second user should discover the service
+
+without knowing Bubble name.
+
+
+Tests:
+
+    public projection
+    cross-user discovery
+    privacy.
+
+
+=======================================================================
+31. SCENARIO 19 — INDUSTRIAL OVEN CAPACITY
+=======================================================================
+
+GOAL:
+
+    monetize unused industrial equipment time.
+
+
+Same primitives as:
+
+    warehouse
+    transport seat
+    laboratory machine
+    farm equipment.
+
+
+This is a killer test proving:
+
+    CAPACITY
+
+is general.
+
+
+=======================================================================
+32. SCENARIO 20 — FOOD SURPLUS REDISTRIBUTION
+=======================================================================
+
+GOAL:
+
+    restaurants coordinate usable surplus
+    with eligible receiving organizations.
+
+
+CAPABILITIES:
+
+    OFFER
+    NEED
+    TIME_WINDOW
+    ELIGIBILITY
+    MATCH
+    LOGISTICS
+    TRACEABILITY
+
+
+ECONOMIC MODEL:
+
+May be:
+
+    free
+    sponsored
+    contract-based
+    CSR-funded
+
+
+This proves:
+
+    value exchange
+    does not require buyer/seller/payment.
+
+
+REQUIRES:
+
+    regulatory/health boundary.
+
+
+=======================================================================
+33. SCENARIO 21 — GENERATED PAINTING-COMPANY PLATFORM
+=======================================================================
+
+GOAL:
+
+    "Create a platform connecting painting companies."
+
+
+EXPECTED:
+
+    generated persistent World/Bubble.
+
+
+Later:
+
+    "Add wholesale decoration materials."
+
+
+Expected:
+
+    SAME World evolves.
+
+
+Possible owner revenue:
+
+    company subscriptions
+    leads
+    transaction fees
+    promotion.
+
+
+Possible JASIM revenue:
+
+    generated-business subscription
+    usage
+    revenue share / fee policy.
+
+
+=======================================================================
+34. SCENARIO 22 — GENERATED FOOD BUSINESS
+=======================================================================
+
+GOAL:
+
+    generate ordering/delivery business.
+
+
+Do NOT generate:
+
+    FoodCore.
+
+
+Generate:
+
+    World schema
+    Offering/Need relationships
+    order workflows
+    fulfillment requirements
+    presentation.
+
+
+Important:
+
+real restaurant/menu/payment/delivery data
+
+must not be invented.
+
+
+=======================================================================
+35. SCENARIO 23 — GENERATED EDUCATION BUSINESS
+=======================================================================
+
+GOAL:
+
+    create persistent teaching/learning service.
+
+
+Possible generated concepts:
+
+    teacher
+    learner
+    course/session
+    schedule
+    booking
+    subscription
+    progress
+
+
+Again:
+
+these concepts belong to generated World.
+
+Not Kernel domain code.
+
+
+Owner may earn:
+
+    subscription/session revenue.
+
+
+JASIM may earn:
+
+    generated-business subscription
+    transaction fee
+    usage.
+
+
+=======================================================================
+36. SCENARIO 24 — GENERATED SPECIALIZED MARKETPLACE
+=======================================================================
+
+Example:
+
+    specialized car marketplace
+    restaurant hiring marketplace
+    photographer ↔ restaurant marketplace
+
+
+All must emerge from:
+
+    same World generator
+    same economic network
+    same renderer
+    same transaction semantics.
+
+
+=======================================================================
+37. SCENARIO 25 — SHARED LAB EQUIPMENT
+=======================================================================
+
+GOAL:
+
+several companies share expensive equipment.
+
+
+CAPABILITIES:
+
+    RESOURCE
+    CAPACITY
+    AVAILABILITY
+    PERMISSION
+    RESERVATION
+    SCHEDULE
+    BILLING
+
+
+BLOCK 2:
+
+    concurrency
+    scheduling.
+
+
+BLOCK 3:
+
+    subscription / usage payment.
+
+
+=======================================================================
+38. SCENARIO 26 — SKILL EXCHANGE
+=======================================================================
+
+GOAL:
+
+    logo design
+    ↔
+    Spanish lessons
+
+
+OBJECTS:
+
+    Offering A
+    Need A
+
+    Offering B
+    Need B
+
+
+RESULT:
+
+    Match
+    Engagement
+    Proposal
+    TransactionIntent
+
+
+PAYMENT:
+
+    NONE
+
+
+MANDATORY PROOF:
+
+    Transaction
+    !=
+    Payment.
+
+
+=======================================================================
+39. SCENARIO 27 — NON-ECONOMIC DOCUMENT WORK
+=======================================================================
+
+GOAL:
+
+    extract invoices
+    organize spreadsheet/report.
+
+
+CAPABILITIES:
+
+    EXTRACT
+    STRUCTURE
+    GENERATE
+    ARTIFACT
+
+
+NO:
+
+    Offering
+    Need
+    Marketplace
+    Transaction
+
+
+This prevents JASIM from becoming:
+
+    everything-is-commerce.
+
+
+=======================================================================
+40. SCENARIO 28 — FARMERS → RESTAURANTS → LOGISTICS → STORAGE
+=======================================================================
+
+GOAL:
+
+    farmers sell produce to restaurants,
+    large purchases trigger transport/storage.
+
+
+COMPOSITION:
+
+    farmer Offerings
+        ↓
+    restaurant Needs
+        ↓
+    Match
+        ↓
+    Order/TransactionIntent
+        ↓
+    CONDITION(quantity)
+        ↓
+    logistics requirement
+        +
+    cold-storage requirement
+
+
+This is a major cross-domain killer test.
+
+
+No:
+
+    FarmRestaurantLogisticsService.
+
+
+=======================================================================
+41. SCENARIO 29 — EMPTY RETURN TRUCKS
+=======================================================================
+
+PROBLEM:
+
+Trucks return empty.
+
+
+JASIM should understand:
+
+    asset
+    route
+    unused capacity
+    time window
+    location
+    Offering
+    Need
+    Match
+    booking
+
+
+This is another:
+
+    IDLE CAPACITY → VALUE
+
+scenario.
+
+
+=======================================================================
+42. SCENARIO 30 — MULTI-INTENT SESSION
+=======================================================================
+
+USER:
+
+    "Sell my furniture,
+     help me buy a car,
+     and find me a job."
+
+
+Expected:
+
+    ONE conversation
+
+with multiple goal graphs.
+
+
+Possible:
+
+    multiple Runs
+
+    multiple Entities
+
+    different output forms
+
+
+Do NOT:
+
+    force entire conversation into one domain.
+
+
+This is a direct test of:
+
+    central JASIM intelligence.
+
+
+=======================================================================
+PART VI
+OUTPUT-FORM GENERALITY
+=======================================================================
+
+43. SAME DOMAIN, DIFFERENT INTENT
+=======================================================================
+
+Transport example:
+
+
+A:
+
+    "I need a bus to work."
+
+→ Search / Match / Run
+
+
+B:
+
+    "I want to start a worker transport service."
+
+→ business planning / durable workflow
+
+
+C:
+
+    "Build the full operating system for my transport company."
+
+→ Persistent Smart Bubble + World
+
+
+Same noun.
+
+Different intent.
+
+Different output.
+
+
+This must remain a mandatory test.
+
+
+=======================================================================
+44. SAME VALUE OBJECT, DIFFERENT SURFACE
+=======================================================================
+
+Offering may render as:
+
+    Card
+    Detail
+    Comparison Row
+    Search Result
+    Bubble
+    Public Projection
+
+
+Offering is NOT UI.
+
+
+=======================================================================
+PART VII
+BUSINESS MODEL INTELLIGENCE
+=======================================================================
+
+45. "HOW CAN I MAKE MONEY FROM THIS?"
+=======================================================================
+
+This is a required JASIM intelligence test.
+
+
+When asked:
+
+    "How do I make money from this service?"
+
+
+JASIM must inspect the actual World.
+
+
+Example World contains:
+
+    recurring trips
+    seats
+    drivers
+    workers
+    companies
+
+
+Then economically plausible models may include:
+
+    monthly worker subscription
+
+    employer contract
+
+    per-trip pricing
+
+    hybrid subscription + usage
+
+    service fee
+
+
+Another World with:
+
+    freelance projects
+    milestones
+    contractors
+
+
+may justify:
+
+    success fee
+    project fee
+    premium subscription
+    verification fee.
+
+
+Do not reply with generic monetization boilerplate.
+
+
+=======================================================================
+46. ECONOMIC MODEL OUTPUT
+=======================================================================
+
+Conceptually:
+
+
+@dataclass
+class EconomicModelProposal:
+    world_ref: str
+
+    candidate_models: list[str]
+
+    why_each_model_fits: dict
+
+    required_inputs: list[str]
+
+    assumptions: list[str]
+
+    unknowns: list[str]
+
+    required_owner_decisions: list[str]
+
+    evidence_refs: list[str]
+
+
+No invented final price.
+
+
+=======================================================================
+47. OWNER DECISION BOUNDARY
+=======================================================================
+
+JASIM may calculate:
+
+    margins
+    break-even
+    pricing ranges from evidence
+    sensitivity
+
+
+But owner decides:
+
+    target margin
+    final commission
+    subscription price
+    promotional policy
+
+
+unless explicit delegated authority exists.
+
+
+=======================================================================
+PART VIII
+GENERAL MONETIZATION ENGINE
+=======================================================================
+
+48. ONE ECONOMICS ENGINE
+=======================================================================
+
+Do NOT build:
+
+    CarPricingEngine
+
+    JobCommissionEngine
+
+    FreelancerFeeEngine
+
+    TransportSubscriptionEngine
+
+
+Use general primitives:
+
+
+REVENUE_MODELS = [
+
+    "TRANSACTION_FEE",
+
+    "SUCCESS_FEE",
+
+    "SUBSCRIPTION",
+
+    "USAGE_FEE",
+
+    "SERVICE_FEE",
+
+    "LISTING_FEE",
+
+    "VERIFICATION_FEE",
+
+    "DELIVERY_MARGIN",
+
+    "PROMOTION_FEE",
+
+    "B2B_CONTRACT",
+
+    "CPA",
+
+    "CPC",
+
+]
+
+
+=======================================================================
+49. ORDER OF MONETIZATION PRIORITY
+=======================================================================
+
+PRIORITIZE:
+
+    verified outcome revenue
+
+    recurring subscriptions
+
+    transaction revenue
+
+    operational fees
+
+
+THEN:
+
+    premium add-ons
+
+
+LATER:
+
+    advertising.
+
+
+Reason:
+
+Outcome-aligned monetization aligns JASIM with user success.
+
+
+=======================================================================
+50. NEVER REALIZE REVENUE BEFORE OUTCOME
+=======================================================================
+
+Examples:
+
+
+match created
+    !=
+success fee
+
+
+proposal created
+    !=
+success fee
+
+
+job recommendation
+    !=
+hiring success fee
+
+
+delivery requested
+    !=
+delivery margin realized
+
+
+Required:
+
+    VERIFIED_OUTCOME
+        ↓
+    RevenueEvent
+
+
+=======================================================================
+PART IX
+WHAT BLOCK 1.1 MUST UNLOCK FOR THESE SERVICES
+=======================================================================
+
+51. OPEN CAPABILITY SUPPLY
+=======================================================================
+
+For every service above JASIM should be able to ask:
+
+    Can native capability handle it?
+
+    Is there an MCP provider?
+
+    Is there an A2A specialist?
+
+    Is there an existing API adapter?
+
+    Is there a bounded Agent capable of the subtask?
+
+    Is computer-use justified?
+
+
+This can dramatically reduce:
+
+    connector code
+    specialist code
+    integration effort.
+
+
+=======================================================================
+52. EXAMPLE — INTERNATIONAL PROCUREMENT
+=======================================================================
+
+Instead of JASIM implementing every supplier source:
+
+    SUPPLIER_DISCOVERY requirement
+
+may find:
+
+    native supplier catalog
+
+    MCP procurement service
+
+    A2A sourcing specialist
+
+    external search provider.
+
+
+The Capability remains:
+
+    SUPPLIER_DISCOVERY.
+
+
+=======================================================================
+PART X
+WHAT BLOCK 2 MUST UNLOCK FOR THESE SERVICES
+=======================================================================
+
+53. HIGH-LEVERAGE BLOCK 2 PRIMITIVES
+=======================================================================
+
+The Atlas shows repeated need for:
+
+    TIME
+
+    AVAILABILITY
+
+    CAPACITY
+
+    RESERVATION
+
+    DELEGATION
+
+    NOTIFICATION
+
+    LOCATION
+
+    TRACKING
+
+    MULTI-PARTY COORDINATION
+
+
+These occur across:
+
+    transport
+    service
+    equipment
+    booking
+    warehouse
+    delivery
+    appointments
+    generated businesses.
+
+
+Therefore these are more important than creating specific domain
+integrations.
+
+
+=======================================================================
+54. ECONOMIC IMPORTANCE OF RESERVATION
+=======================================================================
+
+Reservation is especially important.
+
+Without it JASIM may:
+
+    discover
+
+and:
+
+    match
+
+
+but cannot reliably turn scarce capacity into a transaction.
+
+
+Reservation unlocks:
+
+    seats
+    warehouse capacity
+    equipment time
+    technician time
+    appointments
+    rental inventory
+    machine slots.
+
+
+This makes it a high-value Block 2 primitive.
+
+
+=======================================================================
+PART XI
+WHAT BLOCK 3 MUST UNLOCK FOR THESE SERVICES
+=======================================================================
+
+55. COMMERCE MUST BE GENERAL
+=======================================================================
+
+Block 3 should enable these known examples without domain payment code.
+
+
+Sale:
+
+    buyer → seller
+
+
+Service:
+
+    customer → provider
+
+
+Transport:
+
+    passenger/company → operator
+
+
+Generated Business:
+
+    customer → business owner
+
+
+Freelance:
+
+    client → freelancer
+
+
+Marketplace:
+
+    buyer → seller
+    +
+    platform fee
+
+
+All through the same generic payment/economics primitives.
+
+
+=======================================================================
+56. GENERATED BUSINESS IS THE MOST IMPORTANT COMMERCIAL COMPOUNDING TEST
+=======================================================================
+
+Example:
+
+User creates a transport/education/service Bubble.
+
+
+The owner may earn:
+
+    subscription revenue
+
+    transaction revenue
+
+
+JASIM may earn:
+
+    platform subscription
+
+    verified transaction fee
+
+    premium automation fee
+
+
+The Bubble produces more supply for JASIM's Economic Network.
+
+
+That means one generated business can produce:
+
+    RECURRING_REVENUE
+    +
+    NETWORK_EFFECT
+    +
+    TRANSACTION_VOLUME
+    +
+    RETENTION.
+
+
+This is strategically more powerful than one isolated AI answer.
+
+
+=======================================================================
+PART XII
+FINAL ECONOMIC GENERALIZATION TEST
+=======================================================================
+
+57. FREEZE CORE BEFORE FINAL ATLAS TEST
+=======================================================================
+
+After Blocks 1.1–3:
+
+freeze:
+
+    capabilities
+    economic primitives
+    renderer
+    provider interfaces.
+
+
+Then run known Atlas scenarios.
+
+
+Then generate unseen scenarios.
+
+
+No patches between tests.
+
+
+=======================================================================
+58. EACH SCENARIO REPORTS
+=======================================================================
+
+For every scenario:
+
+
+SCENARIO:
+
+SEMANTIC_UNDERSTANDING:
+PASS / FAIL
+
+OUTPUT_FORM:
+...
+
+GENERAL_CAPABILITIES:
+[...]
+
+ECONOMIC_OBJECTS:
+[...]
+
+REAL_WORLD_RESOURCES:
+[...]
+
+EXTERNAL_PROVIDERS:
+[...]
+
+REGULATORY_REQUIREMENTS:
+[...]
+
+OWNER_DECISIONS:
+[...]
+
+USER_VALUE:
+[...]
+
+USER_REVENUE_MODEL:
+[...]
+
+JASIM_REVENUE_MODEL:
+[...]
+
+PROVIDER_COST_MODEL:
+[...]
+
+COMPOSITION_RESULT:
+COMPOSED / PARTIAL / GAP
+
+BLOCKER:
+...
+
+DOMAIN_CODE_ADDED:
+0
+
+
+=======================================================================
+59. ECONOMIC GENERALIZATION GATE
+=======================================================================
+
+Required:
+
+
+KNOWN_SERVICE_FAMILIES_COVERED >= 10
+
+KNOWN_ACCEPTANCE_SCENARIOS_TESTED >= 30
+
+UNSEEN_SCENARIOS_TESTED >= 15
+
+
+DOMAIN_SPECIFIC_HANDLERS_ADDED = 0
+
+DOMAIN_SPECIFIC_AGENTS_ADDED = 0
+
+DOMAIN_SPECIFIC_UI_COMPONENTS_ADDED = 0
+
+DOMAIN_SPECIFIC_MONETIZATION_ENGINES = 0
+
+
+TRANSACTION_WITHOUT_PAYMENT = PASS
+
+RECURRING_GENERATED_BUSINESS = PASS
+
+B2B_HIGH_VALUE_TRANSACTION = PASS
+
+RESOURCE_CAPACITY_MONETIZATION = PASS
+
+MULTI_PARTY_TRANSACTION = PASS
+
+NON_ECONOMIC_TASK = PASS
+
+
+USER_VALUE_MODEL = PASS
+
+USER_REVENUE_SEPARATION = PASS
+
+JASIM_REVENUE_SEPARATION = PASS
+
+PROVIDER_COST_SEPARATION = PASS
+
+NO_INVENTED_PRICING = PASS
+
+NO_FAKE_PROVIDERS = PASS
+
+NO_FAKE_PAYMENTS = PASS
+
+NO_FAKE_LOCATION = PASS
+
+NO_FAKE_SUCCESS = PASS
+
+
+=======================================================================
+60. FINAL TEACHING STATEMENT
+=======================================================================
+
+Replit must understand:
+
+The examples do not define JASIM.
+
+The examples expose the space of human problems
+that JASIM's general primitives must cover.
+
+
+The target is NOT:
+
+    "support cars,
+     jobs,
+     food,
+     transport,
+     warehouses,
+     freelancers."
+
+
+The target is:
+
+    understand value,
+    understand need,
+    understand supply,
+    understand resources,
+    understand time,
+    understand capacity,
+    understand constraints,
+    understand relationships,
+    understand authority,
+    discover capabilities,
+    compose operations,
+    coordinate reality,
+    verify outcomes,
+    and monetize verified value.
+
+
+If these primitives are correct:
+
+cars work.
+
+jobs work.
+
+warehouses work.
+
+transport works.
+
+freelancing works.
+
+generated businesses work.
+
+and future use cases can emerge without Core redesign.
+
+
+That is the purpose of the Universal Services
++ Economic Acceptance Atlas.
+
+=======================================================================
+END
+=======================================================================
+"""

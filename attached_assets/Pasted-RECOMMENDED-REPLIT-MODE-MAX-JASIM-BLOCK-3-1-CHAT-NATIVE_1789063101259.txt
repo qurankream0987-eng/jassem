@@ -1,0 +1,1617 @@
+RECOMMENDED REPLIT MODE: MAX
+
+# JASIM — BLOCK 3.1
+
+# CHAT-NATIVE UNIVERSAL DISCOVERY
+
+# + CONVERSATIONAL COMMERCE
+
+# + GENERATIVE WORLD CONTINUITY
+
+#
+
+# CANONICAL REALITY MAPPING ONLY
+
+# NO IMPLEMENTATION YET
+
+Block 3 is now officially CLOSED / PASS.
+
+Accepted foundation:
+
+BLOCK_0 = CLOSED / PASS
+BLOCK_1 = CLOSED / PASS
+BLOCK_1_1 = CLOSED / PASS
+BLOCK_2 = CLOSED / PASS
+BLOCK_3 = CLOSED / PASS
+
+Do NOT reopen or redesign completed blocks unless you discover a direct, concrete regression that prevents Block 3.1.
+
+Do NOT implement Block 3.1 yet.
+
+Do NOT modify production data.
+Do NOT create migrations.
+Do NOT connect new production providers.
+Do NOT redesign Web/Mobile.
+Do NOT build the final Smart Bubble interface.
+Do NOT deploy.
+
+Your task is to inspect the ACTUAL repository and determine how close JASIM currently is to the following final product vision.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+THE BLOCK 3.1 VISION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+JASIM must become primarily:
+
+ONE CONVERSATION
++
+ONE CENTRAL INTELLIGENCE
++
+UNIVERSAL DISCOVERY
++
+GENERAL EXECUTION
++
+DURABLE GOAL CONTINUITY
++
+GENERATIVE WORLDS WHEN JUSTIFIED
+
+The user should primarily need to say:
+
+"جاسم، أريد..."
+
+The user should NOT need to know:
+
+* which app to open
+* which marketplace to use
+* which website to search
+* which provider to select
+* which workflow to configure
+* which agent to invoke
+* which section/menu contains the function
+
+Target:
+
+USER INTENT
+↓
+CONVERSATION INTELLIGENCE
+↓
+REFERENCE RESOLUTION
+↓
+MISSING INFORMATION RESOLUTION
+↓
+SOURCE / CAPABILITY PLANNING
+↓
+SEARCH / DISCOVERY / ANALYSIS / BUILD / ACTION
+↓
+POLICY / APPROVAL WHEN REQUIRED
+↓
+TRUSTED EXECUTION
+↓
+VERIFICATION / TRACKING
+↓
+CONTINUED GOAL
+↓
+SMALLEST SUFFICIENT OUTPUT
+
+Core product rule:
+
+CONVERSATION FIRST
+UI WHEN USEFUL
+EXECUTION WHEN AUTHORIZED
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. UNIVERSAL DISCOVERY
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Determine whether JASIM can search/discover across:
+
+1. INTERNAL JASIM SUPPLY
+
+   * Offerings
+   * Resources
+   * Services
+   * Opportunities
+   * available capacity
+   * public/shared generated World offerings
+   * other canonical discoverable entities
+
+2. CONNECTED PROVIDERS
+
+3. WEB / INTERNET
+
+4. MCP providers
+
+5. A2A / remote providers
+
+6. future provider-neutral sources
+
+JASIM must choose the smallest sufficient source set.
+
+Do NOT assume:
+
+always internal first
+or
+always web first.
+
+Example:
+
+"ابحث فقط داخل جاسم"
+→ INTERNAL ONLY
+
+"ابحث في الإنترنت فقط"
+→ EXTERNAL ONLY
+
+"أبي أفضل سعر سواء داخل جاسم أو خارجه"
+→ MIXED SOURCE DISCOVERY
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. INTERNAL JASIM ECONOMIC NETWORK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is critical.
+
+Determine whether User A can publish arbitrary supply and User B can discover it through the SAME generic discovery system.
+
+Example:
+
+User A:
+"جاسم، بع سيارتي."
+
+Expected canonical concept:
+
+Asset
+↓
+Offering
+↓
+PUBLIC
+↓
+ACTIVE
+↓
+Discoverable
+
+Then User B:
+
+"جاسم، أبي تويوتا حديثة أقل من 9,000."
+
+JASIM should be able to discover User A's public Offering.
+
+But:
+
+PRIVATE Asset
+must NOT become searchable merely because it exists.
+
+Permanent invariant:
+
+SMART_BUBBLE != SEARCH_TRUTH
+
+Bubble = presentation.
+
+Search truth must come from canonical state:
+
+Entity / Offering / Resource / Opportunity
++
+Visibility
++
+Authorization
++
+Lifecycle
++
+Discoverability
+
+Required:
+
+PRIVATE_DATA_DISCOVERY_LEAKS = 0
+
+SHARED permissions must be respected.
+
+Sold/cancelled/inactive/exhausted supply must not appear as currently available unless explicitly requested historically.
+
+Generated businesses must participate in the SAME economy.
+
+Example:
+
+Generated World publishes a maintenance service
+↓
+canonical Offering
+↓
+other JASIM users can discover it
+
+Do NOT create a special GeneratedWorldMarketplace.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. OFFERING / NEED / RESOURCE DISTINCTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Preserve:
+
+Entity != Offering
+
+Resource != Offering
+
+Need != Search String
+
+Example:
+
+A warehouse existing privately:
+Resource
+
+The warehouse offered for commercial storage:
+Offering
+
+A company requesting storage:
+Need
+
+Then:
+
+Need ↔ Offering
+through generic discovery/matching.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. SEARCH PIPELINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Determine whether current architecture can support:
+
+Natural Language
+↓
+Intent / Goal
+↓
+Reference Resolution
+↓
+Discovery Requirement
+↓
+Source Planning
+↓
+Hard Constraint Extraction
+↓
+Authorization / Visibility
+↓
+Candidate Retrieval
+↓
+Normalization
+↓
+Freshness / Availability
+↓
+Trust / Provenance
+↓
+Semantic Matching
+↓
+Ranking
+↓
+Verification when required
+↓
+Result / Action
+
+Critical:
+
+HARD CONSTRAINTS BEFORE SEMANTIC RANKING
+
+Example:
+
+"لابتوب ألعاب تحت 400 د.ك"
+
+A 700 KWD laptop must NOT outrank valid sub-400 results simply because its semantic similarity is higher.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. SOURCE PROVENANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Results must retain source truth.
+
+Possible source identities:
+
+JASIM_INTERNAL
+WEB_OBSERVATION
+CONNECTED_PROVIDER
+MCP_PROVIDER
+A2A_PROVIDER
+
+Do not lose:
+
+source
+freshness
+verification status
+merchant/provider identity
+whether action is executable or informational only
+
+A web observation is not automatically canonical merchant truth.
+
+Example:
+
+Web result says:
+199 KWD
+
+This is:
+
+Observation
+
+not automatically:
+
+verified live price
+verified stock
+transaction price
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. MIXED-SOURCE NORMALIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Determine whether internal Offerings, web observations, MCP results and provider results can be normalized enough to:
+
+filter
+compare
+rank
+deduplicate
+reference later
+take action
+
+without creating:
+
+CarSearchResult
+JobSearchResult
+HotelSearchResult
+LaptopSearchResult
+
+Use general semantic result/candidate concepts.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. REFERENCE RESOLUTION — P0
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Determine whether JASIM can reliably understand:
+
+"الثاني"
+"الأول"
+"هذا"
+"هو"
+"نفس السيارة"
+"البائع السابق"
+"الوظيفة التي أعجبتني"
+"الشحنة"
+"الموصل"
+"المشروع"
+"الخطة الشهرية"
+"العرض الذي وصل أمس"
+
+Example:
+
+User:
+"ابحث لي عن أفضل 5 لابتوبات."
+
+JASIM:
+returns five.
+
+User:
+"قارن الثاني والرابع."
+
+User:
+"الثاني أفضل."
+
+User:
+"راقبه أسبوع."
+
+User:
+"إذا نزل إلى 300 اشتره."
+
+User:
+"لا، ألغِ الشراء وخبرني فقط."
+
+JASIM must preserve exact identity and the latest user intention.
+
+Reference identity must not live only as array position in frontend memory.
+
+Determine whether it survives:
+
+* next turn
+* reload
+* server restart
+* Web ↔ Mobile
+* durable Run lifetime where appropriate
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. DURABLE GOAL CONTINUITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Goals may live for:
+
+seconds
+days
+weeks
+months
+
+Examples:
+
+"راقب السعر."
+
+"استمر في البحث عن مشترٍ."
+
+"تابع طلبات التوظيف."
+
+"نبّهني إذا ظهر مورد أرخص."
+
+"تابع المشروع."
+
+Map these onto existing:
+
+Conversation
+Run
+Task
+TemporalTrigger
+Events
+World
+Smart Bubble / future Living Object
+
+Do NOT create another scheduler or another memory system.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. SMALLEST SUFFICIENT OUTPUT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+JASIM must choose output according to intent, not domain.
+
+Possible forms:
+
+TEXT
+STRUCTURED_RESULT
+DIRECT_ACTION
+WORKFLOW
+DURABLE_RUN
+EPHEMERAL_BUBBLE
+INTERACTIVE_BUBBLE
+PERSISTENT_SMART_OBJECT
+PERSISTENT_WORLD
+
+Examples:
+
+"كم سعر الذهب؟"
+→ TEXT / STRUCTURED_RESULT
+
+"قارن هذه الأجهزة."
+→ STRUCTURED_RESULT
+
+"ألغِ حجزي."
+→ DIRECT_ACTION / RUN
+
+"راقب سعر هذا الجهاز."
+→ DURABLE_RUN
+
+"بع سيارتي وتابع المشترين."
+→ persistent living object / economic state
+
+"ابن لي شركة نقل موظفين وأدرها."
+→ PERSISTENT WORLD
+
+Do not create a Bubble for everything.
+
+Do not create a World for everything.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. CHAT-NATIVE COMMERCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Target:
+
+Conversation
+↓
+Need
+↓
+Discovery
+↓
+Match
+↓
+Engagement
+↓
+Negotiation
+↓
+Proposal
+↓
+TransactionIntent
+↓
+PaymentIntent if required
+↓
+Fulfillment
+↓
+Tracking
+↓
+Verified economic outcome
+
+User should not be forced through:
+
+Marketplace
+→ Category
+→ Filters
+→ Listing
+→ Cart
+→ Checkout
+
+unless UI materially helps.
+
+Example:
+
+User:
+"أبي آيفون جديد 256 جيجا تحت 380 دينار ويوصل اليوم."
+
+JASIM searches.
+
+User:
+"خذ الأول."
+
+Reference Resolution.
+
+User:
+"دور لي موصل."
+
+JASIM searches delivery capacity.
+
+Courier receives an opportunity.
+
+Courier:
+"موافق."
+
+Reservation / Assignment.
+
+Buyer:
+"ادفع."
+
+Block 3 trusted payment runtime.
+
+Seller prepares product.
+
+Courier receives notification.
+
+Courier picks up.
+
+Buyer:
+"وين طلبي؟"
+
+JASIM resolves current delivery and tracks only from real observations.
+
+Delivery is verified.
+
+Economic outcome is recorded.
+
+All through ONE JASIM.
+
+No:
+
+BuyerApp
+SellerApp
+CourierApp
+DeliveryAgent
+PhoneCommerceEngine
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. FULL DELIVERY ACCEPTANCE EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Map whether current generic primitives can eventually support this without domain code:
+
+A courier says:
+
+"جاسم، أبي أشتغل توصيل بعد الدوام."
+
+JASIM derives:
+
+Actor
+Vehicle/Resource
+Delivery capability/service
+Availability
+Service area
+Capacity
+Offering
+
+Later a buyer purchases an item.
+
+The purchase produces a Delivery Need.
+
+JASIM discovers compatible delivery Offerings.
+
+Courier receives:
+
+new opportunity
+pickup
+dropoff
+distance if real
+compensation
+time window
+
+Courier accepts.
+
+JASIM reserves capacity.
+
+Seller receives paid order notification.
+
+Seller prepares order.
+
+Courier receives pickup notification.
+
+Courier reports / proves pickup.
+
+Buyer receives delivery status.
+
+Courier reports arrival.
+
+Delivery is verified through an appropriate proof.
+
+Economic outcome is recorded.
+
+The SAME architecture must work for:
+
+electronics
+documents
+furniture
+B2B shipment
+parts
+other deliverable resources
+
+without Delivery domain Core.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. CHAT-NATIVE PLATFORM / WORLD GENERATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Test architecture against:
+
+"ابن لي منصة لنقل موظفي الشركات."
+
+JASIM should derive general concepts such as:
+
+Actors
+Resources
+Vehicles
+Capacity
+Routes
+Bookings
+Assignments
+Subscriptions
+Permissions
+Payments
+Events
+
+without TransportPlatformTemplate.
+
+Then:
+
+"أضف اشتراك شهري للشركات."
+
+Must modify SAME World.
+
+Then:
+
+"أول أسبوع مجاني."
+
+Same World.
+
+Then:
+
+"أي عقد فوق 500 د.ك يحتاج موافقتي."
+
+Same World policy.
+
+Then:
+
+"أوقف الاشتراك المجاني."
+
+Same World mutation.
+
+Do not regenerate a new application when mutation is sufficient.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. CHAT-NATIVE WORLD MUTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Determine whether JASIM supports or can minimally evolve into:
+
+Natural Language
+↓
+Reference Resolution
+↓
+Existing World
+↓
+Mutation Intent
+↓
+ChangeSet
+↓
+Impact / Preview when needed
+↓
+Policy / Approval
+↓
+Atomic Mutation
+↓
+Version
+↓
+Projection Refresh
+
+Generic mutation families:
+
+DATA
+STRUCTURAL
+POLICY
+WORKFLOW
+VIEW
+PERMISSION
+COMMERCIAL
+
+Examples:
+
+"أضف خدمة جديدة."
+
+"احذف الخطة المجانية."
+
+"غير الاشتراك إلى 30 دينار."
+
+"أوقف الطلبات يوم الجمعة."
+
+"اجعل المدير يوافق على أي عملية فوق 1000."
+
+"لا تظهر رقم الفني قبل قبول الطلب."
+
+"بدل عرض الخدمات إلى بطاقات."
+
+"أضف موظف مبيعات."
+
+No domain CRUD handlers.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. ADAPTIVE CLARIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+JASIM must neither:
+
+ask twenty questions first
+
+nor:
+
+invent missing information.
+
+Target:
+
+resolve KNOWN
+↓
+use safe INFERRED facts only where appropriate
+↓
+identify UNKNOWN
+↓
+ask only blocking question
+↓
+require confirmation for consequential assumptions
+
+Examples:
+
+"بع سيارتي."
+
+If user owns one car:
+resolve it.
+
+If user owns several:
+ask which.
+
+If price is missing:
+may research and recommend.
+
+Recommendation != owner-approved listing price.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. GENERALITY TESTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect whether these can use the SAME architecture:
+
+A. Sell a car
+B. Buy a laptop
+C. Employment search
+D. Hire 4 technicians
+E. Emergency plumber
+F. B2B procurement
+G. International procurement
+H. Warehouse monetization
+I. Industrial machine capacity
+J. Empty return trucks
+K. Employee transport platform
+L. Farmers-to-restaurants platform
+M. Shared laboratory equipment
+N. Education subscription service
+O. Maintenance business
+P. Contract renewal service
+Q. Non-commercial research
+R. Monitoring
+S. Build a website
+T. Build an application
+
+Examples are acceptance tests only.
+
+They MUST NOT become architecture.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. SAME DOMAIN — DIFFERENT INTENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CAR:
+
+"كم سعر سيارتي؟"
+→ analysis
+
+"ابحث لي عن سيارة."
+→ discovery
+
+"بع سيارتي."
+→ action / Offering
+
+"راقب سعر هذه السيارة."
+→ durable Run
+
+"ابن لي سوق سيارات."
+→ World
+
+No CarAgent.
+
+EMPLOYMENT:
+
+"ما متوسط راتب المحاسب؟"
+→ research
+
+"ابحث لي عن وظيفة."
+→ discovery
+
+"قدم على الوظائف."
+→ execution
+
+"تابع طلباتي."
+→ durable coordination
+
+"ابن لي منصة توظيف."
+→ World
+
+No JobAgent.
+
+FOOD:
+
+"ما أفضل مطعم؟"
+→ discovery
+
+"احجز."
+→ action
+
+"اطلب هذه الوجبة."
+→ commerce
+
+"تابع التوصيل."
+→ tracking
+
+"ابن لي مشروع توصيل."
+→ World
+
+No FoodAgent.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. RESOURCE MONETIZATION INTELLIGENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Test this important vision:
+
+User:
+
+"عندي مخزن فاضي وأبي أربح منه."
+
+JASIM should not merely generate generic ideas.
+
+It should be able to reason about:
+
+resource
+location
+capacity
+features
+availability
+constraints
+actual/internal/external demand
+commercial possibilities
+
+Then user:
+
+"خله للتخزين التجاري القصير."
+
+JASIM creates appropriate Offering/World.
+
+Then:
+
+"دور لي أول عميل."
+
+Discovery.
+
+"فاوضه."
+
+Bounded delegation.
+
+"موافق."
+
+Transaction.
+
+"أي حجز فوق 500 يحتاج موافقتي."
+
+Policy mutation.
+
+"كم ربحت هذا الشهر؟"
+
+Real Block 3 economics.
+
+The same architecture should work for:
+
+warehouse
+truck
+machine
+industrial oven
+room
+equipment
+vehicle fleet
+lab equipment
+other resources
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. BUILD SOMETHING THE USER DID NOT NAME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Test:
+
+"عندي مزرعة وشاحنتين ومخزن و5 موظفين. أبي أستفيد منهم بأفضل طريقة."
+
+JASIM should reason about the available resources and demand.
+
+Potential composition may include:
+
+farm output
+restaurant demand
+warehouse spare capacity
+delivery capacity
+return-trip freight
+workforce
+
+But do not hardcode those outcomes.
+
+JASIM should derive opportunities from evidence and general primitives.
+
+This tests whether JASIM can discover the platform/business model itself.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. SEARCH → ACTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Search must not end at dead links when executable capabilities exist.
+
+Example:
+
+"ابحث عن أفضل شركة صيانة."
+
+Then:
+
+"احجز الأولى غدًا."
+
+Reference Resolution must bridge:
+
+Search Result
+↓
+Provider / Offering
+↓
+Booking capability
+↓
+trusted execution
+
+But:
+
+DISCOVERED
+!=
+SELECTED
+!=
+AUTHORIZED
+!=
+EXECUTED
+!=
+VERIFIED
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. TRUST / SECURITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect for:
+
+private discovery leakage
+cross-owner leaks
+SHARED grant bypass
+stale result execution
+reference substitution
+merchant substitution
+provider substitution
+search-result prompt injection
+external URL spoofing
+unauthorized publication
+unauthorized World mutation
+stale approval after price/resource mutation
+
+External search/provider content is UNTRUSTED DATA.
+
+It may not:
+
+override policy
+grant authority
+trigger payment
+change owner
+mark VERIFIED
+inject system instructions
+
+Preserve Block 3 trust boundaries.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. DOMAIN-SPECIFIC ARCHITECTURE IS FORBIDDEN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Search the active repository for architectural dependencies resembling:
+
+CarAgent
+JobAgent
+FoodAgent
+DeliveryAgent
+HotelAgent
+ProcurementAgent
+
+CarsMarketplace
+JobsMarketplace
+FoodMarketplace
+
+CarSearchEngine
+JobSearchEngine
+HotelSearchEngine
+
+TransportWorldGenerator
+MarketplaceGenerator
+WebsiteBuilderAgent
+
+Domain-specific output routers
+
+Domain-specific payment/economic engines
+
+Domain-specific generated UI required only for one example
+
+Domain names in tests/sample data are acceptable.
+
+Domain names controlling permanent Core architecture are not.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. INSPECT REAL CURRENT SYSTEMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Trace active code for:
+
+Conversation
+Messages
+Memory
+Reference Resolution
+Intent
+Semantic Goal
+Planner
+Capability Fabric
+Capability Provider Fabric
+Search
+Discovery
+Extract
+Compare
+Match
+Rank
+Verify
+Offering
+Need
+Resource
+Opportunity
+Engagement
+Proposal
+TransactionIntent
+PaymentIntent
+Run
+Task
+DAG
+TemporalTrigger
+Events
+Notifications
+Tracking
+Delegation
+Generated DNA
+World
+ChangeSet
+Smart Bubble
+Presentation IR
+Projection
+Web
+Mobile
+
+Also inspect:
+
+web search adapters
+external APIs
+MCP
+A2A
+vector search
+full-text search
+embeddings
+catalogs
+search indexes
+listing discovery
+recommendation systems
+
+Trace real symbols/functions/modules.
+
+Do not infer architecture from file names.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. REALITY CLASSIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For every required capability classify:
+
+REAL_CONNECTED
+
+REAL_BUT_LIMITED
+
+PARTIAL
+
+MISSING
+
+LEGACY_ONLY
+
+TEST_ONLY
+
+DEAD
+
+BROKEN
+
+NOT_REQUIRED
+
+Then classify action:
+
+REUSE
+
+EXTEND
+
+ADAPTER_ONLY
+
+NEW_GENERIC_PRIMITIVE_REQUIRED
+
+REMOVE_FROM_ACTIVE_PATH
+
+DEFER_SMART_INTERFACE
+
+DEFER_FINAL_PRODUCTION
+
+NO_CHANGE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. GAP TAXONOMY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every gap must use a precise class such as:
+
+MISSING_GENERIC_CAPABILITY
+MISSING_DISCOVERY_PRIMITIVE
+MISSING_REFERENCE_RESOLUTION
+MISSING_SOURCE_ADAPTER
+MISSING_PROVIDER
+MISSING_SCHEMA_EXPRESSIVENESS
+MISSING_WORLD_PRIMITIVE
+MISSING_PRESENTATION_SEMANTIC
+MISSING_POLICY_PRIMITIVE
+BLOCKED_BY_PROVIDER
+BLOCKED_BY_RESOURCE
+REQUIRES_HUMAN
+REQUIRES_OWNER_DECISION
+REQUIRES_REGULATORY_REVIEW
+INSUFFICIENT_INFORMATION
+INSUFFICIENT_TRUST
+UNSUPPORTED_INPUT
+
+If "sell car" fails, do NOT propose CarAgent.
+
+Identify the generic failure.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. KNOWN ACCEPTANCE ATLAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Map current expected ability for all of these:
+
+1. "ابحث لي عن لابتوب ألعاب تحت 400 دينار."
+2. "قارن الثاني والرابع."
+3. "راقب الثاني أسبوع."
+4. "اشتره إذا نزل إلى 300."
+5. "ألغِ الشراء، فقط أخبرني."
+6. "بع سيارتي."
+7. "اقترح سعرها."
+8. "انشرها."
+9. "فاوض المشترين ولا تنزل عن 7,000."
+10. "ما أعلى عرض؟"
+11. "أبي تويوتا أقل من 9,000."
+12. "ابحث فقط داخل جاسم."
+13. "ابحث فقط في الإنترنت."
+14. "ابحث داخل جاسم وخارجه."
+15. "وظفني كمحاسب في الكويت فوق 800."
+16. "قدم على المناسب بعد موافقتي."
+17. "أحتاج أربعة فنيين الأسبوع القادم."
+18. "أبي سباك الآن."
+19. "وين الفني؟"
+20. "أحتاج 1000 كرسي، فاوض ولا تشتري."
+21. "ابحث عن مصنع يورد 10 آلاف قطعة."
+22. "عندي مخزن فارغ، ربّحني."
+23. "عندي فرن صناعي فاضي نصف اليوم."
+24. "شاحناتي ترجع فاضية."
+25. "ابن لي منصة نقل موظفين."
+26. "أضف اشتراكًا شهريًا."
+27. "أول أسبوع مجاني."
+28. "أي عقد فوق 500 يحتاج موافقتي."
+29. "ابن لي موقع شركة ديكور."
+30. "ابن لي تطبيق يربط المزارعين بالمطاعم."
+31. "أضف التخزين والتوصيل عند الحاجة."
+32. "كم ربحت هذا الشهر؟"
+33. "غير العمولة إلى اشتراك."
+34. "أوقف الاشتراك بنهاية الفترة."
+35. "ابحث عن شركة صيانة."
+36. "احجز الأولى."
+37. "تابع الحجز وذكرني."
+38. "سو لي مشروع يربحني من الأشياء اللي أملكها."
+39. "شغل المشروع ونبهني فقط إذا احتجت قرار."
+40. "لخص لي ملفًا ولا تنشئ مشروعًا."
+
+For each classify:
+
+COMPOSABLE_NOW
+PARTIAL
+MISSING_GENERIC_CAPABILITY
+BLOCKED_BY_PROVIDER
+BLOCKED_BY_RESOURCE
+REQUIRES_HUMAN
+REQUIRES_OWNER_DECISION
+REQUIRES_REGULATORY_REVIEW
+INSUFFICIENT_INFORMATION
+
+Do not implement them yet.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. UNSEEN TEST PLAN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Design methodology for >=25 unseen goals.
+
+Do NOT use the examples above.
+
+They must combine unfamiliar:
+
+resources
+commercial models
+search sources
+monitoring
+multi-party coordination
+World generation
+World mutation
+bounded autonomy
+non-commercial work
+internal/external discovery
+
+After eventual implementation:
+
+known scenarios
+↓
+ARCHITECTURE FREEZE
+↓
+
+> =25 unseen scenarios
+
+If an unseen goal needs a domain-specific Core patch:
+
+GENERALIZATION FAILS.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. DATABASE / PRIMITIVE DISCIPLINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not propose a table for every concept.
+
+If something is missing, determine whether current structures can represent it.
+
+Possible concepts to investigate, NOT automatically create:
+
+DiscoveryPlan
+DiscoverySource
+DiscoverableProjection
+NormalizedCandidate
+SourceProvenance
+ReferenceBinding
+ResultSet
+GoalContext
+OutputDecision
+WorldChangeSet
+
+These names are suggestions only.
+
+Prefer reuse.
+
+For any proposed new generic primitive explain:
+
+* exact user failure it solves
+* why existing primitives cannot express it
+* persistence requirements
+* authorization requirements
+* concurrency requirements
+* provider/capability relationship
+* tests required
+* why it is domain-general
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. BLOCK 3.1 IS NOT THE FINAL UI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT implement:
+
+Soap Glass
+Pop Bubbles
+final generative UI
+final Living Objects
+final React redesign
+final mobile interface
+
+The future UI vision is:
+
+CONVERSATION
++
+ADAPTIVE GENERATIVE SURFACES
++
+PERSISTENT LIVING OBJECTS
+
+But Block 3.1 must prove the intelligence/runtime WITHOUT needing that UI.
+
+SMART_GENERATIVE_INTERFACE_REQUIRED_TO_PROVE_CORE = NO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. REQUIRED REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create exactly:
+
+.local/tasks/block3-1-canonical-mapping.md
+
+Required sections:
+
+A. Executive Verdict
+
+B. Current Chat-Native Path
+
+C. Conversation as Primary Interface
+
+D. Reference Resolution
+
+E. Multi-Turn Goal Continuity
+
+F. Durable Goal Continuity
+
+G. Internal JASIM Discovery
+
+H. Offering / Need / Resource Discoverability
+
+I. Visibility / Privacy
+
+J. External Discovery
+
+K. Source Planning
+
+L. Mixed-Source Normalization
+
+M. Source Provenance
+
+N. Hard Constraint Filtering
+
+O. Semantic Matching / Ranking
+
+P. Result Identity / Deduplication
+
+Q. Search → Action Continuity
+
+R. Output Routing
+
+S. Smallest Sufficient Output
+
+T. Generated World Creation
+
+U. Generated World Mutation
+
+V. Generated World Discoverability
+
+W. Chat-Native Commerce
+
+X. Multi-Party Purchase → Delivery Capability
+
+Y. Generalization / Domain Leaks
+
+Z. Security / Trust
+
+AA. Minimum Block 3.1 Implementation Delta
+
+AB. Known Acceptance Atlas
+
+AC. Unseen Test Methodology
+
+AD. Proposed Implementation Phases
+
+AE. Owner Decisions
+
+AF. Final Counters
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. REQUIRED FINAL COUNTERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+End the report with:
+
+BLOCK_0_REMAINS_CLOSED = YES/NO
+BLOCK_1_REMAINS_CLOSED = YES/NO
+BLOCK_1_1_REMAINS_CLOSED = YES/NO
+BLOCK_2_REMAINS_CLOSED = YES/NO
+BLOCK_3_REMAINS_CLOSED = YES/NO
+
+CONVERSATION_IS_PRIMARY_INTERFACE =
+REAL / PARTIAL / MISSING
+
+REFERENCE_RESOLUTION =
+REAL / PARTIAL / MISSING
+
+MULTI_TURN_GOAL_CONTINUITY =
+REAL / PARTIAL / MISSING
+
+DURABLE_GOAL_CONTINUITY =
+REAL / PARTIAL / MISSING
+
+INTERNAL_JASIM_DISCOVERY =
+REAL / PARTIAL / MISSING
+
+PUBLIC_OFFERINGS_DISCOVERABLE =
+YES / NO / PARTIAL
+
+PRIVATE_DATA_DISCOVERY_LEAKS_FOUND = <number>
+
+SHARED_GRANT_DISCOVERY_VIOLATIONS_FOUND = <number>
+
+GENERATED_WORLD_PUBLIC_OFFERINGS_DISCOVERABLE =
+YES / NO / PARTIAL
+
+EXTERNAL_WEB_DISCOVERY =
+REAL / PARTIAL / MISSING / BLOCKED_BY_PROVIDER
+
+CONNECTED_PROVIDER_DISCOVERY =
+REAL / PARTIAL / MISSING
+
+MCP_DISCOVERY =
+REAL / PARTIAL / MISSING
+
+A2A_DISCOVERY =
+REAL / PARTIAL / MISSING
+
+UNIVERSAL_DISCOVERY_ORCHESTRATION =
+REAL / PARTIAL / MISSING
+
+HARD_CONSTRAINTS_BEFORE_SEMANTIC_RANKING =
+YES / NO / PARTIAL
+
+SOURCE_PROVENANCE_PRESERVED =
+YES / NO / PARTIAL
+
+MIXED_SOURCE_NORMALIZATION =
+REAL / PARTIAL / MISSING
+
+MIXED_SOURCE_REFERENCE_RESOLUTION =
+REAL / PARTIAL / MISSING
+
+SEARCH_TO_ACTION_CONTINUITY =
+REAL / PARTIAL / MISSING
+
+SMALLEST_SUFFICIENT_OUTPUT_ROUTING =
+REAL / PARTIAL / MISSING
+
+GENERATED_WORLD_FROM_CONVERSATION =
+REAL / PARTIAL / MISSING
+
+WORLD_MUTATION_FROM_CONVERSATION =
+REAL / PARTIAL / MISSING
+
+CHAT_NATIVE_COMMERCE =
+REAL / PARTIAL / MISSING
+
+CHAT_NATIVE_EMPLOYMENT =
+REAL / PARTIAL / MISSING
+
+CHAT_NATIVE_PROCUREMENT =
+REAL / PARTIAL / MISSING
+
+CHAT_NATIVE_LOCAL_SERVICES =
+REAL / PARTIAL / MISSING
+
+CHAT_NATIVE_RESOURCE_MONETIZATION =
+REAL / PARTIAL / MISSING
+
+MULTI_PARTY_PURCHASE_TO_DELIVERY =
+REAL / PARTIAL / MISSING
+
+DOMAIN_SPECIFIC_SEARCH_ENGINES_FOUND = <number>
+
+DOMAIN_SPECIFIC_MARKETPLACES_IN_CORE_FOUND = <number>
+
+DOMAIN_SPECIFIC_CHAT_AGENTS_FOUND = <number>
+
+DOMAIN_SPECIFIC_WORLD_GENERATORS_FOUND = <number>
+
+DOMAIN_SPECIFIC_OUTPUT_ROUTERS_FOUND = <number>
+
+NEW_GENERIC_PRIMITIVES_REQUIRED = <number>
+
+MINIMUM_NEW_TABLES_ESTIMATE = <number>
+
+MAXIMUM_JUSTIFIED_NEW_TABLES_ESTIMATE = <number>
+
+NEW_EXTERNAL_SDKS_RECOMMENDED = <number>
+
+UNSEEN_CHAT_NATIVE_GOALS_REQUIRED =
+
+> =25
+
+SMART_GENERATIVE_INTERFACE_REQUIRED_TO_PROVE_CORE =
+NO
+
+BLOCK_3_1_IMPLEMENTATION_READY =
+YES / NO
+
+BLOCK_3_1_REQUIRES_PREVIOUS_BLOCK_REWORK =
+YES / NO
+
+READY_FOR_OWNER_REVIEW =
+YES / NO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. FINAL REQUIRED ANSWER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Answer this exact question:
+
+"If the user knows only WHAT they want, but does not know which app,
+website, marketplace, provider, workflow, agent or interface should
+perform it, can ONE JASIM currently take them from natural-language
+intent to the smallest useful truthful/verified outcome, while
+preserving context and safely continuing the goal?"
+
+Answer exactly:
+
+YES
+PARTIAL
+or
+NO
+
+Then list ONLY the generic gaps preventing YES.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After creating:
+
+.local/tasks/block3-1-canonical-mapping.md
+
+STOP.
+
+DO NOT implement Block 3.1.
+
+DO NOT patch examples.
+
+DO NOT create migrations.
+
+DO NOT install SDKs.
+
+DO NOT start the Smart Generative Interface.
+
+DO NOT start Final Production Closure.
+
+Return a concise summary of the mapping and:
+
+READY_FOR_OWNER_REVIEW.
+
+BEGIN BLOCK 3.1 CANONICAL REALITY MAPPING NOW.

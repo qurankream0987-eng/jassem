@@ -1,0 +1,106 @@
+IMPORTANT CLARIFICATION BEFORE STARTING FINAL SMART INTEGRATION
+
+Do NOT interpret the Final Smart Integration acceptance scenario:
+
+"Search with provenance"
+
+as a requirement to connect a new production external search provider.
+
+Real external Discovery providers belong to the later:
+
+REAL DISCOVERY + EXTERNAL PROVIDER PRODUCTION CLOSURE
+
+phase.
+
+During Final Smart Integration, prove Discovery using the CURRENT accepted architecture only.
+
+Required cases:
+
+1. INTERNAL / CURRENT AVAILABLE DISCOVERY
+
+Goal / Need
+→ current available discovery source
+→ canonical ResultSet
+→ Candidates
+→ provenance
+→ freshness where available
+→ stable references
+→ Presentation
+→ Web / Mobile
+
+PASS if this existing path works truthfully.
+
+2. EXTERNAL PROVIDER NOT CONFIGURED
+
+Request requiring unavailable external discovery
+→ truthful:
+
+BLOCKED_BY_PROVIDER
+or
+MISSING_GENERIC_CAPABILITY
+or
+current accepted equivalent.
+
+It must NOT:
+
+return mock products
+return demo results
+invent prices
+invent merchants
+invent availability
+claim live search occurred.
+
+3. FOLLOW-UP CONTINUITY
+
+An existing valid ResultSet R1:
+
+"قارن الثاني والرابع"
+
+must resolve against R1 stable references.
+
+This can be proven using accepted integration/test data.
+
+The fixture proves runtime semantics only.
+
+It must NOT be described as live external provider data.
+
+4. PROVENANCE
+
+Every result must truthfully identify its actual origin:
+
+INTERNAL_CANONICAL
+TEST_FIXTURE when explicitly running a test
+USER_PROVIDED
+EXTERNAL_PROVIDER only if a real provider actually supplied it.
+
+Never relabel a fixture as external/live data.
+
+5. DO NOT CONNECT A NEW SEARCH PROVIDER DURING THIS TASK.
+
+NEW_PRODUCTION_DISCOVERY_PROVIDER_CONNECTIONS = 0
+
+6. DO NOT CONNECT A NEW MODEL PROVIDER DURING THIS TASK.
+
+The Production Model Gateway belongs to the next phase.
+
+If the current model gateway is unavailable:
+
+MODEL_GATEWAY_UNAVAILABLE
+
+is a valid truthful integration result.
+
+Do NOT add a stub answer merely to make Conversation E2E pass.
+
+The purpose of Final Smart Integration is:
+
+prove that the EXISTING architecture is integrated correctly.
+
+It is NOT:
+
+make every external production capability available.
+
+Update the Final Integration interpretation accordingly and then begin the existing:
+
+JASIM — FINAL SMART INTEGRATION + ARCHITECTURE FREEZE
+
+task in POWER mode.

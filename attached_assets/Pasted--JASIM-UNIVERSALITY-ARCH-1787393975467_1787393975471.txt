@@ -1,0 +1,2454 @@
+# =====================================================================
+# JASIM UNIVERSALITY — ARCHITECTURAL TEACHING NOTE
+# 30 DETAILED ACCEPTANCE SCENARIOS
+#
+# READ THIS BEFORE IMPLEMENTATION.
+#
+# THIS DOCUMENT IS NOT A REQUEST TO BUILD 30 FEATURES.
+# IT IS A TEACHING SPECIFICATION OF WHAT "GENERAL JASIM" MEANS.
+# =====================================================================
+
+
+أريدك قبل تنفيذ الأوامر القادمة أن تفهم بدقة ما المقصود بعبارة:
+
+JASIM MUST BE GENERAL.
+
+العمومية هنا لا تعني أن نكتب 30 Features.
+
+ولا تعني أن نكتب 300 Agents.
+
+ولا تعني أن نكتب 3000 if/else rules.
+
+ولا تعني أن كل مثال في هذا المستند يحتاج:
+
+Service
+Router
+Database Table
+Bubble Component
+Workflow
+Agent
+
+خاصًا به.
+
+هذا سيكون فشلًا معماريًا.
+
+
+=====================================================================
+THE CENTRAL IDEA
+=====================================================================
+
+JASIM should operate approximately as:
+
+USER NATURAL LANGUAGE GOAL
+        ↓
+SEMANTIC UNDERSTANDING
+        ↓
+REFERENCE RESOLUTION
+        ↓
+OUTPUT FORM SELECTION
+        ↓
+REQUIRED OUTCOME MODEL
+        ↓
+CAPABILITY REQUIREMENT GRAPH
+        ↓
+CAPABILITY DISCOVERY
+        ↓
+COMPOSITION
+        ↓
+POLICY / AUTHORIZATION
+        ↓
+DURABLE RUN / DAG
+        ↓
+TRUSTED EXECUTION
+        ↓
+RECEIPT
+        ↓
+VERIFICATION
+        ↓
+STATE
+        ↓
+GENERATIVE INTERACTION SURFACE
+        ↓
+MEMORY / CONTINUITY / EVOLUTION
+
+
+The domain must emerge from:
+
+ENTITIES
++
+RELATIONSHIPS
++
+CAPABILITIES
++
+POLICIES
++
+WORKFLOWS
++
+STATE
++
+PROVIDERS
++
+PROJECTIONS
+
+
+NOT from:
+
+domain-specific application code.
+
+
+=====================================================================
+WHAT "UNLIMITED GENERALITY" REALLY MEANS
+=====================================================================
+
+It does NOT mean JASIM magically contains infinite code.
+
+It means:
+
+A FINITE / EXTENSIBLE SET OF GENERAL TRUSTED PRIMITIVES
+
++
+GENERATED SCHEMAS
+
++
+GENERATED WORKFLOWS
+
++
+CAPABILITY COMPOSITION
+
++
+PROVIDER ADAPTERS
+
++
+GENERATIVE UI
+
+=
+A VERY LARGE / OPEN-ENDED SPACE OF USE CASES.
+
+
+When a completely new problem appears, JASIM should attempt:
+
+1. understand the goal;
+2. model required entities/state;
+3. determine required capabilities;
+4. compose existing generic capabilities;
+5. generate the correct workflow;
+6. generate the smallest sufficient UI;
+7. execute through trusted boundaries;
+8. identify any missing provider/resource/human decision truthfully.
+
+It must NOT react by creating a new vertical.
+
+
+=====================================================================
+PERMANENT FORBIDDEN PATTERN
+=====================================================================
+
+Do NOT solve examples by creating:
+
+CarAgent
+JobAgent
+DebtAgent
+DriverAgent
+RestaurantAgent
+WarehouseAgent
+TutorAgent
+RepairAgent
+
+CarService.ts
+JobService.ts
+DebtPaymentService.ts
+DriverTrackingService.ts
+
+CarBubble.tsx
+JobBubble.tsx
+DriverMapBubble.tsx
+RestaurantBookingBubble.tsx
+
+CarRouter
+JobRouter
+DebtRouter
+
+or equivalent vertical code.
+
+
+If a scenario fails:
+
+identify the missing GENERIC primitive.
+
+Examples:
+
+MISSING_GENERIC_CAPABILITY
+MISSING_PROVIDER
+MISSING_RENDERER_PRIMITIVE
+MISSING_POLICY_PRIMITIVE
+MISSING_SCHEMA_EXPRESSIVENESS
+MISSING_REAL_WORLD_RESOURCE
+
+Do not hide the gap with domain code.
+
+
+######################################################################
+# EXAMPLE 01 — SELL MY PHONE
+######################################################################
+
+USER:
+
+"أريد أبيع هاتفي."
+
+
+CORRECT INTERPRETATION:
+
+This is not:
+
+BUILD PHONE MARKETPLACE.
+
+It is:
+
+CREATE ECONOMIC OFFERING.
+
+
+Likely output:
+
+INTERACTIVE FORM / EPHEMERAL WORKSPACE
+or
+small persistent Bubble only if useful.
+
+
+JASIM should determine missing information dynamically:
+
+photos
+model
+storage
+condition
+price
+location
+delivery preference
+etc.
+
+
+GENERAL CAPABILITIES:
+
+UNDERSTAND
+EXTRACT
+REQUEST_MISSING_INPUT
+CREATE
+ATTACH_ARTIFACT
+SEARCH if market comparison requested
+CALCULATE
+PUBLISH
+
+
+CANONICAL FLOW:
+
+Intent
+→ detect sell intent
+→ create draft generic Offering
+→ derive required schema fields
+→ collect missing data
+→ attach image RuntimeArtifacts
+→ optional comparable-market search
+→ optional price proposal
+→ owner review
+→ publish
+
+
+STATE:
+
+Offering
+owner
+structured attributes
+artifacts
+visibility
+status
+version
+
+
+UI:
+
+Generic Form
++
+Image preview
++
+Price/attribute fields
++
+Publish action
+
+
+FAILURE OF GENERALITY:
+
+PhoneListingService.ts
+
+or:
+
+if intent contains "هاتف"
+  open PhoneForm
+
+
+The exact same primitives must later sell:
+
+boat
+furniture
+machine
+book
+agricultural product
+unknown future asset.
+
+
+######################################################################
+# EXAMPLE 02 — BUY A USED CAR
+######################################################################
+
+USER:
+
+"أريد سيارة عائلية مستعملة، ميزانيتي 4000 دينار، وقطع غيارها متوفرة."
+
+
+CORRECT OUTPUT:
+
+SEARCH / MATCH / STRUCTURED RESULTS.
+
+Do NOT create a Bubble marketplace automatically.
+
+
+GENERAL MODEL:
+
+Need
+hard constraints:
+budget <= 4000
+condition = used
+
+soft constraints:
+family suitability
+parts availability preference
+
+
+CAPABILITIES:
+
+UNDERSTAND
+SEARCH
+DISCOVER
+FILTER
+COMPARE
+MATCH
+RANK
+VERIFY
+
+
+FLOW:
+
+Need
+→ internal JASIM discovery
+→ optional external web search
+→ normalize candidates
+→ hard constraints
+→ semantic ranking
+→ verified/unknown facts
+→ comparison surface
+
+
+UI:
+
+Comparison Cards/Table.
+
+Not necessarily Bubble.
+
+
+IMPORTANT:
+
+If parts availability is not verifiable:
+
+UNKNOWN
+
+not:
+
+"parts are available."
+
+
+GENERALITY:
+
+same machinery must work for:
+
+laptop
+apartment
+warehouse
+supplier
+employee
+hotel.
+
+
+######################################################################
+# EXAMPLE 03 — "وظفني"
+######################################################################
+
+USER:
+
+"جاسم وظفني."
+
+
+CORRECT INTERPRETATION:
+
+Persistent job-seeking objective.
+
+JASIM may determine that a persistent workspace is useful.
+
+
+FLOW:
+
+Intent
+→ request CV if absent
+→ extract skills/experience
+→ create candidate profile
+→ desired role/location/salary/work type
+→ Need
+→ internal job discovery
+→ external discovery if justified
+→ matching
+→ application workflow
+→ interview
+→ offer
+→ hire
+→ verified economic event
+
+
+GENERAL ENTITIES:
+
+Person
+Profile
+Opportunity
+Application
+Interview
+Offer
+Transaction/Event
+
+
+GENERAL CAPABILITIES:
+
+EXTRACT
+MATCH
+SEARCH
+APPLY
+SCHEDULE
+MESSAGE
+VERIFY
+TRACK
+
+
+UI:
+
+Professional Profile Bubble MAY be appropriate because the workflow persists.
+
+It can contain:
+
+CV
+skills
+matches
+applications
+interviews
+offers
+
+
+But do NOT create:
+
+JobsPage
+JobAgent.
+
+
+If an external website is needed to submit:
+
+EXTERNAL_ACTION
+
+and if no provider/integration exists:
+
+BLOCKED_BY_PROVIDER.
+
+
+######################################################################
+# EXAMPLE 04 — HIRE A REACT DEVELOPER
+######################################################################
+
+USER:
+
+"أحتاج React Developer خبرة 3 سنوات وبراتب لا يتجاوز 1500."
+
+
+This is the opposite side of Example 03.
+
+Do not build separate architecture.
+
+
+GENERAL OBJECT:
+
+Opportunity / Demand.
+
+
+HARD CONSTRAINTS:
+
+React
+experience >= 3
+salary <= 1500
+
+
+FLOW:
+
+create opportunity
+→ publish if owner approves
+→ discover candidates
+→ hard filtering
+→ semantic match
+→ shortlist
+→ invite
+→ interview
+→ offer
+→ hire
+
+
+UI:
+
+Candidate cards
+Comparison
+Interview schedule
+Offer status
+
+
+GENERALITY REQUIREMENT:
+
+Examples 03 and 04 must use the SAME:
+
+Matching
+Application
+Engagement
+Transaction
+Scheduling
+Messaging
+
+primitives.
+
+
+######################################################################
+# EXAMPLE 05 — FREELANCER OFFERS LOGO DESIGN
+######################################################################
+
+USER:
+
+"أنا مصمم شعارات، أريد أقدم خدمة تصميم."
+
+
+INTERPRETATION:
+
+Supply / Offering.
+
+
+Possible workflow:
+
+profile
+→ service Offering
+→ portfolio artifacts
+→ pricing model
+→ delivery terms
+→ publish
+
+
+Customer later:
+
+"أحتاج شعارًا لمطعم."
+
+
+Then:
+
+Need
+→ discover services
+→ match
+→ proposal
+→ negotiation
+→ engagement
+
+
+Future paid workflow may include:
+
+milestones
+payment
+verification
+completion
+review
+
+
+NO:
+
+LogoDesignMarketplace.ts
+
+
+######################################################################
+# EXAMPLE 06 — AC TECHNICIAN TODAY
+######################################################################
+
+USER:
+
+"المكيف لا يبرد، أحتاج فني اليوم وأقل من 15 دينار."
+
+
+GENERAL MODEL:
+
+Need:
+capability = repair
+time <= today
+budget <= 15
+location = user location if authorized
+
+
+CAPABILITIES:
+
+DISCOVER
+MATCH
+AVAILABILITY
+LOCATE
+BOOK
+MESSAGE
+
+
+Do NOT hallucinate technicians.
+
+
+If internal supply exists:
+
+discover.
+
+If none:
+
+external provider/search may supplement.
+
+
+If location provider missing:
+
+do not invent nearest technician.
+
+
+UI:
+
+Service result cards
+availability/status
+booking action
+
+
+No ACRepairAgent.
+
+
+######################################################################
+# EXAMPLE 07 — BUILD A REPAIR-COMPANY PLATFORM
+######################################################################
+
+USER:
+
+"صمم لي منصة تجمع شركات الصيانة والعملاء."
+
+
+THIS IS DIFFERENT FROM EXAMPLE 06.
+
+
+Correct:
+
+PERSISTENT SMART BUBBLE
++
+optional WORLD.
+
+
+JASIM should infer:
+
+Organizations
+Services
+Customers
+Requests
+Quotes
+Bookings
+Reviews
+Messages
+Availability
+
+
+Plus:
+
+permissions
+workflows
+views
+policies
+
+
+Important:
+
+The Bubble must be generated from generic schemas.
+
+No:
+
+RepairMarketplace template.
+
+
+Later owner says:
+
+"أضف تقييمات."
+
+Expected:
+
+SAME Bubble
+→ STRUCTURAL_MUTATION
+→ ChangeSet
+→ version
+→ projection refresh.
+
+
+######################################################################
+# EXAMPLE 08 — DISCOVER THAT GENERATED PLATFORM
+######################################################################
+
+User A created the platform in Example 07.
+
+User B does NOT know its name.
+
+
+USER B:
+
+"أحتاج فني يصلح مكيفي اليوم."
+
+
+JASIM:
+
+Need
+→ search PUBLIC/authorized SHARED offerings/Bubbles
+→ discover generated repair service
+→ match
+→ display public projection
+→ allow service engagement.
+
+
+THIS IS CRITICAL.
+
+
+The technology comes to the user.
+
+The user should not need:
+
+download RepairApp
+open Repair category
+know Bubble name.
+
+
+######################################################################
+# EXAMPLE 09 — "أين السائق؟"
+######################################################################
+
+USER:
+
+"أين السائق؟"
+
+
+This example teaches several layers at once.
+
+
+REFERENCE RESOLUTION:
+
+"السائق"
+
+may refer to:
+
+assigned Entity
+inside current delivery transaction.
+
+
+JASIM must resolve:
+
+Conversation
+→ active Transaction
+→ assigned TrackableEntity
+
+
+CAPABILITIES:
+
+TRACK
+LOCATE
+OBSERVE
+
+
+STATE:
+
+TrackSession
+TrackableEntityReference
+LocationObservation
+observedAt
+provider/source
+accuracy if known
+status
+
+
+PRESENTATION ROUTER:
+
+Because geospatial live status is useful:
+
+MAP / TRACKER Bubble may be the smallest sufficient output.
+
+
+UI:
+
+generic MapSurface
+
+marker = driver
+destination marker
+route only if real
+last update
+status
+ETA only if real
+
+
+NO:
+
+DriverMapBubble.tsx
+
+
+The SAME components must work for:
+
+technician
+courier
+bus
+truck
+shipment
+boat
+mobile maintenance crew.
+
+
+######################################################################
+# EXAMPLE 10 — "أين الفني؟"
+######################################################################
+
+USER:
+
+"الفني الذي حجزناه أين وصل؟"
+
+
+This deliberately tests whether Example 09 was actually general.
+
+
+Expected:
+
+Reference Resolution
+→ technician Entity
+→ Track capability
+→ LocationObservation
+→ generic Tracker/Map
+
+
+NO NEW CORE CODE.
+
+
+If Replit needs:
+
+TechnicianTrackingService
+
+then Example 09 was not generalized.
+
+
+######################################################################
+# EXAMPLE 11 — PAY A PERSONAL DEBT
+######################################################################
+
+USER:
+
+"فلان يطلبني 80 دينار، أريد أن أدفع دينه."
+
+
+Do NOT create DebtPayment feature.
+
+
+GENERAL MODEL:
+
+Obligation
+payer
+payee
+amount
+currency
+purpose
+status
+
+
+REFERENCE/INPUT RESOLUTION:
+
+Who is creditor?
+Is amount confirmed?
+Which currency?
+Is there already an obligation record?
+Which payment destination is valid?
+
+
+CAPABILITIES:
+
+RESOLVE
+PAY
+AUTHORIZE
+VERIFY
+
+
+FLOW:
+
+PaymentIntent
+→ user confirmation
+→ Policy
+→ Trusted Executor
+→ Payment Adapter
+→ ExternalActionSession
+→ secure checkout
+→ provider
+→ callback/webhook/provider lookup
+→ Receipt
+→ Verifier
+→ obligation state mutation
+
+
+CRITICAL INVARIANTS:
+
+CHECKOUT_CREATED != PAID
+
+AUTHORIZED != EXECUTED
+
+EXECUTED != VERIFIED
+
+
+If provider unavailable:
+
+BLOCKED_BY_PROVIDER.
+
+
+Never generate a fake payment link.
+
+
+######################################################################
+# EXAMPLE 12 — SECURE EXTERNAL BROWSER ACTION
+######################################################################
+
+USER:
+
+"ادفع عن طريق البنك."
+
+
+Sometimes JASIM should NOT render the banking system itself.
+
+
+GENERAL PRIMITIVE:
+
+Trusted External Action.
+
+
+Server creates:
+
+owner-bound session
+purpose
+provider
+expiry
+state/nonce
+return correlation
+allowed origin
+
+
+Client opens:
+
+system browser
+or secure provider-compatible in-app browser.
+
+
+Security:
+
+HTTPS only
+no arbitrary LLM URL
+no javascript scheme
+no open redirect
+no secret in query parameters
+short expiry
+single-use when appropriate
+
+
+Completion truth comes from:
+
+signed callback/webhook
+or provider lookup.
+
+
+This SAME mechanism should later work for:
+
+OAuth
+KYC
+job application site
+merchant checkout
+government portal
+shipping portal.
+
+
+######################################################################
+# EXAMPLE 13 — SELL FURNITURE + NEGOTIATE + DELIVERY
+######################################################################
+
+SELLER:
+
+"عندي كنب مستعمل أبي أبيعه بـ150."
+
+
+Then buyer offers:
+
+"أخذه بـ140."
+
+
+GENERAL FLOW:
+
+Offering
+→ buyer discovery
+→ Engagement
+→ Proposal 140
+→ seller Counteroffer 145
+→ buyer Accept
+→ TransactionIntent
+→ DeliveryIntent
+
+
+Negotiation must have:
+
+proposal version
+party
+terms
+expiry/status
+accept/reject/counter
+
+
+LLM may draft negotiation wording.
+
+It cannot accept for owner automatically.
+
+
+Then delivery uses the GENERAL Delivery capability.
+
+No FurnitureWorkflow.
+
+
+######################################################################
+# EXAMPLE 14 — DELIVERY AFTER A COMPLETED SALE
+######################################################################
+
+USER:
+
+"أريد توصيل المنتج للمشتري."
+
+
+Reference Resolution must find:
+
+product
+order
+buyer
+seller
+pickup
+destination.
+
+
+Then:
+
+DeliveryIntent
+→ discover delivery capacity
+→ availability
+→ price
+→ select
+→ assign
+→ track
+→ pickup
+→ delivered
+
+
+If no real driver/resource exists:
+
+BLOCKED_BY_RESOURCE.
+
+
+If delivery provider API unavailable:
+
+BLOCKED_BY_PROVIDER.
+
+
+Do not invent a driver.
+
+
+######################################################################
+# EXAMPLE 15 — WHOLESALE INVENTORY
+######################################################################
+
+USER:
+
+"عندي 500 كرتون تمر سكري وأريد بيعهم بالجملة."
+
+
+GENERAL MODEL:
+
+Offering
+quantity
+unit
+minimum lot
+price terms
+origin
+availability
+possible buyer type
+
+
+JASIM may:
+
+search B2B buyers
+compare markets
+propose lot strategy
+negotiate
+create multiple transactions
+
+
+No WholesaleAgent.
+
+
+The same primitives should handle:
+
+steel
+phones
+agricultural products
+furniture
+chemicals where allowed/legal.
+
+
+######################################################################
+# EXAMPLE 16 — BUY 1000 CHAIRS FROM CHINA
+######################################################################
+
+USER:
+
+"أريد شراء 1000 كرسي لمطعمي من الصين، قارن الموردين والشحن والجمارك وناقش أفضل مورد."
+
+
+This is a COMPOSITION test.
+
+
+Possible DAG:
+
+Need
+→ Supplier Discovery
+→ Source Verification
+→ Quote Normalization
+→ Comparison
+→ MOQ validation
+→ Shipping options
+→ Customs/tax information boundary
+→ Total landed cost calculation
+→ Rank
+→ Negotiation
+→ Owner approval
+→ Order Intent
+→ Payment boundary
+
+
+No:
+
+ChinaChairService.
+
+
+Each node is a generic capability.
+
+
+If customs provider/data unavailable:
+
+do not fabricate.
+
+Report uncertain assumptions separately.
+
+
+######################################################################
+# EXAMPLE 17 — RENT A CRANE FOR THREE MONTHS
+######################################################################
+
+USER:
+
+"أحتاج رافعة لمدة ثلاثة أشهر."
+
+
+Generic need:
+
+resource capability
+duration
+location
+capacity/spec requirements
+availability
+price
+
+
+Flow:
+
+Need
+→ Discovery
+→ hard constraints
+→ Match
+→ Reservation
+→ Contract/Transaction
+→ schedule
+→ return/completion
+
+
+Same model should rent:
+
+car
+warehouse
+camera
+construction equipment
+meeting room.
+
+
+No CraneRental engine.
+
+
+######################################################################
+# EXAMPLE 18 — SHARED COLD STORAGE
+######################################################################
+
+OWNER:
+
+"عندي مخزن تبريد وأريد عرض المساحات الفاضية للحجز."
+
+
+Supply is not just an item.
+
+It is:
+
+CAPACITY OVER TIME.
+
+
+Generic model must support:
+
+resource
+capacity
+temperature constraint
+availability windows
+quantity
+duration
+reservations
+
+
+Customer:
+
+"أحتاج تخزين طنين خضار أسبوع."
+
+
+Matching includes:
+
+capacity >= 2 tons
+temperature compatible
+duration
+location
+availability.
+
+
+This tests that JASIM understands resource capacity,
+not only listings.
+
+
+######################################################################
+# EXAMPLE 19 — RESTAURANT BOOKING
+######################################################################
+
+USER:
+
+"احجز لي مطعم إيطالي الجمعة الساعة 8 لأربعة أشخاص."
+
+
+Flow:
+
+Need
+→ Search/Discovery
+→ Availability
+→ Party-size constraint
+→ choose result
+→ BookingIntent
+→ external provider if required
+→ Receipt
+→ Verification
+
+
+Output may be:
+
+cards
+then approval/action.
+
+
+Do NOT generate Restaurant Platform.
+
+
+If availability cannot be checked:
+
+UNKNOWN.
+
+
+######################################################################
+# EXAMPLE 20 — HOTEL / FLIGHT / TRAVEL COMPOSITION
+######################################################################
+
+USER:
+
+"رتب لي رحلة أسبوع إلى تركيا بأقل تكلفة ولا أريد أكثر من فندقين."
+
+
+This is not necessarily economic-network supply only.
+
+It proves GENERAL constraint composition.
+
+
+Flow:
+
+constraints
+→ flight search
+→ accommodation search
+→ itinerary generation
+→ cost calculation
+→ constraint verification
+→ reject invalid candidates
+→ optimize
+
+
+If a plan uses 3 hotels:
+
+Verifier:
+
+FAILED_CONSTRAINT
+
+then Replan.
+
+
+This demonstrates that analytical capabilities remain useful,
+but as supporting primitives rather than the whole product.
+
+
+######################################################################
+# EXAMPLE 21 — FREELANCE MILESTONES
+######################################################################
+
+USER:
+
+"أريد شخص يصمم لي شعار، أدفع 30% بعد الاسكتش و70% بعد النهائي."
+
+
+Generic transaction contains:
+
+Milestone 1
+Milestone 2
+acceptance criteria
+percentage
+state
+approval
+
+
+Possible future flow:
+
+Payment authorization
+→ hold/checkout
+→ Milestone 1
+→ user approves
+→ settlement/release
+→ Milestone 2
+→ final approval
+
+
+Do not create LogoMilestoneWorkflow.
+
+
+Same system should work for:
+
+software
+translation
+consulting
+video editing
+construction phases.
+
+
+######################################################################
+# EXAMPLE 22 — SKILL EXCHANGE WITHOUT MONEY
+######################################################################
+
+USER:
+
+"أنا أصمم شعارًا لشخص مقابل أن يعلمني لغة."
+
+
+This is important because:
+
+ECONOMIC VALUE != MONEY.
+
+
+Model:
+
+Offering A
+Need A
+Offering B
+Need B
+Match
+Exchange Proposal
+Mutual Acceptance
+Completion
+Review/dispute
+
+
+No payment required.
+
+
+This prevents Transaction Engine from being incorrectly coupled to Payment.
+
+
+######################################################################
+# EXAMPLE 23 — MICRO-APPRENTICESHIP
+######################################################################
+
+USER:
+
+"أريد نظامًا للشركات تعرض مشاريع قصيرة للطلاب حتى يكتسبوا خبرة."
+
+
+Persistent Bubble/World likely appropriate.
+
+
+Entities generated from semantics:
+
+Organization
+Student
+Project
+Skill
+Application
+Mentor
+Evaluation
+Evidence/Certificate
+
+
+Capabilities:
+
+Publish
+Discover
+Match
+Apply
+Assign
+Track Progress
+Evaluate
+Verify Completion
+
+
+No Apprenticeship template.
+
+
+Later:
+
+"أضف تقييم المشرف."
+
+should mutate SAME Bubble.
+
+
+######################################################################
+# EXAMPLE 24 — EMERGENCY SHIFT REPLACEMENT
+######################################################################
+
+BUSINESS:
+
+"موظف غاب اليوم وأحتاج شخصًا بديلًا للشفت."
+
+
+Need:
+
+skill/role
+location
+start time
+duration
+qualification
+availability
+
+
+Flow:
+
+Need
+→ discover eligible workers
+→ availability
+→ verification
+→ Match
+→ offer shift
+→ worker acceptance
+→ schedule
+→ attendance/completion
+
+
+No ShiftWorkerAgent.
+
+
+This scenario combines:
+
+Matching
+Availability
+Messaging
+Scheduling
+Verification
+Transaction.
+
+
+######################################################################
+# EXAMPLE 25 — GROUP PURCHASE THRESHOLD
+######################################################################
+
+USER:
+
+"إذا وصل عدد الطلبات إلى 500 قطعة نفذ الشراء، وإلا انتظر."
+
+
+This is not GroupBuyingFeature.
+
+
+Generic workflow:
+
+Collect commitments
+→ persistent state count
+→ threshold policy
+→ durable wait
+→ event trigger
+→ re-evaluate condition
+→ if >= 500:
+   proceed
+→ else:
+   remain waiting
+
+
+Tests:
+
+policy
+durable condition
+events
+scheduler/wait
+restart.
+
+
+######################################################################
+# EXAMPLE 26 — MOBILE CLINIC
+######################################################################
+
+USER:
+
+"أنشئ نظامًا لعيادة متنقلة تزور القرى أسبوعيًا ويستطيع الناس حجز موعد."
+
+
+Persistent World.
+
+
+Generic entities:
+
+Locations
+Schedule
+Clinic
+Staff
+Appointments
+Capacity
+
+
+Capabilities:
+
+Schedule
+Availability
+Book
+Notify
+Locate
+
+
+BUT:
+
+health domain adds risk constraints.
+
+
+JASIM must identify:
+
+privacy
+human medical authority
+consent
+regulatory requirements
+
+
+JASIM must NOT invent:
+
+diagnosis
+medical eligibility
+medical approval.
+
+
+Generalization includes understanding safety boundaries,
+not only building UI.
+
+
+######################################################################
+# EXAMPLE 27 — BLOOD DONOR COORDINATION
+######################################################################
+
+USER:
+
+"ابحث للجهة الصحية عن متبرعين مناسبين حسب الفصيلة والمنطقة."
+
+
+This is a high-risk coordination test.
+
+
+Potential requirements:
+
+consent
+blood type
+eligibility
+location
+availability
+identity
+privacy
+authorized organization
+
+
+JASIM must NOT publish donor identities publicly.
+
+
+Expected:
+
+restricted discovery
+authorized matching
+human/medical verification
+privacy-controlled projection
+
+
+If medical eligibility cannot be verified:
+
+REQUIRES_HUMAN / REQUIRES_VERIFICATION.
+
+
+No BloodDonorMarketplace.
+
+
+######################################################################
+# EXAMPLE 28 — FARMERS → RESTAURANTS → LOGISTICS → COLD STORAGE
+######################################################################
+
+USER:
+
+"أنشئ نظامًا للمزارعين يبيعون منتجاتهم للمطاعم، وإذا اشترى مطعم كمية كبيرة نسق النقل والتخزين المبرد."
+
+
+This is one of the strongest universality tests.
+
+
+Do NOT create:
+
+FarmMarketplace
++
+LogisticsApp
++
+ColdStorageApp.
+
+
+Where appropriate, one coherent World may compose:
+
+
+Offerings:
+farm products
+
+Needs:
+restaurants
+
+Capabilities:
+Publish
+Discover
+Match
+Order
+
+Policy:
+large order threshold
+
+Then:
+
+if order quantity > condition
+→ DeliveryIntent
+→ Delivery discovery
+→ Cold-storage Need
+→ storage matching
+→ scheduling
+→ operational Runs
+
+
+The system is produced from capability composition.
+
+
+######################################################################
+# EXAMPLE 29 — GENERATE A SaaS BUSINESS AND LET OTHERS USE IT
+######################################################################
+
+FOUNDER:
+
+"صمم لي منصة SaaS تربط شركات الديكور بالعملاء."
+
+
+Expected:
+
+Persistent Smart Bubble/World.
+
+
+JASIM infers:
+
+companies
+services
+customers
+requests
+quotes
+projects
+subscriptions/transactions
+permissions
+views
+workflows
+
+
+Then founder says:
+
+"أضف بيع مواد الديكور بالجملة."
+
+Expected:
+
+SAME World
+→ schema/workflow evolution.
+
+
+Then:
+
+"انشر المنصة."
+
+→ PUBLIC economic projection.
+
+
+Another user:
+
+"أحتاج شركة تسوي لي ديكور للبيت."
+
+
+JASIM should discover the generated Bubble
+without user knowing its name.
+
+
+This is perhaps the most important commercial test:
+
+GENERATE BUSINESS
+→ PUBLISH
+→ DISCOVER
+→ USE
+→ TRANSACT.
+
+
+No predefined SaaS template.
+
+
+######################################################################
+# EXAMPLE 30 — COMPLETELY UNSEEN COMBINATION
+######################################################################
+
+USER:
+
+"عندي روبوت تنظيف في المصنع.
+إذا اكتشف تسربًا، أوقف مهمته،
+وابحث عن أقرب عامل مؤهل،
+وأرسل له الموقع،
+وتابع وصوله،
+وإذا لم يقبل خلال خمس دقائق أرسل المهمة للثاني."
+
+
+This scenario intentionally does not belong to historical marketplaces.
+
+
+Correct reasoning:
+
+
+Entities:
+
+Robot
+Facility
+Observation
+Incident
+Worker
+
+
+Event:
+
+LeakDetected
+
+
+Policy:
+
+on leak:
+pause current robot workflow
+
+
+Capabilities needed:
+
+OBSERVE
+STOP/CONTROL_DEVICE
+DISCOVER
+MATCH
+LOCATE
+NOTIFY
+ASSIGN
+TRACK
+SCHEDULE/WAIT
+FALLBACK
+
+
+Generated workflow:
+
+LeakDetected
+→ validate observation
+→ pause robot
+→ create Incident
+→ Need qualified worker
+→ discover workers
+→ filter qualification/location/availability
+→ rank
+→ offer to candidate 1
+→ durable wait 5 minutes
+→ if accepted:
+     assign
+     track
+  else:
+     candidate 2
+→ completion
+
+
+CRITICAL TEST:
+
+JASIM may discover:
+
+CONTROL_DEVICE capability is not implemented.
+
+
+Correct result:
+
+MISSING_GENERIC_CAPABILITY:
+DEVICE_CONTROL
+
+
+or:
+
+BLOCKED_BY_PROVIDER:
+ROBOT_CONTROL_PROVIDER
+
+
+That is a successful generality diagnosis.
+
+
+WRONG solution:
+
+FactoryLeakAgent.ts
+
+RobotLeakWorkflow.ts
+
+because that hard-codes the domain.
+
+
+=====================================================================
+WHAT THESE 30 EXAMPLES ARE ACTUALLY TESTING
+=====================================================================
+
+Do NOT count them as 30 Features.
+
+They jointly test whether JASIM possesses these GENERAL DIMENSIONS:
+
+
+1. SEMANTIC UNDERSTANDING
+
+2. OUTPUT FORM SELECTION
+
+3. REFERENCE RESOLUTION
+
+4. ENTITY MODELING
+
+5. GENERATED SCHEMAS
+
+6. CAPABILITY DISCOVERY
+
+7. CAPABILITY COMPOSITION
+
+8. TYPED DATAFLOW
+
+9. DURABLE DAG / RUN
+
+10. STATE MANAGEMENT
+
+11. PERSISTENCE
+
+12. EVENT MODEL
+
+13. POLICIES
+
+14. AUTHORIZATION
+
+15. MULTI-PARTY CONSENT
+
+16. OFFER / NEED MODEL
+
+17. DISCOVERY
+
+18. MATCHING
+
+19. NEGOTIATION
+
+20. TRANSACTIONS
+
+21. PAYMENT BOUNDARY
+
+22. EXTERNAL ACTIONS
+
+23. PROVIDER ADAPTERS
+
+24. REAL-WORLD RESOURCE MODEL
+
+25. LOCATION
+
+26. TRACKING
+
+27. AVAILABILITY
+
+28. SCHEDULING / DURABLE WAIT
+
+29. NOTIFICATIONS
+
+30. GENERATIVE UI
+
+31. SMART BUBBLE EVOLUTION
+
+32. TRUST
+
+33. VERIFICATION
+
+34. RECONCILIATION
+
+35. ECONOMIC POLICY
+
+36. MEMORY / CONTINUITY
+
+37. FAILURE TRUTH
+
+38. GAP IDENTIFICATION
+
+
+=====================================================================
+THE GENERATIVE UI LESSON
+=====================================================================
+
+The UI must emerge from the task.
+
+Do NOT create domain pages.
+
+
+Examples:
+
+
+"ما حالة طلبي؟"
+
+→ STATUS CARD
+
+
+"قارن الثلاثة."
+
+→ COMPARISON SURFACE
+
+
+"أدخل بيانات السيارة."
+
+→ FORM
+
+
+"أين السائق؟"
+
+→ LIVE MAP / TRACKER
+
+
+"متى الموعد؟"
+
+→ CALENDAR / SCHEDULE
+
+
+"كيف تطورت العملية؟"
+
+→ TIMELINE
+
+
+"أريد أن أدفع."
+
+→ APPROVAL
++
+EXTERNAL ACTION
++
+PAYMENT STATUS
+
+
+"أريد إدارة المشروع بشكل مستمر."
+
+→ PERSISTENT SMART BUBBLE / WORLD
+
+
+The Renderer should understand generic primitives such as:
+
+Card
+List
+Table
+Form
+Details
+Map
+Marker
+Route
+Timeline
+Calendar
+Status
+Progress
+Action
+Approval
+Artifact
+Tracker
+PaymentStatus
+
+not domain components.
+
+
+=====================================================================
+THE PROVIDER LESSON
+=====================================================================
+
+JASIM must distinguish:
+
+SEMANTIC CAPABILITY
+
+from:
+
+REAL EXECUTION PROVIDER.
+
+
+Example:
+
+JASIM may understand:
+
+PAY
+
+even if no payment provider is configured.
+
+
+Then:
+
+PAY capability understood
+but
+execution = BLOCKED_BY_PROVIDER.
+
+
+Likewise:
+
+TRACK understood
+but
+GPS source unavailable.
+
+
+Do NOT delete capability understanding because provider is absent.
+
+
+=====================================================================
+THE REAL-WORLD RESOURCE LESSON
+=====================================================================
+
+A digital system cannot invent physical reality.
+
+
+JASIM must distinguish:
+
+
+DIGITAL STATE
+
+REAL-WORLD RESOURCE
+
+EXTERNAL PROVIDER
+
+HUMAN DECISION
+
+OWNER DECISION
+
+REGULATORY REQUIREMENT
+
+
+Examples:
+
+
+Driver
+=
+REAL-WORLD RESOURCE
+
+
+Map API
+=
+EXTERNAL PROVIDER
+
+
+Route schedule
+=
+DIGITAL STATE
+
+
+Subscription price
+=
+BUSINESS/OWNER DECISION assisted by JASIM
+
+
+Transport license
+=
+REGULATORY REQUIREMENT.
+
+
+=====================================================================
+THE TRUSTED EXECUTION LESSON
+=====================================================================
+
+LLM is planner/intelligence.
+
+LLM is NOT trusted executor.
+
+
+Permanent chain:
+
+
+Intent
+→ Proposal
+→ Capability Validation
+→ Policy
+→ Approval
+→ Trusted Executor
+→ Attempt
+→ Provider/Effect
+→ Receipt
+→ Independent Verifier
+→ Reconciliation
+→ State Transition
+
+
+Permanent invariants:
+
+
+AUTHORIZED != EXECUTED
+
+EXECUTED != VERIFIED
+
+RECEIPT != VERIFICATION
+
+INCONCLUSIVE != SUCCESS
+
+
+=====================================================================
+THE ECONOMIC LESSON
+=====================================================================
+
+JASIM is not merely a marketplace.
+
+
+It should be able to represent economic value as:
+
+product
+service
+skill
+time
+capacity
+job
+opportunity
+asset
+subscription
+generated platform capability
+exchange
+resource access
+other future types.
+
+
+Likewise economic interactions may include:
+
+sale
+purchase
+booking
+rental
+application
+hire
+subscription
+exchange
+proposal
+contract
+B2B order.
+
+
+Payment is optional.
+
+Transaction != Payment.
+
+
+=====================================================================
+THE BUSINESS-GENERATION LESSON
+=====================================================================
+
+JASIM must support two radically different requests:
+
+
+"أحتاج فني."
+
+→ Need
+→ Search/Match
+
+
+"أريد تشغيل خدمة صيانة."
+
+→ business planning / durable workflow
+
+
+"صمم لي منصة تدير شركات الصيانة."
+
+→ Persistent Smart Bubble / World
+
+
+If all three become the same Bubble:
+
+OUTPUT ROUTING FAIL.
+
+
+=====================================================================
+THE EVOLUTION LESSON
+=====================================================================
+
+After JASIM generates a World:
+
+User may say:
+
+
+"أضف تقييمات."
+
+"أضف اشتراكًا."
+
+"اجعل أول أسبوع مجانيًا."
+
+"أي طلب فوق 500 يحتاج موافقتي."
+
+"أضف موظفًا يرى الطلبات ولا يستطيع تغيير السعر."
+
+"أوقف الخدمة يوم الجمعة."
+
+"غير العرض إلى جدول."
+
+"أرسل إشعارًا قبل الموعد."
+
+
+Expected:
+
+
+Reference Resolution
+→ SAME Bubble
+→ MutationIntent
+→ ChangeSet
+→ policy/structural/view/workflow mutation
+→ version
+→ projection refresh.
+
+
+Never rebuild from zero unnecessarily.
+
+
+=====================================================================
+THE FINAL GENERALITY TEST
+=====================================================================
+
+Do not prove universality using the 30 examples alone.
+
+
+After implementation:
+
+Generate at least 10 completely NEW goals.
+
+
+They must NOT be:
+
+simple synonyms
+or
+same examples with different nouns.
+
+
+They must include:
+
+economic transaction
+
+physical-world coordination
+
+realtime state
+
+external provider action
+
+multi-party workflow
+
+persistent generated business
+
+scheduling
+
+one high-risk situation
+
+one non-economic task
+
+one strange capability combination.
+
+
+For EACH:
+
+
+USER GOAL
+↓
+correct Output Form
+↓
+semantic state/entities
+↓
+Capability Requirement Graph
+↓
+existing capability composition
+
+
+If capabilities are sufficient:
+
+execute through canonical runtime.
+
+
+If generic capability missing:
+
+MISSING_GENERIC_CAPABILITY.
+
+
+If provider missing:
+
+BLOCKED_BY_PROVIDER.
+
+
+If physical resource missing:
+
+BLOCKED_BY_RESOURCE.
+
+
+If human decision needed:
+
+REQUIRES_HUMAN.
+
+
+If regulation needed:
+
+REQUIRES_REGULATORY_REVIEW.
+
+
+DO NOT create a domain-specific fix.
+
+
+=====================================================================
+ULTIMATE SUCCESS CONDITION
+=====================================================================
+
+The architecture passes when:
+
+a user can come tomorrow with a goal nobody explicitly coded,
+
+and JASIM can:
+
+
+UNDERSTAND IT
+
+→
+
+CHOOSE THE RIGHT OUTPUT FORM
+
+→
+
+MODEL THE REQUIRED STATE
+
+→
+
+DISCOVER GENERAL CAPABILITIES
+
+→
+
+COMPOSE THEM
+
+→
+
+GENERATE THE WORKFLOW
+
+→
+
+GENERATE THE RIGHT INTERACTION SURFACE
+
+→
+
+EXECUTE TRUSTED PARTS
+
+→
+
+CONNECT EXTERNAL PROVIDERS SAFELY
+
+→
+
+IDENTIFY REAL-WORLD GAPS
+
+→
+
+VERIFY RESULTS
+
+→
+
+PERSIST STATE
+
+→
+
+REMEMBER
+
+→
+
+EVOLVE THE SAME SYSTEM
+
+
+WITHOUT CREATING A NEW DOMAIN IMPLEMENTATION.
+
+
+That is what we mean by:
+
+JASIM GENERAL.
+
+
+=====================================================================
+FINAL WARNING
+=====================================================================
+
+Do not optimize for:
+
+"30/30 examples green."
+
+
+Optimize for:
+
+"one architecture handles all 30."
+
+
+A fake architecture can pass 30 tests by adding 30 handlers.
+
+
+A genuinely universal architecture should pass:
+
+the historical examples
+
+AND
+
+the unseen examples
+
+using the SAME primitives.
+
+
+If you add:
+
+NewDomainService.ts
+NewDomainRouter.ts
+NewDomainBubble.tsx
+NewDomainWorkflow.ts
+
+to make a new example work:
+
+STOP.
+
+Report the missing general primitive instead.
+
+
+END OF TEACHING SPECIFICATION.

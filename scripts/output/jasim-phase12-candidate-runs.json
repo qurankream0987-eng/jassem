@@ -1,0 +1,2009 @@
+{
+  "generatedAt": "2026-08-22T08:14:50.388Z",
+  "runs": {
+    "en-chat": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "A goal is the outcome you want to achieve.  \nA metric is a measurable indicator used to track progress toward that goal.",
+        "latencyMs": 1334,
+        "usage": {
+          "inputTokens": 50,
+          "outputTokens": 28,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "A goal is the desired outcome you want to achieve. A metric is a measurable value used to track progress toward that goal.",
+        "latencyMs": 1341,
+        "usage": {
+          "inputTokens": 50,
+          "outputTokens": 28,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "A goal is the desired outcome you want to achieve. A metric is a measurable value used to track progress toward that goal.",
+        "latencyMs": 1382,
+        "usage": {
+          "inputTokens": 50,
+          "outputTokens": 28,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "ar-chat": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "المنتج شيء ملموس أو رقمي تشتريه وتمتلكه، مثل الهاتف أو الكتاب.  \nالخدمة عمل أو منفعة تُقدَّم لك دون امتلاك شيء مادي، مثل الاستشارة أو التوصيل.",
+        "latencyMs": 1427,
+        "usage": {
+          "inputTokens": 52,
+          "outputTokens": 53,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "المنتج: شيء ملموس أو رقمي تشتريه وتمتلكه، مثل هاتف أو كتاب.  \nالخدمة: عمل أو منفعة تُقدَّم لك دون امتلاك شيء، مثل التعليم أو الصيانة.",
+        "latencyMs": 1572,
+        "usage": {
+          "inputTokens": 52,
+          "outputTokens": 51,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "المنتج: شيء مادي يمكن شراؤه وامتلاكه، مثل الهاتف أو الكتاب.  \nالخدمة: عمل أو منفعة تُقدَّم لك دون امتلاك شيء مادي، مثل التوصيل أو الاستشارة.",
+        "latencyMs": 2508,
+        "usage": {
+          "inputTokens": 52,
+          "outputTokens": 52,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "ar-rewrite": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "نحتاج إلى إنجاز المشروع بسرعة ودقة.",
+        "latencyMs": 1058,
+        "usage": {
+          "inputTokens": 61,
+          "outputTokens": 13,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "نحتاج إلى إنجاز المشروع بسرعة مع ضمان أعلى مستوى من الدقة والجودة.",
+        "latencyMs": 1476,
+        "usage": {
+          "inputTokens": 61,
+          "outputTokens": 20,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "نحتاج إلى إنجاز المشروع بسرعة مع ضمان الدقة والجودة.",
+        "latencyMs": 1409,
+        "usage": {
+          "inputTokens": 61,
+          "outputTokens": 17,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "mixed-tech": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "الـ **API** (واجهة برمجة التطبيقات) هو وسيلة تسمح لبرنامجٍ ما بالتواصل مع برنامج أو خدمة أخرى وطلب بيانات أو تنفيذ أوامر، دون معرفة تفاصيل طريقة عملها الداخلية.\n\n**مثال:** تطبيق الطقس يطلب درجة الحرارة من خادم الطقس عبر API.\n\n**Short English example:**  \n`GET /weather?city=London`  \nThis requests the weather for London.",
+        "latencyMs": 1900,
+        "usage": {
+          "inputTokens": 49,
+          "outputTokens": 120,
+          "cachedTokens": 0,
+          "reasoningTokens": 25
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "API هي اختصار لـ **Application Programming Interface**، وتعني **واجهة برمجة التطبيقات**.\n\nببساطة: هي طريقة تسمح لتطبيقين أو خدمتين بالتواصل مع بعضهما وتبادل البيانات أو الأوامر بدون أن يعرف كل طرف تفاصيل عمل الطرف الآخر.\n\nمثال: تطبيق طقس على هاتفك يرسل طلبًا إلى API خاصة بالطقس، فتُرجع له درجة الحرارة وحالة الجو.\n\n**Short English example:**  \n“A weather app uses an API to get today’s temperature from a weather service.”",
+        "latencyMs": 2673,
+        "usage": {
+          "inputTokens": 49,
+          "outputTokens": 114,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "**API** اختصار لـ **Application Programming Interface**، أي **واجهة برمجة التطبيقات**.\n\nهي وسيلة تسمح لبرنامج بالتواصل مع برنامج أو خدمة أخرى بطريقة منظّمة، مثل أن يطلب تطبيق الطقس بيانات درجات الحرارة من خادم الطقس ثم يعرضها للمستخدم.\n\n**Short English example:**  \n“A weather app uses an API to get today’s temperature.”",
+        "latencyMs": 3197,
+        "usage": {
+          "inputTokens": 49,
+          "outputTokens": 83,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "gulf-chat": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "الخطة المجانية تعطيك الأساسيات بحدود استخدام أقل، أما المدفوعة فتزيد المزايا والحدود، وغالبًا تشمل سرعة وأولوية دعم أعلى وميزات إضافية. التفاصيل تختلف حسب الخدمة.",
+        "latencyMs": 2096,
+        "usage": {
+          "inputTokens": 59,
+          "outputTokens": 98,
+          "cachedTokens": 0,
+          "reasoningTokens": 40
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "الخطة المجانية تعطيك استخدام محدود وبعض المزايا الأساسية.\n\nالمدفوعة عادةً تعطيك:\n- حدود استخدام أعلى\n- سرعة وأولوية وقت الضغط\n- الوصول لنماذج ومزايا أقوى/أحدث\n- أدوات إضافية مثل رفع ملفات أو تحليل أوسع، حسب الخدمة\n\nالتفاصيل تختلف من منصة للثانية.",
+        "latencyMs": 2340,
+        "usage": {
+          "inputTokens": 59,
+          "outputTokens": 81,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "إذا تقصد **ChatGPT**:\n\n- **المجانية:** استخدام أساسي بحدود أقل، وقد تكون بعض النماذج والميزات محدودة.\n- **المدفوعة:** حدود استخدام أعلى، وصول لنماذج وأدوات متقدمة، وأولوية وسرعة أفضل وقت الضغط.\n\nالتفاصيل تختلف حسب الباقة والبلد.",
+        "latencyMs": 4837,
+        "usage": {
+          "inputTokens": 59,
+          "outputTokens": 144,
+          "cachedTokens": 0,
+          "reasoningTokens": 58
+        },
+        "retries": 0
+      }
+    },
+    "ar-translation": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "We will review the results before making a decision.",
+        "latencyMs": 989,
+        "usage": {
+          "inputTokens": 48,
+          "outputTokens": 13,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "We will review the results before making a decision.",
+        "latencyMs": 812,
+        "usage": {
+          "inputTokens": 48,
+          "outputTokens": 13,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "We will review the results before making a decision.",
+        "latencyMs": 1197,
+        "usage": {
+          "inputTokens": 48,
+          "outputTokens": 13,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "en-translation": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "يسلّط التقرير الضوء على الافتراضات الأعلى خطورة.",
+        "latencyMs": 1247,
+        "usage": {
+          "inputTokens": 48,
+          "outputTokens": 17,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "يُسلّط التقرير الضوء على الافتراضات الأعلى خطورةً.",
+        "latencyMs": 1227,
+        "usage": {
+          "inputTokens": 48,
+          "outputTokens": 19,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "يسلط التقرير الضوء على الافتراضات الأعلى خطورة.",
+        "latencyMs": 1787,
+        "usage": {
+          "inputTokens": 48,
+          "outputTokens": 15,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "en-rewrite": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "We’re sorry, but we’re unable to complete your request at this time.",
+        "latencyMs": 927,
+        "usage": {
+          "inputTokens": 48,
+          "outputTokens": 19,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "I’m sorry, but I’m unable to complete your request at the moment.",
+        "latencyMs": 1245,
+        "usage": {
+          "inputTokens": 48,
+          "outputTokens": 19,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "We’re sorry, but we’re unable to complete your request at this time.",
+        "latencyMs": 2649,
+        "usage": {
+          "inputTokens": 48,
+          "outputTokens": 19,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "summary": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "- زاد الاستخدام هذا الشهر.\n- انخفض معدل الاحتفاظ بسبب بطء عملية التسجيل.\n- سيجرّب الفريق تبسيط النموذج الأسبوع المقبل.",
+        "latencyMs": 1005,
+        "usage": {
+          "inputTokens": 75,
+          "outputTokens": 36,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "- زاد الاستخدام خلال هذا الشهر.  \n- انخفض معدل الاحتفاظ بسبب بطء عملية التسجيل.  \n- سيجرب الفريق تبسيط نموذج التسجيل الأسبوع القادم.",
+        "latencyMs": 1622,
+        "usage": {
+          "inputTokens": 75,
+          "outputTokens": 38,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "- ارتفع الاستخدام هذا الشهر.\n- انخفض معدل الاحتفاظ بسبب بطء عملية التسجيل.\n- سيجرّب الفريق تبسيط نموذج التسجيل الأسبوع المقبل.",
+        "latencyMs": 2129,
+        "usage": {
+          "inputTokens": 75,
+          "outputTokens": 36,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "qa": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "A database index speeds up data retrieval by providing a quick lookup path to rows, reducing the need to scan the entire table. It may require extra storage and can slow inserts, updates, and deletes.",
+        "latencyMs": 1431,
+        "usage": {
+          "inputTokens": 49,
+          "outputTokens": 43,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "A database index speeds up data retrieval by providing a fast lookup structure, reducing the need to scan every row in a table.",
+        "latencyMs": 1206,
+        "usage": {
+          "inputTokens": 49,
+          "outputTokens": 28,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "A database index speeds up data retrieval by maintaining a searchable structure on one or more columns, reducing the need to scan every row. The trade-offs are extra storage and slower writes because indexes must be updated.",
+        "latencyMs": 1689,
+        "usage": {
+          "inputTokens": 49,
+          "outputTokens": 44,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "intent": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "التراجع إلى الخطوة السابقة",
+        "latencyMs": 1000,
+        "usage": {
+          "inputTokens": 62,
+          "outputTokens": 9,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "الرجوع للخطوة السابقة",
+        "latencyMs": 1188,
+        "usage": {
+          "inputTokens": 62,
+          "outputTokens": 53,
+          "cachedTokens": 0,
+          "reasoningTokens": 37
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "الرجوع_للخطوة_السابقة",
+        "latencyMs": 1439,
+        "usage": {
+          "inputTokens": 62,
+          "outputTokens": 14,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "router-json": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "{\"intent\":\"research\",\"confidence\":0.99}",
+        "latencyMs": 968,
+        "usage": {
+          "inputTokens": 72,
+          "outputTokens": 14,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "{\"intent\":\"research\",\"confidence\":0.99}",
+        "latencyMs": 1205,
+        "usage": {
+          "inputTokens": 72,
+          "outputTokens": 40,
+          "cachedTokens": 0,
+          "reasoningTokens": 20
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "{\"intent\":\"research\",\"confidence\":0.99}",
+        "latencyMs": 1465,
+        "usage": {
+          "inputTokens": 72,
+          "outputTokens": 14,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "reference": {
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "أي قسم من تقرير الربع الثالث (Q3-report) ترغب في الاطلاع عليه أو مناقشته؟",
+        "latencyMs": 1566,
+        "usage": {
+          "inputTokens": 70,
+          "outputTokens": 25,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "o4-mini": {
+        "model": "o4-mini",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "أي جزء من تقرير الربع الثالث (Q3-report) تحتاج إليه تحديدًا؟",
+        "latencyMs": 1465,
+        "usage": {
+          "inputTokens": 70,
+          "outputTokens": 20,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "ما الجزء الذي تحتاجه تحديدًا من تقرير الربع الثالث (Q3-report)؟",
+        "latencyMs": 1100,
+        "usage": {
+          "inputTokens": 70,
+          "outputTokens": 21,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "simple-plan": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "1. **تحديد الهدف والمدة:** حدّد موضوع الاجتماع، النتائج المتوقعة، والمدة المناسبة، مثل 30 دقيقة.  \n2. **اقتراح موعد مناسب:** أرسل استطلاعًا قصيرًا أو اقترح خيارين أو ثلاثة، ثم اختر الموعد الذي يناسب أغلب أعضاء الفريق.  \n3. **تأكيد التفاصيل:** أرسل دعوة تتضمن التاريخ والوقت، رابط الاجتماع أو المكان، جدول الأعمال، وأي مواد يجب تحضيرها مسبقًا.",
+        "latencyMs": 1821,
+        "usage": {
+          "inputTokens": 49,
+          "outputTokens": 106,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "1. **تحديد الهدف والحضور:** حدّد هدف الاجتماع، الأشخاص الضروريين للحضور، والمدة المناسبة له.  \n2. **اختيار الموعد:** اقترح 2–3 أوقات مناسبة، وتحقق من توافر أعضاء الفريق عبر التقويم أو رسالة سريعة.  \n3. **إرسال الدعوة والتحضير:** ثبّت الموعد، أرسل دعوة تتضمن الرابط أو المكان وجدول الأعمال المختصر، ثم أرسل تذكيراً قبل الاجتماع.",
+        "latencyMs": 2752,
+        "usage": {
+          "inputTokens": 49,
+          "outputTokens": 106,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "1. **تحديد الخيارات:** اقترح 2–3 مواعيد مناسبة ومدة الاجتماع وهدفه.\n2. **تأكيد الموعد:** أرسل الخيارات إلى أعضاء الفريق، واجمع الردود، ثم اختر الموعد الأنسب للجميع.\n3. **إرسال الدعوة:** أرسل دعوة تقويم تتضمن الرابط أو المكان، وجدول الأعمال، وأي مواد مطلوبة.",
+        "latencyMs": 4069,
+        "usage": {
+          "inputTokens": 49,
+          "outputTokens": 88,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "memory-candidate": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "نعم، لأنها تفضيل واضح ومفيد لتحديد أسلوب الرد.",
+        "latencyMs": 956,
+        "usage": {
+          "inputTokens": 67,
+          "outputTokens": 19,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "نعم، لأنها تفضيل أسلوبي ثابت قد يساعد في تخصيص الردود المستقبلية.",
+        "latencyMs": 1309,
+        "usage": {
+          "inputTokens": 67,
+          "outputTokens": 24,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "نعم، لأنها تفضيل عام لأسلوب الرد ويمكن تطبيقه على المحادثات المستقبلية.",
+        "latencyMs": 1985,
+        "usage": {
+          "inputTokens": 67,
+          "outputTokens": 25,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "conversation-summary": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "المستخدم طلب إعداد ميزانية ومقارنة الموردين، ثم قرر مراجعة الأسعار لاحقًا.",
+        "latencyMs": 1224,
+        "usage": {
+          "inputTokens": 69,
+          "outputTokens": 25,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "المستخدم طلب إعداد ميزانية، ثم مقارنة الموردين، وقرر مراجعة الأسعار لاحقًا.",
+        "latencyMs": 3114,
+        "usage": {
+          "inputTokens": 69,
+          "outputTokens": 24,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "طلب المستخدم إعداد ميزانية ومقارنة الموردين، ثم قرر مراجعة الأسعار لاحقًا.",
+        "latencyMs": 1747,
+        "usage": {
+          "inputTokens": 69,
+          "outputTokens": 24,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "research-synthesis": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "A cautious hypothesis is that mobile-specific checkout performance issues may be slowing mobile purchases, while desktop conversion remains stable because it is less affected.",
+        "latencyMs": 1113,
+        "usage": {
+          "inputTokens": 56,
+          "outputTokens": 30,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "A cautious hypothesis is that mobile-specific performance issues, such as slower page load times or less efficient checkout interactions, may be contributing to checkout delays without materially affecting stable desktop conversion.",
+        "latencyMs": 1470,
+        "usage": {
+          "inputTokens": 56,
+          "outputTokens": 38,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "Mobile checkout performance may be causing mobile-specific abandonment, while desktop users remain unaffected.",
+        "latencyMs": 1382,
+        "usage": {
+          "inputTokens": 56,
+          "outputTokens": 19,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "ar-naturalness": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "أهلاً بعودتك! سعداء بوجودك معنا من جديد.",
+        "latencyMs": 1046,
+        "usage": {
+          "inputTokens": 57,
+          "outputTokens": 19,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "مرحباً بعودتك، سعداء برؤيتك مجدداً!",
+        "latencyMs": 1128,
+        "usage": {
+          "inputTokens": 57,
+          "outputTokens": 20,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "مرحباً بعودتك! يسعدنا أن نراك مجدداً.",
+        "latencyMs": 1672,
+        "usage": {
+          "inputTokens": 57,
+          "outputTokens": 20,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "gulf-naturalness": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "الله يعافيك، أبشر وش تحتاج؟",
+        "latencyMs": 1020,
+        "usage": {
+          "inputTokens": 60,
+          "outputTokens": 13,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "يعافيك ربي، أبشر وش تحتاج؟",
+        "latencyMs": 914,
+        "usage": {
+          "inputTokens": 60,
+          "outputTokens": 14,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "الله يعافيك، أبشر! وش تحتاج؟",
+        "latencyMs": 1307,
+        "usage": {
+          "inputTokens": 60,
+          "outputTokens": 14,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "bubble-interaction": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "**العنوان:** متابع طلبات العملاء  \n**الوصف:** منصة سهلة تتيح متابعة حالة طلبات العملاء وتنظيمها وتحديثها لضمان سرعة الاستجابة وتحسين جودة الخدمة.",
+        "latencyMs": 1609,
+        "usage": {
+          "inputTokens": 59,
+          "outputTokens": 84,
+          "cachedTokens": 0,
+          "reasoningTokens": 36
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "**العنوان:** متابعة طلبات العملاء  \n**الوصف القصير:** لوحة موحدة لتسجيل الطلبات وتتبع حالتها وتحديث العملاء بسرعة وكفاءة.",
+        "latencyMs": 1614,
+        "usage": {
+          "inputTokens": 59,
+          "outputTokens": 36,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "**العنوان:** متابعة طلبات العملاء  \n**الوصف:** نظام مركزي لتسجيل طلبات العملاء، تتبّع حالتها، وضمان سرعة الاستجابة والإنجاز.",
+        "latencyMs": 2766,
+        "usage": {
+          "inputTokens": 59,
+          "outputTokens": 70,
+          "cachedTokens": 0,
+          "reasoningTokens": 23
+        },
+        "retries": 0
+      }
+    },
+    "schema": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "{\"status\":\"ready\",\"nextStep\":\"Await the task details\"}",
+        "latencyMs": 1529,
+        "usage": {
+          "inputTokens": 61,
+          "outputTokens": 52,
+          "cachedTokens": 0,
+          "reasoningTokens": 30
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "{\"status\":\"ready\",\"nextStep\":\"Proceed with the task\"}",
+        "latencyMs": 870,
+        "usage": {
+          "inputTokens": 61,
+          "outputTokens": 16,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "{\"status\":\"ready\",\"nextStep\":\"Proceed with the task\"}",
+        "latencyMs": 1283,
+        "usage": {
+          "inputTokens": 61,
+          "outputTokens": 39,
+          "cachedTokens": 0,
+          "reasoningTokens": 17
+        },
+        "retries": 0
+      }
+    },
+    "constraint": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "- Preserves organizational memory\n- Clarifies accountability\n- Supports consistent future actions",
+        "latencyMs": 1571,
+        "usage": {
+          "inputTokens": 53,
+          "outputTokens": 75,
+          "cachedTokens": 0,
+          "reasoningTokens": 50
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "Preserves organizational knowledge  \nImproves accountability and transparency  \nSpeeds future decision-making",
+        "latencyMs": 1163,
+        "usage": {
+          "inputTokens": 53,
+          "outputTokens": 19,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "- Preserves rationale for future reference\n- Improves accountability and transparency\n- Reduces repeated debates",
+        "latencyMs": 2110,
+        "usage": {
+          "inputTokens": 53,
+          "outputTokens": 83,
+          "cachedTokens": 0,
+          "reasoningTokens": 54
+        },
+        "retries": 0
+      }
+    },
+    "clarification": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "ما الذي تريد تحسينه تحديدًا؟",
+        "latencyMs": 985,
+        "usage": {
+          "inputTokens": 52,
+          "outputTokens": 11,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "ما الذي ترغب في تحسينه تحديدًا؟",
+        "latencyMs": 865,
+        "usage": {
+          "inputTokens": 52,
+          "outputTokens": 12,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "ما الذي تريد تحسينه تحديدًا؟",
+        "latencyMs": 1158,
+        "usage": {
+          "inputTokens": 52,
+          "outputTokens": 11,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "risk": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "Risk: A service outage at the provider could disrupt your operations.\n\nMitigation: Use multiple providers or maintain a fallback service to avoid a single point of failure.",
+        "latencyMs": 1151,
+        "usage": {
+          "inputTokens": 51,
+          "outputTokens": 35,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "Risk: service disruption if the provider has an outage.  \nMitigation: use a multi-provider or backup-provider strategy.",
+        "latencyMs": 1286,
+        "usage": {
+          "inputTokens": 51,
+          "outputTokens": 27,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "Risk: Provider outage can make your service unavailable.  \nMitigation: Use a tested failover provider or redundant multi-provider setup.",
+        "latencyMs": 1665,
+        "usage": {
+          "inputTokens": 51,
+          "outputTokens": 29,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "priority": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "1. إصلاح عطل يمنع تسجيل الدخول  \n2. إضافة تقرير جديد  \n3. تغيير لون زر ثانوي",
+        "latencyMs": 908,
+        "usage": {
+          "inputTokens": 68,
+          "outputTokens": 28,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "إصلاح عطل يمنع تسجيل الدخول، إضافة تقرير جديد، تغيير لون زر ثانوي.",
+        "latencyMs": 1456,
+        "usage": {
+          "inputTokens": 68,
+          "outputTokens": 59,
+          "cachedTokens": 0,
+          "reasoningTokens": 30
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "1. إصلاح عطل يمنع تسجيل الدخول\n2. إضافة تقرير جديد\n3. تغيير لون زر ثانوي",
+        "latencyMs": 2055,
+        "usage": {
+          "inputTokens": 68,
+          "outputTokens": 28,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "customer-tone": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "نعتذر عن التأخر في تحميل الصفحة، ونتفهم مدى الإزعاج الذي سببه ذلك. نعمل على حل المشكلة وتحسين سرعة الموقع، ونشكرك على صبرك وتفهمك.",
+        "latencyMs": 1325,
+        "usage": {
+          "inputTokens": 59,
+          "outputTokens": 48,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "نعتذر عن التأخير في تحميل الصفحة، ونتفهم مدى الإزعاج الذي قد يسببه ذلك. نعمل على تحسين الأداء، ونقدّر صبرك وتفهمك.",
+        "latencyMs": 1419,
+        "usage": {
+          "inputTokens": 59,
+          "outputTokens": 45,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "نعتذر عن تأخر تحميل الصفحة ونتفهم مدى الإزعاج الذي سببه لك. نعمل على تحسين الأداء لضمان تجربة أسرع وأكثر سلاسة.",
+        "latencyMs": 2155,
+        "usage": {
+          "inputTokens": 59,
+          "outputTokens": 39,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "definition": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "Idempotency means that making the same API request multiple times produces the same result as making it once.",
+        "latencyMs": 917,
+        "usage": {
+          "inputTokens": 47,
+          "outputTokens": 24,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "API idempotency means making the same request multiple times has the same effect as making it once.",
+        "latencyMs": 972,
+        "usage": {
+          "inputTokens": 47,
+          "outputTokens": 23,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "API idempotency means that making the same request multiple times has the same effect as making it once.",
+        "latencyMs": 2301,
+        "usage": {
+          "inputTokens": 47,
+          "outputTokens": 24,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "arabic-writing": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "تم تحسين سرعة التطبيق لتقليل وقت تحميل الصفحات وتسريع تنفيذ المهام اليومية. ركزت التحديثات على تحسين الأداء والاستقرار، خاصة عند استخدام الميزات الأساسية. قد تختلف النتائج بحسب الجهاز وجودة الاتصال، لكن التجربة العامة أصبحت أكثر سلاسة.",
+        "latencyMs": 2126,
+        "usage": {
+          "inputTokens": 61,
+          "outputTokens": 59,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      }
+    },
+    "microcopy": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "حفظ التغييرات",
+        "latencyMs": 853,
+        "usage": {
+          "inputTokens": 49,
+          "outputTokens": 8,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "حفظ التغييرات",
+        "latencyMs": 1015,
+        "usage": {
+          "inputTokens": 49,
+          "outputTokens": 8,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "حفظ التغييرات",
+        "latencyMs": 933,
+        "usage": {
+          "inputTokens": 49,
+          "outputTokens": 8,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "multi-source": {
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "1. **فرضية: تدهور جودة أو استقرار الخدمة أدى إلى بطء الاستجابة وانخفاض الرضا.**  \n   **خطوة تحقق:** قارن زمن الاستجابة ومعدلات الأخطاء/الأعطال حسب الإصدار والخدمة والمنطقة، واربطها بتذاكر الدعم ونتائج رضا العملاء خلال الفترة نفسها.\n\n2. **فرضية: تغيّر في تجربة المستخدم أو في سياسات الدعم زاد وقت حل المشكلات دون تأثير مباشر على الاكتساب.**  \n   **خطوة تحقق:** راجع التغييرات الأخيرة في واجهة المنتج، مسارات الدعم، وحجم الفريق، ثم حلّل زمن الاستجابة والرضا بحسب نوع الطلب وشريحة العملاء قبل وبعد التغيير.",
+        "latencyMs": 4139,
+        "usage": {
+          "inputTokens": 77,
+          "outputTokens": 176,
+          "cachedTokens": 0,
+          "reasoningTokens": 19
+        },
+        "retries": 0
+      },
+      "o4-mini": {
+        "model": "o4-mini",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      }
+    },
+    "multi-step": {
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      },
+      "o4-mini": {
+        "model": "o4-mini",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      }
+    },
+    "safety": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "This will permanently delete all records and cannot be undone. Please confirm that you want to proceed.",
+        "latencyMs": 1085,
+        "usage": {
+          "inputTokens": 55,
+          "outputTokens": 22,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "You’re requesting permanent deletion of all records. This action cannot be undone. Please confirm that you want to permanently delete everything.",
+        "latencyMs": 1084,
+        "usage": {
+          "inputTokens": 55,
+          "outputTokens": 28,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "This will permanently delete all records and cannot be undone. Please confirm by replying: **“Permanently delete all records.”**",
+        "latencyMs": 1515,
+        "usage": {
+          "inputTokens": 55,
+          "outputTokens": 29,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      }
+    },
+    "constraints": {
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      },
+      "o4-mini": {
+        "model": "o4-mini",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      }
+    },
+    "cross-capability": {
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      },
+      "o4-mini": {
+        "model": "o4-mini",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      }
+    },
+    "policy": {
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "Before exporting, verify:\n\n1. **Authorization** — the requester is permitted to export this data.\n2. **Scope** — only the necessary records and fields are included; exclude sensitive or unnecessary data.\n3. **Data classification** — identify personal, confidential, regulated, or secret information and apply required controls.\n4. **Destination** — confirm the recipient, storage location, and transfer method are approved and secure.\n5. **Policy/compliance** — ensure the export complies with retention, privacy, contractual, and regulatory requirements.\n6. **Protection and traceability** — use encryption/access controls where required and ensure the export can be logged or audited.",
+        "latencyMs": 2885,
+        "usage": {
+          "inputTokens": 56,
+          "outputTokens": 173,
+          "cachedTokens": 0,
+          "reasoningTokens": 32
+        },
+        "retries": 2
+      },
+      "o4-mini": {
+        "model": "o4-mini",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      }
+    },
+    "bubble-mutation": {
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      },
+      "o4-mini": {
+        "model": "o4-mini",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      }
+    },
+    "recovery": {
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "o4-mini": {
+        "model": "o4-mini",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      }
+    },
+    "ambiguous-plan": {
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "o4-mini": {
+        "model": "o4-mini",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      }
+    },
+    "simple-math-explanation": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      }
+    },
+    "evidence": {
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "o4-mini": {
+        "model": "o4-mini",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      }
+    },
+    "risk-tradeoff": {
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "o4-mini": {
+        "model": "o4-mini",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      }
+    },
+    "requirements": {
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "o4-mini": {
+        "model": "o4-mini",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      }
+    },
+    "state-model": {
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "o4-mini": {
+        "model": "o4-mini",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      }
+    },
+    "quality-gate": {
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "o4-mini": {
+        "model": "o4-mini",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      }
+    },
+    "data-consistency": {
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "o4-mini": {
+        "model": "o4-mini",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      }
+    },
+    "prioritization": {
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "o4-mini": {
+        "model": "o4-mini",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      }
+    },
+    "structured-plan": {
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "o4-mini": {
+        "model": "o4-mini",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      }
+    },
+    "world": {
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      }
+    },
+    "multi-actor": {
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      }
+    },
+    "deep-change": {
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      }
+    },
+    "interacting-policy": {
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      }
+    },
+    "long-horizon": {
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "HTTP 429"
+      }
+    },
+    "t2-comparison": {
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      },
+      "o4-mini": {
+        "model": "o4-mini",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "",
+        "latencyMs": 0,
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 1,
+        "error": "empty completion"
+      }
+    },
+    "t1-comparison": {
+      "gpt-5.6-luna": {
+        "model": "gpt-5.6-luna",
+        "text": "1. **السرعة:** الدردشة الفورية تتيح ردودًا فورية وتفاعلًا مباشرًا، بينما البريد الإلكتروني أبطأ نسبيًا وقد يستغرق الرد ساعات أو أيامًا.  \n2. **التوثيق والتنظيم:** البريد الإلكتروني أفضل لحفظ المراسلات والتفاصيل الرسمية، بينما الدردشة مناسبة للمحادثات السريعة وقد يصعب الرجوع إليها لاحقًا.  \n3. **طبيعة الاستخدام:** الدردشة تناسب الاستفسارات والدعم العاجل، أما البريد الإلكتروني فيناسب الشكاوى، العروض، والمعلومات التفصيلية أو الرسمية.",
+        "latencyMs": 2394,
+        "usage": {
+          "inputTokens": 54,
+          "outputTokens": 149,
+          "cachedTokens": 0,
+          "reasoningTokens": 12
+        },
+        "retries": 0
+      },
+      "gpt-5.6-terra": {
+        "model": "gpt-5.6-terra",
+        "text": "1. **السرعة:**  \n   - البريد الإلكتروني مناسب للردود غير العاجلة وقد يستغرق الرد ساعات أو أيام.  \n   - الدردشة الفورية توفر تواصلاً سريعاً ومباشراً في الوقت الحقيقي.\n\n2. **التوثيق والتنظيم:**  \n   - البريد الإلكتروني أفضل لحفظ التفاصيل الرسمية والمرفقات وسجل المراسلات.  \n   - الدردشة الفورية مناسبة للاستفسارات السريعة، لكن قد يصعب تتبع المحادثات الطويلة.\n\n3. **تجربة العميل:**  \n   - البريد الإلكتروني يمنح العميل وقتاً لشرح طلبه بالتفصيل.  \n   - الدردشة الفورية تمنح دعماً فورياً وشعوراً باهتمام أسرع، لكنها تتطلب توفر فريق دعم بشكل مستمر.",
+        "latencyMs": 3372,
+        "usage": {
+          "inputTokens": 54,
+          "outputTokens": 166,
+          "cachedTokens": 0,
+          "reasoningTokens": 0
+        },
+        "retries": 0
+      },
+      "gpt-5.6-sol": {
+        "model": "gpt-5.6-sol",
+        "text": "1. **السرعة:** الدردشة الفورية توفر ردودًا لحظية، بينما قد يستغرق الرد عبر البريد الإلكتروني وقتًا أطول.  \n2. **نوع الطلب:** الدردشة مناسبة للاستفسارات البسيطة والعاجلة، والبريد أفضل للمشكلات المعقدة أو التي تحتاج إلى توثيق ومرفقات.  \n3. **تجربة العميل:** الدردشة أكثر تفاعلية وشخصية، بينما يمنح البريد العميل مرونة في الإرسال والرد في الوقت المناسب له.",
+        "latencyMs": 4666,
+        "usage": {
+          "inputTokens": 54,
+          "outputTokens": 129,
+          "cachedTokens": 0,
+          "reasoningTokens": 11
+        },
+        "retries": 0
+      }
+    }
+  }
+}

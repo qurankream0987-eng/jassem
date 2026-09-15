@@ -1,0 +1,762 @@
+# JASIM — FINAL CANONICAL COMPLETION AUDIT
+# BEFORE TASKS #19 / #20 / #21
+# VERIFY THE PRODUCT, NOT JUST THE TEST FILES
+
+أنت ذكرت أن JASIM Canonical Completion Directive — Phases A–N مكتملة.
+
+ممتاز.
+
+قبل الانتقال إلى المهام #19 / #20 / #21،
+أريد Final Completion Audit واحدة فقط.
+
+لا تعِد بناء شيء.
+لا تبدأ Architecture جديدة.
+لا تنشئ Feature جديدة.
+
+الهدف:
+
+VERIFY THAT JASIM IS NOW ONE CONNECTED GENERAL GENERATIVE RUNTIME.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. VERIFY ACTIVE RUNTIME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أثبت أن المسار الحقيقي الآن:
+
+Web / Runtime Client
+→ canonical runtimeRouter
+→ canonical jasim-runtime
+→ canonical schema
+→ PostgreSQL
+
+ولا توجد:
+
+shadow runtime
+legacy router execution
+legacy DB truth
+hidden fallback runtime
+
+Report:
+
+ACTIVE_RUNTIME_COUNT:
+1 expected
+
+ACTIVE_SHADOW_RUNTIME:
+NO expected
+
+ACTIVE_LEGACY_EXECUTION_PATH:
+NO expected
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. GENERATIVE LOOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أثبت المسار الحقيقي:
+
+User Message
+→ Conversation
+→ Context
+→ Output Router
+→ Reference Resolution
+→ Output Form
+→ Run / Bubble / Action
+→ State
+→ Projection
+
+اختبر نفس المجال مع intents مختلفة:
+
+"أحتاج مدرس رياضيات"
+→ SEARCH / MATCH / RUN
+
+"أريد أن أعمل كمدرس"
+→ profile/listing/workflow
+
+"أنشئ منصة تربط المدرسين بالطلاب"
+→ Persistent Smart Bubble + optional World
+
+إذا الثلاثة تتحول لنفس output:
+FAIL.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. EXISTING BUBBLE EVOLUTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+استخدم Bubble حقيقية.
+
+اختبر من Main Chat:
+
+"خفض سعر الآيفون إلى 280"
+
+ثم:
+
+"أضف تقييمات"
+
+ثم:
+
+"أي طلب فوق 500 يحتاج موافقتي"
+
+ثم:
+
+"اعرض المنتجات كجدول"
+
+Expected:
+
+same Bubble
+same World where applicable
+
+DATA_MUTATION
+STRUCTURAL_MUTATION
+POLICY_MUTATION
+VIEW_MUTATION
+
+ChangeSet
+Preview
+Version
+Atomic Apply
+Projection refresh
+
+Report:
+
+NL_MUTATION:
+PASS / FAIL
+
+SAME_BUBBLE:
+PASS / FAIL
+
+CONTENT_VERSION:
+PASS / FAIL
+
+STRUCTURAL_EVOLUTION:
+PASS / FAIL
+
+POLICY_EVOLUTION:
+PASS / FAIL
+
+VIEW_EVOLUTION:
+PASS / FAIL
+
+DOMAIN_HANDLER:
+0 expected
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. DURABILITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بعد mutations:
+
+restart server.
+
+ثم أعد تحميل:
+
+conversation
+Bubble
+World
+versions
+Runs
+
+Expected:
+
+same IDs
+same content
+same policies
+same versions
+
+No prompt regeneration.
+
+Report:
+
+BUBBLE_RESTART_DURABILITY:
+PASS / FAIL
+
+WORLD_RESTART_DURABILITY:
+PASS / FAIL
+
+RUN_RESTART_DURABILITY:
+PASS / FAIL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. CONVERSATION INTELLIGENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا أريد فقط recent messages.
+
+أثبت:
+
+long conversation
+→ summary
+→ relevant memory
+→ canonical references
+→ current Bubble/Run state
+
+اختبار:
+
+50+ turns.
+
+بعدها قل:
+
+"الخط الذي أضفناه أمس اجعل سعره أقل"
+
+Expected:
+correct entity/reference resolved.
+
+Report:
+
+SUMMARY:
+PASS / FAIL
+
+MEMORY_READ:
+PASS / FAIL
+
+MEMORY_WRITE:
+PASS / FAIL
+
+LONG_CONTEXT_REFERENCE:
+PASS / FAIL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. EVENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أثبت:
+
+Event list
+Event get
+pagination/filter
+owner isolation
+
+لكن لا تخلط:
+
+Event
+Receipt
+Verification
+
+Report:
+
+EVENTS_FIRST_CLASS:
+PASS / FAIL
+
+EVENT_OWNER_ISOLATION:
+PASS / FAIL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. APPROVAL RESUME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Real proof:
+
+create Run
+→ proposal
+→ approval
+→ fingerprint revalidation
+→ restart server
+→ same Run resumes
+→ same DAG
+
+Expected:
+
+NO duplicate Run
+NO duplicate node execution
+
+Report:
+
+APPROVAL_RESUME:
+PASS / FAIL
+
+APPROVAL_AFTER_RESTART:
+PASS / FAIL
+
+SAME_RUN:
+PASS / FAIL
+
+DUPLICATE_RUNS:
+0 expected
+
+DUPLICATE_EXECUTION:
+0 expected
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. TRUSTED EXECUTOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أثبت أن execution لا يتم مباشرة من LLM.
+
+Required chain:
+
+Proposal
+→ Policy
+→ Approval
+→ Fingerprint
+→ Capability Validation
+→ Lease/Fence
+→ Trusted Executor
+
+Negative tests:
+
+unapproved action
+→ BLOCKED
+
+wrong owner
+→ BLOCKED
+
+changed fingerprint
+→ BLOCKED
+
+unknown capability
+→ BLOCKED
+
+cancelled Run
+→ BLOCKED
+
+stale worker
+→ BLOCKED
+
+Report:
+
+TRUSTED_EXECUTOR:
+PASS / FAIL
+
+RAW_LLM_EXECUTION:
+NO expected
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. RECEIPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لكل execution attempt:
+
+durable Receipt.
+
+Verify:
+
+runId
+nodeId
+capability
+provider
+fingerprint
+idempotency key
+attempt
+provider reference where applicable
+execution result
+verification state
+
+Report:
+
+EXECUTION_RECEIPT:
+PASS / FAIL
+
+IMMUTABLE_ATTEMPTS:
+PASS / FAIL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. INDEPENDENT VERIFIER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Executor must not verify itself.
+
+Required statuses:
+
+VERIFIED
+FAILED
+INCONCLUSIVE
+
+Test:
+
+INCONCLUSIVE
+must NOT mark Run/business effect successful.
+
+Report:
+
+INDEPENDENT_VERIFIER:
+PASS / FAIL
+
+INCONCLUSIVE_AS_SUCCESS:
+NO expected
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. RECONCILIATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Simulate:
+
+provider receives action
+→ effect happens
+→ process crashes before local success persistence
+→ server restarts
+
+Expected:
+
+lookup by idempotency/provider reference
+→ reconcile
+→ verify
+→ no blind duplicate action
+
+Report:
+
+CRASH_WINDOW_RECOVERY:
+PASS / FAIL
+
+BLIND_RETRY:
+NO expected
+
+DUPLICATE_EXTERNAL_EFFECT:
+NO expected
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. REAL OPENAI CAPABILITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أثبت أن:
+
+openai-chat
+
+يمر عبر:
+
+canonical capability registry
+→ model/provider adapter
+→ trusted execution path where applicable
+→ usage/latency/error tracking
+
+وليس direct call مبعثر من UI أو router.
+
+Also verify:
+
+structured validation
+timeout
+provider errors
+usage metadata
+
+Report:
+
+OPENAI_REAL_CALL:
+PASS / FAIL
+
+OPENAI_DIRECT_BYPASS:
+NO expected
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. GENERALIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+الـ10 adversarial security tests ممتازة،
+لكن أريد فصل:
+
+SECURITY ADVERSARIAL TESTS
+
+عن:
+
+GENERATIVE GENERALIZATION TESTS.
+
+اختر 5 مشكلات unseen مثل:
+
+1.
+"الشاحنات ترجع فارغة بعد التوصيل وأريد الاستفادة من المساحة."
+
+2.
+"المزارعون يحتاجون معدات غالية ولا يستخدمونها يوميًا."
+
+3.
+"أريد تنظيم طلبات صيانة العمارات وتوزيعها على الفنيين."
+
+4.
+"أريد ربط فائض الطعام بجهات تستطيع استلامه."
+
+5.
+"أريد نظامًا لحجز مساحات تخزين مبردة حسب السعة والمدة."
+
+لا تعدل Core بين الاختبارات.
+
+Expected:
+
+understand problem
+→ choose appropriate output form
+→ generate generic entity model
+→ relationships
+→ workflows
+→ policies
+→ views
+→ resource/provider gaps
+
+Report:
+
+GENERATIVE_GENERALIZATION:
+x/5
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS:
+0 expected
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. REAL-WORLD HONESTY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+في السيناريوهات السابقة:
+
+لا تدّعي وجود:
+
+drivers
+warehouses
+doctors
+vehicles
+payments
+licenses
+
+إذا غير موجودة.
+
+استخدم truthful states:
+
+REQUIRES_REAL_WORLD_RESOURCE
+REQUIRES_PROVIDER
+REQUIRES_OWNER_DECISION
+REQUIRES_REGULATORY_REVIEW
+BLOCKED_BY_EXTERNAL_CREDENTIAL
+
+Report:
+
+FAKE_SUCCESS:
+0 expected
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. PRODUCTION HARDENING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+الموجود الآن:
+
+rate limiter
+body cap
+production error masking
+
+جيد لكنه ليس Production Hardening كامل بمفرده.
+
+تحقق أيضًا من:
+
+auth production path
+session security
+secret handling
+health checks
+graceful shutdown
+worker restart
+structured logging
+correlation IDs
+DB migration
+backup readiness
+negative authorization tests
+
+Report each:
+
+RATE_LIMIT:
+PASS / FAIL
+
+BODY_LIMIT:
+PASS / FAIL
+
+ERROR_MASKING:
+PASS / FAIL
+
+PRODUCTION_AUTH:
+PASS / PARTIAL / FAIL
+
+SECRETS:
+PASS / FAIL
+
+HEALTH_CHECK:
+PASS / FAIL
+
+GRACEFUL_SHUTDOWN:
+PASS / FAIL
+
+WORKER_RECOVERY:
+PASS / FAIL
+
+OBSERVABILITY:
+PASS / PARTIAL / FAIL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. E2E MUST COVER FINAL STATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+8/8 E2E layers جيدة.
+
+لكن أثبت أن E2E لا ينتهي فقط عند:
+
+receipt
+
+إذا العملية تتطلب verification.
+
+المسار النهائي يجب أن يكون:
+
+conversation
+→ intent
+→ output
+→ Run
+→ proposal
+→ approval
+→ DAG
+→ executor
+→ receipt
+→ verifier
+→ final verified state
+→ user-visible result
+
+إذا الـE2E الحالي يقف عند receipt:
+
+صنفه:
+PARTIAL VERIFIED-E2E
+
+وليس full verified execution.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. CROSS-OWNER SECURITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+اختبر:
+
+conversation
+Bubble
+World
+Run
+Task
+Proposal
+Approval
+Receipt
+Memory
+Event
+
+User A cannot read/write User B resources.
+
+Report:
+
+CROSS_OWNER_MATRIX:
+PASS / FAIL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. TYPECHECK IS NECESSARY BUT NOT SUFFICIENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Confirm:
+
+server typecheck = 0
+app typecheck = 0
+
+لكن لا تستخدم typecheck كدليل runtime.
+
+Report separately:
+
+SERVER_TYPECHECK:
+PASS
+
+APP_TYPECHECK:
+PASS
+
+RUNTIME_PROOFS:
+PASS / FAIL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. TASKS #19 #20 #21
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بعد هذا Audit:
+
+اعرض لكل واحدة من #19 / #20 / #21:
+
+TITLE
+
+WHY IT EXISTS
+
+DEPENDENCIES
+
+WHAT PRODUCT GAP IT CLOSES
+
+WHY NOW
+
+CAN IT WAIT?
+
+RISK
+
+EXIT GATE
+
+
+ثم رتبهم:
+
+DO_NEXT
+
+DO_SECOND
+
+DEFER
+
+
+لا تعتمد فقط على ترتيب أرقام Tasks.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. FINAL JASIM STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أعطني Matrix واحدة:
+
+CANONICAL RUNTIME
+GENERATIVE ROUTING
+SMART BUBBLES
+WORLD/DNA
+NL MUTATION
+CONTENT VERSIONING
+CONVERSATION INTELLIGENCE
+MEMORY
+EVENTS
+RUN/DAG
+APPROVAL RESUME
+TRUSTED EXECUTOR
+RECEIPTS
+VERIFIER
+RECONCILIATION
+OPENAI CAPABILITY
+GENERALIZATION
+SECURITY
+WEB
+MOBILE
+PRODUCTION
+MULTI-USER
+COMMERCIAL
+
+Status only:
+
+REAL
+PARTIAL
+BLOCKED
+MISSING
+DEFERRED
+
+
+ثم أعطني:
+
+GENERAL GENERATIVE RUNTIME READY:
+YES / NO
+
+VERIFIED EXECUTION READY:
+YES / NO
+
+PRODUCTION READY:
+YES / NO
+
+COMMERCIAL READY:
+YES / NO
+
+STANDALONE MOBILE READY:
+YES / NO
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. MOST IMPORTANT RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not change code merely to make this audit say PASS.
+
+AUDIT FIRST.
+
+If a gate already passes:
+show evidence.
+
+If it does not:
+report the exact gap.
+
+Do not silently fix failures during the audit.
+
+After the audit,
+we will use #19/#20/#21 or create the correct next task from the actual evidence.

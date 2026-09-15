@@ -1,0 +1,140 @@
+RECOMMENDED REPLIT MODE: FREE
+
+JASIM — BLOCK 3 FINAL CLOSURE REPORT ONLY
+
+Do NOT implement new features.
+Do NOT redesign architecture.
+Do NOT rerun unrelated broad audits.
+Do NOT connect a real payment provider.
+Do NOT charge real money.
+Do NOT deploy.
+
+The current implementation reports:
+- Block 3: 120/120 PASS
+- Block 2: 101/101 PASS
+- TypeScript PASS
+- Web/API/Mobile running
+- payment state forgery closed
+- webhook replay closed
+- cross-intent payment assignment closed
+- cross-provider assignment closed
+- unknown/unbound provider rejected
+- forward migration 0010_payment_provider_binding added
+
+Now verify whether the CURRENT repository satisfies the complete
+Block 3 closure contract.
+
+Inspect actual active code and existing test evidence.
+
+Specifically report:
+
+1. Exact canonical money representation
+2. KWD 3-decimal exactness
+3. Float/double financial truth paths
+4. FinancialMandate
+5. mandate budget atomicity
+6. concurrent budget-overrun protection
+7. single-use concurrent protection
+8. provider-output trust boundary
+9. financial webhook authentication
+10. replay protection
+11. valid signature != VERIFIED
+12. provider binding before PSP effect
+13. payment idempotency
+14. crash-after-provider-effect handling
+15. INCONCLUSIVE + reconciliation behavior
+16. blind financial retry count
+17. false signed callback vs provider readback behavior
+18. refund immutability/idempotency
+19. settlement semantics
+20. payout semantics
+
+21. Attempt Ledger != Financial/Economic Ledger
+22. append-only financial/economic history
+23. Customer Gross Payment != JASIM Revenue
+24. Seller Payable
+25. Provider Cost
+26. EconomicEvent
+27. FeeRule
+28. RevenueEvent
+29. hardcoded domain fee count
+
+30. Plan
+31. Subscription
+32. Trial without fake payment
+33. server-side Entitlement
+34. UsageMeter
+35. usage replay protection
+36. failed-renewal behavior
+
+37. Generated Business Economics
+38. non-payment transactions still work
+39. known economic scenarios
+40. architecture freeze
+41. >=15 unseen economic goals
+42. domain-specific Core patches after freeze
+
+43. fresh migration path
+44. Block2 → Block3 upgrade migration
+45. canonical TypeScript
+46. Web production build
+47. Mobile typecheck
+48. affected Block0/1/1.1/2 regressions
+
+Do not count mocks alone as proof for real execution properties.
+
+If evidence is absent, say NOT PROVEN.
+Do not infer PASS from the 120/120 count.
+
+Create exactly:
+
+.local/tasks/block3-report.md
+
+Final verdict must be one of:
+
+JASIM_BLOCK_3 = PASS
+JASIM_BLOCK_3 = PARTIAL
+JASIM_BLOCK_3 = FAIL
+
+Also include:
+
+BLOCK_0_REMAINS_CLOSED
+BLOCK_1_REMAINS_CLOSED
+BLOCK_1_1_REMAINS_CLOSED
+BLOCK_2_REMAINS_CLOSED
+
+PAYMENT_TRUTH_BOUNDARY
+EXACT_MONEY_KWD
+FINANCIAL_MANDATE
+MANDATE_BUDGET_CONCURRENCY
+PROVIDER_OUTPUT_TRUST_BOUNDARY
+AUTHENTICATED_FINANCIAL_WEBHOOKS
+VALID_SIGNATURE_EQUALS_VERIFIED
+BLIND_FINANCIAL_RETRY_COUNT
+DOUBLE_CHARGE_COUNT
+DOUBLE_REFUND_COUNT
+DOUBLE_PAYOUT_COUNT
+
+ATTEMPT_LEDGER_EQUALS_FINANCIAL_LEDGER
+FINANCIAL_LEDGER_APPEND_ONLY
+CUSTOMER_PAYMENT_EQUALS_JASIM_REVENUE
+
+PLAN
+SUBSCRIPTION
+ENTITLEMENT
+USAGE_METERING
+
+GENERATED_BUSINESS_ECONOMICS
+KNOWN_SCENARIOS_PASS
+UNSEEN_ECONOMIC_GOALS_COUNT
+DOMAIN_SPECIFIC_PATCHES_AFTER_FREEZE
+
+REAL_MONEY_CHARGED
+PRODUCTION_PAYMENT_PROVIDER_CONNECTED
+
+READY_FOR_BLOCK_3_1 = YES / NO
+
+If READY_FOR_BLOCK_3_1 = NO:
+list only exact blockers.
+
+STOP after the report.

@@ -1,0 +1,1345 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM SMART GENERATIVE EXPERIENCE
+
+# TASK 8B2A — MOBILE VISUAL MORPHING + NATIVE PRESENTATION CONTINUITY
+
+MODE INTENT:
+Focused native Mobile presentation transition implementation only.
+
+Task 8A = CLOSED / PASS
+Task 8B1 = CLOSED / PASS
+Task 8B1.1 = CLOSED / PASS
+
+Accepted runtime readiness:
+
+* local canonical DB is ready
+* existing migrations were applied only
+* discovery_result_sets exists
+* discovery_candidates exists
+* reference_bindings exists
+* fulfillment_observations exists
+* runtime.workspaceProjection = HTTP 200
+* runtime.activeLivingObjects = HTTP 200
+* Mobile session endpoint = HTTP 200
+* authenticated Mobile Smart UI smoke = PASS
+* Mobile reached real Conversation + Workspace
+* no production database touched
+* no new migrations
+* no new tables
+* Task 8B2 has not started
+
+Current native Mobile implementation already includes:
+
+* MobilePresentationRenderer
+* MobileWorkspaceSurface
+* native generic semantic primitives
+* INLINE / BOTTOM_SHEET / EXPANDED / FULL_SCREEN_TEMPORARY policies
+* shared PresentationDefinition
+* shared presentation identity
+* shared transition classification
+* stale projection protection
+* Trusted Action Dispatcher integration
+* canonical projection refresh
+* no WebView
+* no domain-specific native components
+
+Relevant reports:
+
+.local/tasks/smart-ui-task-8a-report.md
+.local/tasks/smart-ui-task-8b1-report.md
+.local/tasks/smart-ui-task-8b-1-readiness-report.md
+
+Do NOT redo these tasks.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. GOAL
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Implement native Mobile visual morphing for the already-working semantic presentation system.
+
+The user should experience:
+
+SEARCH_RESULTS
+↓
+COMPARISON
+↓
+FORM / DETAIL
+↓
+APPROVAL
+↓
+STATUS / TIMELINE
+
+as one evolving JASIM experience on the phone.
+
+This task owns:
+
+* native ENTER visuals
+* native UPDATE visuals
+* native MORPH visuals
+* native EXIT visuals
+* NO_CHANGE behavior
+* presentation continuity
+* focus/accessibility continuity
+* sheet/expanded-surface continuity
+
+This task does NOT implement Mobile Living Object UI.
+
+That is Task 8B2B.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. SOURCE OF TRUTH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The transition logic already exists from Tasks 5A and 8A.
+
+Use shared:
+
+presentation identity
+
+transition classification
+
+presentationVersion
+
+canonical projection
+
+Do NOT create a Mobile-specific transition state machine that re-decides semantic behavior.
+
+Required:
+
+server projection
+→ shared transition classification
+→ Mobile visual transition
+
+Never:
+
+Mobile animation
+→ canonical state mutation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. SUPPORTED TRANSITIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Respect exactly the shared semantic classes:
+
+ENTER
+
+UPDATE
+
+MORPH
+
+EXIT
+
+NO_CHANGE
+
+Mobile may render them differently than Web.
+
+But it must not redefine what they mean.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. ENTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When a rich surface appears for the first time:
+
+null
+→ SEARCH_RESULTS
+
+or:
+
+null
+→ APPROVAL
+
+show a restrained native entrance.
+
+Examples:
+
+inline fade/expand
+
+sheet entrance
+
+expanded surface appearance
+
+depending on existing Mobile presentation policy.
+
+Do not use large theatrical animations.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. UPDATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When the SAME semantic surface updates:
+
+SEARCH_RESULTS v1
+→ SEARCH_RESULTS v2
+
+STATUS v3
+→ STATUS v4
+
+do NOT fully dismiss and recreate the whole surface.
+
+Prefer subtle content update.
+
+Preserve where reasonable:
+
+scroll context
+
+expanded/collapsed visual state
+
+user orientation
+
+But always prefer latest canonical projection.
+
+Do not preserve stale actionable controls.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. MORPH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When semantic presentation changes:
+
+SEARCH_RESULTS
+→ COMPARISON
+
+FORM
+→ APPROVAL
+
+APPROVAL
+→ STATUS
+
+transition cleanly between ONE outgoing and ONE incoming surface.
+
+After transition:
+
+only the current presentation remains mounted.
+
+Do NOT accumulate old surfaces.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. EXIT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When rich active Workspace is no longer needed:
+
+presentation
+→ null
+
+close/collapse the native surface gracefully.
+
+Conversation becomes dominant again.
+
+EXIT must NOT:
+
+cancel Run
+
+delete Goal
+
+stop monitoring
+
+clear canonical ResultSet
+
+change World state
+
+It is presentation only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. NO_CHANGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When classification is NO_CHANGE:
+
+do not restart animations.
+
+This is essential for:
+
+query refetches
+
+same-version renders
+
+unrelated Conversation updates
+
+Avoid visual flicker.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. MOBILE PRESENTATION POLICY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Preserve Task 8B1:
+
+INLINE
+
+BOTTOM_SHEET
+
+EXPANDED
+
+FULL_SCREEN_TEMPORARY
+
+Morphing must work across presentation policy boundaries.
+
+Example:
+
+SEARCH_RESULTS = INLINE
+
+then:
+
+COMPARISON = EXPANDED
+
+The interface should transition coherently.
+
+Do not treat this as navigation to another app.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. INLINE → EXPANDED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+Search Results inline.
+
+User:
+"قارن الثاني والرابع."
+
+New semantic presentation:
+COMPARISON
+
+Mobile policy:
+EXPANDED.
+
+Expected:
+
+comparison expands naturally from current context.
+
+Conversation remains reachable.
+
+No duplicated Search surface underneath as an active actionable UI.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. EXPANDED → BOTTOM SHEET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If policy changes between surface modes:
+
+preserve same presentation identity/reference semantics.
+
+Do not accidentally create a new Goal or local canonical entity.
+
+Only presentation container changes.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. FORM → APPROVAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Critical path.
+
+FORM visible.
+
+User submits through Trusted Action Dispatcher.
+
+Do NOT morph on button tap alone.
+
+Required:
+
+dispatch
+→ server canonical update
+→ projection refresh
+→ APPROVAL projection arrives
+→ shared classifier = MORPH
+→ visual transition
+
+The old Form's canonical actions must no longer remain active.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. APPROVAL → STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Critical trust path.
+
+User taps Approve.
+
+Do NOT show success immediately.
+
+Required:
+
+trusted dispatch
+→ server/runtime
+→ current canonical projection
+→ STATUS / TIMELINE
+→ visual morph
+
+If runtime returns:
+
+VERIFYING
+
+show verifying.
+
+If:
+
+BLOCKED
+
+show blocked.
+
+If:
+
+INCONCLUSIVE
+
+show inconclusive.
+
+If:
+
+FAILED
+
+show failure.
+
+No fake success animation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. STATUS UPDATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STATUS / TIMELINE changes should normally be UPDATE.
+
+Example:
+
+RUNNING
+→ VERIFYING
+→ COMPLETED
+
+Use restrained visual changes.
+
+Do not replay full ENTER animation every time polling/refetch updates status.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. STALE TRANSITION PROTECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Preserve Task 8A stale protection.
+
+Race:
+
+P1 SEARCH_RESULTS
+
+P2 COMPARISON
+
+P3 APPROVAL
+
+A delayed animation callback from P1 or P2 must NEVER restore an older surface.
+
+Current canonical projection/version wins.
+
+Add focused race test.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. TARGET-SPECIFIC VERSIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Preserve target-specific versions introduced before Mobile UI:
+
+task
+
+run
+
+proposal
+
+bubble
+
+Do not flatten them.
+
+Transition wrappers must not strip:
+
+expectedPresentationVersion
+
+target-specific version metadata
+
+reference identity
+
+Trusted actions still require current versions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. COLLAPSE / DISMISS DURING MORPH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+User may dismiss/collapse a sheet while projection changes.
+
+This must not corrupt state.
+
+When reopened:
+
+render current canonical presentation.
+
+Do not restore old outgoing snapshot.
+
+Local presentation preference is disposable.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. APP BACKGROUND / FOREGROUND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mobile-specific requirement.
+
+If app backgrounds during transition:
+
+do not rely on animation callback to establish semantic state.
+
+When foregrounded:
+
+current server/query projection wins.
+
+If stale:
+refresh.
+
+Render latest current presentation.
+
+Do not persist animation phase as canonical truth.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. APP RESTART
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Scenario:
+
+SEARCH_RESULTS
+→ APPROVAL
+
+App closes.
+
+Restart.
+
+Expected:
+
+Mobile reconstructs from canonical server projection.
+
+If runtime still waits Approval:
+show Approval.
+
+If operation already advanced:
+show current Status.
+
+Do not reconstruct based solely on last local animation snapshot.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. CONVERSATION SWITCH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If user changes Conversation while a morph is in progress:
+
+cancel visual transition from previous Conversation.
+
+Do not leak:
+
+presentation
+
+ResultSet
+
+Goal
+
+Approval
+
+selection
+
+into new Conversation.
+
+New Conversation projection wins.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. CONVERSATION REMAINS PRIMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Transitions must never make chat feel unavailable.
+
+For full-screen temporary surface:
+
+provide clear return/back behavior.
+
+For bottom sheet:
+
+chat should remain contextually present.
+
+For inline surfaces:
+
+chat input remains usable.
+
+Avoid long blocking animations.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. KEYBOARD + FORM TRANSITIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If keyboard is open while FORM transitions to APPROVAL:
+
+dismiss/reposition safely.
+
+Avoid:
+
+blank screen
+
+jumping sheet
+
+submit button trapped behind keyboard
+
+focus remaining on destroyed field
+
+Reuse existing keyboard-aware logic.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. ACCESSIBILITY FOCUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After meaningful MORPH:
+
+focus should move appropriately to new important semantic surface when feasible.
+
+Examples:
+
+FORM → APPROVAL
+
+focus approval heading/first meaningful control.
+
+Do not steal accessibility focus on every simple UPDATE.
+
+Respect screen reader semantics.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. REDUCED MOTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Respect platform/system reduced-motion preferences if available through current React Native/Expo environment.
+
+If reduced motion is enabled:
+
+state transitions must remain understandable with minimal/no animation.
+
+Functionality must not depend on motion.
+
+Do not add SDK.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. ANIMATION TECHNOLOGY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use current project/native animation tools only.
+
+Possible:
+
+Animated
+
+LayoutAnimation
+
+existing Reanimated installation if ALREADY PRESENT
+
+existing transition helpers
+
+Do NOT install a new animation package.
+
+NEW_EXTERNAL_SDKS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. PERFORMANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not keep every previous presentation mounted.
+
+Temporary outgoing surface is acceptable during MORPH.
+
+After transition:
+
+remove it.
+
+Avoid rendering:
+
+multiple historical result sets
+
+multiple comparisons
+
+multiple approvals
+
+hidden full-screen surfaces
+
+Use current presentation only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. FLATLIST CONTINUITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For SEARCH_RESULTS updates:
+
+preserve stable item keys.
+
+Avoid wiping list identity unnecessarily.
+
+But if canonical ResultSet changes:
+
+respect new projection.
+
+Do not preserve stale items simply to keep animation smooth.
+
+Truth wins over continuity.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. COMPARISON CONTINUITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SEARCH_RESULTS → COMPARISON
+
+must preserve candidate identity from stable references.
+
+Do not infer:
+
+second card visually = candidate two
+
+Use canonical references.
+
+Selected entities should remain recognizable.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. ERROR MORPH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Any active surface may transition into:
+
+WARNING
+
+ERROR_STATE
+
+BLOCKED STATUS
+
+INCONCLUSIVE STATUS
+
+These must be first-class visual transitions.
+
+Do not render them as application crashes.
+
+Conversation remains available.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. SAFE LOADING DURING SERVER UPDATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not immediately erase last trusted current surface after consequential action starts.
+
+Where safe:
+
+retain last trusted surface with a small pending/update indicator until next canonical projection arrives.
+
+But if old action has become invalid:
+
+disable its consequential controls.
+
+Do not let stale UI remain actionable.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. NO LOCAL BUSINESS SUCCESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Forbidden:
+
+setApproved(true)
+
+setPaid(true)
+
+setCompleted(true)
+
+setStatus("success")
+
+from transition code.
+
+All semantic/business truth comes from projection.
+
+Target:
+
+CLIENT_CANONICAL_TRUTH_ADDED = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. NO LIVING OBJECT UI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 8B2A MUST NOT build:
+
+Living Objects strip
+
+Active Objects drawer
+
+Living Object sheet
+
+persistent Orbs
+
+Those belong to Task 8B2B.
+
+Do not expand.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. NO NAVIGATION REDESIGN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not add or change main app tabs.
+
+Do not create domain routes.
+
+Do not create new navigation architecture.
+
+Only presentation transitions inside current JASIM Conversation experience.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. GENERICITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The SAME morph logic must handle:
+
+product-like Search
+
+vehicle-like Search
+
+job-like Search
+
+document comparison
+
+World presentation update
+
+approval
+
+status
+
+without domain-specific animation rules.
+
+Target:
+
+DOMAIN_SPECIFIC_MOBILE_MORPH_RULES_ADDED = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. REPRESENTATIVE SCENARIO A
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Same Goal G1.
+
+SEARCH_RESULTS P1.
+
+User:
+"قارن الثاني والرابع."
+
+Server returns:
+COMPARISON P2.
+
+Expected:
+
+shared classifier = MORPH
+
+native UI transitions
+
+stable candidate refs preserved
+
+P1 removed afterward
+
+P2 current.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. REPRESENTATIVE SCENARIO B
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FORM P1.
+
+User submits.
+
+Trusted dispatcher accepts.
+
+Server returns:
+APPROVAL P2.
+
+Expected:
+
+no approval before server projection
+
+MORPH
+
+Form actions disappear
+
+Approval becomes current.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. REPRESENTATIVE SCENARIO C
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+APPROVAL P2.
+
+User approves.
+
+Dispatcher returns accepted.
+
+Server projection:
+
+STATUS P3 = VERIFYING.
+
+Expected:
+
+MORPH to VERIFYING.
+
+Later:
+
+STATUS P4 = COMPLETED.
+
+Expected:
+
+UPDATE.
+
+No fake immediate completion.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. REPRESENTATIVE SCENARIO D
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DOCUMENT
+→ COMPARISON
+→ FORM
+
+Prove generic non-commerce transition behavior.
+
+No product assumptions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. APP LIFECYCLE SCENARIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Begin MORPH.
+
+App backgrounds.
+
+Canonical projection changes.
+
+App foregrounds.
+
+Expected:
+
+latest projection shown.
+
+No old animation resurrection.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. TESTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add focused tests proving at minimum:
+
+1. ENTER mounts current native surface.
+
+2. UPDATE does not duplicate surface.
+
+3. MORPH replaces semantic surface.
+
+4. EXIT removes rich Workspace appropriately.
+
+5. NO_CHANGE avoids restart.
+
+6. SEARCH_RESULTS → COMPARISON.
+
+7. FORM → APPROVAL.
+
+8. APPROVAL → STATUS only after projection update.
+
+9. STATUS update remains UPDATE.
+
+10. failed/blocker state can replace active presentation.
+
+11. stale visual callback cannot revive old presentation.
+
+12. collapse/dismiss reopens latest projection.
+
+13. app background/foreground uses latest projection.
+
+14. app restart reconstructs server current presentation.
+
+15. conversation switch isolates state.
+
+16. keyboard state remains safe across Form morph.
+
+17. accessibility focus remains valid.
+
+18. reduced-motion path works.
+
+19. old outgoing DOM/native tree is removed.
+
+20. stable ResultSet/candidate references preserved.
+
+21. target-specific versions preserved.
+
+22. Trusted Action metadata preserved through wrappers.
+
+23. no client canonical truth added.
+
+24. no domain-specific Mobile morph rule.
+
+25. Task 8B1 renderer regression.
+
+26. Task 8A semantic regression.
+
+27. Task 7 dispatcher regression.
+
+28. Task 5 transition-classification regression.
+
+29. existing Mobile Conversation regression.
+
+Keep tests focused.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. REAL MOBILE VISUAL SMOKE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Unlike Task 8B1, runtime readiness is now proven.
+
+Use the real app.
+
+Do not use static HTML/mock replacement.
+
+Where existing authenticated test/session permits, visually inspect:
+
+SEARCH_RESULTS
+
+COMPARISON
+
+FORM
+
+APPROVAL
+
+STATUS
+
+at least one actual transition sequence.
+
+Also inspect:
+
+Arabic RTL
+
+keyboard
+
+narrow phone
+
+background/foreground if practical
+
+If particular canonical state is not naturally reachable:
+
+use existing safe test/fixture infrastructure only.
+
+Do NOT create production fake success.
+
+Report exactly what was visually observed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. EXISTING CANONICAL ERRORS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The prior readiness run noted 11 canonical TypeScript/errors outside Mobile readiness scope.
+
+Do NOT start fixing them as part of 8B2A unless one directly blocks this task.
+
+If a specific one blocks:
+
+report exact error
+
+make minimal directly-required fix only if safe
+
+otherwise STOP with blocker.
+
+Carry unrelated errors to final integration gate.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. VERIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run:
+
+Task 8B2A focused tests
+
+Task 8B1 regression
+
+Task 8A regression
+
+Task 7 dispatcher affected tests
+
+Task 5 transition-classification tests
+
+Mobile TypeScript
+
+shared contract TypeScript if touched
+
+Metro bundle
+
+git diff --check
+
+real Mobile smoke
+
+Do NOT run unrestricted parallel PostgreSQL suites if known DB collision remains.
+
+Use safe sequential DB testing where required.
+
+Do NOT deploy.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. EXPECTED CHANGE SIZE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expected:
+
+MobileWorkspaceSurface
+
+small transition hook/helper
+
+native animation/presentation wrapper
+
+small focus/lifecycle handling
+
+focused tests
+
+No DB.
+
+No migrations.
+
+No new SDK.
+
+Expected:
+
+NEW_DATABASE_TABLES = 0
+
+NEW_MIGRATIONS = 0
+
+NEW_EXTERNAL_SDKS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create exactly:
+
+.local/tasks/smart-ui-task-8b2a-report.md
+
+Sections:
+
+CAUSE
+
+MOBILE_MORPH_ARCHITECTURE
+
+SHARED_TRANSITION_CLASSIFICATION
+
+ENTER
+
+UPDATE
+
+MORPH
+
+EXIT
+
+NO_CHANGE
+
+PRESENTATION_POLICY_TRANSITIONS
+
+SEARCH_TO_COMPARISON
+
+FORM_TO_APPROVAL
+
+APPROVAL_TO_STATUS
+
+STATUS_UPDATES
+
+STALE_TRANSITION_PROTECTION
+
+TARGET_SPECIFIC_VERSIONS
+
+APP_BACKGROUND_FOREGROUND
+
+APP_RESTART
+
+CONVERSATION_SWITCH
+
+KEYBOARD
+
+ACCESSIBILITY
+
+REDUCED_MOTION
+
+PERFORMANCE
+
+ERROR_BLOCKED_TRANSITIONS
+
+CLIENT_STATE_BOUNDARY
+
+DOMAIN_GENERICITY
+
+FILES_CHANGED
+
+TESTS
+
+REAL_MOBILE_VISUAL_SMOKE
+
+Final counters:
+
+SMART_UI_TASK_8B2A =
+PASS / PARTIAL / FAIL
+
+MOBILE_VISUAL_MORPHING =
+PASS / FAIL
+
+MOBILE_ENTER =
+PASS / FAIL
+
+MOBILE_UPDATE =
+PASS / FAIL
+
+MOBILE_MORPH =
+PASS / FAIL
+
+MOBILE_EXIT =
+PASS / FAIL
+
+MOBILE_NO_CHANGE =
+PASS / FAIL
+
+ONE_CURRENT_MOBILE_SURFACE =
+YES / NO
+
+OLD_MOBILE_SURFACE_REMOVED =
+YES / NO
+
+SEARCH_TO_COMPARISON =
+PASS / FAIL
+
+FORM_TO_APPROVAL =
+PASS / FAIL
+
+APPROVAL_TO_STATUS_FROM_SERVER =
+PASS / FAIL
+
+FAKE_LOCAL_SUCCESS_COUNT = <number>
+
+STALE_VISUAL_REVIVAL_BLOCKED =
+YES / NO
+
+APP_BACKGROUND_FOREGROUND =
+PASS / FAIL
+
+APP_RESTART_RECONSTRUCTION =
+PASS / FAIL
+
+CONVERSATION_SWITCH_ISOLATED =
+YES / NO
+
+REDUCED_MOTION =
+PASS / FAIL
+
+ACCESSIBILITY_FOCUS =
+PASS / FAIL
+
+KEYBOARD_SAFE =
+PASS / FAIL
+
+TARGET_SPECIFIC_VERSIONS_PRESERVED =
+YES / NO
+
+DOMAIN_SPECIFIC_MOBILE_MORPH_RULES_ADDED = <number>
+
+CLIENT_CANONICAL_TRUTH_ADDED = <number>
+
+REAL_MOBILE_VISUAL_SMOKE =
+PASS / PARTIAL / FAIL
+
+NEW_DATABASE_TABLES =
+0
+
+NEW_MIGRATIONS =
+0
+
+NEW_EXTERNAL_SDKS =
+0
+
+TASK_8B1_REGRESSION =
+PASS / FAIL
+
+TASK_8A_REGRESSION =
+PASS / FAIL
+
+TASK_7_DISPATCHER_REGRESSION =
+PASS / FAIL
+
+TASK_5_TRANSITION_REGRESSION =
+PASS / FAIL
+
+MOBILE_TYPESCRIPT =
+PASS / FAIL
+
+METRO_BUNDLE =
+PASS / FAIL
+
+BLOCKS_0_TO_3_1_REMAIN_CLOSED =
+YES / NO
+
+READY_FOR_SMART_UI_TASK_8B2B =
+YES / NO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. PASS GATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 8B2A may be PASS only if:
+
+MOBILE_VISUAL_MORPHING = PASS
+
+ONE_CURRENT_MOBILE_SURFACE = YES
+
+OLD_MOBILE_SURFACE_REMOVED = YES
+
+APPROVAL_TO_STATUS_FROM_SERVER = PASS
+
+FAKE_LOCAL_SUCCESS_COUNT = 0
+
+STALE_VISUAL_REVIVAL_BLOCKED = YES
+
+TARGET_SPECIFIC_VERSIONS_PRESERVED = YES
+
+DOMAIN_SPECIFIC_MOBILE_MORPH_RULES_ADDED = 0
+
+CLIENT_CANONICAL_TRUTH_ADDED = 0
+
+and affected tests pass.
+
+Visual smoke must be truthful.
+
+If only part of authenticated transition sequence is visually reachable:
+
+REAL_MOBILE_VISUAL_SMOKE = PARTIAL
+
+and document exactly what remains.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+47. STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Task 8B2A:
+
+STOP.
+
+DO NOT build Mobile Living Objects UI.
+
+DO NOT implement Active Objects strip.
+
+DO NOT start Task 8B2B.
+
+DO NOT redesign navigation.
+
+DO NOT start Task 9.
+
+DO NOT deploy.
+
+Return only:
+
+Task 8B2A verdict
+
+Mobile visual Morphing status
+
+focused test count
+
+real visual smoke result
+
+fake local success count
+
+domain-specific morph rule count
+
+client canonical truth added
+
+READY_FOR_SMART_UI_TASK_8B2B
+
+BEGIN TASK 8B2A.

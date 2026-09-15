@@ -1,0 +1,2114 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>جاسم — Soap Glass + Pop Bubbles v2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+:root {
+  --cyan: #00d4ff; --blue: #4a9eff; --purple: #a855f7; --pink: #ec4899;
+  --gold: #FFD700; --orange: #FF6B00; --green: #00c896; --text: #f0f4ff; --text2: #94a3b8;
+  --spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+body {
+  font-family: 'Noto Sans Arabic', sans-serif;
+  background: #000; overflow: hidden;
+  height: 100vh; width: 100vw; color: var(--text);
+  touch-action: none;
+}
+#space-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+#bubble-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 15; pointer-events: none; }
+
+#main-chat {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%; z-index: 10;
+  display: flex; flex-direction: column;
+  pointer-events: none;
+}
+#main-chat > * { pointer-events: auto; }
+
+.floating-title {
+  position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+  z-index: 20; text-align: center; pointer-events: none;
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 24px; border-radius: 50px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+  backdrop-filter: blur(40px) saturate(2) brightness(1.2);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1), 0 0 60px rgba(0,180,255,0.08);
+}
+.floating-title h1 {
+  font-size: 15px; font-weight: 800; letter-spacing: 4px;
+  background: linear-gradient(135deg, var(--cyan), var(--purple), var(--pink), var(--gold), var(--cyan));
+  background-size: 300% 300%;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  animation: titleShift 4s ease infinite;
+}
+@keyframes titleShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+.floating-title .status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--cyan); box-shadow: 0 0 10px var(--cyan), 0 0 20px rgba(0,212,255,0.4);
+  animation: pulse-dot 2.5s ease-in-out infinite;
+}
+@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.2;transform:scale(0.5)} }
+
+.chat-area {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 56px 16px 100px; position: relative; z-index: 10;
+  scrollbar-width: thin; scrollbar-color: rgba(100,180,255,0.15) transparent;
+}
+.chat-area::-webkit-scrollbar { width: 3px; }
+.chat-area::-webkit-scrollbar-thumb { background: rgba(100,180,255,0.15); border-radius: 4px; }
+
+.date-divider { text-align: center; margin: 20px 0; position: relative; }
+.date-divider::before { content: ''; position: absolute; top: 50%; left: 10%; right: 10%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,180,255,0.12), transparent); }
+.date-divider span { position: relative; background: rgba(5,10,25,0.35); padding: 4px 16px; border-radius: 12px;
+  font-size: 11px; color: var(--text2); border: 1px solid rgba(100,180,255,0.08); backdrop-filter: blur(12px); }
+
+.message-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; max-width: 88%;
+  animation: msgIn 0.5s cubic-bezier(0.16,1,0.3,1) forwards; opacity: 0; transform: translateY(12px); }
+@keyframes msgIn { to { opacity: 1; transform: translateY(0); } }
+.message-group.user { align-self: flex-start; margin-left: auto; }
+.message-group.ai { align-self: flex-end; margin-right: auto; }
+
+.message-bubble {
+  padding: 14px 18px; border-radius: 22px; font-size: 14px; line-height: 1.75;
+  word-wrap: break-word; position: relative;
+  backdrop-filter: blur(20px) saturate(1.6); -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.03);
+  transition: all 0.3s; overflow: hidden;
+}
+.message-group.user .message-bubble { border-bottom-right-radius: 6px; background: rgba(0,180,255,0.04); border-color: rgba(0,180,255,0.08); }
+.message-group.ai .message-bubble { border-bottom-left-radius: 6px; background: rgba(100,50,200,0.04); border-color: rgba(150,100,255,0.08); }
+
+.message-controls { display: flex; align-items: center; gap: 4px; margin-top: 6px; padding: 0 4px;
+  opacity: 0; transform: translateY(-4px); transition: all 0.25s; }
+.message-group:hover .message-controls { opacity: 1; transform: translateY(0); }
+.msg-btn { width: 28px; height: 28px; border-radius: 8px; border: none; background: transparent;
+  color: var(--text2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+.msg-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+.msg-time { font-size: 10px; color: var(--text2); margin-right: auto; opacity: 0.6; }
+
+.chips-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; padding: 0 4px; animation: fadeUp 0.5s ease 0.3s both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.chip { padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(100,180,255,0.1);
+  background: rgba(0,100,200,0.05); backdrop-filter: blur(16px); color: var(--blue); font-size: 12px;
+  cursor: pointer; transition: all 0.3s; white-space: nowrap; box-shadow: 0 2px 12px rgba(0,50,150,0.06); }
+.chip:hover { background: rgba(0,150,255,0.1); border-color: rgba(0,180,255,0.2); transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,100,255,0.12), 0 0 20px rgba(0,180,255,0.08); }
+
+.composer { position: relative; z-index: 30; padding: 10px 16px 24px; pointer-events: auto; }
+.composer-inner { display: flex; align-items: flex-end; gap: 10px;
+  background: rgba(255,255,255,0.02); border-radius: 24px; padding: 8px 8px 8px 16px;
+  backdrop-filter: blur(20px) saturate(1.5); transition: all 0.3s; }
+.composer-inner:focus-within { background: rgba(255,255,255,0.04); box-shadow: 0 0 0 2px rgba(0,180,255,0.06); }
+.input-area { flex: 1; display: flex; flex-direction: column; min-height: 24px; max-height: 140px; overflow-y: auto; }
+.input-area textarea { width: 100%; border: none; outline: none; background: transparent; color: var(--text);
+  font-family: inherit; font-size: 14.5px; line-height: 1.6; resize: none; padding: 6px 0; min-height: 24px; max-height: 120px; scrollbar-width: none; }
+.input-area textarea::-webkit-scrollbar { display: none; }
+.input-area textarea::placeholder { color: var(--text2); opacity: 0.4; }
+.composer-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; padding-bottom: 4px; }
+.action-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent;
+  color: var(--text2); display: flex; align-items: center; justify-content: center; cursor: pointer;
+  font-size: 18px; transition: all 0.2s; flex-shrink: 0; }
+.action-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+.action-btn.attach { background: rgba(0,180,255,0.08); color: var(--cyan); }
+.action-btn.attach:hover { background: rgba(0,180,255,0.15); box-shadow: 0 0 16px rgba(0,180,255,0.15); }
+.send-btn { width: 36px; height: 36px; border-radius: 50%; border: none;
+  background: linear-gradient(135deg, var(--cyan), var(--blue)); color: white;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  font-size: 16px; transition: all 0.3s; flex-shrink: 0; box-shadow: 0 2px 16px rgba(0,180,255,0.3); }
+.send-btn:hover { transform: scale(1.08); box-shadow: 0 4px 24px rgba(0,180,255,0.45); }
+.send-btn:active { transform: scale(0.95); }
+
+.suggestion-bar { display: flex; gap: 8px; padding: 6px 16px 4px; overflow-x: auto; scrollbar-width: none; pointer-events: auto; }
+.suggestion-bar::-webkit-scrollbar { display: none; }
+.suggestion-pill { padding: 6px 14px; border-radius: 16px; border: 1px solid rgba(100,180,255,0.06);
+  background: rgba(255,255,255,0.015); color: var(--text2); font-size: 12px; white-space: nowrap;
+  cursor: pointer; transition: all 0.2s; backdrop-filter: blur(8px); }
+.suggestion-pill:hover { background: rgba(0,150,255,0.06); border-color: rgba(0,180,255,0.12); color: var(--blue); }
+
+.typing-indicator { display: flex; align-items: center; gap: 6px; padding: 16px 18px;
+  background: rgba(100,50,200,0.04); border: 1px solid rgba(150,100,255,0.06);
+  border-radius: 20px; border-bottom-left-radius: 6px; width: fit-content;
+  backdrop-filter: blur(20px) saturate(1.5); box-shadow: 0 4px 24px rgba(0,0,0,0.1); }
+.typing-indicator.hidden { display: none; }
+.typing-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan); animation: typingBounce 1.4s ease-in-out infinite; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+.scroll-to-bottom { position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
+  width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(100,180,255,0.12);
+  background: rgba(5,10,25,0.4); backdrop-filter: blur(12px); color: var(--text);
+  display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 15;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3); transition: all 0.3s; }
+.scroll-to-bottom.visible { display: flex; }
+.scroll-to-bottom:hover { background: rgba(0,150,255,0.12); border-color: rgba(0,180,255,0.25); box-shadow: 0 0 16px rgba(0,150,255,0.15); }
+
+/* ============================================================
+   SOAP GLASS WINDOW — Ultra Soap-like with iridescent border
+   ============================================================ */
+.soap-window {
+  position: fixed; z-index: 100;
+  display: flex; flex-direction: column; overflow: hidden;
+  border-radius: 32px;
+  background: 
+    linear-gradient(135deg, rgba(0,180,255,0.12) 0%, rgba(0,100,255,0.03) 40%, rgba(0,180,255,0.08) 100%);
+  backdrop-filter: blur(80px) saturate(3) brightness(1.15);
+  -webkit-backdrop-filter: blur(80px) saturate(3) brightness(1.15);
+  border: 1.5px solid transparent;
+  background-clip: padding-box;
+  box-shadow:
+    0 0 0 1px rgba(0,180,255,0.1) inset,
+    0 30px 100px -20px rgba(0,0,0,0.7),
+    0 0 60px rgba(0,180,255,0.1),
+    inset 0 1px 0 rgba(0,240,255,0.2),
+    inset 0 -1px 0 rgba(0,0,0,0.15);
+  transform: translate3d(0,0,0);
+  will-change: transform, width, height, left, top;
+  transition: box-shadow 0.4s ease, border-radius 0.4s var(--spring), transform 0.3s var(--spring);
+}
+
+/* Iridescent rainbow border using conic gradient */
+.soap-window::before {
+  content: ''; position: absolute; inset: -2px; z-index: -1;
+  border-radius: 34px;
+  background: conic-gradient(from 0deg, 
+    rgba(0,180,255,0.5), rgba(100,200,255,0.3), rgba(0,255,200,0.2), 
+    rgba(150,100,255,0.3), rgba(0,180,255,0.5), rgba(100,200,255,0.3),
+    rgba(0,255,200,0.2), rgba(150,100,255,0.3), rgba(0,180,255,0.5));
+  filter: blur(3px);
+  opacity: 0.6;
+  animation: borderRotate 6s linear infinite;
+  pointer-events: none;
+}
+@keyframes borderRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Soap film caustics on edges */
+.soap-window::after {
+  content: ''; position: absolute; inset: 0; border-radius: 32px; pointer-events: none; z-index: 1;
+  background: 
+    radial-gradient(ellipse at 20% 0%, rgba(255,255,255,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(0,180,255,0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 0% 50%, rgba(150,100,255,0.05) 0%, transparent 40%);
+  mix-blend-mode: screen;
+}
+
+.soap-window:hover {
+  box-shadow:
+    0 0 0 1px rgba(0,180,255,0.15) inset,
+    0 40px 120px -20px rgba(0,0,0,0.8),
+    0 0 80px rgba(0,180,255,0.15),
+    inset 0 1px 0 rgba(0,240,255,0.25),
+    inset 0 -1px 0 rgba(0,0,0,0.2);
+  transform: translate3d(0,0,0) scale(1.005);
+}
+
+.soap-window.dragging {
+  transition: box-shadow 0.2s ease, border-radius 0.2s ease !important;
+  box-shadow:
+    0 0 0 1px rgba(0,180,255,0.2) inset,
+    0 50px 140px -20px rgba(0,0,0,0.9),
+    0 0 100px rgba(0,180,255,0.2),
+    inset 0 1px 0 rgba(0,240,255,0.3),
+    inset 0 -1px 0 rgba(0,0,0,0.25);
+  transform: translate3d(0,0,0) scale(1.02) !important;
+}
+
+.soap-window.snapping {
+  transition: all 0.35s var(--spring) !important;
+}
+
+/* Window States */
+.soap-window.state-normal {
+  width: 90vw; max-width: 400px;
+  height: 75vh; max-height: 700px;
+}
+.soap-window.state-maximized {
+  width: 100vw !important; height: 100vh !important;
+  max-width: 100vw !important; max-height: 100vh !important;
+  left: 0 !important; top: 0 !important;
+  border-radius: 0 !important;
+}
+.soap-window.state-maximized::before,
+.soap-window.state-maximized::after { border-radius: 0; }
+.soap-window.state-minimized {
+  width: 56px !important; height: 56px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  cursor: pointer;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: scale(0.3) !important;
+}
+.soap-window.state-minimized::before,
+.soap-window.state-minimized::after { opacity: 0; }
+.soap-window.state-snapped-left {
+  width: 50vw !important; height: 100vh !important;
+  left: 0 !important; top: 0 !important;
+  border-radius: 0 32px 32px 0 !important;
+}
+.soap-window.state-snapped-left::before,
+.soap-window.state-snapped-left::after { border-radius: 0 34px 34px 0; }
+.soap-window.state-snapped-right {
+  width: 50vw !important; height: 100vh !important;
+  left: 50vw !important; top: 0 !important;
+  border-radius: 32px 0 0 32px !important;
+}
+.soap-window.state-snapped-right::before,
+.soap-window.state-snapped-right::after { border-radius: 34px 0 0 34px; }
+
+/* Animations */
+@keyframes winExpand {
+  0% { border-radius: 50%; transform: scale(0.05); opacity: 0; }
+  40% { border-radius: 40%; transform: scale(1.1); opacity: 1; }
+  70% { border-radius: 34px; transform: scale(0.96); }
+  100% { border-radius: 32px; transform: scale(1); opacity: 1; }
+}
+@keyframes winMinimizeToDock {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.6); opacity: 0.5; }
+  100% { transform: scale(0); opacity: 0; width: 56px; height: 56px; border-radius: 50%; }
+}
+@keyframes winMaximize {
+  0% { border-radius: 32px; transform: scale(0.95); }
+  100% { border-radius: 0; transform: scale(1); }
+}
+@keyframes winRestore {
+  0% { border-radius: 0; transform: scale(1); }
+  60% { border-radius: 34px; transform: scale(1.02); }
+  100% { border-radius: 32px; transform: scale(1); }
+}
+
+.soap-window.animating-expand { animation: winExpand 0.6s var(--spring) forwards; }
+.soap-window.animating-minimize { animation: winMinimizeToDock 0.5s var(--smooth) forwards; }
+.soap-window.animating-maximize { animation: winMaximize 0.35s var(--smooth) forwards; }
+.soap-window.animating-restore { animation: winRestore 0.4s var(--spring) forwards; }
+
+/* Inner Window */
+.sw-inner {
+  flex: 1; border-radius: 30px;
+  background: 
+    radial-gradient(ellipse 80% 40% at 50% 0%, rgba(20,40,80,0.4) 0%, transparent 60%),
+    linear-gradient(180deg, #0a0e1a 0%, #070a14 50%, #050812 100%);
+  display: flex; flex-direction: column; overflow: hidden; position: relative;
+  transition: border-radius 0.4s var(--spring);
+  z-index: 2;
+}
+.soap-window.state-maximized .sw-inner { border-radius: 0; }
+.soap-window.state-snapped-left .sw-inner { border-radius: 0 30px 30px 0; }
+.soap-window.state-snapped-right .sw-inner { border-radius: 30px 0 0 30px; }
+.soap-window.state-minimized .sw-inner { border-radius: 50%; opacity: 0; }
+
+/* Specular highlight */
+.sw-inner::before {
+  content: ''; position: absolute; top: 0; left: 12%; width: 45%; height: 50%;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.15), transparent 70%);
+  pointer-events: none; border-radius: 50% 50% 0 0;
+}
+.sw-inner::after {
+  content: ''; position: absolute; bottom: 8%; right: 10%; width: 22%; height: 18%;
+  background: radial-gradient(ellipse, rgba(0,200,255,0.08), transparent 70%);
+  pointer-events: none; transform: rotate(15deg);
+}
+
+/* Header */
+.sw-header {
+  padding: 14px 16px 10px; display: flex; align-items: center; justify-content: space-between;
+  cursor: grab; flex-shrink: 0; position: relative; z-index: 10;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.03);
+  transition: padding 0.3s ease;
+}
+.sw-header:active { cursor: grabbing; }
+.soap-window.state-minimized .sw-header { padding: 0; border: none; }
+
+.sw-header-left { display: flex; align-items: center; gap: 10px; }
+.soap-window.state-minimized .sw-header-left { display: none; }
+
+.sw-icon {
+  width: 36px; height: 36px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2);
+  transition: all 0.3s var(--spring);
+}
+.soap-window.state-minimized .sw-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.sw-title-group { display: flex; flex-direction: column; }
+.sw-title { font-size: 14px; font-weight: 600; }
+.sw-subtitle { font-size: 11px; color: var(--text2); }
+
+/* Controls */
+.sw-controls {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px; border-radius: 14px;
+  background: rgba(0,0,0,0.15); backdrop-filter: blur(12px);
+  border: 1px solid rgba(0,180,255,0.06);
+}
+.sw-btn {
+  width: 28px; height: 28px; border-radius: 10px; border: none;
+  background: transparent; color: var(--text2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s var(--spring);
+  font-size: 12px; font-weight: 700;
+}
+.sw-btn:hover { background: rgba(255,255,255,0.1); transform: scale(1.1); }
+.sw-btn.minimize:hover { background: rgba(255,193,7,0.2); color: #FFC107; }
+.sw-btn.maximize:hover { background: rgba(0,200,150,0.2); color: #00c896; }
+.sw-btn.close:hover { background: rgba(255,80,80,0.25); color: #ff6b6b; transform: scale(1.1) rotate(90deg); }
+.soap-window.state-minimized .sw-controls { display: none; }
+
+/* Resize Handles */
+.resize-handle {
+  position: absolute; z-index: 200;
+  background: transparent;
+  transition: background 0.2s;
+}
+.resize-handle:hover { background: rgba(0,180,255,0.25); }
+.resize-handle.n { top: 0; left: 20px; right: 20px; height: 8px; cursor: ns-resize; }
+.resize-handle.s { bottom: 0; left: 20px; right: 20px; height: 8px; cursor: ns-resize; }
+.resize-handle.e { right: 0; top: 20px; bottom: 20px; width: 8px; cursor: ew-resize; }
+.resize-handle.w { left: 0; top: 20px; bottom: 20px; width: 8px; cursor: ew-resize; }
+.resize-handle.ne { top: 0; right: 0; width: 16px; height: 16px; cursor: nesw-resize; border-radius: 0 32px 0 0; }
+.resize-handle.nw { top: 0; left: 0; width: 16px; height: 16px; cursor: nwse-resize; border-radius: 32px 0 0 0; }
+.resize-handle.se { bottom: 0; right: 0; width: 16px; height: 16px; cursor: nwse-resize; border-radius: 0 0 32px 0; }
+.resize-handle.sw { bottom: 0; left: 0; width: 16px; height: 16px; cursor: nesw-resize; border-radius: 0 0 0 32px; }
+.soap-window.state-maximized .resize-handle,
+.soap-window.state-minimized .resize-handle { display: none !important; }
+
+/* Content */
+.sw-content {
+  flex: 1; overflow-y: auto; padding: 14px 16px;
+  scrollbar-width: thin; scrollbar-color: rgba(0,180,255,0.08) transparent;
+  position: relative; z-index: 5;
+  transition: opacity 0.3s ease;
+}
+.soap-window.state-minimized .sw-content { opacity: 0; pointer-events: none; }
+.sw-content::-webkit-scrollbar { width: 3px; }
+.sw-content::-webkit-scrollbar-thumb { background: rgba(0,180,255,0.08); border-radius: 4px; }
+
+/* Smart Item */
+.sw-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; margin-bottom: 10px;
+  background: rgba(255,255,255,0.05); border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: all 0.3s var(--spring); cursor: pointer;
+  position: relative; overflow: hidden;
+}
+.sw-item::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: linear-gradient(180deg, var(--cyan), transparent);
+  opacity: 0; transition: opacity 0.3s;
+}
+.sw-item:hover::before { opacity: 1; }
+.sw-item:hover {
+  background: rgba(0,180,255,0.08);
+  transform: translateX(-6px) scale(1.02);
+  border-color: rgba(0,180,255,0.18);
+  box-shadow: 0 8px 24px rgba(0,180,255,0.08), 0 0 20px rgba(0,180,255,0.04);
+}
+.sw-item:active { transform: translateX(-4px) scale(0.98); }
+.sw-item::after {
+  content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  transition: left 0.6s ease;
+}
+.sw-item:hover::after { left: 100%; }
+.sw-item-info { display: flex; flex-direction: column; gap: 3px; }
+.sw-item-title { font-size: 13px; font-weight: 500; }
+.sw-item-val { font-size: 12px; color: var(--text2); }
+.sw-item-arrow { font-size: 16px; font-weight: 700; transition: transform 0.3s var(--spring); }
+.sw-item:hover .sw-item-arrow { transform: translateX(-6px) scale(1.2); }
+.sw-item-progress {
+  position: absolute; bottom: 0; left: 0; height: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--blue));
+  border-radius: 0 0 0 2px;
+  transition: width 0.8s var(--spring);
+  width: 0;
+}
+.sw-item:hover .sw-item-progress { width: 100%; }
+
+.sw-footer {
+  padding: 12px 16px; text-align: center; font-size: 11px; color: var(--text2);
+  border-top: 1px solid rgba(255,255,255,0.04); flex-shrink: 0;
+  background: rgba(255,255,255,0.03);
+  transition: opacity 0.3s ease;
+}
+.soap-window.state-minimized .sw-footer { opacity: 0; }
+
+/* Snap Preview */
+.snap-preview {
+  position: fixed; z-index: 99; pointer-events: none;
+  background: rgba(0,180,255,0.06); border: 2px solid rgba(0,180,255,0.3);
+  border-radius: 24px; backdrop-filter: blur(8px);
+  animation: snapPulse 0.8s ease-in-out infinite;
+  display: none;
+  box-shadow: 0 0 40px rgba(0,180,255,0.1), inset 0 0 20px rgba(0,180,255,0.05);
+}
+@keyframes snapPulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.98); }
+  50% { opacity: 0.8; transform: scale(1.02); }
+}
+
+/* SIDE DOCK — RIGHT SIDE */
+.minimized-dock {
+  position: fixed;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%) translateX(0);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 150;
+  padding: 16px 10px;
+  border-radius: 24px;
+  background: rgba(5,10,25,0.5);
+  backdrop-filter: blur(40px) saturate(2);
+  border: 1px solid rgba(0,180,255,0.12);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.4), 0 0 30px rgba(0,180,255,0.06);
+  transition: all 0.5s var(--spring);
+}
+.minimized-dock.hidden {
+  transform: translateY(-50%) translateX(120px);
+  opacity: 0;
+}
+
+.dock-bubble {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; position: relative;
+  transition: all 0.4s var(--spring);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  border: 2px solid rgba(0,180,255,0.15);
+  background: linear-gradient(135deg, #00d4ff, #4a9eff);
+}
+.dock-bubble:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 25px rgba(0,180,255,0.4), 0 8px 24px rgba(0,0,0,0.4);
+  border-color: rgba(0,220,255,0.5);
+}
+.dock-bubble .dock-label {
+  position: absolute;
+  right: 60px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: var(--text);
+  white-space: nowrap;
+  opacity: 0;
+  transition: all 0.3s var(--spring);
+  background: rgba(0,0,0,0.7);
+  padding: 6px 12px;
+  border-radius: 10px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0,180,255,0.15);
+  pointer-events: none;
+}
+.dock-bubble:hover .dock-label {
+  opacity: 1;
+  transform: translateY(-50%) translateX(-4px);
+}
+
+/* Pop Particles */
+.pop-particle {
+  position: fixed; border-radius: 50%; pointer-events: none; z-index: 200;
+  animation: popFly 0.8s ease-out forwards;
+}
+@keyframes popFly {
+  0% { opacity: 1; transform: translate(0,0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
+}
+
+/* Magnetic Edge Indicator */
+.magnetic-edge {
+  position: fixed; z-index: 98; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(0,180,255,0.15), transparent);
+  opacity: 0; transition: opacity 0.3s ease;
+}
+.magnetic-edge.active { opacity: 1; }
+.magnetic-edge.left { left: 0; top: 0; width: 4px; height: 100vh; }
+.magnetic-edge.right { right: 0; top: 0; width: 4px; height: 100vh; }
+.magnetic-edge.top { top: 0; left: 0; width: 100vw; height: 4px; }
+
+/* Welcome */
+
+
+/* Window depth */
+.soap-window.depth-1 { box-shadow: 0 30px 100px -20px rgba(0,0,0,0.7), 0 0 60px rgba(0,180,255,0.1); }
+.soap-window.depth-2 { box-shadow: 0 20px 60px -15px rgba(0,0,0,0.5), 0 0 40px rgba(0,180,255,0.06); }
+.soap-window.depth-3 { box-shadow: 0 15px 40px -10px rgba(0,0,0,0.4), 0 0 25px rgba(0,180,255,0.04); }
+
+/* Bubble pop hint tooltip */
+.bubble-hint {
+  position: fixed; z-index: 50; pointer-events: none;
+  background: rgba(0,0,0,0.7); color: var(--text);
+  padding: 6px 12px; border-radius: 10px;
+  font-size: 11px; backdrop-filter: blur(8px);
+  border: 1px solid rgba(0,180,255,0.15);
+  opacity: 0; transition: opacity 0.3s;
+}
+.bubble-hint.visible { opacity: 1; }
+</style>
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+</head>
+<body>
+
+<canvas id="space-canvas"></canvas>
+<canvas id="bubble-canvas"></canvas>
+
+<div class="floating-title">
+  <div class="status-dot"></div>
+  <h1>جاسم</h1>
+</div>
+
+<!-- Bubble hint tooltip -->
+<div class="bubble-hint" id="bubbleHint">اضغط مطولاً لفقع الفقاعة</div>
+
+<div id="main-chat">
+  <div class="chat-area" id="chatArea">
+    
+    <div class="date-divider"><span>اليوم</span></div>
+    <div class="message-group user" style="animation-delay:0.2s">
+      <div class="message-bubble">أهلاً جاسم، أريد بناء نظام ذكاء اصطناعي متكامل للسوق العربي. ما هي الخطوات؟</div>
+      <div class="message-controls"><button class="msg-btn" title="نسخ"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button><span class="msg-time">09:39</span></div>
+    </div>
+    <div class="message-group ai" style="animation-delay:0.4s">
+      <div class="message-bubble">
+        <div>مرحباً! سأساعدك في بناء نظام <strong>جاسم</strong>. إليك الخارطة التقنية:</div>
+        <div style="margin-top:14px; display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; align-items:center; gap:12px; padding:12px 16px; background:rgba(0,180,255,0.04); border-radius:14px; border:1px solid rgba(0,180,255,0.06); backdrop-filter:blur(8px);"><div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#00d4ff,#4a9eff);display:flex;align-items:center;justify-content:center;font-size:15px;color:white;font-weight:700;box-shadow:0 0 15px rgba(0,180,255,0.2);">1</div><div style="font-size:13px;">البنية الأساسية: FastAPI + PostgreSQL + Redis</div></div>
+          <div style="display:flex; align-items:center; gap:12px; padding:12px 16px; background:rgba(0,180,255,0.04); border-radius:14px; border:1px solid rgba(0,180,255,0.06); backdrop-filter:blur(8px);"><div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#00d4ff,#4a9eff);display:flex;align-items:center;justify-content:center;font-size:15px;color:white;font-weight:700;box-shadow:0 0 15px rgba(0,180,255,0.2);">2</div><div style="font-size:13px;">محركات الذكاء: DeepSeek V4 + Gemini Flash-Lite</div></div>
+          <div style="display:flex; align-items:center; gap:12px; padding:12px 16px; background:rgba(0,180,255,0.04); border-radius:14px; border:1px solid rgba(0,180,255,0.06); backdrop-filter:blur(8px);"><div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#00d4ff,#4a9eff);display:flex;align-items:center;justify-content:center;font-size:15px;color:white;font-weight:700;box-shadow:0 0 15px rgba(0,180,255,0.2);">3</div><div style="font-size:13px;">الواجهة: Flutter Super App مع WebContainers</div></div>
+        </div>
+      </div>
+      <div class="message-controls">
+        <button class="msg-btn" title="نسخ"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+        <button class="msg-btn" title="إعادة توليد"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg></button>
+        <button class="msg-btn" title="أعجبني"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg></button>
+        <button class="msg-btn" title="لم يعجبني"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 2.3l1.38 9a2 2 0 0 0 2 1.7M17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/></svg></button>
+        <span class="msg-time">09:39</span>
+      </div>
+      <div class="chips-container">
+        <div class="chip">كيف أبدأ التنفيذ؟</div>
+        <div class="chip">ما تكلفة الاستضافة؟</div>
+        <div class="chip">أرني مثالاً برمجياً</div>
+      </div>
+    </div>
+    <div class="typing-indicator hidden" id="typingIndicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>
+  </div>
+
+  <button class="scroll-to-bottom" id="scrollBtn" onclick="scrollToBottom()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+  </button>
+
+  <div class="suggestion-bar">
+    <div class="suggestion-pill">اكتب لي كود كامل</div>
+    <div class="suggestion-pill">خطط لي خارطة 12 أسبوع</div>
+    <div class="suggestion-pill">نموذج الأعمال B2B2C</div>
+    <div class="suggestion-pill">التكلفة التقنية</div>
+  </div>
+
+  <div class="composer">
+    <div class="composer-inner">
+      <div class="input-area"><textarea id="messageInput" placeholder="اكتب رسالتك هنا..." rows="1" oninput="autoResize(this)"></textarea></div>
+      <div class="composer-actions">
+        <button class="action-btn attach" title="إرفاق"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
+        <button class="action-btn" title="صوت"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></button>
+        <button class="send-btn" onclick="sendMessage()" title="إرسال"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Magnetic Edge Indicators -->
+<div class="magnetic-edge left" id="magLeft"></div>
+<div class="magnetic-edge right" id="magRight"></div>
+<div class="magnetic-edge top" id="magTop"></div>
+
+<!-- Snap Preview -->
+<div class="snap-preview" id="snapPreview"></div>
+
+<!-- SIDE DOCK — Right Side -->
+<div class="minimized-dock hidden" id="minimizedDock"></div>
+
+<!-- Window Container -->
+<div id="bubbleWindowContainer"></div>
+
+<script>
+// ============================================================
+// SPACE BACKGROUND
+// ============================================================
+const sCanvas = document.getElementById('space-canvas');
+const sCtx = sCanvas.getContext('2d', { alpha: false });
+let sW, sH, sDpr, sTime = 0;
+function sResize() {
+  sDpr = Math.min(window.devicePixelRatio || 1, 2);
+  sW = sCanvas.width = window.innerWidth * sDpr;
+  sH = sCanvas.height = window.innerHeight * sDpr;
+  sCanvas.style.width = window.innerWidth + 'px';
+  sCanvas.style.height = window.innerHeight + 'px';
+}
+sResize(); window.addEventListener('resize', sResize);
+
+const NEBULA = [];
+for (let i = 0; i < 8; i++) {
+  NEBULA.push({ x: Math.random()*sW, y: Math.random()*sH,
+    vx: (Math.random()-0.5)*0.12, vy: (Math.random()-0.5)*0.12,
+    radius: 120+Math.random()*250, hue: [0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85][i],
+    alpha: 0.02+Math.random()*0.03, phase: Math.random()*Math.PI*2 });
+}
+const LINES = [];
+for (let i = 0; i < 50; i++) {
+  LINES.push({ angle: (i/50)*Math.PI*2+(Math.random()-0.5)*0.3,
+    length: 250+Math.random()*600, amp: 12+Math.random()*35, freq: 2+Math.random()*3,
+    phase: Math.random()*Math.PI*2, speed: 0.15+Math.random()*0.5,
+    width: 0.3+Math.random()*0.9, alpha: 0.05+Math.random()*0.15, hue: Math.random() });
+}
+const PARTICLES = [];
+for (let i = 0; i < 250; i++) {
+  PARTICLES.push({ x: Math.random()*sW, y: Math.random()*sH,
+    vx: (Math.random()-0.5)*0.1, vy: (Math.random()-0.5)*0.1,
+    size: 0.4+Math.random()*1.6, alpha: 0.06+Math.random()*0.3,
+    twinkle: 0.5+Math.random()*2, hue: Math.random() });
+}
+const NODES = [];
+for (let i = 0; i < 35; i++) {
+  NODES.push({ x: Math.random()*sW, y: Math.random()*sH,
+    vx: (Math.random()-0.5)*0.1, vy: (Math.random()-0.5)*0.1,
+    size: 1+Math.random()*2.2, alpha: 0.1+Math.random()*0.25, pulse: Math.random()*Math.PI*2 });
+}
+
+function getCol(hue, a) {
+  let r,g,b;
+  if (hue < 0.25) { const t=hue/0.25; r=0; g=Math.round(200+t*55); b=255; }
+  else if (hue < 0.5) { const t=(hue-0.25)/0.25; r=Math.round(t*150); g=Math.round(255-t*155); b=255; }
+  else if (hue < 0.75) { const t=(hue-0.5)/0.25; r=150+Math.round(t*105); g=100-Math.round(t*50); b=255-Math.round(t*100); }
+  else { const t=(hue-0.75)/0.25; r=255-Math.round(t*255); g=50+Math.round(t*150); b=155+Math.round(t*100); }
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function sDrawBg() {
+  const g = sCtx.createRadialGradient(sW/2, sH/2, 0, sW/2, sH/2, Math.max(sW,sH));
+  g.addColorStop(0, '#070c1a'); g.addColorStop(0.4, '#030610'); g.addColorStop(0.8, '#010208'); g.addColorStop(1, '#000000');
+  sCtx.fillStyle = g; sCtx.fillRect(0, 0, sW, sH);
+}
+function sDrawNebula() {
+  for (const n of NEBULA) {
+    n.x += n.vx; n.y += n.vy; n.vx *= 0.995; n.vy *= 0.995;
+    if (n.x < -400) n.x = sW+400; if (n.x > sW+400) n.x = -400;
+    if (n.y < -400) n.y = sH+400; if (n.y > sH+400) n.y = -400;
+    const pulse = Math.sin(sTime*0.2+n.phase)*0.3+0.7;
+    const r = n.radius*pulse*sDpr;
+    const gr = sCtx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r);
+    gr.addColorStop(0, getCol(n.hue, n.alpha*3));
+    gr.addColorStop(0.5, getCol(n.hue, n.alpha));
+    gr.addColorStop(1, getCol(n.hue, 0));
+    sCtx.fillStyle = gr; sCtx.beginPath(); sCtx.arc(n.x, n.y, r, 0, Math.PI*2); sCtx.fill();
+  }
+}
+function sDrawNeural() {
+  const cx = sW/2, cy = sH/2;
+  for (const line of LINES) {
+    const pts = []; const steps = 70;
+    for (let i = 0; i <= steps; i++) {
+      const t = i/steps;
+      const dist = t*line.length*sDpr;
+      const wave = Math.sin(t*line.freq*Math.PI*2+sTime*line.speed+line.phase)*line.amp*sDpr*(1-t*0.35);
+      const noise = Math.sin(t*7+sTime+line.phase)*3.5*sDpr*(1-t);
+      const x = cx+Math.cos(line.angle)*dist+Math.cos(line.angle+Math.PI/2)*(wave+noise);
+      const y = cy+Math.sin(line.angle)*dist+Math.sin(line.angle+Math.PI/2)*(wave+noise);
+      pts.push({x,y});
+    }
+    sCtx.strokeStyle = getCol(line.hue, line.alpha); sCtx.lineWidth = line.width;
+    sCtx.beginPath(); sCtx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) sCtx.lineTo(pts[i].x, pts[i].y);
+    sCtx.stroke();
+    for (let i = 3; i < pts.length-3; i += 6) {
+      sCtx.fillStyle = getCol(line.hue, line.alpha*0.45*(1-i/pts.length));
+      sCtx.beginPath(); sCtx.arc(pts[i].x, pts[i].y, 1.1*sDpr, 0, Math.PI*2); sCtx.fill();
+    }
+  }
+}
+function sDrawNodes() {
+  for (const n of NODES) {
+    n.x += n.vx; n.y += n.vy; n.vx *= 0.98; n.vy *= 0.98;
+    if (n.x < -10) n.x = sW+10; if (n.x > sW+10) n.x = -10;
+    if (n.y < -10) n.y = sH+10; if (n.y > sH+10) n.y = -10;
+    const pulse = Math.sin(sTime*1.6+n.pulse)*0.5+0.5;
+    const alpha = n.alpha*pulse;
+    const size = n.size*(0.5+pulse*0.5)*sDpr;
+    const g = sCtx.createRadialGradient(n.x, n.y, 0, n.x, n.y, size*4);
+    g.addColorStop(0, `rgba(180,220,255,${alpha*0.35})`);
+    g.addColorStop(1, 'rgba(100,150,255,0)');
+    sCtx.fillStyle = g; sCtx.beginPath(); sCtx.arc(n.x, n.y, size*4, 0, Math.PI*2); sCtx.fill();
+    sCtx.fillStyle = `rgba(255,255,255,${alpha})`;
+    sCtx.beginPath(); sCtx.arc(n.x, n.y, size, 0, Math.PI*2); sCtx.fill();
+  }
+}
+function sDrawParticles() {
+  for (const p of PARTICLES) {
+    p.x += p.vx; p.y += p.vy; p.vx *= 0.98; p.vy *= 0.98;
+    if (p.x < -10) p.x = sW+10; if (p.x > sW+10) p.x = -10;
+    if (p.y < -10) p.y = sH+10; if (p.y > sH+10) p.y = -10;
+    const tw = Math.sin(sTime*p.twinkle)*0.5+0.5;
+    sCtx.fillStyle = getCol(p.hue, p.alpha*tw);
+    sCtx.beginPath(); sCtx.arc(p.x, p.y, p.size*sDpr, 0, Math.PI*2); sCtx.fill();
+  }
+}
+function sDrawVignette() {
+  const g = sCtx.createRadialGradient(sW/2, sH/2, sH*0.2, sW/2, sH/2, sH*0.92);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,10,0.55)');
+  sCtx.fillStyle = g; sCtx.fillRect(0, 0, sW, sH);
+}
+let sLast = performance.now();
+function sAnimate() {
+  requestAnimationFrame(sAnimate);
+  const now = performance.now();
+  const dt = Math.min((now-sLast)/1000, 0.05); sLast = now; sTime += dt;
+  sDrawBg(); sDrawNebula(); sDrawNeural(); sDrawNodes(); sDrawParticles(); sDrawVignette();
+}
+sAnimate();
+
+// ============================================================
+// ADVANCED SOAP BUBBLE PHYSICS v2026
+// ============================================================
+const bCanvas = document.getElementById('bubble-canvas');
+const bCtx = bCanvas.getContext('2d');
+let bW, bH, bDpr, bTime = 0;
+let bMouse = { x: -1000, y: -1000, down: false };
+let draggedBubble = null;
+let dragOffset = { x: 0, y: 0 };
+
+function bResize() {
+  bDpr = Math.min(window.devicePixelRatio || 1, 2);
+  bW = bCanvas.width = window.innerWidth * bDpr;
+  bH = bCanvas.height = window.innerHeight * bDpr;
+  bCanvas.style.width = window.innerWidth + 'px';
+  bCanvas.style.height = window.innerHeight + 'px';
+}
+bResize(); window.addEventListener('resize', bResize);
+
+const BUBBLE_IMAGES = {};
+function preloadBubbleImages() {
+  const urls = {
+    ads: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=400&fit=crop',
+    suggest: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=400&fit=crop',
+    subchat: 'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=400&h=400&fit=crop',
+    wallet: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=400&fit=crop',
+    analytics: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=400&fit=crop',
+    settings: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=400&fit=crop'
+  };
+  for (const [key, url] of Object.entries(urls)) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = url;
+    img.onload = () => { BUBBLE_IMAGES[key] = img; };
+  }
+}
+preloadBubbleImages();
+
+const BUBBLES = [
+  { id: 'ads', label: 'الإعلانات', x: 0.15, y: 0.25, r: 70, color: '#FF6B00', color2: '#FFD700',
+    vx: 0, vy: 0, dragVx: 0, dragVy: 0, popped: false, popTimer: 0,
+    desc: 'حملاتك الإعلانية', items: [
+      { title: 'حملة اليوم', val: '1,240 مشاهدة', up: true },
+      { title: 'ميزانية الشهر', val: '450 د.ك', up: false },
+      { title: 'نسبة النقر', val: '3.2%', up: true },
+      { title: 'تحويلات', val: '89 عملية', up: true }
+    ]},
+  { id: 'suggest', label: 'الاقتراحات', x: 0.85, y: 0.20, r: 65, color: '#00d4ff', color2: '#4a9eff',
+    vx: 0, vy: 0, dragVx: 0, dragVy: 0, popped: false, popTimer: 0,
+    desc: 'توصيات ذكية', items: [
+      { title: 'منتجات مشابهة', val: '15 منتج', up: true },
+      { title: 'عرض خاص', val: 'خصم 30%', up: true },
+      { title: 'تاجر موثوق', val: 'أحمد للإلكترونيات', up: true },
+      { title: 'اتجاه السوق', val: 'الهواتف الذكية', up: true }
+    ]},
+  { id: 'subchat', label: 'دردشة فرعية', x: 0.12, y: 0.65, r: 75, color: '#a855f7', color2: '#ec4899',
+    vx: 0, vy: 0, dragVx: 0, dragVy: 0, popped: false, popTimer: 0,
+    desc: 'محادثاتك', items: [
+      { title: 'أحمد للإلكترونيات', val: 'مرحباً، هل المنتج متوفر؟', up: true },
+      { title: 'محل البركة', val: 'تم تأكيد الطلب #4452', up: true },
+      { title: 'سوق الجملة', val: 'عرض جديد: 100 كرتون', up: true },
+      { title: 'مستودع الزهراء', val: 'الشحنة في الطريق', up: true }
+    ]},
+  { id: 'wallet', label: 'المحفظة', x: 0.88, y: 0.60, r: 68, color: '#00c896', color2: '#00d4ff',
+    vx: 0, vy: 0, dragVx: 0, dragVy: 0, popped: false, popTimer: 0,
+    desc: 'رصيدك المالي', items: [
+      { title: 'الرصيد', val: '2,450 د.ك', up: true },
+      { title: 'معلق', val: '180 د.ك', up: false },
+      { title: 'إيداع هذا الشهر', val: '5,200 د.ك', up: true },
+      { title: 'سحب هذا الشهر', val: '3,100 د.ك', up: false }
+    ]},
+  { id: 'analytics', label: 'التحليلات', x: 0.50, y: 0.12, r: 62, color: '#ec4899', color2: '#a855f7',
+    vx: 0, vy: 0, dragVx: 0, dragVy: 0, popped: false, popTimer: 0,
+    desc: 'إحصائيات متقدمة', items: [
+      { title: 'زيارات اليوم', val: '1,842', up: true },
+      { title: 'مبيعات', val: '234 طلب', up: true },
+      { title: 'متوسط الطلب', val: '18.5 د.ك', up: true },
+      { title: 'عائد الاستثمار', val: '340%', up: true }
+    ]},
+  { id: 'settings', label: 'الإعدادات', x: 0.50, y: 0.88, r: 58, color: '#94a3b8', color2: '#cbd5e1',
+    vx: 0, vy: 0, dragVx: 0, dragVy: 0, popped: false, popTimer: 0,
+    desc: 'إدارة الحساب', items: [
+      { title: 'اللغة', val: 'العربية', up: true },
+      { title: 'الإشعارات', val: 'مفعلة', up: true },
+      { title: 'الأمان', val: 'بصمة + وجه', up: true },
+      { title: 'الاشتراك', val: 'Pro', up: true }
+    ]}
+];
+
+function updateBubblePositions() {
+  for (const b of BUBBLES) {
+    b.px = b.x * bW; b.py = b.y * bH;
+    b.pr = b.r * bDpr; b.baseR = b.r * bDpr;
+  }
+}
+updateBubblePositions(); window.addEventListener('resize', updateBubblePositions);
+
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// ============================================================
+// REALISTIC SOAP BUBBLE PHYSICS with pop animation
+// ============================================================
+function drawSoapBubble(b) {
+  if (b.popped) {
+    // Pop animation: shrink and fade
+    const popProgress = Math.min((bTime - b.popTimer) / 0.5, 1);
+    if (popProgress >= 1) return; // Fully popped
+
+    const x = b.px, y = b.py;
+    const shrink = 1 - popProgress;
+    bCtx.save();
+    bCtx.translate(x, y);
+    bCtx.scale(shrink, shrink);
+    bCtx.globalAlpha = 1 - popProgress;
+
+    // Draw fading bubble
+    bCtx.beginPath();
+    bCtx.arc(0, 0, b.pr, 0, Math.PI * 2);
+    bCtx.fillStyle = 'rgba(255,255,255,0.1)';
+    bCtx.fill();
+    bCtx.strokeStyle = hexToRgba(b.color, 0.3 * (1 - popProgress));
+    bCtx.lineWidth = 2;
+    bCtx.stroke();
+    bCtx.restore();
+    return;
+  }
+
+  const x = b.px, y = b.py, r = b.pr;
+  const c1 = b.color, c2 = b.color2;
+
+  // Advanced wobble physics
+  const wobblePhase = bTime * 2.5 + b.id.charCodeAt(0) * 3;
+  const wobblePhase2 = bTime * 1.8 + b.id.charCodeAt(0) * 5;
+  const wobblePhase3 = bTime * 3.2 + b.id.charCodeAt(0) * 7;
+
+  const scaleX = 1 + Math.sin(wobblePhase) * 0.04 + Math.cos(wobblePhase2) * 0.02;
+  const scaleY = 1 + Math.cos(wobblePhase) * 0.04 + Math.sin(wobblePhase2) * 0.02;
+  const skewX = Math.sin(wobblePhase3) * 0.03;
+  const skewY = Math.cos(wobblePhase3) * 0.03;
+  const rotation = Math.sin(wobblePhase * 0.5) * 0.05;
+  const hoverScale = b.hover ? 1.08 : 1.0;
+
+  bCtx.save();
+  bCtx.translate(x, y);
+  bCtx.rotate(rotation);
+  bCtx.scale(scaleX * hoverScale, scaleY * hoverScale);
+  bCtx.transform(1, skewX, skewY, 1, 0, 0);
+
+  const radius = r;
+
+  bCtx.beginPath();
+  bCtx.arc(0, 0, radius, 0, Math.PI * 2);
+  bCtx.clip();
+
+  const img = BUBBLE_IMAGES[b.id];
+  if (img && img.complete) {
+    const imgSize = radius * 2.2;
+    bCtx.globalAlpha = 0.55;
+    bCtx.drawImage(img, -imgSize/2, -imgSize/2, imgSize, imgSize);
+    bCtx.globalAlpha = 1;
+  }
+
+  bCtx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+  bCtx.fillRect(-radius, -radius, radius * 2, radius * 2);
+
+  const filmGrad = bCtx.createRadialGradient(-radius*0.3, -radius*0.3, 0, 0, 0, radius * 1.1);
+  filmGrad.addColorStop(0, 'rgba(255,255,255,0.15)');
+  filmGrad.addColorStop(0.1, hexToRgba(c1, 0.12));
+  filmGrad.addColorStop(0.25, hexToRgba(c2, 0.08));
+  filmGrad.addColorStop(0.4, hexToRgba(c1, 0.06));
+  filmGrad.addColorStop(0.6, hexToRgba(c2, 0.04));
+  filmGrad.addColorStop(0.8, hexToRgba(c1, 0.03));
+  filmGrad.addColorStop(0.95, 'rgba(255,255,255,0.02)');
+  filmGrad.addColorStop(1, 'rgba(0,0,0,0.01)');
+  bCtx.fillStyle = filmGrad;
+  bCtx.fillRect(-radius, -radius, radius * 2, radius * 2);
+  bCtx.restore();
+
+  // Fresnel rim
+  bCtx.save();
+  bCtx.translate(x, y);
+  bCtx.scale(scaleX * hoverScale, scaleY * hoverScale);
+  const fresnelGrad = bCtx.createRadialGradient(0, 0, radius * 0.7, 0, 0, radius * 1.05);
+  fresnelGrad.addColorStop(0, 'transparent');
+  fresnelGrad.addColorStop(0.6, 'rgba(255,255,255,0.02)');
+  fresnelGrad.addColorStop(0.85, hexToRgba(c2, 0.15));
+  fresnelGrad.addColorStop(0.95, hexToRgba(c1, 0.25));
+  fresnelGrad.addColorStop(1, 'rgba(255,255,255,0.35)');
+  bCtx.strokeStyle = fresnelGrad;
+  bCtx.lineWidth = 2.5;
+  bCtx.beginPath();
+  bCtx.arc(0, 0, radius, 0, Math.PI * 2);
+  bCtx.stroke();
+  bCtx.restore();
+
+  // Chromatic aberration
+  bCtx.save();
+  bCtx.translate(x, y);
+  bCtx.scale(scaleX * hoverScale, scaleY * hoverScale);
+  bCtx.globalCompositeOperation = 'screen';
+  const chromaOffset = 2 * bDpr;
+  bCtx.strokeStyle = 'rgba(255, 80, 80, 0.12)';
+  bCtx.lineWidth = 3;
+  bCtx.beginPath();
+  bCtx.arc(-chromaOffset, -chromaOffset, radius, 0, Math.PI * 2);
+  bCtx.stroke();
+  bCtx.strokeStyle = 'rgba(0, 200, 255, 0.12)';
+  bCtx.beginPath();
+  bCtx.arc(chromaOffset, chromaOffset, radius, 0, Math.PI * 2);
+  bCtx.stroke();
+  bCtx.globalCompositeOperation = 'source-over';
+  bCtx.restore();
+
+  drawCaustics(x, y, radius * Math.max(scaleX, scaleY) * hoverScale, b.color, bTime);
+
+  // Specular highlight
+  bCtx.save();
+  bCtx.translate(x, y);
+  bCtx.scale(scaleX * hoverScale, scaleY * hoverScale);
+  const hlX = -radius * 0.35 + Math.sin(bTime * 1.5) * radius * 0.08;
+  const hlY = -radius * 0.35 + Math.cos(bTime * 1.2) * radius * 0.08;
+  const hlGrad = bCtx.createRadialGradient(hlX, hlY, 0, hlX, hlY, radius * 0.4);
+  hlGrad.addColorStop(0, 'rgba(255,255,255,0.8)');
+  hlGrad.addColorStop(0.2, 'rgba(255,255,255,0.4)');
+  hlGrad.addColorStop(0.5, 'rgba(255,255,255,0.1)');
+  hlGrad.addColorStop(1, 'transparent');
+  bCtx.fillStyle = hlGrad;
+  bCtx.beginPath();
+  bCtx.arc(hlX, hlY, radius * 0.4, 0, Math.PI * 2);
+  bCtx.fill();
+  bCtx.restore();
+
+  // Secondary caustic
+  bCtx.save();
+  bCtx.translate(x, y);
+  bCtx.scale(scaleX * hoverScale, scaleY * hoverScale);
+  const causticX = radius * 0.25;
+  const causticY = radius * 0.3;
+  const causticGrad = bCtx.createRadialGradient(causticX, causticY, 0, causticX, causticY, radius * 0.3);
+  causticGrad.addColorStop(0, hexToRgba(c2, 0.2));
+  causticGrad.addColorStop(0.4, hexToRgba(c1, 0.12));
+  causticGrad.addColorStop(1, 'transparent');
+  bCtx.fillStyle = causticGrad;
+  bCtx.beginPath();
+  bCtx.arc(causticX, causticY, radius * 0.3, 0, Math.PI * 2);
+  bCtx.fill();
+  bCtx.restore();
+
+  // Glow
+  const glowGrad = bCtx.createRadialGradient(x, y, radius * 0.6, x, y, radius * 2.2);
+  glowGrad.addColorStop(0, hexToRgba(b.color, 0.06));
+  glowGrad.addColorStop(0.5, hexToRgba(b.color2, 0.03));
+  glowGrad.addColorStop(1, 'transparent');
+  bCtx.fillStyle = glowGrad;
+  bCtx.beginPath();
+  bCtx.arc(x, y, radius * 2.2, 0, Math.PI * 2);
+  bCtx.fill();
+
+  // Label
+  bCtx.save();
+  bCtx.translate(x, y);
+  bCtx.scale(scaleX * hoverScale, scaleY * hoverScale);
+  bCtx.fillStyle = 'rgba(255,255,255,0.95)';
+  bCtx.font = `700 ${13 * bDpr}px 'Noto Sans Arabic'`;
+  bCtx.textAlign = 'center';
+  bCtx.textBaseline = 'middle';
+  bCtx.shadowColor = 'rgba(0,0,0,0.8)';
+  bCtx.shadowBlur = 8 * bDpr;
+  bCtx.fillText(b.label, 0, radius * 0.05);
+  bCtx.shadowBlur = 0;
+  bCtx.restore();
+
+  // Status dot
+  bCtx.save();
+  bCtx.translate(x, y);
+  bCtx.scale(scaleX * hoverScale, scaleY * hoverScale);
+  bCtx.fillStyle = hexToRgba(b.color, 0.9);
+  bCtx.beginPath();
+  bCtx.arc(0, -radius * 0.3, 4 * bDpr, 0, Math.PI * 2);
+  bCtx.fill();
+  bCtx.restore();
+}
+
+function drawCaustics(cx, cy, radius, color, t) {
+  bCtx.save();
+  bCtx.translate(cx, cy);
+  bCtx.globalCompositeOperation = 'screen';
+  const causticCount = 12;
+  for (let i = 0; i < causticCount; i++) {
+    const angle = (i / causticCount) * Math.PI * 2 + t * 0.3 + i * 1.5;
+    const dist = 30 + Math.sin(t * 0.8 + i * 2) * 15;
+    const causticX = Math.cos(angle) * dist;
+    const causticY = Math.sin(angle) * dist;
+    const causticSize = 8 + Math.sin(t * 1.2 + i) * 4;
+    const alpha = 0.03 + Math.sin(t * 0.5 + i) * 0.02;
+    const grad = bCtx.createRadialGradient(causticX, causticY, 0, causticX, causticY, causticSize);
+    grad.addColorStop(0, hexToRgba(color, alpha * 2));
+    grad.addColorStop(0.5, hexToRgba(color, alpha));
+    grad.addColorStop(1, 'transparent');
+    bCtx.fillStyle = grad;
+    bCtx.beginPath();
+    bCtx.arc(causticX, causticY, causticSize, 0, Math.PI * 2);
+    bCtx.fill();
+  }
+  bCtx.globalCompositeOperation = 'source-over';
+  bCtx.restore();
+}
+
+function createPopParticles(x, y, color) {
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('div');
+    p.className = 'pop-particle';
+    const size = 2 + Math.random() * 14;
+    const angle = (Math.PI * 2 * i) / 40 + Math.random() * 0.5;
+    const dist = 50 + Math.random() * 180;
+    const tx = Math.cos(angle) * dist;
+    const ty = Math.sin(angle) * dist;
+    const duration = 0.5 + Math.random() * 0.7;
+    p.style.cssText = `left: ${x}px; top: ${y}px; width: ${size}px; height: ${size}px; background: radial-gradient(circle, ${color}ff, ${color}80, transparent); box-shadow: 0 0 ${size*2}px ${color}80, 0 0 ${size*4}px ${color}40, inset 0 0 ${size}px rgba(255,255,255,0.5); --tx: ${tx}px; --ty: ${ty}px; animation-duration: ${duration}s;`;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), duration * 1000);
+  }
+  for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.className = 'pop-particle';
+    const size = 1 + Math.random() * 4;
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 100 + Math.random() * 250;
+    const tx = Math.cos(angle) * dist;
+    const ty = Math.sin(angle) * dist;
+    p.style.cssText = `left: ${x}px; top: ${y}px; width: ${size}px; height: ${size}px; background: white; box-shadow: 0 0 ${size*4}px white, 0 0 ${size*8}px ${color}60; --tx: ${tx}px; --ty: ${ty}px; animation-duration: 0.6s;`;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 600);
+  }
+}
+
+function getBubbleAt(mx, my) {
+  for (const b of BUBBLES) {
+    if (b.popped) continue;
+    const dx = mx * bDpr - b.px;
+    const dy = my * bDpr - b.py;
+    if (Math.hypot(dx, dy) < b.pr * 1.15) return b;
+  }
+  return null;
+}
+
+// ============================================================
+// BUBBLE INTERACTION — Long press to pop, short press to open
+// ============================================================
+function getCanvasCoords(e) {
+  const rect = bCanvas.getBoundingClientRect();
+  return { mx: e.clientX - rect.left, my: e.clientY - rect.top, cx: e.clientX, cy: e.clientY };
+}
+function getTouchCanvasCoords(touch) {
+  const rect = bCanvas.getBoundingClientRect();
+  return { mx: touch.clientX - rect.left, my: touch.clientY - rect.top, cx: touch.clientX, cy: touch.clientY };
+}
+
+let pressTimer = null;
+let pressStartTime = 0;
+let isLongPress = false;
+const LONG_PRESS_DURATION = 400;
+const bubbleHint = document.getElementById('bubbleHint');
+
+function showBubbleHint(x, y) {
+  bubbleHint.style.left = (x + 20) + 'px';
+  bubbleHint.style.top = (y - 30) + 'px';
+  bubbleHint.classList.add('visible');
+}
+function hideBubbleHint() {
+  bubbleHint.classList.remove('visible');
+}
+
+function popBubble(b, screenX, screenY) {
+  if (b.popped) return;
+  b.popped = true;
+  b.popTimer = bTime;
+  createPopParticles(screenX, screenY, b.color);
+
+  // Respawn after 3 seconds
+  setTimeout(() => {
+    b.popped = false;
+    b.popTimer = 0;
+  }, 3000);
+}
+
+document.addEventListener('mousemove', (e) => {
+  const { mx, my } = getCanvasCoords(e);
+  bMouse.x = mx; bMouse.y = my;
+  if (draggedBubble && bMouse.down) {
+    const newPx = mx * bDpr - dragOffset.x;
+    const newPy = my * bDpr - dragOffset.y;
+    draggedBubble.dragVx = (newPx - draggedBubble.px) * 0.3;
+    draggedBubble.dragVy = (newPy - draggedBubble.py) * 0.3;
+    draggedBubble.px = newPx; draggedBubble.py = newPy;
+    document.body.style.cursor = 'grabbing';
+    return;
+  }
+  const b = getBubbleAt(mx, my);
+  BUBBLES.forEach(bb => bb.hover = false);
+  if (b) { 
+    b.hover = true; 
+    document.body.style.cursor = 'grab'; 
+  }
+  else { 
+    document.body.style.cursor = 'default'; 
+    hideBubbleHint();
+  }
+});
+
+document.addEventListener('mousedown', (e) => {
+  if (e.target.closest('.soap-window')) return;
+  const { mx, my, cx, cy } = getCanvasCoords(e);
+  const b = getBubbleAt(mx, my);
+  if (b) {
+    bMouse.down = true;
+    draggedBubble = b;
+    dragOffset.x = mx * bDpr - b.px;
+    dragOffset.y = my * bDpr - b.py;
+    b.dragVx = 0; b.dragVy = 0;
+
+    // Long press detection
+    isLongPress = false;
+    pressStartTime = performance.now();
+    pressTimer = setTimeout(() => {
+      isLongPress = true;
+      showBubbleHint(cx, cy);
+      // Visual feedback for long press
+      b.hover = true;
+    }, LONG_PRESS_DURATION);
+  }
+});
+
+document.addEventListener('mouseup', (e) => {
+  if (pressTimer) {
+    clearTimeout(pressTimer);
+    pressTimer = null;
+  }
+  hideBubbleHint();
+
+  if (!draggedBubble) return;
+  const { mx, my, cx, cy } = getCanvasCoords(e);
+  const dx = mx * bDpr - draggedBubble.px;
+  const dy = my * bDpr - draggedBubble.py;
+
+  const pressDuration = performance.now() - pressStartTime;
+
+  if (isLongPress || pressDuration > LONG_PRESS_DURATION) {
+    // Long press → POP the bubble!
+    popBubble(draggedBubble, cx, cy);
+  } else if (Math.hypot(dx - dragOffset.x, dy - dragOffset.y) < 20 * bDpr) {
+    // Short press + no drag → Open window
+    if (!draggedBubble.popped) {
+      expandBubble(draggedBubble, cx, cy);
+    }
+  } else {
+    draggedBubble.vx = draggedBubble.dragVx;
+    draggedBubble.vy = draggedBubble.dragVy;
+  }
+
+  draggedBubble = null;
+  bMouse.down = false;
+  isLongPress = false;
+  document.body.style.cursor = 'default';
+});
+
+document.addEventListener('touchstart', (e) => {
+  if (e.target.closest('.soap-window')) return;
+  const touch = e.touches[0];
+  const { mx, my } = getTouchCanvasCoords(touch);
+  const b = getBubbleAt(mx, my);
+  if (b) {
+    bMouse.down = true;
+    draggedBubble = b;
+    dragOffset.x = mx * bDpr - b.px;
+    dragOffset.y = my * bDpr - b.py;
+
+    isLongPress = false;
+    pressStartTime = performance.now();
+    pressTimer = setTimeout(() => {
+      isLongPress = true;
+      showBubbleHint(touch.clientX, touch.clientY);
+    }, LONG_PRESS_DURATION);
+
+    e.preventDefault();
+  }
+}, { passive: false });
+
+document.addEventListener('touchmove', (e) => {
+  if (!draggedBubble) return;
+  const touch = e.touches[0];
+  const { mx, my } = getTouchCanvasCoords(touch);
+  const newPx = mx * bDpr - dragOffset.x;
+  const newPy = my * bDpr - dragOffset.y;
+  draggedBubble.dragVx = (newPx - draggedBubble.px) * 0.3;
+  draggedBubble.dragVy = (newPy - draggedBubble.py) * 0.3;
+  draggedBubble.px = newPx; draggedBubble.py = newPy;
+
+  // Cancel long press if dragged
+  if (Math.hypot(newPx - draggedBubble.px, newPy - draggedBubble.py) > 10 * bDpr) {
+    if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+    hideBubbleHint();
+  }
+
+  e.preventDefault();
+}, { passive: false });
+
+document.addEventListener('touchend', (e) => {
+  if (pressTimer) {
+    clearTimeout(pressTimer);
+    pressTimer = null;
+  }
+  hideBubbleHint();
+
+  if (!draggedBubble) return;
+  const touch = e.changedTouches[0];
+  const { mx, my, cx, cy } = getTouchCanvasCoords(touch);
+  const dx = mx * bDpr - draggedBubble.px;
+  const dy = my * bDpr - draggedBubble.py;
+
+  const pressDuration = performance.now() - pressStartTime;
+
+  if (isLongPress || pressDuration > LONG_PRESS_DURATION) {
+    popBubble(draggedBubble, cx, cy);
+  } else if (Math.hypot(dx - dragOffset.x, dy - dragOffset.y) < 20 * bDpr) {
+    if (!draggedBubble.popped) {
+      expandBubble(draggedBubble, cx, cy);
+    }
+  } else {
+    draggedBubble.vx = draggedBubble.dragVx;
+    draggedBubble.vy = draggedBubble.dragVy;
+  }
+
+  draggedBubble = null;
+  bMouse.down = false;
+  isLongPress = false;
+});
+
+// ============================================================
+// SOAP GLASS WINDOW MANAGER v2026
+// ============================================================
+let windowZIndex = 200;
+let openWindows = new Map();
+const minimizedDock = document.getElementById('minimizedDock');
+const snapPreview = document.getElementById('snapPreview');
+const magLeft = document.getElementById('magLeft');
+const magRight = document.getElementById('magRight');
+const magTop = document.getElementById('magTop');
+
+const WIN_COLOR = '#00d4ff';
+const WIN_COLOR2 = '#4a9eff';
+
+function expandBubble(b, screenX, screenY) {
+  if (openWindows.has(b.id)) {
+    const existing = openWindows.get(b.id);
+    if (existing.state === 'minimized') {
+      restoreWindow(b.id);
+    } else {
+      existing.element.style.zIndex = windowZIndex++;
+      updateWindowDepth();
+    }
+    return;
+  }
+
+  createPopParticles(screenX, screenY, WIN_COLOR);
+
+  const container = document.getElementById('bubbleWindowContainer');
+  const win = document.createElement('div');
+  win.id = 'bw-' + b.id;
+  win.className = 'soap-window state-normal animating-expand';
+  win.style.zIndex = windowZIndex++;
+
+  const winWidth = Math.min(window.innerWidth * 0.9, 400);
+  const winHeight = Math.min(window.innerHeight * 0.75, 700);
+  const offsetX = (openWindows.size % 3) * 30;
+  const offsetY = (openWindows.size % 3) * 30;
+  const left = (window.innerWidth - winWidth) / 2 + offsetX;
+  const top = (window.innerHeight - winHeight) / 2 + offsetY;
+  win.style.left = left + 'px';
+  win.style.top = top + 'px';
+
+  let itemsHtml = '';
+  for (const item of b.items) {
+    const arrow = item.up ? '↑' : '↓';
+    const arrowColor = item.up ? '#00c896' : '#ff6b6b';
+    itemsHtml += `
+      <div class="sw-item" style="border-color: ${hexToRgba(WIN_COLOR, 0.08)};" onmouseenter="this.style.borderColor='${hexToRgba(WIN_COLOR, 0.2)}'" onmouseleave="this.style.borderColor='${hexToRgba(WIN_COLOR, 0.08)}'">
+        <div class="sw-item-info">
+          <div class="sw-item-title">${item.title}</div>
+          <div class="sw-item-val">${item.val}</div>
+        </div>
+        <div class="sw-item-arrow" style="color: ${arrowColor};">${arrow}</div>
+        <div class="sw-item-progress"></div>
+      </div>
+    `;
+  }
+
+  win.innerHTML = `
+    <div class="sw-inner">
+      
+      <div class="sw-header" data-bid="${b.id}">
+        <div class="sw-header-left">
+          <div class="sw-icon" style="background: linear-gradient(135deg, ${WIN_COLOR}, ${WIN_COLOR2});">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              ${getBubbleIcon(b.id)}
+            </svg>
+          </div>
+          <div class="sw-title-group">
+            <div class="sw-title">${b.label}</div>
+            <div class="sw-subtitle">${b.desc}</div>
+          </div>
+        </div>
+        <div class="sw-controls">
+          <button class="sw-btn minimize" title="تصغير" onclick="minimizeWindow('${b.id}')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <button class="sw-btn maximize" title="تكبير" onclick="maximizeWindow('${b.id}')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+          </button>
+          <button class="sw-btn close" title="إغلاق" onclick="closeWindow('${b.id}')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="sw-content">${itemsHtml}</div>
+      <div class="sw-footer">اضغط على أي عنصر للتفاصيل</div>
+    </div>
+    <div class="resize-handle n" data-dir="n"></div>
+    <div class="resize-handle s" data-dir="s"></div>
+    <div class="resize-handle e" data-dir="e"></div>
+    <div class="resize-handle w" data-dir="w"></div>
+    <div class="resize-handle ne" data-dir="ne"></div>
+    <div class="resize-handle nw" data-dir="nw"></div>
+    <div class="resize-handle se" data-dir="se"></div>
+    <div class="resize-handle sw" data-dir="sw"></div>
+  `;
+
+  container.appendChild(win);
+
+  openWindows.set(b.id, {
+    element: win,
+    state: 'normal',
+    prevState: null,
+    data: b,
+    normalBounds: { left, top, width: winWidth, height: winHeight }
+  });
+
+  setupResizeHandles(win, b.id);
+  makeWindowDraggable(win, b.id);
+
+  win.addEventListener('mousedown', () => {
+    win.style.zIndex = windowZIndex++;
+    updateWindowDepth();
+  });
+
+  setTimeout(() => {
+    win.classList.remove('animating-expand');
+    updateWindowDepth();
+  }, 600);
+}
+
+function updateWindowDepth() {
+  const sorted = Array.from(openWindows.entries())
+    .filter(([_, d]) => d.state !== 'minimized')
+    .sort((a, b) => parseInt(a[1].element.style.zIndex) - parseInt(b[1].element.style.zIndex));
+  sorted.forEach(([_, data], i) => {
+    const depth = sorted.length - i;
+    data.element.classList.remove('depth-1', 'depth-2', 'depth-3');
+    if (depth <= 3) data.element.classList.add(`depth-${depth}`);
+  });
+}
+
+// ============================================================
+// WINDOW STATE MANAGEMENT — Minimize hides to dock only
+// ============================================================
+function minimizeWindow(id) {
+  const winData = openWindows.get(id);
+  if (!winData || winData.state === 'minimized') return;
+
+  const win = winData.element;
+  winData.prevState = winData.state;
+  winData.state = 'minimized';
+
+  const rect = win.getBoundingClientRect();
+  winData.normalBounds = {
+    left: rect.left, top: rect.top,
+    width: rect.width, height: rect.height
+  };
+
+  win.classList.add('animating-minimize');
+
+  setTimeout(() => {
+    win.classList.remove('state-normal', 'state-maximized', 'state-snapped-left', 'state-snapped-right');
+    win.classList.add('state-minimized');
+    win.classList.remove('animating-minimize');
+    // Window is now hidden (opacity:0, scale:0) — only dock shows
+    addToDock(id);
+    updateWindowDepth();
+  }, 500);
+}
+
+function maximizeWindow(id) {
+  const winData = openWindows.get(id);
+  if (!winData) return;
+
+  const win = winData.element;
+
+  if (winData.state === 'maximized') {
+    restoreWindow(id);
+    return;
+  }
+
+  if (winData.state !== 'minimized') {
+    const rect = win.getBoundingClientRect();
+    winData.normalBounds = {
+      left: rect.left, top: rect.top,
+      width: rect.width, height: rect.height
+    };
+  }
+
+  winData.prevState = winData.state;
+  winData.state = 'maximized';
+
+  win.classList.add('animating-maximize');
+
+  setTimeout(() => {
+    win.classList.remove('state-normal', 'state-minimized', 'state-snapped-left', 'state-snapped-right');
+    win.classList.add('state-maximized');
+    win.classList.remove('animating-maximize');
+    removeFromDock(id);
+    updateWindowDepth();
+  }, 350);
+}
+
+function restoreWindow(id) {
+  const winData = openWindows.get(id);
+  if (!winData) return;
+
+  const win = winData.element;
+  const bounds = winData.normalBounds;
+
+  winData.state = winData.prevState || 'normal';
+  winData.prevState = null;
+
+  win.classList.add('animating-restore');
+
+  setTimeout(() => {
+    win.classList.remove('state-maximized', 'state-minimized', 'state-snapped-left', 'state-snapped-right');
+    win.classList.add('state-normal');
+    win.classList.remove('animating-restore');
+
+    win.style.left = bounds.left + 'px';
+    win.style.top = bounds.top + 'px';
+    win.style.width = bounds.width + 'px';
+    win.style.height = bounds.height + 'px';
+
+    removeFromDock(id);
+    updateWindowDepth();
+  }, 400);
+}
+
+function closeWindow(id) {
+  const winData = openWindows.get(id);
+  if (!winData) return;
+
+  const win = winData.element;
+  win.classList.add('animating-minimize');
+
+  setTimeout(() => {
+    win.remove();
+    openWindows.delete(id);
+    removeFromDock(id);
+    updateWindowDepth();
+  }, 500);
+}
+
+// ============================================================
+// SIDE DOCK — RIGHT SIDE
+// ============================================================
+function addToDock(id) {
+  const winData = openWindows.get(id);
+  if (!winData) return;
+
+  removeFromDock(id);
+
+  const b = winData.data;
+  const dockItem = document.createElement('div');
+  dockItem.className = 'dock-bubble';
+  dockItem.id = 'dock-' + id;
+  dockItem.innerHTML = `
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      ${getBubbleIcon(b.id)}
+    </svg>
+    <span class="dock-label">${b.label}</span>
+  `;
+
+  dockItem.addEventListener('click', () => restoreWindow(id));
+
+  minimizedDock.appendChild(dockItem);
+  minimizedDock.classList.remove('hidden');
+}
+
+function removeFromDock(id) {
+  const dockItem = document.getElementById('dock-' + id);
+  if (dockItem) dockItem.remove();
+  if (minimizedDock.children.length === 0) {
+    minimizedDock.classList.add('hidden');
+  }
+}
+
+// ============================================================
+// RESIZE SYSTEM
+// ============================================================
+function setupResizeHandles(win, id) {
+  const handles = win.querySelectorAll('.resize-handle');
+  handles.forEach(handle => {
+    handle.addEventListener('mousedown', (e) => {
+      e.stopPropagation();
+      startResize(e, win, id, handle.dataset.dir);
+    });
+    handle.addEventListener('touchstart', (e) => {
+      e.stopPropagation();
+      startResize(e.touches[0], win, id, handle.dataset.dir);
+    }, { passive: false });
+  });
+}
+
+let resizingWindow = null;
+let resizeData = null;
+
+function startResize(e, win, id, dir) {
+  if (openWindows.get(id).state === 'maximized') return;
+
+  resizingWindow = win;
+  const rect = win.getBoundingClientRect();
+  resizeData = {
+    dir: dir,
+    startX: e.clientX,
+    startY: e.clientY,
+    startLeft: rect.left,
+    startTop: rect.top,
+    startWidth: rect.width,
+    startHeight: rect.height,
+    minWidth: 280,
+    minHeight: 180
+  };
+
+  document.body.style.cursor = getResizeCursor(dir);
+  e.preventDefault && e.preventDefault();
+}
+
+function getResizeCursor(dir) {
+  const cursors = {
+    n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize',
+    ne: 'nesw-resize', nw: 'nwse-resize', se: 'nwse-resize', sw: 'nesw-resize'
+  };
+  return cursors[dir] || 'default';
+}
+
+function handleResizeMove(e) {
+  if (!resizingWindow || !resizeData) return;
+
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+  const dx = clientX - resizeData.startX;
+  const dy = clientY - resizeData.startY;
+  const dir = resizeData.dir;
+
+  let newLeft = resizeData.startLeft;
+  let newTop = resizeData.startTop;
+  let newWidth = resizeData.startWidth;
+  let newHeight = resizeData.startHeight;
+
+  if (dir.includes('e')) newWidth = Math.max(resizeData.minWidth, resizeData.startWidth + dx);
+  if (dir.includes('w')) {
+    const proposedWidth = resizeData.startWidth - dx;
+    if (proposedWidth >= resizeData.minWidth) {
+      newWidth = proposedWidth;
+      newLeft = resizeData.startLeft + dx;
+    }
+  }
+  if (dir.includes('s')) newHeight = Math.max(resizeData.minHeight, resizeData.startHeight + dy);
+  if (dir.includes('n')) {
+    const proposedHeight = resizeData.startHeight - dy;
+    if (proposedHeight >= resizeData.minHeight) {
+      newHeight = proposedHeight;
+      newTop = resizeData.startTop + dy;
+    }
+  }
+
+  resizingWindow.style.left = newLeft + 'px';
+  resizingWindow.style.top = newTop + 'px';
+  resizingWindow.style.width = newWidth + 'px';
+  resizingWindow.style.height = newHeight + 'px';
+
+  const winData = openWindows.get(resizingWindow.id.replace('bw-', ''));
+  if (winData) {
+    winData.normalBounds = { left: newLeft, top: newTop, width: newWidth, height: newHeight };
+  }
+}
+
+document.addEventListener('mousemove', handleResizeMove);
+document.addEventListener('touchmove', handleResizeMove, { passive: false });
+
+document.addEventListener('mouseup', () => {
+  if (resizingWindow) {
+    resizingWindow = null;
+    resizeData = null;
+    document.body.style.cursor = 'default';
+  }
+});
+document.addEventListener('touchend', () => {
+  if (resizingWindow) {
+    resizingWindow = null;
+    resizeData = null;
+    document.body.style.cursor = 'default';
+  }
+});
+
+// ============================================================
+// MAGNETIC SNAP SYSTEM
+// ============================================================
+function checkSnapZone(x, y, width, height) {
+  const snapThreshold = 80;
+  const screenW = window.innerWidth;
+  const screenH = window.innerHeight;
+
+  if (x < snapThreshold && y > snapThreshold && y + height < screenH - snapThreshold) {
+    return 'left';
+  }
+  if (x + width > screenW - snapThreshold && y > snapThreshold && y + height < screenH - snapThreshold) {
+    return 'right';
+  }
+  if (y < snapThreshold && x > snapThreshold && x + width < screenW - snapThreshold) {
+    return 'maximize';
+  }
+  return null;
+}
+
+function showSnapPreview(zone) {
+  const preview = document.getElementById('snapPreview');
+  preview.style.display = 'block';
+
+  if (zone === 'left') {
+    preview.style.left = '8px'; preview.style.top = '8px';
+    preview.style.width = 'calc(50vw - 16px)'; preview.style.height = 'calc(100vh - 16px)';
+    magLeft.classList.add('active');
+  } else if (zone === 'right') {
+    preview.style.left = 'calc(50vw + 8px)'; preview.style.top = '8px';
+    preview.style.width = 'calc(50vw - 16px)'; preview.style.height = 'calc(100vh - 16px)';
+    magRight.classList.add('active');
+  } else if (zone === 'maximize') {
+    preview.style.left = '8px'; preview.style.top = '8px';
+    preview.style.width = 'calc(100vw - 16px)'; preview.style.height = 'calc(100vh - 16px)';
+    magTop.classList.add('active');
+  }
+}
+
+function hideSnapPreview() {
+  document.getElementById('snapPreview').style.display = 'none';
+  magLeft.classList.remove('active');
+  magRight.classList.remove('active');
+  magTop.classList.remove('active');
+}
+
+function applySnap(id, zone) {
+  const winData = openWindows.get(id);
+  if (!winData) return;
+
+  const win = winData.element;
+  const rect = win.getBoundingClientRect();
+  winData.normalBounds = {
+    left: rect.left, top: rect.top,
+    width: rect.width, height: rect.height
+  };
+
+  winData.prevState = winData.state;
+  win.classList.add('snapping');
+
+  if (zone === 'left') {
+    winData.state = 'snapped-left';
+    win.classList.remove('state-normal', 'state-maximized', 'state-minimized', 'state-snapped-right');
+    win.classList.add('state-snapped-left');
+  } else if (zone === 'right') {
+    winData.state = 'snapped-right';
+    win.classList.remove('state-normal', 'state-maximized', 'state-minimized', 'state-snapped-left');
+    win.classList.add('state-snapped-right');
+  } else if (zone === 'maximize') {
+    maximizeWindow(id);
+    win.classList.remove('snapping');
+    return;
+  }
+
+  hideSnapPreview();
+  setTimeout(() => win.classList.remove('snapping'), 350);
+}
+
+// ============================================================
+// WINDOW DRAGGING
+// ============================================================
+function makeWindowDraggable(win, bid) {
+  const header = win.querySelector('.sw-header');
+  let isDragging = false;
+  let startX, startY, startLeft, startTop;
+  let dragMoved = false;
+  let velocityX = 0, velocityY = 0;
+  let lastX, lastY, lastTime;
+
+  header.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.sw-btn')) return;
+
+    const winData = openWindows.get(bid);
+    if (winData.state === 'maximized') {
+      const normalW = winData.normalBounds.width;
+      const normalH = winData.normalBounds.height;
+      winData.normalBounds.left = e.clientX - normalW / 2;
+      winData.normalBounds.top = e.clientY - 20;
+      restoreWindow(bid);
+      isDragging = true;
+      startX = e.clientX; startY = e.clientY;
+      startLeft = winData.normalBounds.left;
+      startTop = winData.normalBounds.top;
+    } else {
+      isDragging = true;
+      startX = e.clientX; startY = e.clientY;
+      const rect = win.getBoundingClientRect();
+      startLeft = rect.left; startTop = rect.top;
+    }
+
+    lastX = e.clientX; lastY = e.clientY; lastTime = performance.now();
+    win.classList.add('dragging');
+    win.style.zIndex = windowZIndex++;
+    updateWindowDepth();
+    dragMoved = false;
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    dragMoved = true;
+
+    const now = performance.now();
+    const dt = now - lastTime;
+    if (dt > 0) {
+      velocityX = (e.clientX - lastX) / dt * 16;
+      velocityY = (e.clientY - lastY) / dt * 16;
+    }
+    lastX = e.clientX; lastY = e.clientY; lastTime = now;
+
+    win.style.left = (startLeft + e.clientX - startX) + 'px';
+    win.style.top = (startTop + e.clientY - startY) + 'px';
+    win.style.transform = 'none';
+
+    const rect = win.getBoundingClientRect();
+    const snapZone = checkSnapZone(rect.left, rect.top, rect.width, rect.height);
+    if (snapZone) {
+      showSnapPreview(snapZone);
+      snapTarget = snapZone;
+    } else {
+      hideSnapPreview();
+      snapTarget = null;
+    }
+  });
+
+  document.addEventListener('mouseup', (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+    win.classList.remove('dragging');
+
+    if (snapTarget) {
+      applySnap(bid, snapTarget);
+      snapTarget = null;
+      return;
+    }
+
+    const rect = win.getBoundingClientRect();
+    const screenW = window.innerWidth;
+    const screenH = window.innerHeight;
+    let finalLeft = rect.left;
+    let finalTop = rect.top;
+    let bounced = false;
+
+    if (rect.left < 10) { finalLeft = 10; bounced = true; }
+    if (rect.left + rect.width > screenW - 10) { finalLeft = screenW - rect.width - 10; bounced = true; }
+    if (rect.top < 10) { finalTop = 10; bounced = true; }
+    if (rect.top + rect.height > screenH - 10) { finalTop = screenH - rect.height - 10; bounced = true; }
+
+    if (bounced) {
+      win.classList.add('snapping');
+      win.style.transition = 'left 0.4s var(--spring), top 0.4s var(--spring)';
+      win.style.left = finalLeft + 'px';
+      win.style.top = finalTop + 'px';
+      setTimeout(() => {
+        win.style.transition = '';
+        win.classList.remove('snapping');
+      }, 400);
+    }
+
+    const winData = openWindows.get(bid);
+    if (winData && winData.state === 'normal') {
+      winData.normalBounds = {
+        left: parseFloat(win.style.left) || finalLeft,
+        top: parseFloat(win.style.top) || finalTop,
+        width: rect.width, height: rect.height
+      };
+    }
+  });
+
+  header.addEventListener('touchstart', (e) => {
+    if (e.target.closest('.sw-btn')) return;
+    const touch = e.touches[0];
+    const winData = openWindows.get(bid);
+    if (winData.state === 'maximized') {
+      const normalW = winData.normalBounds.width;
+      winData.normalBounds.left = touch.clientX - normalW / 2;
+      winData.normalBounds.top = touch.clientY - 20;
+      restoreWindow(bid);
+    }
+    isDragging = true;
+    startX = touch.clientX; startY = touch.clientY;
+    const rect = win.getBoundingClientRect();
+    startLeft = rect.left; startTop = rect.top;
+    lastX = touch.clientX; lastY = touch.clientY; lastTime = performance.now();
+    win.classList.add('dragging');
+    win.style.zIndex = windowZIndex++;
+  }, { passive: false });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    const touch = e.touches[0];
+    const now = performance.now();
+    const dt = now - lastTime;
+    if (dt > 0) {
+      velocityX = (touch.clientX - lastX) / dt * 16;
+      velocityY = (touch.clientY - lastY) / dt * 16;
+    }
+    lastX = touch.clientX; lastY = touch.clientY; lastTime = now;
+
+    win.style.left = (startLeft + touch.clientX - startX) + 'px';
+    win.style.top = (startTop + touch.clientY - startY) + 'px';
+    win.style.transform = 'none';
+
+    const rect = win.getBoundingClientRect();
+    const snapZone = checkSnapZone(rect.left, rect.top, rect.width, rect.height);
+    if (snapZone) { showSnapPreview(snapZone); snapTarget = snapZone; }
+    else { hideSnapPreview(); snapTarget = null; }
+  }, { passive: false });
+
+  document.addEventListener('touchend', (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+    win.classList.remove('dragging');
+    if (snapTarget) {
+      applySnap(bid, snapTarget);
+      snapTarget = null;
+      hideSnapPreview();
+    }
+  });
+}
+
+let snapTarget = null;
+
+function getBubbleIcon(id) {
+  const icons = {
+    ads: '<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>',
+    suggest: '<path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6v6l4 2"/>',
+    subchat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+    wallet: '<path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M20 12v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/><path d="M18 12h2"/>',
+    analytics: '<path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+    settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'
+  };
+  return icons[id] || icons.settings;
+}
+
+// ============================================================
+// BUBBLE ANIMATION LOOP
+// ============================================================
+let bLast = performance.now();
+function bAnimate() {
+  requestAnimationFrame(bAnimate);
+  const now = performance.now();
+  const dt = Math.min((now - bLast) / 1000, 0.05); bLast = now; bTime += dt;
+  bCtx.clearRect(0, 0, bW, bH);
+
+  for (const b of BUBBLES) {
+    if (draggedBubble === b) continue;
+    if (b.popped) {
+      // Still animate popped bubbles (fade out)
+      const popProgress = (bTime - b.popTimer) / 0.5;
+      if (popProgress < 1) {
+        // Keep position but let it drift slightly
+        b.px += b.vx * 0.1;
+        b.py += b.vy * 0.1;
+      }
+      continue; // drawSoapBubble handles the pop animation
+    }
+    b.px += b.vx; b.py += b.vy;
+    b.vx *= 0.95; b.vy *= 0.95;
+    const floatX = Math.sin(bTime * 0.7 + b.id.charCodeAt(0) * 2) * 18 * bDpr;
+    const floatY = Math.cos(bTime * 0.5 + b.id.charCodeAt(0) * 3) * 12 * bDpr;
+    b.px += floatX * 0.01; b.py += floatY * 0.01;
+    const margin = b.pr * 1.5;
+    if (b.px < margin) { b.px = margin; b.vx *= -0.5; }
+    if (b.px > bW - margin) { b.px = bW - margin; b.vx *= -0.5; }
+    if (b.py < margin) { b.py = margin; b.vy *= -0.5; }
+    if (b.py > bH - margin) { b.py = bH - margin; b.vy *= -0.5; }
+  }
+
+  for (let i = 0; i < BUBBLES.length; i++) {
+    for (let j = i + 1; j < BUBBLES.length; j++) {
+      const dx = BUBBLES[j].px - BUBBLES[i].px;
+      const dy = BUBBLES[j].py - BUBBLES[i].py;
+      const d = Math.hypot(dx, dy);
+      if (d < 400 * bDpr) {
+        const alpha = (1 - d / (400 * bDpr)) * 0.08;
+        const steps = 20;
+        bCtx.strokeStyle = `rgba(100,180,255,${alpha})`;
+        bCtx.lineWidth = 0.8;
+        bCtx.beginPath();
+        for (let s = 0; s <= steps; s++) {
+          const t = s / steps;
+          const px = BUBBLES[i].px + dx * t;
+          const py = BUBBLES[i].py + dy * t;
+          const wave = Math.sin(t * Math.PI * 4 + bTime * 2 + i) * 5 * bDpr * (1 - Math.abs(t - 0.5) * 2);
+          const nx = -dy / d;
+          const ny = dx / d;
+          if (s === 0) bCtx.moveTo(px + nx * wave, py + ny * wave);
+          else bCtx.lineTo(px + nx * wave, py + ny * wave);
+        }
+        bCtx.stroke();
+      }
+    }
+  }
+
+  for (const b of BUBBLES) {
+    drawSoapBubble(b);
+  }
+}
+bAnimate();
+
+// ============================================================
+// MAIN CHAT FUNCTIONALITY
+// ============================================================
+const chatArea = document.getElementById('chatArea');
+const messageInput = document.getElementById('messageInput');
+const scrollBtn = document.getElementById('scrollBtn');
+const typingIndicator = document.getElementById('typingIndicator');
+const welcomeOverlay = document.getElementById('welcomeOverlay');
+
+function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; }
+function scrollToBottom() { chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' }); scrollBtn.classList.remove('visible'); }
+chatArea.addEventListener('scroll', () => {
+  const nearBottom = chatArea.scrollHeight - chatArea.scrollTop - chatArea.clientHeight < 100;
+  scrollBtn.classList.toggle('visible', !nearBottom);
+});
+
+function sendMessage() {
+  const text = messageInput.value.trim();
+  if (!text) return;
+  welcomeOverlay.classList.add('hidden');
+  addMessage(text, 'user');
+  messageInput.value = ''; messageInput.style.height = 'auto';
+  typingIndicator.classList.remove('hidden'); scrollToBottom();
+  setTimeout(() => { typingIndicator.classList.add('hidden'); streamAIResponse(); }, 1800);
+}
+
+function addMessage(text, sender) {
+  const group = document.createElement('div');
+  group.className = `message-group ${sender}`;
+  const time = new Date().toLocaleTimeString('ar', { hour: '2-digit', minute: '2-digit' });
+  const controls = sender === 'ai' ? `
+    <div class="message-controls">
+      <button class="msg-btn" title="نسخ"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+      <button class="msg-btn" title="إعادة توليد"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg></button>
+      <button class="msg-btn" title="أعجبني"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg></button>
+      <button class="msg-btn" title="لم يعجبني"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 2.3l1.38 9a2 2 0 0 0 2 1.7M17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/></svg></button>
+      <span class="msg-time">${time}</span>
+    </div>
+  ` : `<div class="message-controls"><button class="msg-btn" title="نسخ"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button><span class="msg-time">${time}</span></div>`;
+  group.innerHTML = `<div class="message-bubble">${escapeHtml(text)}</div>${controls}`;
+  chatArea.insertBefore(group, typingIndicator); scrollToBottom();
+}
+
+function escapeHtml(text) { const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
+
+let isStreaming = false, streamInterval;
+function streamAIResponse() {
+  isStreaming = true;
+  const responses = [
+    "ممتاز! دعني أُعدّ لك خطة تنفيذية مفصلة...",
+    "أولاً: نحتاج لتحديد نموذج الأعمال. هل تريد B2B2C أم B2C فقط؟",
+    "ثانياً: البنية التقنية. أنصحك بـ FastAPI للـ Backend وFlutter للواجة."
+  ];
+  const response = responses[Math.floor(Math.random()*responses.length)];
+  const words = response.split(' ');
+  const group = document.createElement('div');
+  group.className = 'message-group ai';
+  group.innerHTML = `<div class="message-bubble"><span id="liveText"></span></div><div class="message-controls" style="opacity:0.3"><button class="msg-btn" title="إيقاف" onclick="stopStream()"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg></button></div>`;
+  chatArea.insertBefore(group, typingIndicator); scrollToBottom();
+  const liveText = group.querySelector('#liveText');
+  let i = 0;
+  streamInterval = setInterval(() => {
+    if (i >= words.length) { stopStream(); return; }
+    liveText.textContent += (i > 0 ? ' ' : '') + words[i]; scrollToBottom(); i++;
+  }, 90);
+}
+function stopStream() {
+  if (!isStreaming) return;
+  clearInterval(streamInterval); isStreaming = false;
+}
+
+messageInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+
+setTimeout(() => scrollToBottom(), 500);
+</script>
+</body>
+</html>

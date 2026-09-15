@@ -1,0 +1,393 @@
+JASIM — الوثيقة التأسيسية لما بعد Smart Bubble
+Master Technical Foundation • Post-Canonicalization • General Generative Runtime → Production → Commercial → Mobile Release
+الإصدار المرجعي: أغسطس 2026
+
+هذه الوثيقة هي المرجع التنفيذي الأعلى للمرحلة التالية من جاسم بعد تثبيت الـCanonical Runtime وإغلاق Tranche 1. لا تهدف إلى إعادة تعريف جاسم من الصفر، بل إلى تحويل الأساس الحالي إلى General Generative Runtime حقيقي، ثم إلى Runtime تنفيذي موثوق، ثم إلى منتج Production/Commercial/Standalone Mobile.
+0. الغرض من الوثيقة
+الغرض هو منع التشتت وإعادة البناء والانتقال العشوائي بين Providers وPayments وMobile قبل اكتمال القلب التوليدي والتنفيذي. عند أي تعارض بين Task صغيرة وبين هذه الوثيقة، تُقدَّم هذه الوثيقة ما لم يثبت اختبار حقيقي أن فرضية منها لم تعد صحيحة.
+• تحويل Smart Bubble من lifecycle/renderer ناجح إلى نظام حي يتغير باللغة الطبيعية.
+• إكمال Conversation Intelligence وMemory وEvents قبل توسيع التعقيد.
+• جعل Approval يستأنف نفس Run بأمان بعد restart.
+• إضافة Trusted Executor ثم Receipt ثم Independent Verifier ثم Reconciliation قبل أي External Effect حقيقي.
+• إثبات Generalization على مشكلات لم تُبرمج مسبقًا، لا على Domain Handlers.
+• تأجيل Production Auth/Providers/Commercial/Store Release إلى موضعها الصحيح في dependency chain.
+1. خط الأساس الحالي الذي يجب اعتباره Locked
+المكوّن	الوضع المستهدف في هذه الوثيقة	قاعدة التعامل
+Canonical Runtime / Kernel	موجود ويُمدد	لا إعادة بناء
+Canonical schema-runtime	مصدر حقيقة DB/runtime	لا schema موازية
+Conversation/Message persistence	موجود	يُضاف له summary/memory
+Semantic Output Router	موجود وقابل للتوسعة	لا keyword/domain routing
+Reference Resolution	موجود وقابل للتوسعة	يرتبط بالmutation/context
+Smart Bubble lifecycle + presentation CAS	موجود ومثبت	Locked
+World Runtime + World version history	موجود	World اختياري خلف Bubble
+Run + DAG + leases/fencing/retry/cancel	موجود ومثبت	Locked
+Proposal/Fingerprint/Approval binding	موجود	يُستكمل resume
+Web/Mobile shared Bubble contract	موجود	يصبح contract وحيدًا
+
+مبدأ حاكم: KEEP → EXTEND → CONNECT. لا REBUILD إلا عند وجود defect معماري مثبت يمنع الهدف.
+2. تعريف جاسم النهائي الذي تعمل عليه كل المراحل
+USER INTENT
+    ↓
+CONVERSATION INTELLIGENCE
+    ↓
+SEMANTIC OUTPUT ROUTER
+    ↓
+REFERENCE RESOLUTION
+    ↓
+TEXT / STRUCTURED RESULT / RUN / WORKFLOW / SMART BUBBLE
+    ↓
+DNA / WORLD DEFINITION when persistence is justified
+    ↓
+CHANGESET / PLAN / PROPOSAL
+    ↓
+POLICY + APPROVAL
+    ↓
+DURABLE DAG
+    ↓
+TRUSTED EXECUTOR
+    ↓
+EXECUTION RECEIPT
+    ↓
+INDEPENDENT VERIFIER
+    ↓
+RECONCILIATION / RECOVERY
+    ↓
+STATE + VERSION + EVENTS + MEMORY
+    ↓
+PROJECTION
+    ↓
+WEB / IOS / ANDROID
+
+جاسم ليس Chatbot ولا Marketplace Builder ولا Platform Builder فقط. هو Runtime عام يختار أصغر شكل تنفيذي مناسب للنية: قد يجيب نصًا، قد ينشئ Run، وقد يولد Persistent Smart Bubble + World إذا كان الطلب يحتاج نظامًا حيًا مستمرًا.
+3. الثوابت المعمارية غير القابلة للتنازل
+• Bubble may exist without World.
+• Persistent Smart Bubble may use an optional World.
+• Run may exist without Bubble and without World.
+• Task may exist without persistent World.
+• Bubble may have multiple Tasks/Runs and survive their completion.
+• World ليس سطح المنتج الأساسي؛ يعيش خلف Bubble عند الحاجة.
+• Main Chat وBubble composer يستخدمان نفس Central JASIM Intelligence.
+• Generated DNA/World definition بيانات غير موثوقة؛ Kernel هو صاحب السيادة.
+• LLM يخطط/يقترح ولا يكتب DB أو ينفذ Provider مباشرة.
+• Domain examples هي Acceptance Tests وليست supported-domain list.
+4. التسلسل التنفيذي بعد الأوامر الحالية
+بعد إغلاق Frontend canonicalization + migration safety + Existing-Bubble mutation، يتم تنفيذ المراحل التالية بهذا الترتيب. هذا هو المسار الأساسي ولا يُختصر بالقفز إلى Payments أو Store Release.
+المرحلة 1 — Conversation Intelligence + Memory + Events
+الهدف: جعل جاسم يحتفظ بسياق طويل وذاكرة مناسبة ويملك Event history قابلة للاستعلام بدل الاكتفاء بآخر مجموعة رسائل.
+• Conversation summarizer يُشغّل تلقائيًا عند تجاوز حد محدد.
+• Summary durable مرتبط بالمحادثة مع anchor references المهمة.
+• Context Builder يختار recent messages + summary + active Bubble/Run/approval + relevant memory.
+• Context budget صريح؛ لا إرسال DB كاملة للـLLM.
+• Memory scopes: User / Conversation / Bubble-World.
+• Memory لا تصبح transactional truth ولا Run/approval truth.
+• Events تصبح first-class: list/get/filter/cursor، مع owner isolation.
+• Event != Receipt != Verification.
+LONG CONVERSATION
+→ recent turns
++ durable summary
++ canonical references
++ relevant memory
++ pending runtime state
+→ MODEL CONTEXT
+Exit Gate: جلسة تتجاوز 30 رسالة وتحافظ على الإحالات والقيود وحالة Bubble/Run الصحيحة؛ Memory تقرأ وتكتب من الـcanonical turn؛ Events قابلة للاستعلام بشكل مستقل.
+المرحلة 2 — Approval Resume + Restart Recovery
+الهدف: إنهاء الفجوة بين AUTHORIZED وEXECUTED. الموافقة يجب أن تستأنف نفس Run/DAG، وتبقى صحيحة بعد restart.
+• Approval يرتبط بنفس Proposal/Fingerprint.
+• عند approval يعاد التحقق من fingerprint وcritical inputs والtarget refs.
+• يُستأنف نفس Run، لا إنشاء Run جديدة.
+• DAG readiness يعاد حسابها.
+• إذا execution layer غير جاهز: READY_FOR_TRUSTED_EXECUTION وليس COMPLETED.
+• Restart proof: proposal → approval → restart → same run resumes.
+• Fingerprint mutation invalidates old approval.
+• لا duplicate node execution بعد restart.
+Exit Gate: اختبار Restart حقيقي يثبت الاستئناف من durable state، مع عدم التكرار وعدم فقدان الموافقة أو تجاوزها.
+المرحلة 3 — Trusted Executor
+الهدف: إنشاء boundary تنفيذ موثوقة منفصلة عن Planner/Router/UI/Verifier.
+INTENT
+→ PROPOSAL
+→ POLICY
+→ APPROVAL
+→ FINGERPRINT
+→ TRUSTED EXECUTOR
+→ RECEIPT
+→ VERIFIER
+• قبل أي effect: owner validation، target authorization، capability/provider validation.
+• إعادة حساب fingerprint على الخادم.
+• Approval validity + policy + normalized inputs.
+• Idempotency key منفصل عن fingerprint.
+• Lease/fence/cancellation validation قبل التنفيذ.
+• لا secrets داخل model prompts أو client أو Bubble أو Event logs.
+• Executor لا يقرر النجاح النهائي؛ فقط يسجل محاولة تنفيذ.
+Exit Gate: capability داخلية آمنة تمر من Proposal إلى Executor بدون bypass، مع security-negative tests.
+المرحلة 4 — Execution Receipt + Independent Verifier + Reconciliation
+الهدف: عدم مساواة provider response بالنجاح.
+• Receipt immutable لكل attempt.
+• حقول أساسية: receiptId, runId, nodeId, proposalId, capability, provider, fingerprint, idempotencyKey, attempt, timestamps, providerReference, status, result/error, verificationStatus.
+• Retry ينتج Receipt جديدة ولا يكتب فوق القديمة.
+• Verifier مستقل عن Executor.
+• Verification statuses: VERIFIED / FAILED / INCONCLUSIVE.
+• INCONCLUSIVE لا يتحول إلى success.
+• Verification strategies: DB_READBACK / PROVIDER_LOOKUP / STATE_ASSERTION / RECEIPT_VALIDATION / COMPOSITE.
+• Reconciliation يعالج crash window: effect happened but local success not persisted.
+• لا blind retry لside effect unknown.
+PROVIDER EFFECT
+→ process crashes
+→ restart
+→ lookup via idempotency/providerReference
+→ reconcile
+→ verify
+→ repair/retry only when safe
+Exit Gate: unknown outcome test يثبت عدم تكرار effect وعدم إعلان success بدون Verification.
+المرحلة 5 — أول Provider حقيقي واحد
+الهدف: إثبات E2E خارجي حقيقي بعد اكتمال trust chain، لا تشغيل كل الموصلات دفعة واحدة.
+• ابدأ Capability بسيطة وغير مالية.
+• Provider adapter منفصل عن capability definition.
+• Provider availability/cost/latency/reliability/secrets/region metadata.
+• إذا لا توجد credentials: BLOCKED_BY_EXTERNAL_CREDENTIAL.
+• لا fake provider ولا mock success في production path.
+USER INTENT
+→ RUN
+→ PROPOSAL/APPROVAL if required
+→ DAG
+→ TRUSTED EXECUTOR
+→ PROVIDER
+→ RECEIPT
+→ VERIFIER
+→ STATE
+→ BUBBLE/CHAT RESULT
+Exit Gate: أول real-provider flow كامل، ويظل failure صادقًا ومفسرًا.
+المرحلة 6 — Generalization & Adversarial Runtime Proof
+الهدف: إثبات أن جاسم Runtime عام وليس مجموعة Domains متنكرة.
+• اختبارات unseen من مجالات متباعدة.
+• نقل العمال، فائض الطعام، مشاركة المعدات، صيانة المباني، التخزين المبرد، staffing مؤقت، استغلال سعة الشاحنات وغيرها.
+• نفس المجال مع نيات مختلفة يجب أن يعطي Output Forms مختلفة.
+• لا تعديل Core بين الاختبارات لتلبية المثال.
+• أي فشل يصنف primitive/capability/planner/schema/renderer/provider gap.
+• DOMAIN_SPECIFIC_CORE_ADDITIONS = 0.
+• FAKE_SUCCESS = 0.
+“أحتاج باص للدوام”
+→ SEARCH / MATCH / RUN
+
+“أريد تشغيل خدمة نقل”
+→ BUSINESS SETUP / WORKFLOW / RUN
+
+“صمم منصة تدير نقل العمال”
+→ PERSISTENT SMART BUBBLE + OPTIONAL WORLD
+Exit Gate: 30+ unseen tests مع مقاييس output selection, reference resolution, world justification, workflow composition, mutation, provider/resource gap detection, restart persistence.
+المرحلة 7 — DNA Evolution الرسمية
+الهدف: تحويل RuntimeWorldDefinition من وصف يولد أول مرة إلى DNA حي قابل للتطور من اللغة الطبيعية.
+نوع التغيير	مثال	النتيجة
+DATA_MUTATION	خفض سعر المنتج	تغيير data/state versioned
+STRUCTURAL_MUTATION	أضف تقييمات	تغيير entities/relationships/views/actions
+POLICY_MUTATION	فوق 500 يحتاج موافقتي	Policy versioned
+WORKFLOW_MUTATION	إذا تعذر الفني ابحث خارجيًا	Workflow evolution
+VIEW_MUTATION	اعرضها كجدول	Presentation/view schema
+PERMISSION_MUTATION	أضف موظفًا بصلاحيات محدودة	Permission model evolution
+
+• DNA Compiler formalizes: generate → validate → normalize → resolve capabilities → policy check → compile → version → activate.
+• DNA لا تحتوي Provider implementation؛ تشير إلى capabilities فقط.
+• Structural mutation ينتج ChangeSet + preview + version + rollback metadata عند الأمان.
+• لا CarDNA/WorkerTransportDNA كـCore classes.
+Exit Gate: نفس Bubble تتطور عبر تعديلات data/structure/policy/workflow/view بدون إعادة توليد المشروع من الصفر.
+المرحلة 8 — Production Hardening
+الهدف: نقل Runtime المثبت إلى بيئة Production قابلة للتشغيل والمراقبة والاسترداد.
+• Production Mobile Auth + secure session lifecycle.
+• Keychain/Keystore-backed storage؛ لا AsyncStorage كحقيقة توكن Production.
+• Production DB migrations + backup/restore policy.
+• Secrets management + schema validation.
+• Rate limiting + abuse controls.
+• Structured logging + metrics + error tracking + health checks.
+• Graceful shutdown + worker restart behavior.
+• Security-negative tests: IDOR, mass assignment, replay, secret leakage, cross-owner access.
+• Production deployment proof.
+Exit Gate: Web/Mobile production identity parity + clean migrations + observability + restart/recovery proof.
+المرحلة 9 — Multi-user Smart Bubbles
+الهدف: تحويل Bubble/World من owner-only إلى أنظمة يمكن مشاركتها واكتشافها وتشغيلها بأدوار.
+• roles/members/invitations.
+• Owner / Provider / Customer / Moderator / custom role.
+• PUBLIC / PRIVATE / UNLISTED / SHARED policies.
+• Cross-user discovery حسب visibility/geo/capability/availability.
+• Server-side authorization only.
+• Cross-Bubble grants عند الحاجة، لا global permission leakage.
+Exit Gate: User A ينشئ Bubble، User B يكتشفها إذا سمحت السياسة، يرى projection مختلفة حسب الصلاحيات، ولا يستطيع تعديل ما لا يملكه.
+المرحلة 10 — Commercial Runtime
+الهدف: إضافة المعاملات التجارية فوق trust/execution الصحيح، لا قبله.
+• transaction lifecycle: draft → authorized → committed → fulfilled → verified → settled / failed / refunded.
+• pricing/commission/subscription.
+• payment authorization/capture where provider supports it.
+• payout/refund/compensation.
+• dispute and reconciliation.
+• commercial policies versioned/auditable.
+• لا provider webhook قديم يتجاوز Trusted Executor/Receipt/Verifier.
+Exit Gate: transaction واحدة حقيقية قابلة للتتبع، ذات Receipts/Verification/Reconciliation، مع idempotency وعدم double charge.
+المرحلة 11 — iOS / Android Standalone Release
+الهدف: إطلاق Mobile كمنتج مستقل، لا Expo Go preview.
+• Standalone iOS + Android.
+• Native Auth against canonical JASIM sessions.
+• Secure storage, deep links, push, permissions, background behavior where needed.
+• Production API only; no localhost/dev owner fallback.
+• Same Bubble/Run truth across Web/iOS/Android.
+• TestFlight / Play testing / store metadata/signing.
+Exit Gate: cross-device same-account proof + release build + native runtime tests.
+5. تعريف مراحل الجاهزية
+الحالة	المعنى
+GENERAL GENERATIVE RUNTIME READY	Intent/Router/References/Run/Bubble/DNA mutation/Context/DAG/Approval resume تعمل عامة بدون Domain Handlers.
+VERIFIED EXECUTION READY	Trusted Executor + Receipt + Verifier + Reconciliation يعملون ويمنعون fake/unknown success.
+PRODUCTION READY	Auth/DB/migrations/secrets/monitoring/security/recovery/deployment مثبتة.
+COMMERCIAL READY	Transactions/payments/commission/refunds/reconciliation/legal/business policies جاهزة.
+IOS/ANDROID RELEASE READY	Standalone builds + native auth + signing + store validation + parity tests.
+
+6. بوابة General Generative Runtime النهائية
+Exit Gate	المعيار
+Semantic Output Selection	ليس keyword/domain based
+Run without Bubble	مثبت
+Bubble without World	مثبت
+Persistent Bubble + optional World	مثبت
+Existing-Bubble NL Mutation	Reference → ChangeSet → Preview → Apply
+Entity Resolution	Canonical refs قبل fingerprint/mutation
+Content Versioning	مستقل عن presentation version
+Conversation Continuity	Summary + bounded context + references
+Memory	User/Conversation/Bubble scoped canonical
+DAG Durability	Restart-safe
+Approval Resume	Same Run resumes after restart
+Generalization	Unseen domains, zero domain handlers
+
+عند تحقيق هذه البوابة يمكن وصف جاسم بأنه General Generative Runtime حقيقي حتى لو لم تكن External Providers وCommercial Runtime قد فُعِّلت بعد.
+7. بوابة Verified Execution
+الشرط	PASS عندما
+Trusted Executor	لا effect بدون full gate
+Fingerprint	Server recomputes and binds approved critical inputs
+Idempotency	Duplicate calls do not duplicate side effects
+Receipt	Immutable per attempt
+Verifier	Independent, VERIFIED/FAILED/INCONCLUSIVE
+Reconciliation	Unknown outcomes resolved without blind retry
+Restart	Crash windows proven
+
+8. ما يجب على Replit ألا يفعله
+• لا يعيد بناء Kernel/DAG/Bubble lifecycle المثبتة.
+• لا ينشئ Runtime ثانية أو Router ثانية أو Contract ثانية للمفهوم نفسه.
+• لا يعيد legacy provider execution مباشرة.
+• لا يربط Payment/Shipday/Moyasar قبل Trusted Executor/Receipt/Verifier/Reconciliation.
+• لا يبني Domain Handler لكي يمر Acceptance Test.
+• لا يعتبر UI/Expo Go/Mock/Typecheck وحده إثبات منتج.
+• لا يعلن success من provider response فقط.
+• لا يطلب حسابات Apple/Google/Payments قبل وصول dependency chain إليها.
+• لا يقدم تحسينات شكلية كبديل عن Runtime correctness.
+9. سياسة الاختبارات
+كل طبقة يجب أن تملك اختبارًا يناسب حقيقتها، ولا يجوز تعويض Integration/Restart/Security proof باختبار unit فقط.
+نوع الاختبار	ما يثبته
+Unit	Validation/normalization/pure logic
+PostgreSQL Integration	Durable state/ownership/versioning/DAG
+Restart/Recovery	Resume/checkpoints/leases/reconciliation
+Security Negative	Cross-owner/replay/mass assignment/secrets
+Web E2E	Real runtime → real renderer
+Mobile E2E	Same canonical API/state
+Cross-device	Web/iOS/Android same Bubble/Run
+Provider E2E	Executor→Provider→Receipt→Verifier
+Generalization	Unseen problems without domain handlers
+
+10. نموذج اختبار مشكلة واقعية
+المعيار الأقوى ليس أن ينجح جاسم في مثال معروف، بل أن يستقبل مشكلة اجتماعية/تجارية غير مبرمجة ويصمم الحل المناسب ويكشف موارده الواقعية وحدوده.
+REAL-WORLD PROBLEM
+→ UNDERSTAND ACTORS / RESOURCES / CONSTRAINTS
+→ CHOOSE OUTPUT FORM
+→ GENERATE/REUSE RUN OR SMART BUBBLE
+→ GENERATE DNA/WORLD IF JUSTIFIED
+→ WORKFLOWS + POLICIES + VIEWS
+→ RESOURCE / PROVIDER GAP DETECTION
+→ BUSINESS MODEL ASSISTANCE
+→ NATURAL LANGUAGE EVOLUTION
+→ DISCOVERY BY OTHER JASIM USERS WHEN POLICY ALLOWS
+مثال مرجعي: مشكلة نقل العمال، لكن الاختبار يجب أن يتكرر على قطاعات مختلفة دون أي تعديل Domain-specific في Core.
+11. مؤشرات التعميم المطلوبة
+المؤشر	الهدف
+DOMAIN_SPECIFIC_HANDLER_REQUIRED	0
+FAKE_SUCCESS	0
+OUTPUT_FORM_CORRECT	مرتفع ومبرر
+UNNECESSARY_WORLD_CREATED	منخفض ومبرر
+REFERENCE_RESOLUTION	صحيح على نفس Bubble/Run/Entity
+GENERIC_CAPABILITY_COMPOSITION	يُعيد استخدام capabilities العامة
+NATURAL_LANGUAGE_EVOLUTION	نفس Bubble تتغير بدل regeneration
+RESOURCE_GAP_DETECTION	يميز digital vs real-world vs provider
+RESTART_PERSISTENCE	نفس state/version/run بعد restart
+
+12. مسؤوليات صاحب المشروع
+لا شيء مطلوب أثناء المراحل الداخلية الأولى
+Conversation/Memory/Events، Approval Recovery، Trusted Executor contracts، Receipts، Verifier، Reconciliation، Generalization، DNA evolution يمكن بناؤها واختبارها داخليًا بدون حسابات خارجية.
+مطلوب لاحقًا فقط عند التفعيل
+المرحلة	المطلوب من المالك
+First Real Provider	اختيار Provider + API key/OAuth/scopes
+Production	Production DB, SESSION_SECRET, domain/DNS, monitoring choice
+Commercial	Merchant account, business verification, pricing/commission, legal/privacy approval
+iOS	Apple Developer, Team ID, Bundle ID, App Store Connect, store content
+Android	Google Play Console, package ID, signing, store content
+
+13. ترتيب الأولوية إذا ظهرت مشكلات جديدة
+• P0 — Security/data integrity/dual runtime/schema corruption.
+• P1 — Generative loop truth: mutation/context/approval/restart.
+• P2 — Trusted execution and verification.
+• P3 — Provider integration and production hardening.
+• P4 — Multi-user/commercial.
+• P5 — Release polish/visual refinements.
+أي P5 لا يوقف P0-P3. لا يُسمح بإعادة ترتيب الأولويات لأجل Demo.
+14. تعريف Completion الصادق
+Complete لا تعني أن ملفًا موجود أو أن TypeScript نجح. Complete تعني أن المسار الحقيقي المطلوب يعمل وتم اختباره بنوع الاختبار المناسب.
+ادعاء	الدليل المطلوب
+Bubble mutation complete	NL → refs → ChangeSet → preview → apply → version → projection
+Approval recovery complete	approval → restart → same Run resumes
+External execution complete	Executor + Receipt + Verifier + reconciliation
+Mobile complete	Standalone + canonical auth + same state
+Commercial complete	Real transaction lifecycle + refund/reconcile
+Generalization complete	Unseen tasks, no domain handlers
+
+15. التوجيه التنفيذي النهائي لـReplit
+USE THIS DOCUMENT AS THE MASTER POST-SMART-BUBBLE FOUNDATION.
+
+DO NOT REBUILD PROVEN CANONICAL SUBSYSTEMS.
+DO NOT ACTIVATE LEGACY EXTERNAL EFFECTS.
+DO NOT ADD DOMAIN HANDLERS TO PASS TESTS.
+
+EXECUTE IN DEPENDENCY ORDER:
+
+1. Conversation Intelligence + Memory + Events
+2. Approval Resume + Restart Recovery
+3. Trusted Executor
+4. Execution Receipt + Independent Verifier + Reconciliation
+5. First Real Provider E2E
+6. Adversarial Generalization Proof
+7. Formal DNA Evolution
+8. Production Hardening
+9. Multi-user Smart Bubbles
+10. Commercial Runtime
+11. Standalone iOS / Android Release
+
+AT EVERY STAGE:
+IMPLEMENT
+→ TARGETED TESTS
+→ REAL INTEGRATION PROOF
+→ SECURITY/RESTART PROOF WHERE APPLICABLE
+→ ONLY THEN ADVANCE.
+
+JASIM MUST REMAIN:
+ONE CENTRAL INTELLIGENCE
+ONE GENERAL RUNTIME
+ONE CAPABILITY SYSTEM
+ONE EVENT/STATE TRUTH
+BUBBLE-FIRST
+RUN-INDEPENDENT
+WORLD-OPTIONAL
+VERIFIED BEFORE SUCCESS.
+
+16. النتيجة المستهدفة النهائية
+عند اكتمال هذه الوثيقة، يجب أن يستطيع شخص وصف مشكلة أو هدف لم يُبرمج مسبقًا، فيفهم جاسم ما إذا كان يحتاج إجابة أو Run أو Workflow أو Smart Bubble، ويكوّن النظام أو المهمة من primitives عامة، ويتذكر ويتطور، وينفذ effects عبر حدود ثقة قابلة للتدقيق، ثم يعرض نفس الحقيقة على Web وiOS وAndroid.
+JASIM FINAL =
+CENTRAL INTELLIGENCE
++ GENERAL GENERATIVE RUNTIME
++ LIVING SMART BUBBLES
++ DURABLE RUNS
++ DNA EVOLUTION
++ TRUSTED CAPABILITIES
++ VERIFIED EXECUTION
++ MEMORY / EVENTS
++ CROSS-DEVICE STATE
++ COMMERCIAL EXTENSIBILITY

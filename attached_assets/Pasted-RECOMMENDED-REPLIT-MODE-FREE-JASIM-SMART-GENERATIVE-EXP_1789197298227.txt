@@ -1,0 +1,1343 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM SMART GENERATIVE EXPERIENCE
+
+# TASK 8B1 — MOBILE NATIVE GENERATIVE RENDERER + WORKSPACE SURFACES
+
+MODE INTENT:
+Focused native Mobile UI implementation only.
+
+Task 8A = CLOSED / PASS.
+
+Do NOT redesign semantic/runtime architecture.
+
+Accepted Task 8A state:
+
+* shared package:
+  lib/jasim-runtime-contract
+* shared Presentation contracts
+* shared WorkspaceProjection
+* shared LivingObjectProjection
+* shared Trusted Action contracts
+* shared presentation identity
+* shared transition classification
+* Mobile consumes:
+  runtime.workspaceProjection
+  runtime.activeLivingObjects
+* runtime validation exists
+* stale projection protection exists
+* Mobile Smart UI consequential bypasses = 0
+* server-only imports = 0
+* browser event dependencies = 0
+* domain-specific semantic routes = 0
+* client canonical truth added = 0
+* Mobile uses runtime.dispatchAction
+* target-specific versions preserved
+* no UI implementation from Task 8B has started
+
+Canonical report:
+
+.local/tasks/smart-ui-task-8a-report.md
+
+DO NOT redo Task 8A.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. GOAL
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Build the first native Mobile visual implementation of the JASIM Smart Generative Experience.
+
+Target philosophy:
+
+ONE CONVERSATION
++
+NATIVE INLINE GENERATIVE SURFACES
++
+MOBILE WORKSPACE WHEN NEEDED
+
+NOT:
+
+desktop UI squeezed into phone
+
+WebView
+
+HTML renderer
+
+three-column Desktop layout
+
+domain-specific Mobile apps
+
+Task 8B1 implements:
+
+* native generic renderer
+* inline semantic surfaces
+* Mobile Workspace shell/composition
+* basic native presentation types
+
+Task 8B2 will implement:
+
+* visual Morphing
+* Living Objects mobile experience
+* broader cross-device visual parity
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. PERMANENT MOBILE UX RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MOBILE IS CONVERSATION-FIRST.
+
+Default:
+
+Conversation
+↓
+inline response
+
+When richer interaction is justified:
+
+Conversation
++
+inline generated surface
+
+or:
+
+Conversation
++
+bottom sheet / expanded surface
+
+or:
+
+Conversation
++
+full-screen temporary Workspace
+
+depending on semantic need.
+
+Do NOT permanently reserve half the screen for Workspace.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. DO NOT COPY WEB COMPONENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Reuse semantic contracts.
+
+Do NOT copy:
+
+DOM components
+
+CSS
+
+Web SchemaRenderer internals
+
+Web ActiveGenerativeWorkspace layout
+
+Web ActiveObjectsRail layout
+
+Create native React Native presentation components using current Expo/mobile component system.
+
+Same semantics.
+
+Different renderer.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. NATIVE GENERIC RENDERER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Implement one generic native renderer equivalent to:
+
+MobilePresentationRenderer
+
+or extend any existing generic Mobile renderer if present.
+
+Input:
+
+validated PresentationDefinition
+
+Output:
+
+trusted native component
+
+No business logic.
+
+No domain routing.
+
+Required safe resolution:
+
+presentation semantic type
+→ allowlisted native primitive
+→ React Native component
+
+Unknown type:
+safe fallback.
+
+Never:
+
+model component name
+→ dynamic import
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. INITIAL CORE TYPES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Implement/reuse native rendering for core semantic types needed now:
+
+TEXT
+
+DETAIL
+
+SEARCH_RESULTS / ENTITY_COLLECTION
+
+COMPARISON
+
+FORM
+
+CHOICE
+
+APPROVAL
+
+STATUS
+
+TIMELINE
+
+WARNING
+
+ERROR_STATE
+
+EMPTY_STATE
+
+DOCUMENT where straightforward
+
+Do NOT force implementation of every possible presentation type in 8B1.
+
+Report unsupported types truthfully.
+
+Safe fallback is acceptable for non-core types.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. GENERIC ENTITY CARD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create/reuse ONE native generic EntityCard.
+
+It must display semantic fields such as:
+
+title
+
+subtitle
+
+description
+
+media if available
+
+attributes
+
+badges
+
+money
+
+availability
+
+status
+
+provenance
+
+validated actions
+
+Do NOT create:
+
+CarCard
+
+JobCard
+
+RestaurantCard
+
+HotelCard
+
+LaptopCard
+
+The same component must render unrelated fixture types.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. SEARCH RESULTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SEARCH_RESULTS should feel native on phone.
+
+Possible layout:
+
+horizontal cards
+
+vertical FlatList
+
+compact cards
+
+depending on current presentation metadata.
+
+Use stable entity/reference keys.
+
+Do NOT use FlatList index as canonical identity.
+
+Conversation remains available.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. COMPARISON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Comparison on Mobile must not copy a wide Desktop table.
+
+Use a Mobile-native layout such as:
+
+stacked compared cards
+
+horizontal swipe
+
+compact attribute rows
+
+two-column comparison only when width allows
+
+Same semantic data.
+
+No domain comparison logic.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. DETAIL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Generic Detail should support:
+
+title
+
+media
+
+summary
+
+attributes
+
+status
+
+validated actions
+
+provenance
+
+Use native scroll layout.
+
+No domain detail screen.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. FORM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Render generic native fields using current Mobile input components.
+
+Support only currently validated field types.
+
+Examples:
+
+text
+number
+money
+date
+time
+choice
+boolean
+textarea
+
+Do not add domain field types.
+
+Form draft may live locally.
+
+Submission:
+
+must use Task 8A shared Trusted Action path.
+
+No direct canonical mutation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. CHOICE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Render structured choices as native buttons/chips/list.
+
+Each canonical choice uses stable reference/value.
+
+Do not send display label as business identity when stable reference exists.
+
+Presentation-only choice may remain local according to trusted action semantics.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. APPROVAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Render a clear native approval surface.
+
+Show trusted projected information only:
+
+summary
+
+target
+
+amount/currency if present
+
+warnings
+
+material terms if provided
+
+Approve/Reject actions
+
+Buttons must call same trusted dispatcher contract.
+
+Do NOT:
+
+set approval locally
+
+show success immediately on tap
+
+bypass expectedPresentationVersion
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Native Status surface uses canonical status.
+
+Examples:
+
+RUNNING
+
+WAITING_APPROVAL
+
+VERIFYING
+
+BLOCKED
+
+INCONCLUSIVE
+
+FAILED
+
+COMPLETED
+
+Use user-facing labels.
+
+No fake progress.
+
+No fake success.
+
+No fake location.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. TIMELINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Render only provided canonical events.
+
+Native vertical timeline is appropriate.
+
+Do NOT infer missing lifecycle events.
+
+No:
+
+PAID → shipped
+
+unless runtime explicitly provides shipment event.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. SAFE FALLBACK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If presentation type is valid but renderer unsupported:
+
+do not crash.
+
+Use safe generic fallback:
+
+short text / unsupported safe surface.
+
+Do not display raw JSON to normal user.
+
+Do not execute actions from unsupported presentation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. MOBILE WORKSPACE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Build ONE generic native Workspace shell.
+
+Do NOT call it a Dashboard.
+
+Possible Mobile presentation policies:
+
+INLINE
+BOTTOM_SHEET
+EXPANDED
+FULL_SCREEN_TEMPORARY
+
+Use the smallest sufficient surface.
+
+Workspace uses:
+
+runtime.workspaceProjection
+
+current validated PresentationDefinition
+
+status/attention
+
+stable references
+
+No local canonical state.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. PRESENTATION POLICY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add/reuse a small Mobile Presentation Policy.
+
+It decides only HOW an already-selected semantic presentation appears on phone.
+
+Examples:
+
+TEXT
+→ inline
+
+small DETAIL
+→ inline
+
+SEARCH_RESULTS
+→ inline collection / expandable surface
+
+COMPARISON
+→ expanded surface
+
+FORM
+→ sheet or expanded surface
+
+APPROVAL
+→ focused sheet/expanded surface
+
+STATUS
+→ inline / expanded depending content
+
+This policy must NOT re-decide semantic intent.
+
+Task 2 already chose semantic presentation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. NO SECOND PRESENTATION DECISION ENGINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Forbidden:
+
+if user asks car...
+if domain is job...
+if query includes compare...
+
+Mobile policy sees:
+
+PresentationDefinition.type
+
+size/complexity metadata
+
+interaction requirements
+
+device constraints
+
+No domain semantics.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. CONVERSATION ALWAYS AVAILABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Even when expanded Workspace is visible:
+
+user must be able to return to conversation easily.
+
+Do not make generated UI feel like navigating away to separate app.
+
+Buttons are accelerators.
+
+Conversation remains universal control plane.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. BOTTOM SHEET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If existing project already has a Bottom Sheet component/library:
+
+reuse it.
+
+Do NOT install new SDK.
+
+If not:
+
+use existing Modal/native surface patterns.
+
+Do not add a dependency only for 8B1.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. FULL SCREEN SURFACE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Full-screen temporary presentation may be used only when needed, e.g.:
+
+large Form
+
+large Comparison
+
+document view
+
+complex Approval
+
+It must retain:
+
+conversation context
+
+back/close behavior
+
+current projection identity
+
+Do not create permanent domain routes.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. WORKSPACE OPTIONALITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Simple text response:
+
+no Workspace.
+
+Small rich response:
+
+inline.
+
+Large interactive semantic state:
+
+Workspace.
+
+Do not show an empty Workspace placeholder.
+
+Preserve Task 2 smallest-sufficient-output principle.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. SHARED PRESENTATION VERSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every consequential action must preserve:
+
+presentationVersion
+
+target-specific versions where required
+
+expectedPresentationVersion
+
+Do not flatten target-specific versions back into one generic counter.
+
+Task 7B decision remains canonical.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. TRUSTED ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+All canonical/consequential native UI actions use:
+
+runtime.dispatchAction
+
+through Task 8A helper.
+
+Examples:
+
+FORM submit
+
+Approval
+
+canonical Choice
+
+open/resume
+
+artifact attach
+
+bubble presentation mutation
+
+No direct server business mutation from native Smart UI.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. ACTION OUTCOME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not interpret dispatch ACCEPTED as completed.
+
+Use:
+
+dispatch
+→ projection refresh
+→ new canonical presentation/status
+
+Do not set:
+
+success
+approved
+paid
+verified
+completed
+
+locally.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. LOADING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use native loading/skeleton states.
+
+Do not block the full application unnecessarily.
+
+Do not invent percentage.
+
+Conversation should stay responsive where possible.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. ERROR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Safe user error only.
+
+Do not expose:
+
+raw Zod
+
+stack trace
+
+SQL
+
+server paths
+
+provider secrets
+
+internal handler names
+
+The conversation should remain usable.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. RTL / LTR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is important on Mobile.
+
+Ensure generic surfaces work with:
+
+Arabic RTL
+
+English LTR
+
+mixed Arabic/English names
+
+numbers
+
+money
+
+dates
+
+attribute labels
+
+comparison values
+
+Use logical direction semantics.
+
+Do not hardcode all layouts for LTR.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. ACCESSIBILITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Native components need:
+
+accessibilityLabel
+
+roles where appropriate
+
+touch target size
+
+focus semantics
+
+clear approval/error/status labels
+
+Do not rely on color alone.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. KEYBOARD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Forms and chat input must behave reasonably with mobile keyboard.
+
+Avoid:
+
+keyboard hiding submit button
+
+sheet trapped behind keyboard
+
+input content inaccessible
+
+Reuse existing KeyboardAvoidingView/layout patterns where present.
+
+Do not redesign whole chat input.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. PERFORMANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use FlatList/appropriate list primitives for large result sets.
+
+Do not render all historical presentations.
+
+Do not keep obsolete Workspace surfaces mounted.
+
+Task 8B2 handles morph animation.
+
+8B1 should render current semantic state only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. NO VISUAL MORPHING YET
+━━━━━━━━━━━━━━━━━━━━━━━━ concatenate err...
+Task 8B1 does NOT implement:
+
+ENTER/UPDATE/MORPH/EXIT animations
+
+shared element transitions
+
+Living Object strip
+
+animated Orb behavior
+
+Task 8B2.
+
+If projection changes:
+
+8B1 may simply render current new surface correctly.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. NO LIVING OBJECT UI YET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 8A already wires LivingObjectProjection.
+
+Do NOT build:
+
+Mobile Active Objects Rail
+
+horizontal Living Object strip
+
+Living Object sheet
+
+in 8B1.
+
+Task 8B2 handles that.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. NO NAVIGATION REDESIGN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not redesign the entire Expo navigation.
+
+Do not add tabs for:
+
+shopping
+cars
+jobs
+travel
+delivery
+
+Integrate Smart UI into existing main Conversation experience.
+
+One JASIM.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. NO WEBVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Strict requirement:
+
+WEBVIEW_SMART_UI_PATHS = 0
+
+No HTML blob rendering.
+
+No Web renderer inside Mobile.
+
+Native semantic rendering only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. SERVER-ONLY IMPORT SAFETY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Preserve Task 8A:
+
+SERVER_ONLY_IMPORTS_IN_MOBILE_SMART_UI = 0
+
+Do not import:
+
+api/runtime implementation
+
+DB
+
+Node-only helpers
+
+server secrets
+
+provider clients
+
+Use shared client-safe contract package only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. STARTUP / FONT GATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Current Mobile visual smoke remained at existing font loading gate.
+
+Do NOT redesign startup/font architecture unless it prevents any meaningful 8B1 visual validation.
+
+If the existing font gate prevents reaching the Smart UI:
+
+investigate narrowly.
+
+Allowed:
+
+minimal bug fix required to reach already-existing app UI.
+
+Forbidden:
+
+startup redesign
+
+new splash system
+
+font system rewrite
+
+If it cannot be safely resolved in scope:
+
+do NOT claim visual PASS.
+
+Report:
+
+MOBILE_VISUAL_SMOKE =
+BLOCKED_BY_EXISTING_FONT_GATE
+
+and provide exact evidence.
+
+Functional/native renderer tests may still pass.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. FOCUSED GENERIC FIXTURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use structured test fixtures only for renderer tests.
+
+Examples:
+
+laptop-like entity
+
+vehicle-like entity
+
+job-like entity
+
+service-like entity
+
+They are not real provider data.
+
+The same generic components must render all.
+
+No domain component creation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. FOCUSED NATIVE TESTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add focused tests proving at minimum:
+
+1. TEXT renders natively.
+
+2. DETAIL renders natively.
+
+3. generic EntityCard renders unrelated semantic entities.
+
+4. SEARCH_RESULTS uses stable reference keys.
+
+5. COMPARISON renders without Web table dependency.
+
+6. FORM renders shared field schema.
+
+7. FORM consequential submit uses trusted dispatcher.
+
+8. CHOICE stable reference preserved.
+
+9. APPROVAL uses trusted dispatcher.
+
+10. APPROVAL does not locally mark success.
+
+11. STATUS uses canonical state.
+
+12. TIMELINE renders only supplied events.
+
+13. invalid presentation fails safely.
+
+14. unsupported valid presentation uses safe fallback.
+
+15. simple text produces no unnecessary Workspace.
+
+16. rich presentation can use Mobile Workspace.
+
+17. Workspace reads real projection contract.
+
+18. local presentation state does not become canonical state.
+
+19. same PresentationDefinition identity is preserved.
+
+20. target-specific version metadata preserved.
+
+21. no WebView path.
+
+22. no server-only import.
+
+23. no browser event dependency.
+
+24. same renderer architecture handles multiple unrelated domains.
+
+25. no domain-specific native component.
+
+26. Task 8A semantic regression.
+
+27. Task 7 trusted dispatcher regression.
+
+28. Task 5 presentation identity regression.
+
+29. Task 6 Living Object shared-contract regression.
+
+30. existing Mobile chat regression.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. VISUAL CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Where Mobile app can be reached:
+
+inspect at least:
+
+TEXT
+
+SEARCH_RESULTS
+
+COMPARISON
+
+FORM
+
+APPROVAL
+
+STATUS
+
+narrow phone viewport
+
+Arabic RTL
+
+keyboard/form
+
+Conversation + Workspace composition
+
+If font/startup gate prevents this:
+
+do not bypass with fake static HTML screenshot.
+
+Report blocked evidence honestly.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. VERIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run:
+
+Task 8B1 focused native tests
+
+Task 8A regression
+
+affected shared-contract tests
+
+Mobile TypeScript
+
+shared contract TypeScript
+
+Server TypeScript if shared contract touched
+
+Web TypeScript if shared contract touched
+
+Expo/Metro bundle smoke
+
+git diff --check
+
+Do NOT:
+
+build App Store binary
+
+deploy
+
+run full historical Block suites
+
+start Task 8B2
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. EXPECTED CHANGE SIZE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expected:
+
+MobilePresentationRenderer
+
+generic native primitives
+
+MobileWorkspace shell
+
+Mobile presentation policy
+
+small native styles
+
+focused tests
+
+maybe tiny startup fix only if strictly required for visual access
+
+Expected:
+
+NEW_DATABASE_TABLES = 0
+NEW_MIGRATIONS = 0
+NEW_EXTERNAL_SDKS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create exactly:
+
+.local/tasks/smart-ui-task-8b1-report.md
+
+Sections:
+
+CAUSE
+
+MOBILE_RENDERER_ARCHITECTURE
+
+REUSED_MOBILE_COMPONENTS
+
+NEW_GENERIC_NATIVE_PRIMITIVES
+
+MOBILE_PRESENTATION_POLICY
+
+INLINE_SURFACES
+
+MOBILE_WORKSPACE
+
+TEXT
+
+DETAIL
+
+SEARCH_RESULTS
+
+COMPARISON
+
+FORM
+
+CHOICE
+
+APPROVAL
+
+STATUS
+
+TIMELINE
+
+SAFE_FALLBACK
+
+TRUSTED_ACTIONS
+
+RTL_LTR
+
+ACCESSIBILITY
+
+KEYBOARD
+
+PERFORMANCE
+
+STARTUP_FONT_GATE
+
+DOMAIN_GENERICITY
+
+FILES_CHANGED
+
+TESTS
+
+VISUAL_SMOKE
+
+Final counters:
+
+SMART_UI_TASK_8B1 =
+PASS / PARTIAL / FAIL
+
+MOBILE_NATIVE_GENERIC_RENDERER =
+PASS / FAIL
+
+MOBILE_CONVERSATION_FIRST =
+YES / NO
+
+MOBILE_WORKSPACE =
+PASS / FAIL
+
+TEXT_NATIVE =
+PASS / FAIL
+
+DETAIL_NATIVE =
+PASS / FAIL
+
+SEARCH_RESULTS_NATIVE =
+PASS / FAIL
+
+COMPARISON_NATIVE =
+PASS / FAIL
+
+FORM_NATIVE =
+PASS / FAIL
+
+CHOICE_NATIVE =
+PASS / FAIL
+
+APPROVAL_NATIVE =
+PASS / FAIL
+
+STATUS_NATIVE =
+PASS / FAIL
+
+TIMELINE_NATIVE =
+PASS / FAIL
+
+SAFE_FALLBACK_NATIVE =
+PASS / FAIL
+
+MOBILE_TRUSTED_ACTION_WIRING =
+PASS / FAIL
+
+LOCAL_CANONICAL_TRUTH_ADDED = <number>
+
+WEBVIEW_SMART_UI_PATHS = <number>
+
+SERVER_ONLY_IMPORTS_IN_MOBILE_SMART_UI = <number>
+
+BROWSER_EVENT_DEPENDENCIES_IN_MOBILE_SMART_UI = <number>
+
+DOMAIN_SPECIFIC_NATIVE_COMPONENTS_ADDED = <number>
+
+DOMAIN_SPECIFIC_NATIVE_RENDERER_BRANCHES_ADDED = <number>
+
+MOBILE_VISUAL_SMOKE =
+PASS / PARTIAL / BLOCKED_BY_EXISTING_FONT_GATE
+
+FONT_GATE_CHANGED =
+NO / MINIMAL_FIX / YES
+
+NEW_DATABASE_TABLES =
+0
+
+NEW_MIGRATIONS =
+0
+
+NEW_EXTERNAL_SDKS =
+0
+
+TASK_8A_REGRESSION =
+PASS / FAIL
+
+TASK_7_DISPATCHER_REGRESSION =
+PASS / FAIL
+
+SHARED_CONTRACT_REGRESSION =
+PASS / FAIL
+
+MOBILE_TYPESCRIPT =
+PASS / FAIL
+
+SHARED_CONTRACT_TYPESCRIPT =
+PASS / FAIL
+
+METRO_BUNDLE =
+PASS / FAIL
+
+BLOCKS_0_TO_3_1_REMAIN_CLOSED =
+YES / NO
+
+READY_FOR_SMART_UI_TASK_8B2 =
+YES / NO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. PASS GATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 8B1 may be PASS only if:
+
+MOBILE_NATIVE_GENERIC_RENDERER = PASS
+
+MOBILE_CONVERSATION_FIRST = YES
+
+MOBILE_WORKSPACE = PASS
+
+MOBILE_TRUSTED_ACTION_WIRING = PASS
+
+LOCAL_CANONICAL_TRUTH_ADDED = 0
+
+WEBVIEW_SMART_UI_PATHS = 0
+
+SERVER_ONLY_IMPORTS_IN_MOBILE_SMART_UI = 0
+
+BROWSER_EVENT_DEPENDENCIES_IN_MOBILE_SMART_UI = 0
+
+DOMAIN_SPECIFIC_NATIVE_COMPONENTS_ADDED = 0
+
+DOMAIN_SPECIFIC_NATIVE_RENDERER_BRANCHES_ADDED = 0
+
+and all affected tests pass.
+
+Visual smoke may be:
+
+BLOCKED_BY_EXISTING_FONT_GATE
+
+without falsifying the automated implementation result,
+
+but the visual evidence debt MUST be carried to Task 8B2 / final integration.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Task 8B1:
+
+STOP.
+
+DO NOT implement Mobile visual Morphing.
+
+DO NOT implement Mobile Living Objects UI.
+
+DO NOT redesign navigation.
+
+DO NOT start Task 8B2.
+
+DO NOT deploy.
+
+Return only:
+
+Task 8B1 verdict
+
+native renderer status
+
+Mobile Workspace status
+
+focused test count
+
+visual smoke status
+
+font gate status
+
+WebView count
+
+domain-specific native component count
+
+client canonical truth added
+
+READY_FOR_SMART_UI_TASK_8B2
+
+BEGIN TASK 8B1.

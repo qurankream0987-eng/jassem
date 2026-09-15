@@ -1,0 +1,1283 @@
+# JASIM — REALITY CHECK + FINAL FEASIBILITY AUDIT
+# PROVE WHERE WE ARE, WHAT REMAINS, AND WHETHER THIS CAN BECOME THE REAL JASIM PRODUCT
+# AUDIT FIRST — NO NEW FEATURE IMPLEMENTATION UNTIL THE AUDIT IS COMPLETE
+
+أريد منك الآن مراجعة تقنية صريحة وعميقة للمشروع الحالي بالكامل.
+
+هذه ليست مراجعة تجميلية.
+وليست تقرير تقدم متفائل.
+وليست إعادة صياغة للخطط السابقة.
+
+أريد:
+
+TRUTH AUDIT
+
+للإجابة عن ثلاثة أسئلة فقط:
+
+1. أين وصل JASIM فعليًا اليوم؟
+2. ماذا ينقصه بالضبط للوصول إلى المنتج الذي اتفقنا عليه؟
+3. هل المعمارية والكود الحاليان قادران فعلاً على الوصول إلى ذلك المنتج، أم توجد مشاكل معمارية أو تقنية ستجبرنا على إعادة أجزاء كبيرة؟
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+A. FIRST — VERIFY THE ACTUAL ACTIVE SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تعتمد على README أو task reports فقط.
+
+افحص التشغيل الفعلي.
+
+حدد:
+
+CANONICAL_SOURCE_PATH
+CANONICAL_WEB_PATH
+CANONICAL_MOBILE_PATH
+CANONICAL_API_PATH
+CANONICAL_DB_SCHEMA_PATH
+CANONICAL_CONTRACTS_PATH
+ACTIVE_START_COMMANDS
+
+ثم أثبت أن التطبيق الذي نراه فعليًا يعمل من هذه المسارات.
+
+أريد Call Graph حقيقيًا:
+
+Web
+↓
+API
+↓
+Conversation Runtime
+↓
+Output Router
+↓
+Bubble / Run / Task
+↓
+DB
+
+و:
+
+Mobile
+↓
+same API
+↓
+same Runtime
+↓
+same DB
+
+إذا يوجد مسار قديم ما زال active:
+اذكره.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+B. DETECT DUPLICATE / SHADOW IMPLEMENTATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ابحث عن أي:
+
+duplicate runtime
+duplicate router
+duplicate Bubble model
+duplicate Run model
+duplicate Task model
+duplicate World model
+duplicate Event model
+duplicate Capability registry
+duplicate Auth truth
+duplicate API contracts
+duplicate Web client
+duplicate Mobile client
+
+لكل واحد:
+
+ACTIVE
+LEGACY
+SHADOW
+UNUSED
+
+مهم:
+
+لا أريد أن يكون لدينا JASIM canonical ظاهريًا،
+لكن جزء من التطبيق ما زال يعتمد على artifacts قديمة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+C. GENERATIVE RUNTIME REALITY MATRIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+راجع الحلقة التالية خطوة بخطوة:
+
+Natural Language
+↓
+Conversation Context
+↓
+Intent Understanding
+↓
+Output Form Selection
+↓
+Reference Resolution
+↓
+Plan / Mutation Understanding
+↓
+Bubble / Run / Workflow reuse or creation
+↓
+ChangeSet / Proposal
+↓
+Policy
+↓
+Approval
+↓
+DAG
+↓
+Trusted Execution
+↓
+Receipt
+↓
+Independent Verification
+↓
+State Update
+↓
+Version
+↓
+Projection
+↓
+Web/Mobile Re-render
+↓
+Conversation continues with awareness of previous state
+
+لكل مرحلة استخدم فقط:
+
+REAL
+PARTIAL
+MISSING
+MOCKED
+BROKEN
+
+ثم أضف:
+
+EVIDENCE:
+<file / test / API / runtime proof>
+
+لا تقل COMPLETE بدون دليل.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+D. PROVE THE OUTPUT ROUTER IS REALLY GENERAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+اختبر أو افحص منطقيًا هذه الحالات:
+
+1.
+"كم سعر هذه السيارة؟"
+Expected:
+TEXT / STRUCTURED_RESULT
+
+2.
+"بع هذه السيارة"
+Expected:
+DIRECT_ACTION / DURABLE_RUN
+
+3.
+"راقب سعر هذه السيارة"
+Expected:
+DURABLE_RUN
+
+4.
+"أنشئ سوق سيارات"
+Expected:
+PERSISTENT_SMART_BUBBLE
+
+5.
+"ابحث لي عن مصمم داخلي"
+Expected:
+WORKFLOW / RUN
+
+6.
+"أنشئ منصة تربط مصممي الديكور بالعملاء"
+Expected:
+PERSISTENT_SMART_BUBBLE
+
+إذا هذه الحالات تعتمد على keyword rules مثل:
+
+if car
+if jobs
+if marketplace
+
+صنف:
+
+GENERALIZATION = FAIL
+
+إذا تعتمد على semantic reasoning + validated output envelope:
+أثبت ذلك.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+E. BUBBLE-FIRST ARCHITECTURE — HARD CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أثبت هذه القواعد في الكود، وليس في الوثائق فقط:
+
+1.
+Bubble may exist without World.
+
+2.
+Persistent Bubble may have optional World.
+
+3.
+Run may exist without Bubble.
+
+4.
+Task may exist without persistent World.
+
+5.
+Bubble may contain multiple Runs.
+
+6.
+Bubble survives Run completion.
+
+7.
+World is not primary user-facing product surface.
+
+8.
+Direct action does not force Bubble creation.
+
+9.
+Bubble is not just a Task card.
+
+10.
+Bubble intelligence comes from central JASIM runtime.
+
+لكل invariant:
+
+PASS / FAIL
+
+مع دليل.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+F. SMART BUBBLE PRODUCT REALITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+راجع الآن هل Smart Bubble هي بالفعل:
+
+PERSISTENT
+INTELLIGENT
+GENERATIVE
+INTERACTIVE
+VERSIONED
+SERVER-DRIVEN
+
+وليس مجرد UI shell.
+
+أثبت وجود:
+
+bubbleId
+ownerId
+projection
+presentation state
+content state
+content version
+permissions
+available actions
+tasks
+runs
+optional world
+references
+
+وحدد ما هو:
+
+REAL
+PARTIAL
+MISSING
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+G. EXISTING BUBBLE MUTATION — THE KEY TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+اختبر المسار التالي فعليًا:
+
+"متجري الذي فيه الآيفون خفض سعره إلى 280"
+
+لا تستخدم fake fixture خاص بهذه الجملة.
+
+يجب أن يحدث:
+
+1. resolve existing Bubble
+2. resolve iPhone entity
+3. understand mutation
+4. classify generic mutation
+5. create server ChangeSet
+6. generate human-readable preview
+7. check policy
+8. request approval if needed
+9. apply safe internal state update
+10. increment content version
+11. refresh Bubble projection
+12. same Bubble appears updated
+13. Web and Mobile see same state
+
+أعطني لكل خطوة:
+
+PASS
+PARTIAL
+FAIL
+
+إذا تفشل:
+اذكر أين تنقطع السلسلة بالضبط.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+H. NO DOMAIN HANDLERS CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ابحث عن:
+
+sellCar
+CarRuntime
+CarBubble
+StoreMutation
+HiringRuntime
+JobsPlatform
+RestaurantRuntime
+MarketplaceHandler
+
+وأي equivalents.
+
+حدد هل هي:
+
+TEST/EXAMPLE
+UI PRIMITIVE
+CORE DOMAIN HARD-CODING
+
+إذا Core يعتمد عليها لكي ينجح:
+هذا Architecture Gap.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+I. RUN REALITY CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أثبت:
+
+Run is durable.
+
+Run survives restart.
+
+Run can exist with:
+bubbleId = null
+
+Run can exist with:
+worldId = null
+
+Run supports:
+waiting
+approval
+retry
+cancel
+resume
+failure
+
+اختبر مثالًا:
+
+"بع هاتفي"
+
+ثم:
+
+server restart
+
+ثم:
+
+"الهاتف الذي نبيعه ما وضعه؟"
+
+هل JASIM يستطيع resolve same Run؟
+
+REAL / PARTIAL / FAIL.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+J. TASK VS RUN VS WORLD VS BUBBLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+راجع DB + Runtime.
+
+أريدك أن تشرح من الكود الحالي:
+
+Task =
+؟
+
+Run =
+؟
+
+Bubble =
+؟
+
+World =
+؟
+
+ثم تحقق أنه لا يوجد overlap خطير.
+
+إذا Task ما زالت تنشئ World ضمنيًا:
+حدد هل هذا:
+
+execution snapshot
+
+أم:
+
+persistent World
+
+إذا runtime يخلطهما:
+اعتبرها Gap يجب إصلاحها.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+K. CONVERSATION INTELLIGENCE REALITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+وجود Messages في DB ليس كافيًا.
+
+تحقق هل Model receives:
+
+recent conversation context
+relevant references
+active Bubble context
+relevant Run state
+pending approval
+summary
+memory
+
+أم يستقبل فقط آخر رسالة؟
+
+صنف:
+
+CONVERSATIONAL CONTINUITY:
+REAL / PARTIAL / MISSING
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+L. MEMORY REALITY CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+راجع أي Memory Engine قديمة أو حالية.
+
+حدد:
+
+USER MEMORY
+CONVERSATION MEMORY
+BUBBLE/WORLD MEMORY
+
+لكل واحدة:
+
+CONNECTED_TO_CANONICAL_RUNTIME
+LEGACY_ONLY
+MISSING
+
+ولا تعتبر DB records Memory إذا Runtime لا تستخدمها فعليًا أثناء reasoning.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+M. EVENTS REALITY CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+تحقق:
+
+هل Events first-class durable records؟
+
+هل يمكن:
+
+list
+get
+filter
+paginate
+
+هل يستطيع runtime استخدامها في:
+
+resume
+history
+audit
+projection
+
+أم موجودة فقط كجزء من Task response؟
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+N. APPROVAL REALITY CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+اختبر:
+
+proposal created
+↓
+approval
+↓
+server restart
+↓
+same Run resumes
+
+حدد أين يصل النظام الآن.
+
+مهم:
+
+APPROVAL != EXECUTION
+
+و:
+
+AUTHORIZED != COMPLETED
+
+إذا الموافقة تتحول إلى authorized ثم لا يحدث شيء:
+صنف هذا Gap صريحًا.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+O. FINGERPRINT SECURITY CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+اختبر:
+
+Proposal:
+price = 280
+
+Approve fingerprint A
+
+ثم قبل التنفيذ:
+price becomes 300
+
+Expected:
+
+old approval invalid
+
+ولا execution.
+
+اختبر أيضًا:
+
+JSON keys reordered
+→ same canonical fingerprint
+
+different target
+→ different fingerprint
+
+different owner/scope
+→ invalid authorization
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+P. DAG REALITY CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أثبت فعليًا:
+
+persistent nodes
+dependencies
+fan-out
+fan-in
+atomic claims
+leases
+heartbeat
+fencing
+stale worker rejection
+retry
+cancellation
+restart recovery
+
+وحدد هل هذه تعمل على PostgreSQL الحقيقي أم فقط unit tests.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Q. TRUSTED EXECUTION REALITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تخلط:
+
+Capability Registry
+مع
+Trusted Executor.
+
+حدد هل يوجد الآن execution boundary حقيقي يقوم قبل effect بـ:
+
+owner validation
+target authorization
+capability validation
+provider validation
+proposal validation
+fingerprint validation
+approval validation
+policy validation
+input validation
+idempotency validation
+lease/fence validation
+
+إذا لا:
+TRUSTED EXECUTOR = MISSING.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+R. RECEIPT REALITY CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هل لكل execution attempt:
+
+receiptId
+runId
+nodeId
+proposalId
+capability
+provider
+fingerprint
+idempotencyKey
+attempt
+providerReference
+status
+timestamps
+result/error
+verificationStatus
+
+؟
+
+إذا لا:
+EXECUTION RECEIPT = MISSING.
+
+لا تعتبر Event = Receipt.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+S. VERIFIER REALITY CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هل يوجد verifier مستقل عن Executor؟
+
+يدعم:
+
+VERIFIED
+FAILED
+INCONCLUSIVE
+
+هل يستطيع عمل:
+
+DB readback
+provider lookup
+state assertion
+receipt validation
+
+إذا Executor نفسه يقول success:
+هذا لا يكفي.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+T. RECONCILIATION / UNKNOWN OUTCOME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+تحقق من السيناريو:
+
+provider effect happens
+↓
+process crashes
+↓
+no local success persisted
+
+بعد restart:
+
+هل النظام يعرف هل effect حدث؟
+
+هل يستخدم:
+
+idempotency
+provider reference
+lookup
+reconcile
+
+أم blind retry؟
+
+إذا blind retry:
+HIGH RISK GAP.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+U. TYPECHECK / BUILD TRUTH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+التقرير السابق ذكر:
+
+1323 TypeScript errors.
+
+أريد الحقيقة الحالية.
+
+شغّل canonical check.
+
+أعطني:
+
+TOTAL ERRORS
+
+ثم صنفها حسب root cause.
+
+أريد معرفة:
+
+هل هي:
+
+legacy noise
+
+أم:
+
+real canonical breakage
+
+وكم منها يمس:
+
+Runtime
+Bubble
+Task/Run
+DB
+Contracts
+Web
+Mobile
+
+لا تبدأ بإخفائها.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+V. POSTGRESQL TRUTH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+شغّل broad canonical integration proof.
+
+لا focused Bubble proof فقط.
+
+يجب أن يشمل:
+
+Conversation
+Bubble
+World
+Task
+Run
+Proposal
+Approval
+DAG
+Events
+Versions
+
+إذا يفشل:
+اذكر أول root failure.
+
+لا تعطِ PASS عام إذا test الرئيسي يفشل.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+W. WEB REALITY CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+حدد هل Web الآن:
+
+uses canonical API
+uses canonical Bubble contract
+renders runtime truth
+supports compact
+expanded
+full-screen
+blocked/error/loading
+RTL
+Soap Glass
+
+ثم حدد ما ينقص:
+
+actual content rendering
+dynamic actions
+natural-language mutation
+real runtime status
+etc.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+X. MOBILE REALITY CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+افصل:
+
+EXPO DEVELOPMENT PREVIEW
+
+عن:
+
+STANDALONE MOBILE PRODUCT
+
+راجع:
+
+Bubble rendering
+content rendering
+actions
+Run status
+resume
+same server state
+secure session
+production auth
+background behavior
+push
+deep link
+production API
+
+صنف:
+
+REAL
+PARTIAL
+MISSING
+DEFERRED
+
+ولا تعتبر Expo Go = mobile complete.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Y. OLD REPLIT IMPLEMENTATION — VALUE EXTRACTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+قارن gaps الحالية فقط مع النسخة التي بنيتها سابقًا من الصفر.
+
+لا تعِد تحليل كل القديم.
+
+لكل Gap:
+
+GENUI
+Mutation
+Context
+Memory
+Events
+Providers
+Recovery
+Ledger
+Reconciliation
+Mobile
+
+حدد:
+
+OLD COMPONENT EXISTS:
+YES / NO
+
+REUSABLE:
+YES / PARTIAL / NO
+
+WORK SAVED:
+SMALL / MEDIUM / LARGE
+
+إذا مفيد:
+أوصِ بإعادة استخدامه.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Z. CAN THIS PROJECT REALLY BECOME JASIM?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هذه أهم فقرة في التقرير.
+
+أريد حكمًا تقنيًا صريحًا:
+
+هل الكود والمعمارية الحالية يستطيعان الوصول إلى:
+
+ONE CENTRAL JASIM INTELLIGENCE
+
+ONE GENERAL GENERATIVE RUNTIME
+
+ONE CAPABILITY SYSTEM
+
+BUBBLE-FIRST PRODUCT
+
+DIRECT RUNS WITHOUT BUBBLES
+
+OPTIONAL WORLDS INSIDE PERSISTENT BUBBLES
+
+NATURAL LANGUAGE MUTATION
+
+DURABLE EXECUTION
+
+VERIFIED EXTERNAL EFFECTS
+
+WEB + IOS + ANDROID
+
+بدون إعادة بناء كاملة مرة أخرى؟
+
+اختر حكمًا واحدًا:
+
+A.
+YES — CURRENT ARCHITECTURE CAN REACH FINAL JASIM INCREMENTALLY
+
+B.
+YES — BUT SPECIFIC SUBSYSTEMS REQUIRE REPLACEMENT
+
+C.
+NO — FUNDAMENTAL ARCHITECTURAL REWORK IS REQUIRED
+
+لا تستخدم لغة متفائلة.
+
+أعطني السبب من الكود.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AA. IDENTIFY STRUCTURAL RISKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ابحث عن المخاطر التي قد تظهر لاحقًا:
+
+God files
+circular dependencies
+duplicate abstractions
+schema drift
+runtime/client coupling
+LLM logic inside UI
+provider logic inside planner
+secrets crossing boundaries
+weak authorization
+implicit state transitions
+non-idempotent side effects
+unbounded context
+unbounded event growth
+missing indexes
+concurrency hazards
+mobile/web divergence
+
+صنف:
+
+CRITICAL
+HIGH
+MEDIUM
+LOW
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AB. IDENTIFY WHAT WE BUILT WRONG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا أريد فقط قائمة ما ينقص.
+
+أريد قسمًا صريحًا:
+
+WHAT IS CURRENTLY WRONG
+
+مثل:
+
+- abstraction موجودة لكن semantics خاطئة
+- duplicate implementation
+- old schema influencing canonical runtime
+- Bubble still partly Task-driven
+- World still leaking into UI
+- Mobile differs from Web
+- approval does not resume
+- content versioning missing
+- etc.
+
+اذكر فقط ما يثبته الكود.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AC. IDENTIFY WHAT MUST NOT BE TOUCHED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+حدد الأجزاء الجيدة التي أصبحت stable ويجب عدم إعادة بنائها.
+
+مثل:
+
+DAG
+fingerprint
+Bubble presentation CAS
+Conversation persistence
+
+لكن فقط إذا أثبتها.
+
+صنف:
+
+LOCKED
+STABLE_BUT_EXTENDABLE
+NEEDS_REWORK
+
+هذا مهم حتى لا نعيد العمل الناجح.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AD. FINAL GAP MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أنشئ جدولًا:
+
+| Priority | Subsystem | Current Truth | Exact Gap | Root Cause | Fix | Size | Blocks |
+
+استخدم:
+
+CRITICAL
+HIGH
+MEDIUM
+LATER
+
+ولا تضف تحسينات تجميلية غير لازمة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AE. GENERAL GENERATIVE RUNTIME EXIT GATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+حدد أقل مجموعة شروط عندما تتحقق نستطيع أن نقول:
+
+JASIM GENERAL GENERATIVE RUNTIME = REAL
+
+أريد exit gate صارمة.
+
+يجب على الأقل أن تشمل:
+
+Natural-language output selection
+Run without Bubble
+Bubble without World
+Persistent Bubble with World
+Existing Bubble mutation
+Entity resolution
+ChangeSet
+Content versioning
+Conversation continuity
+DAG durability
+Approval resume
+Trusted execution boundary
+Receipt
+Independent verification
+Restart recovery
+Generalization tests
+
+حدد ما هو PASS الآن وما هو FAIL.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AF. PRODUCTION EXIT GATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بشكل منفصل حدد:
+
+PRODUCTION READY
+
+يشترط ماذا؟
+
+مثال:
+
+typecheck/build clean
+migrations
+auth
+secrets
+rate limiting
+monitoring
+backup
+production DB
+security tests
+provider configuration
+deploy/restart proof
+
+لا تخلطه مع Generative Runtime readiness.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AG. COMMERCIAL EXIT GATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+حدد لاحقًا:
+
+COMMERCIAL READY
+
+transaction lifecycle
+pricing
+commission
+payment
+refund
+reconciliation
+legal/policy
+provider agreements
+
+لكن لا تنفذها الآن.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AH. MOBILE RELEASE EXIT GATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+حدد منفصلًا:
+
+IOS RELEASE READY
+
+ANDROID RELEASE READY
+
+مع:
+
+native auth
+secure storage
+production API
+standalone build
+signing
+permissions
+background behavior
+store requirements
+
+ولا تعتمد Expo Go.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AI. WHAT CAN REPLIT FINISH WITHOUT OWNER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+اكتب كل ما تستطيع إكماله الآن بدون أي تدخل مني.
+
+لا تطلب مني:
+
+Apple
+Google
+Providers
+Payments
+Domain changes
+
+إذا لم نصل فعليًا إلى مرحلتها.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AJ. WHAT REQUIRES OWNER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ضع فقط hard blockers الحقيقية:
+
+Account
+Credential
+Business verification
+Domain ownership
+Signing ownership
+Business decision
+
+وقسمها:
+
+NOW
+LATER
+
+إذا NOW = none:
+اكتب NONE.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AK. FINAL EXECUTION ORDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بعد التدقيق، أعطني أقصر ترتيب صحيح لإكمال JASIM.
+
+استخدم:
+
+TRANCHE 1
+TRANCHE 2
+TRANCHE 3
+...
+
+لكن لا تجعل كل Feature Tranche منفصلة.
+
+اجمع الأعمال ذات dependency الواحدة.
+
+لكل tranche:
+
+GOAL
+EXACT WORK
+EXIT GATE
+OWNER REQUIRED YES/NO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AL. NO TIME ESTIMATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تعطيني ساعات أو أيام.
+
+استخدم:
+
+SMALL
+MEDIUM
+LARGE
+
+و:
+
+dependency order.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AM. FINAL REPORT FORMAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أعطني النتيجة بهذا الشكل:
+
+# 1. FINAL TECHNICAL VERDICT
+
+CAN CURRENT JASIM BECOME THE FINAL PRODUCT?
+A / B / C
+
+WHY:
+<short technical reason>
+
+# 2. CURRENT COMPLETION TRUTH
+
+Generative Runtime:
+<status>
+
+Smart Bubble:
+<status>
+
+Runs:
+<status>
+
+World:
+<status>
+
+Conversation Intelligence:
+<status>
+
+Trusted Execution:
+<status>
+
+Web:
+<status>
+
+Mobile:
+<status>
+
+Production:
+<status>
+
+Commercial:
+<status>
+
+# 3. WHAT IS ACTUALLY WORKING
+
+Only proven items.
+
+# 4. WHAT IS CURRENTLY WRONG
+
+Only real defects.
+
+# 5. WHAT IS MISSING
+
+Prioritized table.
+
+# 6. WHAT MUST NOT BE REBUILT
+
+Stable components.
+
+# 7. GENERAL GENERATIVE RUNTIME EXIT GATE
+
+PASS/FAIL matrix.
+
+# 8. NEXT EXECUTION TRANCHES
+
+Exact order.
+
+# 9. OWNER ACTION REQUIRED NOW
+
+NONE or exact blockers.
+
+# 10. OWNER ACTION REQUIRED LATER
+
+Providers / iOS / Android / Production / Commercial.
+
+# 11. BIGGEST TECHNICAL RISKS
+
+Top 10 maximum.
+
+# 12. FINAL ANSWER
+
+اكتب جملة صريحة:
+
+"إذا أكملنا البنود أعلاه، هل سيصبح جاسم فعليًا المنتج الذي تصفه الرؤية؟"
+
+ثم:
+
+YES / NO / YES WITH CONDITIONS
+
+واذكر الشروط.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AN. AUDIT RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ممنوع أثناء هذه المراجعة:
+
+- إعادة بناء Core.
+- إضافة Provider.
+- إنشاء Runtime جديدة.
+- تغيير Architecture لإخفاء Gap.
+- إصلاح مئات الأخطاء عشوائيًا قبل معرفة root cause.
+- اعتبار mock proof دليل إنتاج.
+- اعتبار UI دليل backend.
+- اعتبار Expo Go دليل Mobile production.
+- اعتبار authorized = executed.
+- اعتبار executed = verified.
+
+نريد الحقيقة أولًا.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL DIRECTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+راجع JASIM الحالي الآن من الكود والتشغيل والاختبارات.
+
+أريد أن أعرف بلا مجاملة:
+
+هل نحن نبني منتجًا حقيقيًا يمكن إكماله،
+أم أننا جمعنا أجزاء تبدو جيدة لكنها لا تغلق الحلقة؟
+
+حدد:
+
+ما يعمل.
+ما لا يعمل.
+ما بُني خطأ.
+ما ينقص.
+ما يجب إصلاحه.
+ما يجب الحفاظ عليه.
+وما الذي سيجعل جاسم النهائي حقيقة فعلية.
+
+لا تبدأ أي Feature جديدة حتى تنتهي من هذا Truth Audit.

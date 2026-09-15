@@ -1,0 +1,1568 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: jasim-runtime
+    description: General-purpose JASIM runtime operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /runtime/overview:
+    get:
+      operationId: getRuntimeOverview
+      tags: [jasim-runtime]
+      summary: Get a live summary of runtime tasks
+      responses:
+        "200":
+          description: Runtime summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeOverview"
+  /runtime/session:
+    post:
+      operationId: createRuntimeSession
+      tags: [jasim-runtime]
+      summary: Issue a signed runtime session token for native clients
+      description: Returns the signed actor token that native apps send as a bearer credential in place of the browser session cookie.
+      responses:
+        "200":
+          description: Signed session token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeSession"
+  /runtime/conversations:
+    get:
+      operationId: listRuntimeConversations
+      tags: [jasim-runtime]
+      summary: List owner-scoped persistent JASIM conversations
+      responses:
+        "200":
+          description: Persistent conversations ordered by recent activity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeConversationList"
+    post:
+      operationId: createRuntimeConversation
+      tags: [jasim-runtime]
+      summary: Create a persistent JASIM conversation
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RuntimeConversationCreateInput"
+      responses:
+        "201":
+          description: Created persistent conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeConversation"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /runtime/conversations/{conversationId}:
+    get:
+      operationId: getRuntimeConversation
+      tags: [jasim-runtime]
+      summary: Get an owner-scoped conversation with messages and bubbles
+      parameters:
+        - $ref: "#/components/parameters/ConversationId"
+      responses:
+        "200":
+          description: Conversation state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeConversation"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /runtime/conversations/{conversationId}/messages:
+    post:
+      operationId: createRuntimeMessage
+      tags: [jasim-runtime]
+      summary: Persist a user or runtime message in an existing conversation
+      parameters:
+        - $ref: "#/components/parameters/ConversationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RuntimeMessageCreateInput"
+      responses:
+        "201":
+          description: Created message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeMessage"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /runtime/conversations/{conversationId}/turns:
+    post:
+      operationId: routeRuntimeConversationTurn
+      tags: [jasim-runtime]
+      summary: Route a conversation turn through the safe Output Router
+      description: Persists the user turn, validates an untrusted model Output Envelope, and delivers only non-executing text or Bubble presentation.
+      parameters:
+        - $ref: "#/components/parameters/ConversationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RuntimeConversationTurnInput"
+      responses:
+        "201":
+          description: Validated output delivered and its messages persisted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeConversationTurnResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          description: The model returned an invalid Output Envelope
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: No configured model service is available
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /runtime/conversations/{conversationId}/bubbles:
+    post:
+      operationId: createRuntimeBubble
+      tags: [jasim-runtime]
+      summary: Create a Smart Bubble inside an existing conversation
+      parameters:
+        - $ref: "#/components/parameters/ConversationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RuntimeBubbleCreateInput"
+      responses:
+        "201":
+          description: Created Smart Bubble
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeBubble"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /runtime/bubbles/{bubbleId}:
+    get:
+      operationId: getRuntimeBubble
+      tags: [jasim-runtime]
+      summary: Get an owner-scoped Smart Bubble
+      parameters:
+        - $ref: "#/components/parameters/BubbleId"
+      responses:
+        "200":
+          description: Smart Bubble state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeBubble"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /runtime/tasks:
+    post:
+      operationId: createRuntimeTask
+      tags: [jasim-runtime]
+      summary: Create a general runtime task from a natural-language goal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RuntimeTaskInput"
+      responses:
+        "201":
+          description: Created task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeTask"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "502":
+          description: The configured model returned malformed planning output
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: No configured model service is available
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Too many planning requests from this source
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /runtime/tasks/{taskId}:
+    get:
+      operationId: getRuntimeTask
+      tags: [jasim-runtime]
+      summary: Get the current durable state for a runtime task
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      responses:
+        "200":
+          description: Current task state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeTask"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /runtime/tasks/{taskId}/actions:
+    post:
+      operationId: actOnRuntimeTask
+      tags: [jasim-runtime]
+      summary: Submit a constrained action for a runtime task
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RuntimeActionInput"
+      responses:
+        "200":
+          description: Updated task state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeTask"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /runtime/runs:
+    get:
+      operationId: listRuntimeRuns
+      tags: [jasim-runtime]
+      summary: List owner-scoped durable execution runs
+      responses:
+        "200":
+          description: Durable runs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeRunList"
+    post:
+      operationId: createRuntimeRun
+      tags: [jasim-runtime]
+      summary: Persist a general execution run without performing external effects
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RuntimeRunInput"
+      responses:
+        "201":
+          description: Created or idempotently replayed run
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeRun"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /runtime/runs/{runId}:
+    get:
+      operationId: getRuntimeRun
+      tags: [jasim-runtime]
+      summary: Get owner-scoped durable run state and events
+      parameters:
+        - $ref: "#/components/parameters/RunId"
+      responses:
+        "200":
+          description: Durable run state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeRun"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /runtime/proposals/{proposalId}:
+    get:
+      operationId: getRuntimeExecutionProposal
+      tags: [jasim-runtime]
+      summary: Get an owner-scoped execution proposal and approval state
+      parameters:
+        - $ref: "#/components/parameters/ProposalId"
+      responses:
+        "200":
+          description: Execution proposal state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeExecutionProposal"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /runtime/proposals/{proposalId}/approval:
+    post:
+      operationId: decideRuntimeExecutionProposalApproval
+      tags: [jasim-runtime]
+      summary: Approve or reject an exact execution proposal fingerprint
+      parameters:
+        - $ref: "#/components/parameters/ProposalId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RuntimeExecutionProposalApprovalDecision"
+      responses:
+        "200":
+          description: Updated proposal and approval state; execution remains disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeExecutionProposal"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /runtime/worlds/{worldId}:
+    get:
+      operationId: getRuntimeWorld
+      tags: [jasim-runtime]
+      summary: Get an independently persisted runtime world and its version history
+      parameters:
+        - $ref: "#/components/parameters/WorldId"
+      responses:
+        "200":
+          description: Current world definition and immutable version history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeWorld"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /runtime/worlds/{worldId}/changes:
+    post:
+      operationId: updateRuntimeWorld
+      tags: [jasim-runtime]
+      summary: Apply a version-checked, domain-neutral change set to a runtime world
+      parameters:
+        - $ref: "#/components/parameters/WorldId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RuntimeWorldChangeSet"
+      responses:
+        "200":
+          description: Updated world definition
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeWorld"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+components:
+  parameters:
+    TaskId:
+      in: path
+      name: taskId
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    WorldId:
+      in: path
+      name: worldId
+      required: true
+      schema:
+        type: string
+    ConversationId:
+      in: path
+      name: conversationId
+      required: true
+      schema:
+        type: string
+    BubbleId:
+      in: path
+      name: bubbleId
+      required: true
+      schema:
+        type: string
+    RunId:
+      in: path
+      name: runId
+      required: true
+      schema:
+        type: string
+    ProposalId:
+      in: path
+      name: proposalId
+      required: true
+      schema:
+        type: string
+  responses:
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    RuntimeSession:
+      type: object
+      additionalProperties: false
+      required: [token]
+      properties:
+        token:
+          type: string
+          minLength: 8
+    RuntimeConversationCreateInput:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 240
+    RuntimeMessageCreateInput:
+      type: object
+      additionalProperties: false
+      required: [role, content]
+      properties:
+        role:
+          type: string
+          enum: [user, assistant, system, tool]
+        content:
+          type: string
+          minLength: 1
+          maxLength: 12000
+        outputKind:
+          type: string
+          maxLength: 80
+        metadata:
+          type: object
+          additionalProperties: true
+    RuntimeConversationTurnInput:
+      type: object
+      additionalProperties: false
+      required: [content]
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 12000
+    RuntimeBubbleCreateInput:
+      type: object
+      additionalProperties: false
+      required: [mode, title, semanticDescription]
+      properties:
+        mode:
+          type: string
+          enum: [ephemeral, interactive, persistent]
+        title:
+          type: string
+          minLength: 1
+          maxLength: 240
+        semanticDescription:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        runtimeWorldId:
+          type: string
+        activeView:
+          type: string
+          minLength: 1
+          maxLength: 120
+        presentationState:
+          type: object
+          additionalProperties: true
+        references:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            additionalProperties: true
+    RuntimeMessage:
+      type: object
+      additionalProperties: false
+      required: [id, conversationId, role, content, metadata, createdAt]
+      properties:
+        id:
+          type: string
+        conversationId:
+          type: string
+        role:
+          type: string
+          enum: [user, assistant, system, tool]
+        content:
+          type: string
+        outputKind:
+          type: ["string", "null"]
+        metadata:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+    RuntimeBubble:
+      type: object
+      additionalProperties: false
+      required: [id, conversationId, runtimeWorldId, mode, status, title, semanticDescription, activeView, presentationState, references, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        conversationId:
+          type: ["string", "null"]
+        runtimeWorldId:
+          type: ["string", "null"]
+        mode:
+          type: string
+          enum: [ephemeral, interactive, persistent]
+        status:
+          type: string
+          enum: [active, archived]
+        title:
+          type: string
+        semanticDescription:
+          type: string
+        activeView:
+          type: string
+        presentationState:
+          type: object
+          additionalProperties: true
+        references:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    RuntimeConversation:
+      type: object
+      additionalProperties: false
+      required: [id, title, status, messages, bubbles, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        title:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [active, archived]
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuntimeMessage"
+        bubbles:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuntimeBubble"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    RuntimeConversationList:
+      type: object
+      additionalProperties: false
+      required: [conversations]
+      properties:
+        conversations:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuntimeConversation"
+    RuntimeConversationOutput:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [kind, content, confidence]
+          properties:
+            kind:
+              type: string
+              enum: [text]
+            content:
+              type: string
+            confidence:
+              type: number
+        - type: object
+          additionalProperties: false
+          required: [kind, title, semanticDescription, activeView, presentationState, references, confidence]
+          properties:
+            kind:
+              type: string
+              enum: [ephemeral_bubble]
+            title:
+              type: string
+            semanticDescription:
+              type: string
+            activeView:
+              type: string
+            presentationState:
+              type: object
+              additionalProperties: true
+            references:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            confidence:
+              type: number
+        - type: object
+          additionalProperties: false
+          required: [kind, bubble, confidence]
+          properties:
+            kind:
+              type: string
+              enum: [interactive_bubble]
+            bubble:
+              $ref: "#/components/schemas/RuntimeBubble"
+            confidence:
+              type: number
+        - $ref: "#/components/schemas/RuntimeOutputStructuredResult"
+        - $ref: "#/components/schemas/RuntimeOutputDirectAction"
+        - $ref: "#/components/schemas/RuntimeOutputWorkflow"
+        - $ref: "#/components/schemas/RuntimeOutputDurableRun"
+        - $ref: "#/components/schemas/RuntimeOutputPersistentSmartBubble"
+    RuntimeConversationTurnResponse:
+      type: object
+      additionalProperties: false
+      required: [userMessage, assistantMessage, output]
+      properties:
+        userMessage:
+          $ref: "#/components/schemas/RuntimeMessage"
+        assistantMessage:
+          $ref: "#/components/schemas/RuntimeMessage"
+        output:
+          $ref: "#/components/schemas/RuntimeConversationOutput"
+    RuntimeRunInput:
+      type: object
+      additionalProperties: false
+      required: [goal, idempotencyKey]
+      properties:
+        goal:
+          type: string
+          minLength: 1
+          maxLength: 12000
+        idempotencyKey:
+          type: string
+          minLength: 8
+          maxLength: 128
+        conversationId:
+          type: string
+        bubbleId:
+          type: string
+        taskId:
+          type: string
+        status:
+          type: string
+          enum: [created, awaiting_input, ready, awaiting_approval, scheduled, running, waiting, blocked, verifying, completed, failed, cancelled]
+        executionGraph:
+          type: object
+          additionalProperties: true
+        currentState:
+          type: object
+          additionalProperties: true
+        inputs:
+          type: object
+          additionalProperties: true
+        requiredCapabilities:
+          type: array
+          maxItems: 50
+          items:
+            type: string
+            minLength: 1
+            maxLength: 120
+        resumeAt:
+          type: string
+          format: date-time
+    RuntimeRunEvent:
+      type: object
+      additionalProperties: false
+      required: [id, type, message, data, createdAt]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        message:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+    RuntimeDagNode:
+      type: object
+      additionalProperties: false
+      required: [id, runId, nodeKey, proposalId, capabilityId, nodeType, status, attemptCount, maxAttempts, nextAttemptAt, lastErrorCode, lastErrorSummary, output, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        runId: { type: string }
+        nodeKey: { type: string }
+        proposalId: { type: [string, "null"] }
+        capabilityId: { type: [string, "null"] }
+        nodeType: { type: string }
+        status:
+          type: string
+          enum: [PENDING, READY, CLAIMED, RUNNING, WAITING, RETRY_SCHEDULED, COMPLETED, FAILED, BLOCKED, CANCELLED]
+        attemptCount:
+          type: number
+          minimum: 0
+          multipleOf: 1
+        maxAttempts:
+          type: number
+          minimum: 1
+          multipleOf: 1
+        nextAttemptAt: { type: [string, "null"], format: date-time }
+        lastErrorCode: { type: [string, "null"] }
+        lastErrorSummary: { type: [string, "null"] }
+        output:
+          type: [object, "null"]
+          additionalProperties: true
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    RuntimeRun:
+      type: object
+      additionalProperties: false
+      required: [id, conversationId, bubbleId, taskId, goal, status, executionGraph, currentState, inputs, outputs, requiredCapabilities, resumeAt, createdAt, updatedAt, events, dag]
+      properties:
+        id:
+          type: string
+        conversationId:
+          type: [string, "null"]
+        bubbleId:
+          type: [string, "null"]
+        taskId:
+          type: [string, "null"]
+        goal:
+          type: string
+        status:
+          type: string
+          enum: [created, awaiting_input, ready, awaiting_approval, scheduled, running, waiting, blocked, verifying, completed, failed, cancelled]
+        executionGraph:
+          type: object
+          additionalProperties: true
+        currentState:
+          type: object
+          additionalProperties: true
+        inputs:
+          type: object
+          additionalProperties: true
+        outputs:
+          type: object
+          additionalProperties: true
+        requiredCapabilities:
+          type: array
+          items:
+            type: string
+        resumeAt:
+          type: [string, "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuntimeRunEvent"
+        dag:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuntimeDagNode"
+    RuntimeRunList:
+      type: object
+      additionalProperties: false
+      required: [runs]
+      properties:
+        runs:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuntimeRun"
+    RuntimeExecutionProposalApproval:
+      type: object
+      additionalProperties: false
+      required: [id, proposalId, executionFingerprint, status, decidedAt, expiresAt, consumedAt, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        proposalId: { type: string }
+        executionFingerprint: { type: string }
+        status:
+          type: string
+          enum: [pending, approved, rejected, invalidated, expired, consumed]
+        decidedAt: { type: [string, "null"], format: date-time }
+        expiresAt: { type: [string, "null"], format: date-time }
+        consumedAt: { type: [string, "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    RuntimeExecutionProposalEvent:
+      type: object
+      additionalProperties: false
+      required: [id, type, message, data, createdAt]
+      properties:
+        id: { type: string }
+        type: { type: string }
+        message: { type: string }
+        data: { type: object, additionalProperties: true }
+        createdAt: { type: string, format: date-time }
+    RuntimeExecutionProposal:
+      type: object
+      additionalProperties: false
+      required: [id, conversationId, runId, bubbleId, worldId, sourceMessageId, intentType, targetReferences, capabilityId, capabilityVersion, normalizedInputs, riskLevel, sideEffectType, policyContext, policyDecision, approvalRequired, fingerprint, status, dependencies, version, approval, events, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        conversationId: { type: [string, "null"] }
+        runId: { type: [string, "null"] }
+        bubbleId: { type: [string, "null"] }
+        worldId: { type: [string, "null"] }
+        sourceMessageId: { type: [string, "null"] }
+        intentType: { type: string, enum: [direct_action, workflow, durable_run] }
+        targetReferences: { type: array, items: { type: object, additionalProperties: true } }
+        capabilityId: { type: [string, "null"] }
+        capabilityVersion: { type: [string, "null"] }
+        normalizedInputs: { type: object, additionalProperties: true }
+        riskLevel: { type: string, enum: [none, low, medium, high, critical] }
+        sideEffectType: { type: string, enum: [none] }
+        policyContext: { type: object, additionalProperties: true }
+        policyDecision: { type: string, enum: [allow, deny, require_approval, require_input] }
+        approvalRequired: { type: boolean }
+        fingerprint: { type: string }
+        status: { type: string, enum: [proposed, awaiting_input, awaiting_approval, authorized, blocked, rejected, superseded] }
+        dependencies: { type: array, items: { type: string } }
+        version: { type: string }
+        approval:
+          oneOf:
+            - $ref: "#/components/schemas/RuntimeExecutionProposalApproval"
+            - type: "null"
+        events: { type: array, items: { $ref: "#/components/schemas/RuntimeExecutionProposalEvent" } }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    RuntimeExecutionProposalApprovalDecision:
+      type: object
+      additionalProperties: false
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [approve, reject]
+    RuntimeTaskInput:
+      type: object
+      additionalProperties: false
+      required: [goal]
+      properties:
+        goal:
+          type: string
+          minLength: 3
+          maxLength: 4000
+        conversationId:
+          type: string
+          minLength: 1
+          maxLength: 128
+    RuntimeActionInput:
+      type: object
+      additionalProperties: false
+      required: [actionId]
+      properties:
+        actionId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        idempotencyKey:
+          type: string
+          minLength: 8
+          maxLength: 128
+        input:
+          type: object
+          additionalProperties: true
+        approval:
+          type: boolean
+    RuntimeAction:
+      type: object
+      required: [id, label, kind, requiresApproval, status]
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        kind:
+          type: string
+          enum: [provide_input, approve, execute]
+        requiresApproval:
+          type: boolean
+        status:
+          type: string
+          enum: [ready, pending, completed, blocked]
+    RuntimeEvent:
+      type: object
+      required: [id, type, message, createdAt]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [created, world_composed, awaiting_input, awaiting_approval, action_accepted, plan_approved, approval_granted, execution_started, execution_authorized, execution_step_completed, execution_policy_denied, execution_blocked, completed, failed]
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    RuntimeTask:
+      type: object
+      required: [id, goal, status, world, actions, events, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        conversationId:
+          type: ["string", "null"]
+        worldId:
+          type: ["string", "null"]
+        goal:
+          type: string
+        status:
+          type: string
+          enum: [planning, awaiting_input, awaiting_approval, ready, completed, blocked, failed]
+        world:
+          $ref: "#/components/schemas/RuntimeTaskWorld"
+        actions:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuntimeAction"
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuntimeEvent"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    RuntimeWorld:
+      type: object
+      additionalProperties: false
+      required: [id, conversationId, status, version, definition, history, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        conversationId:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [active, archived]
+        version:
+          type: number
+          minimum: 1
+          multipleOf: 1
+        definition:
+          $ref: "#/components/schemas/RuntimeWorldDefinition"
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuntimeWorldVersion"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    RuntimeWorldVersion:
+      type: object
+      additionalProperties: false
+      required: [version, changeType, summary, createdAt]
+      properties:
+        version:
+          type: number
+          minimum: 1
+          multipleOf: 1
+        changeType:
+          type: string
+        summary:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    RuntimeWorldDefinition:
+      type: object
+      additionalProperties: true
+      required: [id, schemaVersion, version, name, description, continuity, status, entities, relationships, workflows, actions, views, state]
+      properties:
+        id: { type: string }
+        schemaVersion: { type: number, minimum: 1, multipleOf: 1 }
+        version: { type: number, minimum: 1, multipleOf: 1 }
+        name: { type: string }
+        description: { type: string }
+        continuity: { type: string, enum: [ephemeral, evolving] }
+        status: { type: string, enum: [active, archived] }
+        entities: { type: array, items: { type: object, additionalProperties: true } }
+        relationships: { type: array, items: { type: object, additionalProperties: true } }
+        workflows: { type: array, items: { type: object, additionalProperties: true } }
+        actions: { type: array, items: { type: object, additionalProperties: true } }
+        views: { type: array, items: { type: object, additionalProperties: true } }
+        state: { type: object, additionalProperties: true }
+    RuntimeWorldChangeSet:
+      type: object
+      additionalProperties: false
+      required: [baseVersion, summary, changes]
+      properties:
+        baseVersion:
+          type: number
+          minimum: 1
+          multipleOf: 1
+        summary:
+          type: string
+          minLength: 3
+          maxLength: 1000
+        changes:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: "#/components/schemas/RuntimeWorldChange"
+    RuntimeWorldChange:
+      oneOf:
+        - $ref: "#/components/schemas/RuntimeWorldEntityUpsert"
+        - $ref: "#/components/schemas/RuntimeWorldEntityRemoval"
+        - $ref: "#/components/schemas/RuntimeWorldPolicyUpsert"
+        - $ref: "#/components/schemas/RuntimeWorldPolicyRemoval"
+        - $ref: "#/components/schemas/RuntimeWorldStateChange"
+        - $ref: "#/components/schemas/RuntimeWorldViewUpsert"
+        - $ref: "#/components/schemas/RuntimeWorldViewRemoval"
+    RuntimeWorldEntityUpsert:
+      type: object
+      additionalProperties: false
+      required: [op, entity]
+      properties:
+        op: { type: string, const: upsert_entity }
+        entity:
+          type: object
+          additionalProperties: false
+          required: [id, name, type, attributes]
+          properties:
+            id: { type: string, minLength: 1, maxLength: 128 }
+            name: { type: string, minLength: 1, maxLength: 200 }
+            type: { type: string, minLength: 1, maxLength: 80 }
+            attributes: { type: object, additionalProperties: true }
+    RuntimeWorldEntityRemoval:
+      type: object
+      additionalProperties: false
+      required: [op, entityId]
+      properties:
+        op: { type: string, const: remove_entity }
+        entityId: { type: string, minLength: 1, maxLength: 128 }
+    RuntimeWorldPolicyUpsert:
+      type: object
+      additionalProperties: false
+      required: [op, policy]
+      properties:
+        op: { type: string, const: upsert_policy }
+        policy:
+          type: object
+          additionalProperties: false
+          required: [id, text, enabled]
+          properties:
+            id: { type: string, minLength: 1, maxLength: 128 }
+            text: { type: string, minLength: 1, maxLength: 1000 }
+            enabled: { type: boolean }
+    RuntimeWorldPolicyRemoval:
+      type: object
+      additionalProperties: false
+      required: [op, policyId]
+      properties:
+        op: { type: string, const: remove_policy }
+        policyId: { type: string, minLength: 1, maxLength: 128 }
+    RuntimeWorldStateChange:
+      type: object
+      additionalProperties: false
+      required: [op, key, value]
+      properties:
+        op: { type: string, const: set_state }
+        key: { type: string, minLength: 1, maxLength: 128 }
+        value: {}
+    RuntimeWorldViewUpsert:
+      type: object
+      additionalProperties: false
+      required: [op, view]
+      properties:
+        op: { type: string, const: upsert_view }
+        view:
+          type: object
+          additionalProperties: false
+          required: [id, type, title, config]
+          properties:
+            id: { type: string, minLength: 1, maxLength: 128 }
+            type: { type: string, minLength: 1, maxLength: 80 }
+            title: { type: string, minLength: 1, maxLength: 200 }
+            config: { type: object, additionalProperties: true }
+    RuntimeWorldViewRemoval:
+      type: object
+      additionalProperties: false
+      required: [op, viewId]
+      properties:
+        op: { type: string, const: remove_view }
+        viewId: { type: string, minLength: 1, maxLength: 128 }
+    RuntimeOverview:
+      type: object
+      required: [total, awaitingApproval, awaitingInput, completed, recent]
+      properties:
+        total:
+          type: number
+          minimum: 0
+          multipleOf: 1
+        awaitingApproval:
+          type: number
+          minimum: 0
+          multipleOf: 1
+        awaitingInput:
+          type: number
+          minimum: 0
+          multipleOf: 1
+        completed:
+          type: number
+          minimum: 0
+          multipleOf: 1
+        recent:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuntimeTask"
+    RuntimeTaskWorld:
+      oneOf:
+        - $ref: "#/components/schemas/GeneratedRuntimeTaskWorld"
+        - $ref: "#/components/schemas/LegacyRuntimeTaskWorld"
+    GeneratedRuntimeTaskWorld:
+      type: object
+      additionalProperties: false
+      required: [id, version, taskDNA, plan, world, executionContext]
+      properties:
+        id:
+          type: string
+        version:
+          type: number
+          minimum: 1
+          multipleOf: 1
+        taskDNA:
+          $ref: "#/components/schemas/RuntimeTaskDNA"
+        plan:
+          $ref: "#/components/schemas/RuntimeTaskPlan"
+        world:
+          $ref: "#/components/schemas/RuntimeGeneratedWorld"
+        executionContext:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    RuntimeTaskDNA:
+      type: object
+      additionalProperties: false
+      required:
+        [objective, summary, intentType, actors, objects, actions, constraints, requiredCapabilities, confidence, interpretationSource, model, unresolved]
+      properties:
+        objective:
+          type: string
+        summary:
+          type: string
+        intentType:
+          type: string
+        actors:
+          type: array
+          items:
+            type: string
+        objects:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [name, type, attributes]
+            properties:
+              name:
+                type: string
+              type:
+                type: string
+              attributes:
+                type: object
+                additionalProperties: true
+        actions:
+          type: array
+          items:
+            type: string
+        constraints:
+          type: object
+          additionalProperties: true
+        requiredCapabilities:
+          type: array
+          items:
+            type: string
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        interpretationSource:
+          type: string
+          enum: [model-gateway]
+        model:
+          type: object
+          additionalProperties: false
+          required: [provider, model]
+          properties:
+            provider:
+              type: string
+              enum: [openai, anthropic, gemini, openai-compatible]
+            model:
+              type: string
+        unresolved:
+          type: array
+          items:
+            type: string
+    RuntimeTaskPlan:
+      type: object
+      additionalProperties: false
+      required: [status, summary, steps]
+      properties:
+        status:
+          type: string
+          enum: [needs_context, awaiting_approval, approved, blocked_no_capability, blocked_capability, blocked_policy, completed, failed]
+        summary:
+          type: string
+        reasoning:
+          type: string
+        steps:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, name, description, capability, inputs, dependencies, risk, requiresApproval]
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              description:
+                type: string
+              capability:
+                type: string
+              inputs:
+                type: object
+                additionalProperties: true
+              dependencies:
+                type: array
+                items:
+                  type: string
+              risk:
+                type: string
+                enum: [none, low, medium, high, critical]
+              requiresApproval:
+                type: boolean
+    RuntimeGeneratedWorld:
+      type: object
+      additionalProperties: false
+      required: [name, description, continuity, participants, entities, capabilities, policies]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        continuity:
+          type: string
+          enum: [ephemeral, evolving]
+        participants:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [role, description]
+            properties:
+              role:
+                type: string
+              description:
+                type: string
+        entities:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, name, type, attributes]
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              type:
+                type: string
+              attributes:
+                type: object
+                additionalProperties: true
+        capabilities:
+          type: array
+          items:
+            type: string
+        policies:
+          type: array
+          items:
+            type: string
+    LegacyRuntimeTaskWorld:
+      type: object
+      additionalProperties: false
+      required: [id, version, taskDNA, plan, executionContext]
+      properties:
+        id:
+          type: string
+        version:
+          type: number
+          minimum: 1
+          multipleOf: 1
+        taskDNA:
+          type: object
+          additionalProperties: false
+          required: [objective, interpretationSource, unresolved]
+          properties:
+            objective:
+              type: string
+            interpretationSource:
+              type: string
+              enum: [deterministic-baseline]
+            unresolved:
+              type: array
+              items:
+                type: string
+        plan:
+          type: object
+          additionalProperties: false
+          required: [status, steps]
+          properties:
+            status:
+              type: string
+            steps:
+              type: array
+              items:
+                type: string
+        executionContext:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    RuntimeOutputExecutionIntent:
+      description: Validated execution intent produced by the Output Router. No external effects are performed; the run is persisted in blocked or awaiting_input state only.
+      type: object
+      additionalProperties: false
+      required: [requiredCapabilities, missingInputs, risk, persistence, effects]
+      properties:
+        requiredCapabilities:
+          type: array
+          maxItems: 30
+          items:
+            type: string
+            minLength: 1
+            maxLength: 120
+        missingInputs:
+          type: array
+          maxItems: 30
+          items:
+            type: string
+            minLength: 1
+            maxLength: 300
+        inputs:
+          type: object
+          additionalProperties: true
+        risk:
+          type: string
+          enum: [none, low, medium, high, critical]
+        persistence:
+          type: string
+          enum: [ephemeral, durable]
+        effects:
+          type: string
+          enum: [none]
+    RuntimeOutputStructuredResult:
+      type: object
+      additionalProperties: false
+      required: [kind, label, summary, data, confidence]
+      properties:
+        kind:
+          type: string
+          enum: [structured_result]
+        label:
+          type: string
+          minLength: 1
+          maxLength: 240
+        summary:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        data:
+          type: object
+          additionalProperties: true
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+    RuntimeOutputDirectAction:
+      type: object
+      additionalProperties: false
+      required: [kind, label, goal, intent, proposals, confidence]
+      properties:
+        kind:
+          type: string
+          enum: [direct_action]
+        label:
+          type: string
+          minLength: 1
+          maxLength: 240
+        goal:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        intent:
+          $ref: "#/components/schemas/RuntimeOutputExecutionIntent"
+        run:
+          $ref: "#/components/schemas/RuntimeRun"
+        proposals:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuntimeExecutionProposal"
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+    RuntimeOutputWorkflow:
+      type: object
+      additionalProperties: false
+      required: [kind, label, goal, intent, proposals, confidence]
+      properties:
+        kind:
+          type: string
+          enum: [workflow]
+        label:
+          type: string
+          minLength: 1
+          maxLength: 240
+        goal:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        intent:
+          $ref: "#/components/schemas/RuntimeOutputExecutionIntent"
+        run:
+          $ref: "#/components/schemas/RuntimeRun"
+        proposals:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuntimeExecutionProposal"
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+    RuntimeOutputDurableRun:
+      type: object
+      additionalProperties: false
+      required: [kind, label, goal, intent, run, proposals, confidence]
+      properties:
+        kind:
+          type: string
+          enum: [durable_run]
+        label:
+          type: string
+          minLength: 1
+          maxLength: 240
+        goal:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        intent:
+          $ref: "#/components/schemas/RuntimeOutputExecutionIntent"
+        run:
+          $ref: "#/components/schemas/RuntimeRun"
+        proposals:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuntimeExecutionProposal"
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+    RuntimeOutputPersistentSmartBubble:
+      type: object
+      additionalProperties: false
+      required: [kind, bubble, confidence]
+      properties:
+        kind:
+          type: string
+          enum: [persistent_smart_bubble]
+        bubble:
+          $ref: "#/components/schemas/RuntimeBubble"
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+

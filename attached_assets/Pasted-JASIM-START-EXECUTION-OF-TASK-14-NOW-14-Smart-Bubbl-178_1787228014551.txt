@@ -1,0 +1,827 @@
+JASIM — START EXECUTION OF TASK #14 NOW
+
+حوّل المهمة الحالية:
+
+#14 — إكمال منتج جاسم Smart Bubble
+
+من PLANNING إلى EXECUTION وابدأ تعديل الكود الآن.
+
+لا تنشئ Task جديدة بدل #14.
+لا تعيد كتابة الخطة.
+لا تنتظر موافقة إضافية.
+نفّذ داخل نفس المهمة الحالية حتى إغلاق الـtranche المحددة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BASELINE — DO NOT REBUILD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+اعتبر الـRuntime الحالي Foundation مثبتة.
+
+لا تعِد بناء:
+
+- Conversation Runtime
+- Semantic Output Router
+- Durable Runs
+- DAG
+- leases
+- heartbeat
+- fencing
+- retries
+- cancellation
+- Proposal
+- Approval
+- Fingerprint
+- World Core
+- Reference Resolution الموجود حاليًا
+
+إلا إذا اختبار حقيقي أثبت defect محددًا.
+
+الهدف:
+
+COMPLETE THE SMART BUBBLE PRODUCT LAYER
+ON TOP OF THE EXISTING CANONICAL RUNTIME.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IMPORTANT — HARVEST EARLY IMPLEMENTATION FIRST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+قبل إعادة بناء أي جزء ناقص في #14:
+
+افحص الـEarly Replit Implementation التي بنيتها سابقًا من الصفر.
+
+تعامل معها كـ:
+
+CANDIDATE IMPLEMENTATION LIBRARY
+
+وابحث تحديدًا عن أجزاء قد تختصر العمل الحالي في:
+
+1. Generic GenUI / Schema Renderer
+2. Bubble renderer
+3. Bubble expansion/minimize/full-screen
+4. Runtime-driven UI primitives
+5. Natural-language mutation logic
+6. Context builder
+7. Memory integration
+8. Event APIs
+9. ChangeSet/versioning
+10. Bubble discovery
+11. Task/Run association
+12. Web/Mobile shared contracts
+13. Soap Glass components
+14. RTL/layout primitives
+15. Relevant tests
+16. Restart/resume utilities
+
+لكل component مفيد:
+
+EXTRACT
+→ ADAPT TO CANONICAL CONTRACTS
+→ REMOVE LEGACY/FAKE ASSUMPTIONS
+→ MERGE INTO CURRENT #14
+→ TEST
+
+لا تستبدل JASIM الحالي بالنسخة القديمة.
+
+ولا تنقل:
+
+- World-first assumptions
+- Platform-first assumptions
+- Domain handlers
+- fake actions
+- mock success
+- Expo-Go-specific shortcuts
+- duplicate runtimes
+
+إذا component قديم يوفر علينا بناء شيء من جديد:
+استخدمه.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXECUTION ORDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+نفّذ #14 بهذا الترتيب العملي:
+
+1. Canonical Web/Mobile path lock
+2. Shared Smart Bubble contract
+3. Bubble discovery + lifecycle
+4. Bubble ↔ Tasks/Runs associations
+5. Generic Bubble Renderer
+6. compact/expanded/full-screen states
+7. loading/empty/error/blocked states
+8. Natural-language control of existing Bubble
+9. ChangeSet + preview + versioning
+10. Conversation context continuity
+11. Memory integration
+12. Event list/read integration
+13. Web/Mobile parity
+14. Soap Glass + RTL integration
+15. PostgreSQL Bubble-first proofs
+16. full canonical regression
+
+لا تجعل UI polish يسبق Runtime correctness.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CANONICAL CLIENT RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+في البداية حدد وأثبت:
+
+CANONICAL_WEB_CLIENT=<path>
+CANONICAL_MOBILE_CLIENT=<path>
+
+ثم اجعل كل التعديلات الجديدة تذهب فقط للمسارات canonical.
+
+المسارات القديمة:
+
+لا تحذفها فورًا.
+
+صنفها فقط:
+
+ACTIVE_CANONICAL
+LEGACY_REFERENCED
+SAFE_TO_DEPRECATE
+SAFE_TO_REMOVE_LATER
+
+لا نريد إصلاح ملف لا يستخدمه التطبيق الحقيقي.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SMART BUBBLE CORE CONTRACT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أنشئ/وحّد عقدًا canonical عامًا لـSmart Bubble.
+
+يجب أن يدعم مفاهيم مثل:
+
+bubbleId
+ownerId
+conversationId?
+runtimeWorldId?
+mode
+activeView
+presentationState
+status
+version
+permissions
+availableActions
+content/schema
+references
+
+لكن لا تضف fields لمجالات ثابتة مثل:
+
+car
+restaurant
+jobs
+store
+
+إلى Core contract.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BUBBLE-FIRST INVARIANTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هذه قواعد إلزامية أثناء كل تعديل:
+
+1. Bubble is user-facing.
+2. World is optional durable backing for Persistent Bubble.
+3. Bubble can exist without World.
+4. Run can exist without Bubble.
+5. Task can exist without World.
+6. Bubble can have multiple Runs.
+7. Bubble survives individual Run completion.
+8. World is not a separate primary product surface.
+9. Direct Action does not force Bubble creation.
+10. Same domain can produce different Output Forms.
+
+لا تكسر هذه القواعد لتناسب schema قديمة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GENERIC BUBBLE RENDERER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ابنِ Renderer عامًا من Runtime Schema.
+
+المسار:
+
+Bubble Contract
++
+Runtime State
++
+Presentation State
++
+Permissions
++
+Actions
+↓
+Generic Renderer
+
+يدعم:
+
+COMPACT
+EXPANDED
+FULL_SCREEN
+LOADING
+EMPTY
+ERROR
+BLOCKED
+
+لا:
+
+StoreBubble.tsx
+CarBubble.tsx
+JobsBubble.tsx
+
+كأساس للنظام.
+
+يمكن إنشاء primitives عامة مثل:
+
+Surface
+Header
+Section
+Text
+Media
+Metric
+Grid
+List
+Form
+Table
+Action
+Status
+Timeline
+Chart
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BUBBLE DISCOVERY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أكمل server-side paths اللازمة لـ:
+
+list user bubbles
+get bubble
+get bubble projection
+get bubble version/state
+list bubble tasks
+list bubble runs
+
+مع:
+
+owner isolation
+no IDOR
+no client-side ownership decisions
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BUBBLE LIFECYCLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أكمل:
+
+create
+open
+expand
+minimize
+restore
+archive
+update
+presentation-state change
+dismiss/delete according to policy
+
+لا تربط lifecycle الخاصة بالBubble بـTask أو Run lifecycle.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NATURAL-LANGUAGE CONTROL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+يجب أن يعمل من Main Chat مثلًا:
+
+"متجري الذي فيه الآيفون خفض سعره"
+
+المسار:
+
+Conversation Context
+→ General Reference Resolution
+→ Resolve Bubble
+→ Resolve Entity
+→ Mutation Interpretation
+→ ChangeSet
+→ Proposal
+→ Policy/Approval
+→ Run/DAG
+→ execution boundary
+→ version/state update
+→ same Bubble projection
+→ rerender
+
+إذا execution layer الخارجي غير جاهز:
+توقف عند truthful boundary.
+
+لا fake success.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GENERAL MUTATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+استخدم:
+
+DATA_MUTATION
+STRUCTURAL_MUTATION
+POLICY_MUTATION
+WORKFLOW_MUTATION
+VIEW_MUTATION
+PERMISSION_MUTATION
+COMMERCIAL_MUTATION
+
+لا Domain mutation classes.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHANGESET / VERSIONING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+للتغييرات الدائمة:
+
+Current Version
+→ ChangeSet
+→ Validate
+→ Human-readable Preview
+→ Approval if required
+→ Apply
+→ New Version
+→ Verify when verifier exists
+→ Projection Refresh
+
+حافظ على rollback metadata عندما يكون rollback آمنًا.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BUBBLE-SCOPED CHAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expanded Bubble يمكن أن تحتوي Composer.
+
+لكن:
+
+Bubble Composer
+→ Canonical Conversation Runtime
++ explicit bubble scope/reference
+
+لا تنشئ Agent جديدة لكل Bubble.
+
+الذكاء يبقى:
+
+ONE CENTRAL JASIM INTELLIGENCE.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONVERSATION CONTINUITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Persistence وحدها لا تكفي.
+
+أنشئ Context Builder server-side يستخدم:
+
+- recent messages
+- durable conversation summary
+- active/referenced Bubble
+- relevant Runs
+- relevant Entities
+- unresolved/pending proposal state
+- reference history
+- scoped memory when relevant
+
+لا ترسل DB كاملة للنموذج.
+
+حدد Context Budget واضحًا.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MEMORY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا Memory Engine موجودة:
+اربطها.
+
+لا تبنِ Memory Engine ثانية.
+
+افصل:
+
+Conversation Memory
+User Memory
+Bubble/World Scoped Memory
+
+Memory ليست source of truth لـ:
+
+payments
+run lifecycle
+approvals
+transactions
+execution status
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EVENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أكمل قراءة الأحداث كـfirst-class Runtime data:
+
+list
+get
+pagination/cursor
+
+مع owner isolation.
+
+لكن حافظ على:
+
+Event != Receipt
+Event != Verification
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK #7 — DO NOT DUPLICATE IT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+المهمة:
+
+#7 — Prevent approved plans from silently failing after a server update
+
+تبقى موجودة كاختبار/مشكلة مستقلة.
+
+لا تنشئ implementation موازية لها.
+
+أثناء #14:
+
+أكمل فقط التكامل الذي يحتاجه Smart Bubble مع proposal/approval/resume.
+
+إذا وصلت إلى نفس underlying code:
+استخدم نفس canonical implementation.
+
+لا:
+
+approval-resume-v1
++
+approval-resume-v2
+
+الهدف:
+
+ONE RESUME PATH.
+
+وعند إنهاء الجزء المشترك:
+حدّث #7 ليشير إلى نفس implementation/tests بدل تكرار الكود.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+APPROVAL BEHAVIOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+الموافقة لا يجوز أن تصبح:
+
+AUTHORIZED
+ثم تتوقف.
+
+بعد approval:
+
+validate fingerprint
+→ resolve linked Run
+→ recompute readiness
+→ resume DAG toward execution boundary
+
+إذا Trusted Executor غير موجود:
+الحالة الصحيحة:
+
+READY_FOR_TRUSTED_EXECUTION
+أو
+BLOCKED_BY_EXECUTION_LAYER
+
+وليس success.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+POSTGRESQL PROOFS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+نفذ اختبارات Integration حقيقية على PostgreSQL لـ:
+
+1. Bubble without World
+2. Persistent Bubble with exactly one World
+3. Task without World
+4. Run without Bubble
+5. Bubble with multiple Runs
+6. Bubble survives Run completion
+7. Archived conversation absent from active list
+8. owner isolation
+9. Bubble state survives restart
+10. Run survives restart
+
+لا تعتمد فقط على mocks.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OUTPUT FORM REGRESSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+اختبار إلزامي:
+
+"كم سعر هذه السيارة؟"
+→ TEXT / STRUCTURED_RESULT
+
+"بع هذه السيارة"
+→ DIRECT_ACTION / DURABLE_RUN
+
+"راقب سعرها"
+→ DURABLE_RUN
+
+"أنشئ سوق سيارات"
+→ PERSISTENT_SMART_BUBBLE
+
+لا تستخدم keyword hardcoding لتمرير الاختبار.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WEB / MOBILE PARITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+نفس Bubble contract ونفس runtime truth.
+
+اختبر:
+
+Web creates Bubble
+→ Mobile sees same Bubble
+
+Mobile mutates same Bubble
+→ Web receives updated projection/version
+
+لا client-local truth.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HTML / SOAP GLASS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+طبّق الـHTML المرجعي كـ:
+
+VISUAL + INTERACTION SPECIFICATION
+
+وليس Business Runtime.
+
+استخرج:
+
+- Soap Glass
+- Bubble geometry
+- expansion behavior
+- motion
+- spacing
+- typography
+- RTL
+- responsive behavior
+- composer interaction
+
+واربطها بالـGeneric Runtime Renderer.
+
+لا تنقل fake HTML handlers.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXPO GO RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expo Go لا تعرقل جاسم النهائي.
+
+Expo Go:
+DEVELOPMENT PREVIEW ONLY.
+
+لا تحذف أو تبسط feature بسبب Expo Go.
+
+Final target:
+
+Standalone iOS
+Standalone Android
+
+لكن Production Mobile Auth تبقى مؤجلة في هذه tranche كما هو متفق.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STRICTLY DEFERRED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تبدأ الآن:
+
+- Production Mobile Auth
+- External Providers
+- Payments
+- irreversible external effects
+- Trusted Executor
+- Execution Receipts
+- Independent Verifier
+- Reconciliation
+- Commercial Runtime
+- Capability Lab
+- Multi-user expansion
+
+إلا إذا كان المطلوب مجرد contract/interface ضروري لإكمال #14 بدون effect حقيقي.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NO FAKE SUCCESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أي action غير منفذة حقيقيًا:
+
+PLANNED
+READY
+AWAITING_APPROVAL
+BLOCKED
+NOT_IMPLEMENTED
+
+بحسب الحقيقة.
+
+لا تعرض:
+
+COMPLETED
+
+إلا إذا state الحالية تثبت ما تعنيه بدقة.
+
+بعد إضافة Verifier لاحقًا:
+success الخارجي يتطلب VERIFIED.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TOKEN / AGENT EFFICIENCY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تعيد دراسة المشروع كاملًا.
+
+لا ترسل عدة Agents إلى نفس الملفات.
+
+استخدم Agents فقط عندما يمكن تقسيم العمل فعلًا، مثل:
+
+Agent A:
+harvest old GenUI / renderer
+
+Agent B:
+inspect current Bubble server contracts
+
+Agent C:
+PostgreSQL integration tests
+
+ثم merge النتائج إلى #14.
+
+لا تجعل كل Agent يعيد تحليل Vision.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DO NOT STOP AFTER EACH SMALL SUBTASK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+استمر داخل #14 تلقائيًا:
+
+inspect
+→ implement
+→ targeted test
+→ continue
+
+لا تتوقف بعد كل Phase لتسأل:
+
+"هل أتابع؟"
+
+توقف فقط إذا ظهر:
+
+- destructive production migration
+- irreversible data loss risk
+- unavailable required credential
+- fundamental contradiction
+- security blocker that cannot be safely resolved
+
+غير ذلك:
+تابع.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL ACCEPTANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+قبل إغلاق #14 أريد:
+
+CANONICAL WEB CLIENT:
+PASS
+
+CANONICAL MOBILE CLIENT:
+PASS
+
+DUPLICATE ACTIVE CLIENT:
+NO
+
+SHARED SMART BUBBLE CONTRACT:
+PASS
+
+GENERIC BUBBLE RENDERER:
+PASS
+
+COMPACT:
+PASS
+
+EXPANDED:
+PASS
+
+FULL_SCREEN:
+PASS
+
+LOADING/EMPTY/ERROR/BLOCKED:
+PASS
+
+BUBBLE DISCOVERY:
+PASS
+
+BUBBLE LIFECYCLE:
+PASS
+
+BUBBLE WITHOUT WORLD:
+PASS
+
+PERSISTENT BUBBLE WITH WORLD:
+PASS
+
+TASK WITHOUT WORLD:
+PASS
+
+RUN WITHOUT BUBBLE:
+PASS
+
+MULTIPLE RUNS SAME BUBBLE:
+PASS
+
+BUBBLE SURVIVES RUN:
+PASS
+
+NATURAL LANGUAGE BUBBLE CONTROL:
+PASS
+
+CHANGESET:
+PASS
+
+VERSIONING:
+PASS
+
+REFERENCE RESOLUTION:
+PASS
+
+CONVERSATION CONTINUITY:
+PASS
+
+MEMORY CONNECTED:
+PASS
+
+EVENTS READABLE:
+PASS
+
+APPROVAL RESUME TO EXECUTION BOUNDARY:
+PASS
+
+RESTART SAFETY:
+PASS
+
+WEB/MOBILE SAME BUBBLE:
+PASS
+
+SOAP GLASS:
+PASS
+
+RTL:
+PASS
+
+POSTGRESQL INTEGRATION PROOFS:
+PASS
+
+OUTPUT FORM REGRESSION:
+PASS
+
+EARLY IMPLEMENTATION USEFUL PARTS HARVESTED:
+YES / NONE_FOUND
+
+DOMAIN HANDLERS ADDED TO CORE:
+NO
+
+EXPO GO PRODUCT DEPENDENCY:
+NO
+
+EXTERNAL EFFECTS:
+DISABLED
+
+FULL CANONICAL REGRESSION:
+PASS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AFTER #14
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بعد إغلاق #14 فقط:
+
+Trusted Executor
+→ Execution Receipts
+→ Independent Verifier
+→ Reconciliation
+→ Recovery hardening
+→ First Real Provider E2E
+
+Production Mobile Auth يمكن تنفيذها في tranche مستقلة قبل standalone release.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL DIRECTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ابدأ تنفيذ #14 الآن.
+
+لا تنشئ خطة جديدة.
+لا تنشئ JASIM جديدة.
+لا تعِد بناء Core المثبتة.
+
+أكمل Smart Bubble Product فوق الـCanonical Runtime.
+
+واستخدم أفضل أجزاء الـEarly Replit Implementation كـaccelerator إذا أثبتت فائدتها.
+
+الهدف النهائي لهذه المهمة:
+
+THE EXISTING GENERATIVE RUNTIME
+MUST BECOME
+A REAL, PERSISTENT, INTELLIGENT, GENERATIVE SMART BUBBLE PRODUCT
+ON WEB AND MOBILE.

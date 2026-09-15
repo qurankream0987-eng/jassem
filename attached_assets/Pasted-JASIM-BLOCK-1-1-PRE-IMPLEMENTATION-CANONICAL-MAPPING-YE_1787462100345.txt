@@ -1,0 +1,675 @@
+JASIM — BLOCK 1.1
+PRE-IMPLEMENTATION CANONICAL MAPPING
+
+YES — BEGIN THE MAPPING PHASE ONLY.
+
+DO NOT IMPLEMENT BLOCK 1.1 YET.
+DO NOT MODIFY CODE.
+DO NOT CREATE MIGRATIONS.
+DO NOT INSTALL NEW SDKs.
+DO NOT START BLOCK 2.
+DO NOT START BLOCK 3.
+
+Block 1 is CLOSED / PASS and must be treated as an accepted baseline.
+
+Your task now is to inspect the ACTUAL canonical repository and produce
+the smallest possible implementation map for Block 1.1.
+
+This is not another broad audit.
+
+The purpose is:
+
+EXISTING BLOCK-1 ARCHITECTURE
+        ↓
+WHAT CAN BE REUSED
+        ↓
+WHAT MUST BE EXTENDED
+        ↓
+WHAT NEEDS ONLY AN ADAPTER
+        ↓
+WHAT IS ACTUALLY MISSING
+        ↓
+MINIMUM BLOCK-1.1 DELTA
+
+============================================================
+1. INSPECTION SCOPE
+============================================================
+
+Inspect only the canonical code related to:
+
+- Capability Registry
+- Capability definitions/contracts
+- Capability Requirement Graph
+- Capability Composer
+- typed bindings
+- capability matching
+- capability gap classification
+- provider requirements if already represented
+- external action foundation
+- Semantic Output Router
+- Presentation IR / GenUI
+- Smart Bubble projection
+- Web/Mobile shared presentation contracts
+- canonical Run/DAG integration boundary
+- provider adapter infrastructure if any
+- existing model/provider abstractions
+- relevant telemetry/provider metadata
+- Block 1 tests and report
+
+Also inspect the attached architectural constitution and
+Universal Services + Economic Acceptance Atlas as DESIGN REFERENCES.
+
+Do not reinterpret the Atlas as domain implementation requirements.
+
+============================================================
+2. DO NOT REOPEN PROVEN FOUNDATIONS
+============================================================
+
+Do not re-audit or redesign:
+
+- authentication
+- Block 0 Kernel
+- ownership model
+- Trusted Executor
+- Attempt Ledger
+- Verifier
+- Reconciliation
+- recovery
+- leases/fencing
+- economic primitives already accepted in Block 1
+- Offering / Need / Match / Engagement / Proposal / TransactionIntent
+  unless Block 1.1 directly requires an extension point
+
+Use their public/current contracts only.
+
+============================================================
+3. PRIMARY QUESTION
+============================================================
+
+Answer:
+
+Can the existing Block 1 Capability Fabric be extended so that:
+
+SEMANTIC CAPABILITY
+    !=
+CAPABILITY PROVIDER
+
+without rebuilding the Fabric?
+
+Target provider classes conceptually include:
+
+NATIVE
+MCP
+A2A
+AGENT_HARNESS
+COMPUTER_USE
+HUMAN
+
+But do NOT create these yet.
+
+First determine what existing abstractions already support.
+
+============================================================
+4. REQUIRED MAPPING TABLE
+============================================================
+
+For every target Block 1.1 concept, report:
+
+TARGET CONCEPT
+CURRENT CANONICAL IMPLEMENTATION
+CURRENT FILE(S)
+CURRENT CONTRACT / TYPE
+STATUS
+ACTION
+WHY
+
+ACTION must be exactly one of:
+
+REUSE
+EXTEND
+ADAPTER_ONLY
+NEW_GENERIC_PRIMITIVE_REQUIRED
+DEFER
+NO_CHANGE
+
+Required concepts:
+
+1. Semantic Capability identity
+2. Capability implementation/provider identity
+3. Capability Provider abstraction
+4. Provider Kind
+5. Provider capability metadata
+6. Provider trust classification
+7. Provider availability
+8. Provider cost/latency metadata
+9. Dynamic capability discovery
+10. Capability catalog
+11. Capability catalog caching
+12. Deferred/on-demand contract loading
+13. Provider selection
+14. Native provider binding
+15. MCP tool normalization
+16. MCP task mapping
+17. A2A Agent Card normalization
+18. A2A Skill → Capability matching
+19. A2A bounded task delegation
+20. Agent Harness abstraction
+21. specialist/subagent delegation
+22. remote-result validation
+23. capability-gap ecosystem search
+24. CapabilityGapCandidate
+25. A2UI compatibility boundary
+26. AG-UI compatibility boundary
+27. external presentation/provider boundary
+28. provider provenance
+29. provider telemetry
+30. external protocol version isolation
+31. JASIM boot independence from external standards
+
+============================================================
+5. CRITICAL CAPABILITY/PROVIDER SEPARATION
+============================================================
+
+Explicitly inspect whether current code mixes concepts such as:
+
+CapabilityDefinition
+=
+implementation
+=
+provider
+
+If yes:
+
+show exactly where.
+
+Do NOT fix it yet.
+
+Recommend the minimum safe separation.
+
+Desired conceptual result:
+
+CapabilityDefinition
+    = what JASIM semantically knows can be done
+
+CapabilityProvider
+    = one possible trusted implementation source
+
+ProviderBinding
+    = the validated relationship between a semantic requirement
+      and a selected provider
+
+Do not rename existing types unnecessarily if the same semantics can
+be expressed by extending them.
+
+============================================================
+6. SEARCH-BEFORE-BUILD ANALYSIS
+============================================================
+
+Determine how Block 1 currently handles:
+
+MISSING_GENERIC_CAPABILITY.
+
+Then identify the smallest insertion point for:
+
+MISSING REQUIREMENT
+    ↓
+search native capabilities
+    ↓
+try existing composition
+    ↓
+search permitted external provider catalogs
+    ↓
+still unavailable
+    ↓
+truthful CapabilityGapCandidate
+
+Do not implement external catalog search yet.
+
+Only identify the correct architecture boundary.
+
+============================================================
+7. DYNAMIC CAPABILITY DISCOVERY
+============================================================
+
+Inspect whether the model currently receives:
+
+- full capability registry
+- filtered candidate set
+- explicit capability IDs
+- semantic metadata
+- some other mechanism
+
+Report the actual path.
+
+Then identify how we can move toward:
+
+Semantic Requirement
+    ↓
+small candidate discovery
+    ↓
+load full contracts only for viable candidates
+    ↓
+Composer
+
+without breaking deterministic Block 1 composition.
+
+Measure from existing tests/code where possible:
+
+CURRENT_CAPABILITY_COUNT
+CURRENT_CONTRACT_LOADING_BEHAVIOR
+CURRENT_MODEL_CONTEXT_CAPABILITY_BEHAVIOR
+
+Do not run expensive LLM benchmarks.
+
+============================================================
+8. MCP MAPPING — NO IMPLEMENTATION
+============================================================
+
+Determine how MCP could connect to the existing architecture.
+
+Do NOT make MCP the Capability Registry.
+
+Desired boundary:
+
+MCP external tool metadata
+    ↓
+untrusted provider candidate
+    ↓
+normalize
+    ↓
+semantic Capability mapping
+    ↓
+JASIM trust/policy validation
+    ↓
+ProviderBinding
+
+Identify:
+
+- likely adapter location
+- schema reuse opportunities
+- task-to-Run-node mapping point
+- authentication boundary
+- provider provenance boundary
+
+Report what can be reused.
+
+Do not install an MCP SDK yet.
+
+============================================================
+9. A2A MAPPING — NO IMPLEMENTATION
+============================================================
+
+Determine how a remote A2A Agent should appear to JASIM.
+
+Desired:
+
+Agent Card
+    ↓
+untrusted metadata
+    ↓
+normalized ProviderCandidate
+    ↓
+Agent Skill semantic mapping
+    ↓
+bounded delegation
+    ↓
+typed result
+    ↓
+JASIM validation
+
+Identify the minimum required integration points.
+
+Do NOT introduce domain agents.
+
+DOMAIN_SPECIFIC_AGENT_PROPOSALS = 0
+
+============================================================
+10. AGENT HARNESS MAPPING
+============================================================
+
+Inspect existing model/agent orchestration.
+
+Determine whether an Agent Harness abstraction would:
+
+A. remove significant custom orchestration code
+
+or
+
+B. merely add another framework.
+
+Return one of:
+
+AGENT_HARNESS_VALUE = HIGH
+AGENT_HARNESS_VALUE = MEDIUM
+AGENT_HARNESS_VALUE = LOW
+AGENT_HARNESS_VALUE = NONE
+
+Explain with concrete repository evidence.
+
+Do not install OpenAI Agents SDK, Claude SDK, or another framework in
+this phase.
+
+============================================================
+11. A2UI / AG-UI MAPPING
+============================================================
+
+Inspect the current Presentation IR / renderer / live state mechanism.
+
+For A2UI determine:
+
+Can the existing Presentation IR be mapped through an adapter?
+
+or would adoption require rewriting canonical presentation semantics?
+
+Preferred:
+
+JASIM Presentation IR
+    ↓
+optional compatibility adapter
+
+Not:
+
+A2UI schema
+    =
+JASIM canonical UI state
+
+
+For AG-UI determine:
+
+Which canonical events could be projected as:
+
+- Run lifecycle
+- Step lifecycle
+- capability/tool activity
+- State snapshot
+- State delta
+
+Do not replace JASIM event truth.
+
+Return:
+
+A2UI:
+ADAPTER_FIT / PARTIAL_FIT / NO_CURRENT_VALUE
+
+AG_UI:
+ADAPTER_FIT / PARTIAL_FIT / NO_CURRENT_VALUE
+
+with evidence.
+
+============================================================
+12. REUSE EXISTING STANDARDS ONLY WHEN THEY REMOVE WORK
+============================================================
+
+For each proposed external standard/library answer:
+
+WHAT CUSTOM CODE WOULD THIS REMOVE OR AVOID?
+
+If the answer is effectively:
+
+"none"
+
+then recommend:
+
+DO_NOT_ADOPT_NOW.
+
+We do NOT want framework accumulation.
+
+============================================================
+13. ECONOMIC LEVERAGE ANALYSIS
+============================================================
+
+Use the Universal Services + Economic Acceptance Atlas to evaluate
+which Block 1.1 capabilities have the greatest leverage for later
+Blocks 2 and 3.
+
+Score conceptually:
+
+- cross-domain reuse
+- user value unlocked
+- user revenue potential unlocked
+- JASIM revenue potential unlocked
+- recurring-business leverage
+- B2B leverage
+- network-effect leverage
+- engineering cost reduction
+- provider lock-in reduction
+
+Do NOT invent monetary prices.
+
+Return a ranked list:
+
+P0
+P1
+P2
+DEFER
+
+Expected P0 candidates may include:
+
+- Capability/Provider separation
+- Dynamic capability discovery
+- On-demand contract loading
+- Provider-neutral binding
+- Search-before-build
+
+But verify this against the actual code.
+
+Do not blindly accept this expected ranking if repository evidence says
+otherwise.
+
+============================================================
+14. FOLLOW-UP TASK ABSORPTION
+============================================================
+
+Evaluate the previously suggested follow-ups conceptually:
+
+#34 HTTP E2E fabric coverage
+#35 explicit SHARED grants
+#36 provider-exported external links
+
+Do not execute them now.
+
+Classify each as:
+
+BLOCK_1_1
+BLOCK_2
+BLOCK_3
+FINAL_GATE
+UNNECESSARY
+
+and explain why.
+
+Avoid creating separate mini-projects unless objectively necessary.
+
+============================================================
+15. MINIMUM DELTA DESIGN
+============================================================
+
+After mapping, propose the MINIMUM coherent Block 1.1 implementation.
+
+Target:
+
+few abstractions
++
+strong boundaries
++
+maximum reuse
+
+not:
+
+many interfaces
++
+many SDKs
++
+many new tables.
+
+Report:
+
+NEW_TYPES_REQUIRED
+NEW_TABLES_REQUIRED
+NEW_MIGRATIONS_REQUIRED
+NEW_ADAPTERS_REQUIRED
+NEW_DEPENDENCIES_REQUIRED
+FILES_EXPECTED_TO_CHANGE
+
+For each, explain why.
+
+If zero is sufficient for any category, say ZERO.
+
+============================================================
+16. DATABASE DISCIPLINE
+============================================================
+
+Do not assume provider discovery needs a new database system.
+
+First determine whether existing PostgreSQL tables/schema patterns can
+support:
+
+- provider metadata
+- catalog cache
+- trust classification
+- protocol version
+- availability/freshness
+
+If current schema can handle this coherently, recommend reuse/extension.
+
+No vector DB unless proven necessary.
+
+No Elasticsearch merely for capability discovery.
+
+============================================================
+17. DEPENDENCY DISCIPLINE
+============================================================
+
+Do not recommend adding a dependency only because the protocol has an
+SDK.
+
+For each potential dependency, report:
+
+DEPENDENCY
+WHY_NEEDED
+WHAT_CODE_IT_REPLACES
+LOCK_IN_RISK
+CAN_BE_IMPLEMENTED_WITH_CURRENT_STACK
+RECOMMENDATION
+
+============================================================
+18. SECURITY REVIEW — ONLY NEW BOUNDARIES
+============================================================
+
+Do not re-audit general auth.
+
+Focus on threats introduced by Block 1.1:
+
+- malicious MCP metadata
+- malicious Agent Card
+- prompt injection through provider descriptions
+- remote result claiming success
+- cross-owner provider task reuse
+- provider purpose confusion
+- stale catalog metadata
+- provider identity spoofing
+- protocol-version ambiguity
+- excessive context disclosure
+- authority escalation through agent delegation
+
+Map each threat to the existing Block 0/1 protection that should enforce
+it.
+
+If a genuinely new generic protection is required, identify it.
+
+Do not implement yet.
+
+============================================================
+19. ABSOLUTE NON-GOALS
+============================================================
+
+Do NOT recommend:
+
+- replacing JASIM Runtime with LangGraph
+- replacing JASIM Capability Fabric with MCP
+- replacing JASIM presentation semantics with A2UI
+- replacing JASIM events with AG-UI
+- replacing central JASIM intelligence with a swarm
+- replacing PostgreSQL
+- building a new workflow engine
+- implementing payment
+- implementing maps
+- implementing delivery providers
+- implementing production notifications
+- implementing computer-use execution
+- starting commercial billing
+- resuming Phase 12
+
+============================================================
+20. REQUIRED OUTPUT
+============================================================
+
+Return ONE concise but technically precise report:
+
+JASIM_BLOCK_1_1_CANONICAL_MAPPING
+
+SECTION A — BLOCK 1 REUSE MAP
+
+SECTION B — CAPABILITY / PROVIDER SEPARATION
+
+SECTION C — DYNAMIC DISCOVERY
+
+SECTION D — MCP FIT
+
+SECTION E — A2A FIT
+
+SECTION F — AGENT HARNESS FIT
+
+SECTION G — A2UI / AG-UI FIT
+
+SECTION H — CAPABILITY EVOLUTION SEARCH-BEFORE-BUILD
+
+SECTION I — SECURITY BOUNDARIES
+
+SECTION J — ECONOMIC / PRODUCT LEVERAGE
+
+SECTION K — FOLLOW-UP TASK CLASSIFICATION
+
+SECTION L — MINIMUM IMPLEMENTATION DELTA
+
+
+Finish with exactly:
+
+BLOCK_1_REMAINS_CLOSED:
+YES / NO
+
+BLOCK_1_1_IMPLEMENTATION_READY:
+YES / NO
+
+BLOCK_1_1_REQUIRES_BLOCK_1_REWORK:
+YES / NO
+
+RECOMMENDED_NEW_DATABASE_TABLES:
+<number>
+
+RECOMMENDED_NEW_EXTERNAL_SDKS:
+<number>
+
+EXPECTED_PRIMARY_FILES_TO_CHANGE:
+<number>
+
+P0_IMPLEMENTATION_ITEMS:
+1.
+2.
+3.
+...
+
+DEFERRED_ITEMS:
+1.
+2.
+3.
+...
+
+READY_FOR_OWNER_REVIEW:
+YES / NO
+
+
+Then STOP.
+
+Do not modify any source code.
+Do not begin Block 1.1 implementation.

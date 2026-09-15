@@ -1,0 +1,1027 @@
+JASIM MOBILE — OFFICIAL VISUAL DIRECTION
+
+IMPORTANT:
+The attached reference image is now the OFFICIAL VISUAL NORTH STAR for JASIM Mobile.
+
+Study the attached image carefully before modifying the UI.
+
+This image defines HOW JASIM SHOULD FEEL AND LOOK FROM INSIDE THE MOBILE APP.
+
+It does NOT define domain architecture.
+
+Cars, laptops, jobs, health, travel, maintenance, shopping, etc. shown in the image are EXAMPLES ONLY.
+
+DO NOT create:
+CarApp
+JobApp
+ShoppingApp
+TravelApp
+MaintenanceApp
+HealthApp
+or domain-specific screens/components/routes.
+
+JASIM remains:
+
+ONE JASIM
+ONE CONVERSATION
+ONE GENERATIVE EXPERIENCE
+ONE CANONICAL RUNTIME
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. THE MAIN PRODUCT IDEA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The attached image represents the intended JASIM experience:
+
+USER OPENS JASIM
+↓
+SEES ONE MAIN CONVERSATION
+↓
+TYPES NATURAL LANGUAGE
+↓
+JASIM UNDERSTANDS THE GOAL
+↓
+THE CONVERSATION GENERATES THE RIGHT UI
+↓
+THE GENERATED UI CAN CHANGE/MORPH AS THE TASK CHANGES
+↓
+ONGOING WORK CAN REMAIN AVAILABLE AS LIVING OBJECTS
+
+The app must NOT feel like a normal app with dozens of fixed service pages.
+
+The user should feel:
+
+"I tell JASIM what I want, and the application forms itself around my request."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. THIS IMAGE IS THE VISUAL TARGET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use the attached image as the primary visual reference for:
+
+- overall dark premium appearance
+- mobile composition
+- spacing
+- rounded surfaces
+- glass effects
+- generated cards
+- conversation bubbles
+- typography hierarchy
+- subtle neon accents
+- blue / cyan / purple visual identity
+- compact information density
+- contextual generated interfaces
+- input composition
+- general polish level
+
+Do NOT interpret the image as a requirement to reproduce every pixel mechanically.
+
+It is the DESIGN LANGUAGE and PRODUCT EXPERIENCE target.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. COLOR / VISUAL LANGUAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Primary visual direction:
+
+deep navy / near-black background
+
+with:
+
+blue
+cyan
+violet
+subtle turquoise
+occasional restrained warm accent
+
+Use premium gradients very carefully.
+
+The interface should feel:
+
+premium
+intelligent
+calm
+futuristic
+alive
+clean
+
+NOT:
+
+gaming UI
+overly neon
+cyberpunk
+cluttered dashboard
+children's UI
+
+Use controlled glow.
+
+Do not make every component glow.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. SOAP GLASS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The reference uses the visual direction we call:
+
+SOAP GLASS
+
+Surfaces should feel slightly:
+
+translucent
+soft
+layered
+rounded
+dimensional
+
+Use:
+
+soft glass panels
+thin subtle borders
+gentle inner highlights
+light blur where supported
+small depth shadows
+soft gradient reflections
+
+Avoid:
+
+heavy frosted blur everywhere
+opaque rectangular panels
+sharp dashboard borders
+large hard shadows
+
+Cards should feel like objects floating naturally inside the conversation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. JASIM HEADER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The top of the application should remain simple.
+
+Reference direction:
+
+                جاسم
+
+with minimal controls around it.
+
+Possible supporting identity:
+
+small JASIM orb / intelligence mark
+
+menu/history action
+
+new conversation action
+
+Do NOT create a large navigation header.
+
+The conversation must begin quickly beneath the header.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. CONVERSATION IS THE HOME SCREEN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is one of the most important rules.
+
+The main screen of JASIM is:
+
+THE CONVERSATION.
+
+Not:
+
+dashboard
+service directory
+app launcher
+category grid
+
+The visual reference shows multiple capabilities, but inside the actual app they should emerge from the conversation.
+
+The user may say:
+
+"ابحث لي عن أفضل لابتوب تحت 300 دينار"
+
+JASIM may generate Search Results.
+
+Then:
+
+"قارن الأول والثالث"
+
+The current experience morphs into Comparison.
+
+Then:
+
+"خذ الأول"
+
+JASIM may generate an Approval surface.
+
+Then:
+
+"وافق"
+
+The current experience may become Status / Timeline.
+
+All of this happens while the user remains in ONE conversation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. GENERATIVE SURFACES INSIDE CHAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The image shows exactly the type of experience wanted.
+
+A response is NOT always a text bubble.
+
+Depending on semantic PresentationDefinition, JASIM may generate:
+
+TEXT
+
+ENTITY CARD
+
+SEARCH RESULTS
+
+DETAIL
+
+COMPARISON
+
+FORM
+
+CHOICE
+
+APPROVAL
+
+CHECKOUT
+
+STATUS
+
+TIMELINE
+
+TRACKER
+
+DOCUMENT
+
+MEDIA
+
+WARNING
+
+ERROR
+
+WORLD SUMMARY
+
+etc.
+
+These surfaces should visually appear as natural extensions of the conversation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. EXAMPLE: SEARCH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example only:
+
+USER:
+
+"ابحث لي عن أفضل لابتوب تحت 300 دينار"
+
+JASIM may show:
+
+small explanation bubble
+
+followed by:
+
+a compact rich result surface
+
+containing:
+
+image
+title
+price
+small important attributes
+rating/status if real
+actions if allowed
+
+Like the reference image.
+
+Do NOT make search result cards enormous.
+
+Mobile density should be compact and readable.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. EXAMPLE: SELL SOMETHING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example only:
+
+USER:
+
+"بع سيارتي"
+
+JASIM may produce a semantic surface representing:
+
+the asset
+
+needed information
+
+sale status
+
+next action
+
+This is NOT a dedicated car-selling application.
+
+The same primitive architecture must work for:
+
+a laptop
+equipment
+a service
+unused capacity
+a product
+another resource
+
+The image is showing the visual behavior, not the domain architecture.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. EXAMPLE: GENERATED WORLD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+USER:
+
+"أنشئ لي منصة لحجوزات الصيانة"
+
+JASIM may create a persistent World.
+
+The conversation may then show a compact World surface similar to the image:
+
+title
+
+summary
+
+status
+
+key capabilities
+
+open button
+
+But DO NOT render a complete traditional dashboard immediately.
+
+The user remains in JASIM.
+
+The generated World lives behind the conversation and can be opened/expanded when useful.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. EXAMPLE: TRACKING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+USER:
+
+"أين وصل السائق؟"
+
+If real location observations exist:
+
+show a compact tracking/status surface.
+
+If real coordinates do NOT exist:
+
+DO NOT draw a fake moving map.
+
+The visual style may resemble the reference.
+
+But truthfulness is more important than matching the picture.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. EXAMPLE: COMPARISON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+USER:
+
+"قارن بين الخيارين"
+
+Generate a compact Mobile Comparison surface.
+
+The reference image shows the intended feeling:
+
+two candidates
+
+clear important differences
+
+easy visual scanning
+
+small recommendation/result if canonical logic provides one
+
+Do not reproduce wide Web tables.
+
+Use native Mobile composition.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. EXAMPLE: JOBS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The job surface visible in the reference image is ONLY an example.
+
+It demonstrates that the SAME JASIM conversation can generate a completely different semantic result surface.
+
+It does NOT mean:
+
+add Jobs tab
+
+create Jobs architecture
+
+create JobAgent
+
+create JobCard in core
+
+Use generic:
+
+EntityCard
+EntityCollection
+Detail
+Action
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. MORPHING IS CENTRAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This design should NOT become an endlessly growing stack of every UI surface.
+
+Example:
+
+SEARCH_RESULTS
+→ COMPARISON
+→ APPROVAL
+→ STATUS
+
+The Active Workspace/surface should MORPH into the current useful state.
+
+Conversation history preserves what happened.
+
+Current generative surface represents:
+
+WHAT MATTERS NOW.
+
+This is already supported by the architecture.
+
+The visual implementation must respect it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. DON'T COPY THE IMAGE AS ONE LONG STATIC CHAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Very important.
+
+The reference image places several examples on one phone because it is a DESIGN DEMONSTRATION.
+
+The real app should NOT permanently show:
+
+search
++
+selling
++
+World creation
++
+tracking
++
+comparison
++
+jobs
+
+all simultaneously.
+
+Instead:
+
+the conversation evolves.
+
+At any moment, show the smallest useful current experience.
+
+The image demonstrates the COMPONENT LANGUAGE.
+
+It is not a literal single production conversation state.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. LIVING OBJECTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The reference suggests ongoing objects.
+
+In the real JASIM architecture:
+
+if something ENDS with the response:
+do not create Living Object.
+
+If something CONTINUES:
+it may become a Living Object.
+
+Examples:
+
+راقب سعر هذا المنتج
+→ Living Object
+
+طلبي الحالي
+→ Living Object
+
+مشروع مستمر
+→ Living Object
+
+World
+→ Living Object
+
+بحث عادي
+→ NO Living Object
+
+مقارنة
+→ NO Living Object
+
+سؤال
+→ NO Living Object
+
+On Mobile these should later appear as compact ongoing objects, not giant permanent cards.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. MOBILE LIVING OBJECT PRESENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The final Mobile experience should use a compact presentation such as:
+
+small horizontal objects strip
+
+or compact expandable tray
+
+or sheet
+
+Example:
+
+[ مراقبة السعر ]
+[ طلب الشراء ]
+[ شركة النقل ]
+
+This must remain secondary.
+
+Do NOT allow Living Objects to take over the main screen.
+
+Conversation remains primary.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. THE CENTRAL JASIM ORB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The glowing central orb shown in the reference is an important visual identity candidate.
+
+Use it as:
+
+JASIM intelligence / assistant identity
+
+or central conversation/action identity
+
+NOT as a separate architecture.
+
+It may animate subtly when:
+
+thinking
+listening
+working
+
+But avoid constant heavy animation.
+
+The orb should feel alive but calm.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. BOTTOM AREA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The visual reference shows:
+
+message field
+attachment
+voice
+send
+
+This is aligned with the desired product.
+
+Primary interaction area:
+
+[ + ] [ attachment ] [ اكتب رسالتك هنا... ] [ voice ] [ send ]
+
+Keep input persistent and easy to reach.
+
+It is the main control interface.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. BOTTOM NAVIGATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The reference includes a bottom navigation.
+
+Do NOT mechanically copy the exact tabs until checking current JASIM navigation.
+
+The important visual idea is:
+
+minimal navigation
++
+central JASIM intelligence identity
++
+conversation remains central
+
+Do NOT add domain tabs.
+
+Never add:
+
+سيارات
+وظائف
+فنادق
+مطاعم
+تسوق
+
+as permanent navigation.
+
+If bottom navigation remains, it should contain only generic JASIM concepts such as:
+
+الرئيسية / المحادثة
+النشاط / العناصر
+السجل
+الحساب
+
+according to existing product architecture.
+
+Do not redesign navigation during a task whose scope excludes it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. EXTERNAL FLOATING CARDS IN THE REFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The cards OUTSIDE the phone in the attached image are MARKETING / CONCEPT ART.
+
+Examples:
+
+حوّل أفكارك إلى واقع
+حلل وقارن
+نظم مواعيدك
+خطط لرحلاتك
+تعلم
+تسوق
+اهتم بصحتك
+
+DO NOT place these floating marketing cards inside the real application.
+
+They communicate JASIM's generality only.
+
+Inside the actual app:
+
+the interface stays clean.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. NO DOMAIN ARCHITECTURE FROM THE IMAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is mandatory.
+
+The visual reference MUST NOT cause implementation of:
+
+CarCard
+LaptopCard
+JobCard
+HealthCard
+TravelCard
+
+or:
+
+CarScreen
+JobsScreen
+ShoppingScreen
+
+or:
+
+CarAgent
+JobsAgent
+TravelAgent
+
+The correct implementation remains:
+
+EntityCard
+
+EntityCollection
+
+Comparison
+
+Form
+
+Approval
+
+Status
+
+Timeline
+
+World surface
+
+Living Object surface
+
+and other GENERIC semantic primitives.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. INFORMATION DENSITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The image uses relatively dense information while maintaining clarity.
+
+Follow that principle.
+
+On Mobile:
+
+avoid massive cards
+
+avoid excessive whitespace
+
+avoid giant headings
+
+avoid one tiny piece of information occupying half the screen
+
+Results should feel efficient.
+
+But maintain touch accessibility.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. ROUNDED GEOMETRY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use a consistent rounded language.
+
+Approximate visual feeling:
+
+chat bubbles:
+medium rounded
+
+generated cards:
+large rounded
+
+buttons:
+pill / soft rounded
+
+Workspace surfaces:
+large soft radius
+
+Avoid random radius values.
+
+Use existing design tokens where possible.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. TYPOGRAPHY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Arabic must feel first-class.
+
+Visual hierarchy:
+
+JASIM title
+↓
+surface title
+↓
+entity title
+↓
+important value
+↓
+supporting metadata
+
+Do not use extremely small Arabic text just to match the concept image.
+
+Readability is more important.
+
+Mixed Arabic/English product names must remain correctly aligned.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. ICONOGRAPHY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use clean consistent icons.
+
+Examples:
+
+search
+compare
+location
+document
+settings/action
+approval
+status
+jobs/resource
+World
+
+Do not use random emoji.
+
+Do not mix many icon styles.
+
+Prefer existing icon system.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. ANIMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Motion should reinforce Morphing.
+
+Examples:
+
+results surface softly expands
+
+comparison replaces results
+
+approval becomes focused
+
+status updates smoothly
+
+Living Object attention becomes subtly noticeable
+
+Do not:
+
+bounce everything
+pulse everything
+spin everything
+use constant neon motion
+
+Premium and controlled.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. LIGHT/DARK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The attached image defines the PRIMARY desired aesthetic:
+
+DARK JASIM EXPERIENCE.
+
+Deep navy with premium glass surfaces.
+
+If the product supports Light Mode:
+
+preserve semantic hierarchy and component language.
+
+But DARK should closely reflect this reference.
+
+Do not invert colors mechanically.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. MOBILE DEVICE BEHAVIOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Respect:
+
+safe areas
+
+notch / Dynamic Island
+
+keyboard
+
+small phones
+
+large phones
+
+RTL
+
+accessibility text sizing
+
+touch target size
+
+native scrolling
+
+Bottom sheets must not clash with keyboard.
+
+Full-screen generated surfaces must have obvious return-to-conversation behavior.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. TRUTHFUL UI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Visual similarity NEVER overrides runtime truth.
+
+The reference may show:
+
+map
+progress
+success
+rating
+products
+prices
+
+The actual application may show these ONLY if canonical data provides them.
+
+Do NOT create fake:
+
+location
+progress
+prices
+availability
+ratings
+payment success
+verified status
+order status
+
+The design is a reference.
+
+Runtime truth is authoritative.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. USE THE ARCHITECTURE WE ALREADY BUILT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT rebuild JASIM to achieve this appearance.
+
+The architecture already exists:
+
+PresentationDefinition
+MobilePresentationRenderer
+MobileWorkspaceSurface
+Presentation Decision
+UI Morphing
+LivingObjectProjection
+Trusted Action Dispatcher
+workspaceProjection
+activeLivingObjects
+
+The attached image should now guide how those EXISTING systems are composed visually.
+
+Architecture first.
+
+Reference image second.
+
+No redesign of canonical runtime.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. FINAL MOBILE EXPERIENCE TARGET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The desired experience can be summarized as:
+
+                 جاسم
+
+        [ User Conversation ]
+
+       [ Assistant Message ]
+
+     ╭────────────────────╮
+     │ Generated Surface  │
+     │ Results / Detail   │
+     │ Compare / Form     │
+     │ Approval / Status  │
+     ╰────────────────────╯
+
+      [ Conversation continues ]
+
+        [ Living Objects ]
+          when justified
+
+──────────────────────────────────────
+
+  +   اكتب رسالتك هنا...   mic  send
+
+The surface changes according to the user's goal.
+
+It does not become a fixed domain application.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. VISUAL ACCEPTANCE STANDARD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When the Mobile Smart Generative Experience is finally complete, compare it against the attached reference image.
+
+Ask:
+
+1. Does it immediately look like JASIM?
+
+2. Is Conversation obviously the main interface?
+
+3. Do rich generated surfaces feel native inside the conversation?
+
+4. Can different task types use the same visual system?
+
+5. Does the UI look premium rather than like a generic admin dashboard?
+
+6. Are Soap Glass / depth / rounded surfaces visible but restrained?
+
+7. Is Arabic RTL polished?
+
+8. Does the UI remain compact enough for a phone?
+
+9. Does Morphing feel like the same workspace evolving?
+
+10. Are ongoing Living Objects visible without clutter?
+
+11. Is the input always easy to access?
+
+12. Are there zero domain-specific architectural components introduced merely to imitate the examples?
+
+If these are all YES:
+
+the visual direction matches the attached JASIM reference.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. IMPORTANT IMPLEMENTATION BOUNDARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DO NOT implement everything in this document immediately if the current task scope is narrower.
+
+This document is the FINAL VISUAL DIRECTION.
+
+Continue implementing the already-planned Smart UI tasks in order.
+
+For each task:
+
+use this image as the visual reference
+
+but respect that task's scope.
+
+DO NOT prematurely implement later tasks.
+
+DO NOT redesign the runtime.
+
+DO NOT introduce domain-specific architecture.
+
+END VISUAL DIRECTION.

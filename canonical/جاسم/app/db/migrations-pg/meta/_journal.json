@@ -1,0 +1,104 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1787222012204,
+      "tag": "0000_canonical-pg-baseline",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787272036971,
+      "tag": "0001_empty_miss_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787288900000,
+      "tag": "0002_bubble_content_versions",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1787350000000,
+      "tag": "0003_execution_attempts_and_summaries",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1787400000000,
+      "tag": "0004_model_usage_ledger",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787405127654,
+      "tag": "0005_block1_economic_fabric",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787406799051,
+      "tag": "0006_block1_proposal_version_unique",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1787463000000,
+      "tag": "0007_block11_capability_provider_catalog",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1787472000000,
+      "tag": "0008_block2_operational_fabric",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1787496000000,
+      "tag": "0009_block3_economic_fabric",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1787582400000,
+      "tag": "0010_payment_provider_binding",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1787668800000,
+      "tag": "0011_payout",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1787755200000,
+      "tag": "0012_world_commercial_binding",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1787841600000,
+      "tag": "0013_discovery_fabric",
+      "breakpoints": true
+    }
+  ]
+}

@@ -1,0 +1,2780 @@
+# =====================================================================
+# JASIM — CANONICAL COMPLETION DIRECTIVE
+# POST-TRANCHE-1 EXECUTION
+#
+# CANONICAL FRONTEND
+# → MIGRATION SAFETY
+# → GENERATIVE SMART BUBBLE LOOP
+# → CONVERSATION INTELLIGENCE
+# → APPROVAL RECOVERY
+# → TRUSTED EXECUTION
+#
+# WITH ENGINEERING JUDGMENT, BUT NO ARCHITECTURAL DRIFT
+# =====================================================================
+
+
+أنت الآن تعمل على JASIM بعد نجاح Tranche 1.
+
+هذه ليست إعادة بناء جديدة.
+
+هذه مرحلة:
+
+COMPLETE
+CONNECT
+PROVE
+HARDEN
+
+للـCanonical JASIM الحالي.
+
+
+=====================================================================
+0. CURRENT CONFIRMED BASELINE
+=====================================================================
+
+اعتبر الحقائق التالية Baseline مثبتة ما لم يظهر Regression حقيقي يناقضها:
+
+- canonical server runtime موجود.
+- canonical server typecheck أصبح نظيفًا.
+- runtimeRouter هو المسار الرسمي.
+- legacy routers أُزيلت من appRouter.
+- shadow runtime تم تحييده.
+- canonical runtime tasks موجودة.
+- focused Smart Bubble PostgreSQL proof = PASS.
+- broad Runtime/World PostgreSQL proof = PASS.
+- Conversation persistence موجودة.
+- Bubble lifecycle موجودة.
+- Bubble presentation CAS موجود.
+- owner isolation موجود.
+- World Runtime موجود.
+- Run + DAG موجودان.
+- Proposal / Fingerprint / Approval foundation موجودة.
+- Semantic Output Router موجود.
+- Reference Resolution موجود.
+- Shared Bubble contract موجود.
+
+لا تعِد بناء هذه الطبقات من الصفر.
+
+إذا اكتشفت defect حقيقيًا:
+أصلحه بأقل تعديل ممكن.
+
+لا تستخدم defect واحدًا كسبب لإعادة تصميم النظام كله.
+
+
+=====================================================================
+1. MASTER PRODUCT DEFINITION
+=====================================================================
+
+يجب أن يبقى JASIM:
+
+ONE CENTRAL INTELLIGENCE
+
+ONE GENERAL RUNTIME
+
+ONE CANONICAL STATE TRUTH
+
+ONE CAPABILITY SYSTEM
+
+ONE SECURITY / POLICY BOUNDARY
+
+MULTIPLE CLIENTS:
+- Web
+- iOS
+- Android
+
+
+والتجربة الرئيسية:
+
+USER
+↓
+JASIM MAIN CONVERSATION
+↓
+UNDERSTANDING
+↓
+OUTPUT ROUTER
+↓
+TEXT
+or
+STRUCTURED RESULT
+or
+RUN
+or
+WORKFLOW
+or
+SMART BUBBLE
+↓
+EXECUTION / STATE
+↓
+RESULT
+
+
+لا تحوّل JASIM إلى:
+
+Marketplace Builder فقط
+App Builder فقط
+Workflow Builder فقط
+Chatbot فقط
+Platform Generator فقط
+Domain Marketplace Collection
+
+
+=====================================================================
+2. NON-NEGOTIABLE ARCHITECTURAL INVARIANTS
+=====================================================================
+
+هذه القواعد أعلى من أي implementation detail:
+
+1. Bubble may exist without World.
+
+2. Persistent Smart Bubble may have optional World.
+
+3. Run may exist without Bubble.
+
+4. Run may exist without World.
+
+5. Task may exist without persistent World.
+
+6. Bubble may contain zero, one, or many Runs.
+
+7. Bubble survives completion of individual Runs.
+
+8. World is durable backing state,
+   not mandatory user-facing product surface.
+
+9. Direct Action must not force platform creation.
+
+10. Same domain may produce different Output Forms.
+
+11. Central JASIM Intelligence controls reasoning.
+
+12. Bubble does NOT get an independent agent brain.
+
+13. LLM is an untrusted planner/generator.
+
+14. Kernel controls:
+    identity
+    ownership
+    state
+    lifecycle
+    versioning
+    authorization
+    policy
+    approvals
+    persistence
+    execution boundaries.
+
+15. Generated DNA/World schemas cannot bypass Kernel.
+
+16. No Domain Handler is allowed merely to pass an example.
+
+17. No fake success.
+
+18. Authorized != Executed.
+
+19. Executed != Verified.
+
+20. External effects remain disabled until the trust chain exists.
+
+
+=====================================================================
+3. ENGINEERING JUDGMENT RULE
+=====================================================================
+
+هذه الوثيقة تحدد:
+
+PRODUCT SEMANTICS
+SECURITY INVARIANTS
+STATE SEMANTICS
+ACCEPTANCE CRITERIA
+DEPENDENCY ORDER
+
+لكنها لا تفرض اسم كل function أو table أو file.
+
+إذا اكتشفت أثناء التنفيذ أن implementation مختلفًا هو تقنيًا أفضل:
+
+يجوز لك استخدامه بشرط أن:
+
+A. يحافظ على جميع Product Invariants.
+
+B. لا ينشئ Runtime موازية.
+
+C. لا يضيف Domain-specific core.
+
+D. لا يقلل security أو durability.
+
+E. لا يكسر Web/Mobile shared truth.
+
+F. يحقق نفس أو أقوى Exit Gates.
+
+G. لديك دليل من الكود/الاختبار أن البديل أفضل.
+
+لا تغيّر architecture فقط لأنها:
+"أنظف"
+أو
+"أحدث"
+أو
+"أفضل practice"
+
+بدون حاجة فعلية.
+
+
+=====================================================================
+4. WHEN YOU MAY DEVIATE FROM THIS PLAN
+=====================================================================
+
+إذا اكتشفت أن خطوة مكتوبة هنا ليست الأنسب بسبب الحالة الفعلية للكود:
+
+لا تنفذها حرفيًا بطريقة خاطئة.
+
+استخدم:
+
+SEARCH
+→ TRACE
+→ COMPARE
+→ DECIDE
+→ IMPLEMENT
+→ PROVE
+
+
+ويجب تسجيل الانحراف باختصار:
+
+PLANNED APPROACH:
+...
+
+DISCOVERED REALITY:
+...
+
+BETTER APPROACH:
+...
+
+WHY:
+...
+
+INVARIANTS PRESERVED:
+...
+
+TEST EVIDENCE:
+...
+
+
+لا تحتاج التوقف وطلب الإذن إذا:
+
+- التغيير غير destructive.
+- لا يغير Product semantics.
+- لا يغير security boundaries.
+- لا يمس بيانات Production بصورة خطرة.
+
+تابع بالحل الأفضل.
+
+لكن إذا اكتشفت أن المطلوب يحتاج:
+
+- destructive migration
+- حذف بيانات حقيقية
+- تغييرًا جوهريًا في Product semantics
+- تخفيضًا في security guarantee
+- external credential
+- irreversible external effect
+
+توقف عند تلك النقطة فقط وسجل blocker بوضوح.
+
+
+#####################################################################
+# PHASE A
+# CANONICAL FRONTEND COMPLETION
+#####################################################################
+
+
+=====================================================================
+5. PHASE A GOAL
+=====================================================================
+
+Canonical Backend أصبح موحدًا.
+
+الآن يجب أن يصبح Web أيضًا:
+
+ONE CANONICAL FRONTEND DATA PATH.
+
+
+الهدف:
+
+WEB UI
+↓
+CANONICAL RUNTIME API
+↓
+CANONICAL JASIM RUNTIME
+↓
+CANONICAL SCHEMA
+↓
+POSTGRESQL
+
+
+ولا:
+
+WEB UI
+↓
+LEGACY ROUTER
+
+
+ولا:
+
+WEB UI
+↓
+SHADOW CONTRACT
+
+
+=====================================================================
+6. RUN FRONTEND TYPECHECK
+=====================================================================
+
+شغّل الـFrontend TypeScript check الفعلي.
+
+لا تفترض أن العدد ما زال ~200.
+
+أعطني العدد الحقيقي أولًا داخليًا ثم صنفه حسب Root Cause:
+
+LEGACY_ROUTER_REFERENCE
+LEGACY_CONTRACT_REFERENCE
+OLD_BUBBLE_SCHEMA
+OLD_WORLD_API
+OLD_TASK_API
+OLD_RUN_API
+OLD_CONVERSATION_API
+DEAD_COMPONENT
+TYPE_DRIFT
+INVALID_PROP
+REAL_UI_BUG
+OTHER
+
+
+لا تصلح errors واحدًا واحدًا قبل معرفة أسبابها.
+
+
+=====================================================================
+7. ACTIVE COMPONENT TRACE
+=====================================================================
+
+لكل component فاشل حدد:
+
+ACTIVE_CANONICAL_UI
+
+LEGACY_BUT_RENDERED
+
+IMPORTED_BUT_UNUSED
+
+DEAD
+
+SAFE_TO_REMOVE
+
+NEEDS_MIGRATION
+
+
+لا تهدر وقتًا بإصلاح component لا يدخل في active bundle.
+
+لكن لا تستبعد ملفًا فقط لأن TypeScript فيه أخطاء.
+
+يجب إثبات:
+
+NOT IMPORTED
+NOT ROUTED
+NOT LAZY_LOADED
+NOT REFERENCED
+NOT REQUIRED BY ACTIVE CLIENT
+
+
+=====================================================================
+8. NO FAKE TYPECHECK SUCCESS
+=====================================================================
+
+الهدف ليس:
+
+"tsconfig ignores errors"
+
+الهدف:
+
+ACTIVE_FRONTEND_TYPE_ERRORS = 0
+
+ACTIVE_LEGACY_API_DEPENDENCIES = 0
+
+
+إذا component قديم Dead:
+يمكن إخراجه من active compilation بعد إثبات ذلك.
+
+إذا Active:
+يجب Migration حقيقية.
+
+
+=====================================================================
+9. MIGRATE ACTIVE API CALLS
+=====================================================================
+
+افحص خصوصًا:
+
+Home.tsx
+Chat components
+ChatSidebar
+Composer
+Bubble surfaces
+Bubble hooks
+Conversation hooks
+Task status UI
+Run status UI
+SchemaRenderer
+Navigation
+Shared runtime hooks
+
+
+أي Active UI تستخدم legacy router:
+
+حوّلها إلى canonical Runtime API.
+
+لا تعِد إنشاء legacy router لتسهيل Migration.
+
+
+=====================================================================
+10. ONE CONTRACT SOURCE
+=====================================================================
+
+لا نريد:
+
+@contracts/jasim old BubbleSchema
+
+في نفس المسار مع:
+
+@workspace/jasim-bubble-contract
+
+
+للمفاهيم نفسها.
+
+حدد Canonical ownership بوضوح:
+
+SMART BUBBLE CONTRACT
+→ @workspace/jasim-bubble-contract
+
+WORLD / DNA DEFINITION
+→ canonical RuntimeWorldDefinition
+
+API TYPES
+→ canonical runtime API types
+
+
+لا Duplicate truths.
+
+
+=====================================================================
+11. SCHEMA RENDERER MIGRATION
+=====================================================================
+
+لا تعِد بناء Renderer من الصفر.
+
+حوّل Renderer الحالية تدريجيًا إلى:
+
+RuntimeBubbleProjection
++
+RuntimeWorldDefinition?
++
+permissions
++
+availableActions
++
+presentationState
+↓
+GENERIC RENDERER
+
+
+يجب أن تستخدم primitives عامة مثل:
+
+Text
+Heading
+Section
+List
+Grid
+Table
+Metric
+Media
+Form
+Input
+Action
+Status
+Timeline
+Chart
+EmptyState
+ErrorState
+
+
+ممنوع أن يصبح الأساس:
+
+CarRenderer
+JobsRenderer
+TransportRenderer
+StoreRenderer
+
+
+=====================================================================
+12. TASK / RUN UI
+=====================================================================
+
+إذا UI قديمة تقرأ Task legacy:
+
+اربطها بـcanonical Task/Run state.
+
+واحفظ:
+
+Task != Run
+
+Run != Bubble
+
+Bubble != World
+
+
+UI يجب أن تعكس هذه الحقيقة بدل دمج المفاهيم.
+
+
+=====================================================================
+13. PHASE A EXIT GATE
+=====================================================================
+
+لا تعتبر Phase A مكتملة حتى:
+
+ACTIVE_FRONTEND_TYPE_ERRORS = 0
+
+ACTIVE_LEGACY_ROUTER_CALLS = 0
+
+ACTIVE_LEGACY_BUBBLE_CONTRACT_USE = 0
+
+WEB_CANONICAL_RUNTIME_CALL_PATH = PASS
+
+CHAT_SEND = PASS
+
+CHAT_RELOAD = PASS
+
+CONVERSATION_LIST = PASS
+
+BUBBLE_LIST = PASS
+
+BUBBLE_OPEN = PASS
+
+BUBBLE_EXPAND = PASS
+
+BUBBLE_FULLSCREEN = PASS
+
+BUBBLE_MINIMIZE = PASS
+
+BUBBLE_RESTORE = PASS
+
+TASK_STATUS_SURFACE = PASS
+
+RUN_STATUS_SURFACE = PASS
+
+RTL = PASS
+
+SOAP_GLASS_BASELINE = PASS
+
+REACT_CONSOLE_ERRORS = 0 for tested journeys
+
+WEB_SMOKE = PASS
+
+WEB_E2E = PASS
+
+
+#####################################################################
+# PHASE B
+# CANONICAL MIGRATION SAFETY
+#####################################################################
+
+
+=====================================================================
+14. WHY PHASE B EXISTS
+=====================================================================
+
+runtime_tasks تم إنشاؤه سابقًا مباشرة عبر pg driver.
+
+هذا مقبول كإصلاح.
+
+لكن ليس مقبولًا كحالة دائمة.
+
+نحتاج:
+
+CODE SCHEMA
+↓
+MIGRATION HISTORY
+↓
+DATABASE
+
+أن تكون reproducible.
+
+
+=====================================================================
+15. DRIZZLE SOURCE OF TRUTH
+=====================================================================
+
+تحقق أن Canonical Drizzle schema تحتوي جميع جداول Runtime الحالية.
+
+خصوصًا:
+
+runtime_tasks
+runtime runs
+dag nodes
+dag dependencies
+bubbles
+worlds
+world versions
+proposals
+approvals
+receipts الحالية
+conversation/message tables
+
+
+لا تعتمد على جدول موجود في DB فقط وغير ممثل في schema source.
+
+
+=====================================================================
+16. NO PRODUCTION-FIRST MIGRATION TEST
+=====================================================================
+
+ممنوع أن يكون أول اختبار migration على Production DB.
+
+الترتيب:
+
+TEST A:
+
+FRESH TEMPORARY DATABASE
+↓
+RUN ALL CANONICAL MIGRATIONS
+↓
+SCHEMA VERIFICATION
+
+
+TEST B:
+
+CLONE / TEMP COPY OF CURRENT SCHEMA
+↓
+RUN MIGRATION
+↓
+NO DESTRUCTIVE DATA LOSS
+↓
+SCHEMA DIFF
+↓
+PASS
+
+
+فقط بعد ذلك تعتبر migration safe.
+
+
+=====================================================================
+17. EXISTING DATABASE COMPATIBILITY
+=====================================================================
+
+يجب أن تتعامل migration مع Current DB بدون:
+
+DROP غير ضروري
+TRUNCATE
+table recreation destructive
+UUID corruption
+duplicate table creation
+silent data conversion
+
+
+إذا يحتاج schema reconciliation:
+استخدم migration صريحة قابلة للتدقيق.
+
+
+=====================================================================
+18. FRESH DATABASE PROOF
+=====================================================================
+
+أثبت:
+
+EMPTY DB
+→ migrations
+→ canonical runtime boots
+→ basic conversation
+→ bubble
+→ world
+→ task
+→ run
+→ proposal
+→ DAG
+
+بدون manual SQL.
+
+
+=====================================================================
+19. PHASE B EXIT GATE
+=====================================================================
+
+DB_MIGRATE = PASS
+
+FRESH_DB_MIGRATION = PASS
+
+CURRENT_SCHEMA_CLONE_MIGRATION = PASS
+
+SCHEMA_DIFF_REVIEW = PASS
+
+CANONICAL_SCHEMA_DRIFT = NONE
+
+MANUAL_REQUIRED_SCHEMA_PATCHES = 0
+
+FOCUSED_BUBBLE_PROOF = PASS
+
+BROAD_RUNTIME_PROOF = PASS
+
+CANONICAL_TESTS = PASS
+
+
+#####################################################################
+# PHASE C
+# EXISTING SMART BUBBLE GENERATIVE MUTATION
+#####################################################################
+
+
+=====================================================================
+20. CORE GOAL
+=====================================================================
+
+هذه أهم مرحلة حاليًا.
+
+يجب أن يتمكن المستخدم من التحكم في النظام الموجود باللغة الطبيعية.
+
+المثال:
+
+"متجري الذي فيه الآيفون خفض سعره إلى 280"
+
+
+المسار:
+
+USER MESSAGE
+↓
+CONVERSATION TURN
+↓
+CONTEXT
+↓
+REFERENCE RESOLUTION
+↓
+EXISTING BUBBLE
+↓
+ENTITY RESOLUTION
+↓
+MUTATION UNDERSTANDING
+↓
+CHANGESET
+↓
+PREVIEW
+↓
+POLICY
+↓
+APPROVAL IF REQUIRED
+↓
+ATOMIC APPLY
+↓
+CONTENT VERSION
+↓
+PROJECTION REFRESH
+↓
+SAME BUBBLE
+↓
+WEB/MOBILE
+
+
+=====================================================================
+21. GENERAL MUTATION MODEL
+=====================================================================
+
+ادعم generic mutation categories:
+
+DATA_MUTATION
+
+STRUCTURAL_MUTATION
+
+POLICY_MUTATION
+
+WORKFLOW_MUTATION
+
+VIEW_MUTATION
+
+PERMISSION_MUTATION
+
+COMMERCIAL_MUTATION
+
+
+لا Domain Mutations.
+
+
+مثال:
+
+"خفض السعر إلى 280"
+
+ليس:
+
+ProductPriceHandler
+
+بل:
+
+mutationType = DATA_MUTATION
+
+target = resolved canonical entity
+
+field/path = resolved schema field
+
+operation = update
+
+value = 280
+
+
+=====================================================================
+22. MUTATION INTENT NORMALIZER
+=====================================================================
+
+LLM يمكن أن يقترح structured mutation.
+
+لكن الناتج غير موثوق.
+
+يجب:
+
+LLM OUTPUT
+↓
+STRICT SCHEMA VALIDATION
+↓
+REFERENCE VALIDATION
+↓
+PERMISSION VALIDATION
+↓
+CHANGESET GENERATION
+
+
+Mutation structure ينبغي أن يعبّر عن:
+
+mutationType
+resolvedTargets
+requestedChanges
+reason/context
+risk
+requiredPermissions
+ambiguities
+
+
+إذا ambiguity حقيقي:
+اطلب clarification مختصر.
+
+إذا reference واضحة:
+لا تسأل المستخدم بلا داعٍ.
+
+
+=====================================================================
+23. REFERENCE RESOLUTION
+=====================================================================
+
+يجب دعم مراجع مثل:
+
+"متجري"
+
+"الآيفون"
+
+"المنتج الثاني"
+
+"الخدمة التي أضفناها أمس"
+
+"الخط الذي أنشأناه"
+
+"الطلب الأخير"
+
+"نفس الفقاعة"
+
+"المشروع السابق"
+
+
+يجب resolve إلى canonical IDs قبل Apply.
+
+
+Types قد تشمل:
+
+bubbleId
+worldId
+entityId
+runId
+taskId
+proposalId
+conversationId
+messageId
+versionId
+
+
+=====================================================================
+24. CHANGESET
+=====================================================================
+
+أكمل Canonical ChangeSet.
+
+المهم semantics وليس اسم الجدول.
+
+يجب أن يحتوي منطقيًا على:
+
+changeSetId
+ownerId
+actorId
+bubbleId
+worldId?
+baseContentVersion
+targetRefs
+mutationType
+operations
+preview
+riskLevel
+requiresApproval
+status
+createdAt
+
+
+لا تطبق mutation مباشرة من raw LLM output.
+
+
+=====================================================================
+25. CONTENT VERSIONING
+=====================================================================
+
+Presentation state/version موجودة.
+
+الآن نحتاج Business/Content version مستقلة.
+
+
+مثال:
+
+expand
+minimize
+fullscreen
+
+→ presentationVersion
+
+
+أما:
+
+change price
+add entity
+add ratings
+change workflow
+add policy
+change permissions
+
+→ contentVersion
+
+
+لا تخلطهما.
+
+
+=====================================================================
+26. CONTENT VERSION MUST NOT BE A COUNTER ONLY
+=====================================================================
+
+لا نريد مجرد:
+
+contentVersion += 1
+
+
+يجب أن نستطيع الإجابة:
+
+WHO changed it?
+
+WHAT changed?
+
+FROM WHICH VERSION?
+
+WHICH CHANGESET?
+
+WHAT RESULTING VERSION?
+
+WHICH TARGETS?
+
+
+على الأقل اربط:
+
+baseContentVersion
+resultContentVersion
+changeSetId
+actor/owner
+targetRefs
+mutationType
+timestamp
+World/version lineage if applicable
+
+
+=====================================================================
+27. HUMAN-READABLE PREVIEW
+=====================================================================
+
+قبل mutation حساسة أو بنيوية:
+
+أنشئ Preview مفهومة للمستخدم.
+
+مثال:
+
+قبل:
+سعر الآيفون = 300 د.ك
+
+بعد:
+سعر الآيفون = 280 د.ك
+
+التغيير:
+خفض السعر 20 د.ك
+
+
+Preview:
+
+INFORMATIVE
+
+وليست:
+
+AUTHORIZATION.
+
+
+=====================================================================
+28. ATOMIC APPLY
+=====================================================================
+
+المسار يجب أن يكون Atomic.
+
+مفهوميًا:
+
+resolve refs
+↓
+validate ownership
+↓
+validate permission
+↓
+validate policy
+↓
+validate baseContentVersion
+↓
+BEGIN TRANSACTION / EQUIVALENT ATOMIC BOUNDARY
+↓
+apply World/content mutation
+↓
+persist ChangeSet
+↓
+persist version lineage
+↓
+increment content version
+↓
+commit
+↓
+invalidate/refresh projection
+
+
+إذا فشل أي شيء قبل commit:
+
+NO PARTIAL MUTATION.
+
+
+=====================================================================
+29. CONCURRENCY
+=====================================================================
+
+إذا:
+
+ChangeSet baseContentVersion = 7
+
+لكن Current contentVersion = 8
+
+لا تطبق بصمت.
+
+اختر حسب طبيعة العملية:
+
+SAFE_REBASE
+
+أو:
+
+STALE_CHANGESET
+
+
+لا Last Writer Wins عمياء.
+
+
+=====================================================================
+30. TEST 1 — DATA MUTATION
+=====================================================================
+
+أنشئ Bubble حقيقية تحتوي entity لآيفون بسعر 300.
+
+من Main Chat:
+
+"متجري الذي فيه الآيفون خفض سعره إلى 280"
+
+
+PASS requires:
+
+same Bubble resolved
+
+same entity resolved
+
+DATA_MUTATION inferred
+
+ChangeSet created
+
+preview created
+
+ownership validated
+
+permission validated
+
+state persisted
+
+contentVersion increments
+
+projection updates
+
+same Bubble renders 280
+
+NO new Bubble
+
+NO unnecessary World
+
+NO domain handler
+
+
+=====================================================================
+31. TEST 2 — STRUCTURAL DNA MUTATION
+=====================================================================
+
+ثم:
+
+"أضف تقييمات لمتجري."
+
+
+PASS requires:
+
+same Bubble
+
+STRUCTURAL_MUTATION
+
+ChangeSet
+
+Preview
+
+RuntimeWorldDefinition / equivalent structural definition evolves
+
+World/definition version created
+
+contentVersion evolves
+
+generic renderer can display the new structure
+
+
+مهم:
+
+لا تعتبر PASS إذا JSON فقط تغيرت.
+
+يجب أن Renderer العامة تستوعب الناتج.
+
+
+DOMAIN-SPECIFIC RENDERER ADDED = NO
+
+
+=====================================================================
+32. TEST 3 — POLICY MUTATION
+=====================================================================
+
+ثم:
+
+"أي طلب فوق 500 يحتاج موافقتي."
+
+
+PASS requires:
+
+same Bubble
+
+POLICY_MUTATION
+
+policy represented in canonical World/DNA
+
+versioned
+
+future applicable operations consult the policy
+
+no hardcoded StorePolicy.
+
+
+=====================================================================
+33. TEST 4 — VIEW MUTATION
+=====================================================================
+
+"اعرض المنتجات في جدول."
+
+
+Expected:
+
+VIEW_MUTATION
+
+same data
+
+same Bubble
+
+view schema evolves
+
+Generic Renderer renders table
+
+
+لا Business data duplication.
+
+
+=====================================================================
+34. TEST 5 — PERMISSION MUTATION
+=====================================================================
+
+"أضف موظفًا يستطيع مشاهدة الطلبات لكنه لا يستطيع تغيير الأسعار."
+
+
+Expected:
+
+PERMISSION_MUTATION
+
+canonical permission model updated
+
+server enforcement
+
+not UI-only permissions
+
+
+=====================================================================
+35. MUTATION DURABILITY TEST
+=====================================================================
+
+بعد نجاح mutation:
+
+restart server
+
+ثم:
+
+reload same conversation
+
+load same Bubble
+
+load same World if applicable
+
+
+Expected:
+
+same bubbleId
+
+same World
+
+same updated content
+
+same contentVersion
+
+same version lineage
+
+same policy
+
+same reference ability
+
+
+ممنوع إعادة توليد المحتوى من prompt الأصلي.
+
+
+=====================================================================
+36. NO SILENT LEGACY FALLBACK
+=====================================================================
+
+إذا Canonical Runtime لا تستطيع mutation:
+
+لا ترسل الطلب إلى legacy runtime مخفية.
+
+استخدم حالة صادقة:
+
+BLOCKED
+
+UNSUPPORTED
+
+NEEDS_IMPLEMENTATION
+
+AMBIGUOUS_REFERENCE
+
+حسب الحالة.
+
+
+=====================================================================
+37. WEB / MOBILE PROJECTION PARITY
+=====================================================================
+
+نفس Business state يجب أن تكون server truth.
+
+اختبر:
+
+Web creates/updates Bubble
+
+Mobile reads same Bubble
+
+ثم:
+
+Mobile triggers canonical mutation
+
+Web reloads/requeries
+
+→ same updated state
+
+
+حتى لو Production Mobile Auth مؤجلة،
+يجب أن يبقى contract/runtime parity صحيحًا في بيئة الاختبار المصرح بها.
+
+
+=====================================================================
+38. PHASE C EXIT GATE
+=====================================================================
+
+EXISTING_BUBBLE_REFERENCE = PASS
+
+ENTITY_RESOLUTION = PASS
+
+MUTATION_NORMALIZER = PASS
+
+CHANGESET = PASS
+
+HUMAN_PREVIEW = PASS
+
+CONTENT_VERSION = PASS
+
+CONTENT_VERSION_AUDIT_TRAIL = PASS
+
+ATOMIC_APPLY = PASS
+
+STALE_CHANGESET_PROTECTION = PASS
+
+DATA_MUTATION = PASS
+
+STRUCTURAL_MUTATION = PASS
+
+POLICY_MUTATION = PASS
+
+VIEW_MUTATION = PASS
+
+PERMISSION_MUTATION = PASS
+
+GENERIC_RENDERER_AFTER_STRUCTURAL_CHANGE = PASS
+
+MUTATION_SURVIVES_RESTART = PASS
+
+SAME_BUBBLE_PRESERVED = PASS
+
+DOMAIN_HANDLER_ADDED = NO
+
+LEGACY_FALLBACK_USED = NO
+
+
+#####################################################################
+# PHASE D
+# CONVERSATION INTELLIGENCE + MEMORY + EVENTS
+#####################################################################
+
+
+=====================================================================
+39. CONVERSATION CONTINUITY
+=====================================================================
+
+بعد Phase C انتقل مباشرة إلى Conversation Intelligence.
+
+الحالي لا يجب أن يعتمد على fixed recent-message window فقط.
+
+ابنِ:
+
+RECENT TURNS
++
+DURABLE SUMMARY
++
+CANONICAL REFERENCES
++
+RELEVANT BUBBLE/RUN STATE
++
+PENDING APPROVAL
++
+RELEVANT MEMORY
+
+
+ولا:
+
+ALL USER DATA.
+
+
+=====================================================================
+40. CONTEXT BUDGET
+=====================================================================
+
+ضع bounded context policy.
+
+حدد:
+
+recentTurnsLimit
+summary policy
+reference selection policy
+memory selection policy
+maximum context budget
+
+
+لا unbounded token growth.
+
+
+=====================================================================
+41. SUMMARY
+=====================================================================
+
+Conversation Summary يجب أن تحتفظ بـ:
+
+important decisions
+
+persistent constraints
+
+bubble references
+
+entity references
+
+pending Runs
+
+pending approvals
+
+unresolved questions
+
+owner preferences ذات الصلة بالمحادثة
+
+
+ولا تعتبر summary source of transactional truth.
+
+
+=====================================================================
+42. MEMORY SCOPES
+=====================================================================
+
+اربط Memory canonical بثلاث scopes على الأقل:
+
+USER_MEMORY
+
+CONVERSATION_MEMORY
+
+BUBBLE_WORLD_MEMORY
+
+
+لكن:
+
+Memory != DB transaction truth
+
+Memory != Run state
+
+Memory != Approval status
+
+Memory != Receipt
+
+
+=====================================================================
+43. HARVEST OLD MEMORY CAREFULLY
+=====================================================================
+
+إذا Old Core تحتوي Memory/ContextBuilder مفيدة:
+
+استخرج primitives.
+
+لا تعِد تشغيل legacy Cytoplasm بالكامل.
+
+Allowed:
+
+REUSE_LOGIC
+ADAPT
+PORT
+
+Not:
+
+RESTORE_OLD_RUNTIME
+
+
+=====================================================================
+44. EVENTS FIRST CLASS
+=====================================================================
+
+أنشئ canonical Event access:
+
+event list
+
+event get
+
+cursor/pagination
+
+filter by relevant:
+
+conversation
+bubble
+world
+task
+run
+
+
+مع owner isolation.
+
+
+لكن:
+
+Event != Receipt
+
+Event != Verification
+
+Event != Memory
+
+
+=====================================================================
+45. EVENT-DRIVEN RUNTIME
+=====================================================================
+
+Events يمكن لاحقًا أن تساعد في:
+
+projection invalidation
+
+resume
+
+scheduler
+
+memory update
+
+notifications
+
+audit
+
+
+لكن لا تجعل Event Bus هو source of truth بدل DB state.
+
+
+=====================================================================
+46. PHASE D EXIT GATE
+=====================================================================
+
+LONG_CONVERSATION_50_PLUS_TURNS = PASS
+
+SUMMARY_RETENTION = PASS
+
+REFERENCE_CONTINUITY = PASS
+
+USER_MEMORY = PASS
+
+CONVERSATION_MEMORY = PASS
+
+BUBBLE_MEMORY = PASS
+
+MEMORY_CROSS_OWNER_LEAKAGE = FAIL_EXPECTED / PROTECTED
+
+EVENT_LIST = PASS
+
+EVENT_GET = PASS
+
+EVENT_PAGINATION = PASS
+
+OWNER_ISOLATION = PASS
+
+
+#####################################################################
+# PHASE E
+# APPROVAL RESUME + RESTART RECOVERY
+#####################################################################
+
+
+=====================================================================
+47. APPROVAL MUST CONTINUE EXECUTION
+=====================================================================
+
+Current principle:
+
+Proposal
+↓
+Approval
+↓
+AUTHORIZED
+
+غير كافٍ.
+
+
+المطلوب:
+
+Proposal
+↓
+Approval
+↓
+Fingerprint Revalidation
+↓
+Run Resolution
+↓
+DAG Readiness
+↓
+Resume Same Run
+↓
+Next Execution Boundary
+
+
+لا Run جديدة.
+
+
+=====================================================================
+48. FINGERPRINT REVALIDATION
+=====================================================================
+
+قبل resume:
+
+server recomputes canonical fingerprint.
+
+إذا critical input changed:
+old approval invalid.
+
+إذا target changed:
+old approval invalid.
+
+إذا owner/scope changed:
+old approval invalid.
+
+
+JSON key order only:
+same canonical fingerprint.
+
+
+=====================================================================
+49. RESTART TEST
+=====================================================================
+
+اختبار حقيقي:
+
+Create Run
+
+Create Proposal
+
+Wait Approval
+
+Approve
+
+Persist
+
+Restart Server
+
+Reload Same Run
+
+Resume Same DAG
+
+No duplicate Run
+
+No duplicate node
+
+No lost approval
+
+
+إذا Trusted Executor غير جاهز:
+
+Run يصل:
+
+READY_FOR_TRUSTED_EXECUTION
+
+وليس:
+
+COMPLETED.
+
+
+=====================================================================
+50. PHASE E EXIT GATE
+=====================================================================
+
+APPROVAL_RESUME = PASS
+
+APPROVAL_AFTER_RESTART = PASS
+
+SAME_RUN = PASS
+
+NO_DUPLICATE_RUN = PASS
+
+NO_DUPLICATE_NODE = PASS
+
+FINGERPRINT_REVALIDATED = PASS
+
+CHANGED_INPUT_INVALIDATES_APPROVAL = PASS
+
+READY_FOR_TRUSTED_EXECUTION = PASS
+
+
+#####################################################################
+# PHASE F
+# TRUSTED EXECUTOR
+#####################################################################
+
+
+=====================================================================
+51. EXECUTOR DEFINITION
+=====================================================================
+
+Trusted Executor منفصلة عن:
+
+LLM
+
+Planner
+
+Output Router
+
+UI
+
+Verifier.
+
+
+هي boundary تنفيذ فقط.
+
+
+=====================================================================
+52. PRE-EXECUTION GATE
+=====================================================================
+
+قبل أي effect:
+
+validate owner
+
+validate target
+
+validate capability
+
+validate provider
+
+validate proposal
+
+recompute fingerprint
+
+validate approval
+
+validate policy
+
+validate normalized inputs
+
+validate idempotency
+
+validate cancellation
+
+validate lease
+
+validate fence
+
+
+إذا أي Gate تفشل:
+NO EFFECT.
+
+
+=====================================================================
+53. FINGERPRINT VS IDEMPOTENCY
+=====================================================================
+
+لا تخلطهما.
+
+Fingerprint:
+
+what exact execution was authorized?
+
+
+Idempotency Key:
+
+prevent duplicate effect.
+
+
+Changing price:
+
+fingerprint changes.
+
+
+Retry same exact execution:
+
+idempotency may remain linked appropriately.
+
+
+#####################################################################
+# PHASE G
+# RECEIPT + VERIFIER + RECONCILIATION
+#####################################################################
+
+
+=====================================================================
+54. EXECUTION RECEIPTS
+=====================================================================
+
+لكل execution attempt:
+
+immutable Receipt.
+
+
+يجب منطقيًا أن تحتوي:
+
+receiptId
+
+ownerId
+
+runId
+
+nodeId
+
+proposalId?
+
+capability
+
+provider
+
+fingerprint
+
+idempotencyKey
+
+attempt
+
+startedAt
+
+completedAt?
+
+providerReference?
+
+status
+
+result/error
+
+verificationStatus
+
+
+لا secrets.
+
+
+=====================================================================
+55. RECEIPT IS NOT VERIFICATION
+=====================================================================
+
+Receipt تعني:
+
+an attempt happened.
+
+لا تعني:
+
+business effect succeeded.
+
+
+=====================================================================
+56. INDEPENDENT VERIFIER
+=====================================================================
+
+Verifier منفصلة عن Executor.
+
+Statuses:
+
+VERIFIED
+
+FAILED
+
+INCONCLUSIVE
+
+
+INCONCLUSIVE != SUCCESS.
+
+
+Verification strategies قد تشمل:
+
+DATABASE_READBACK
+
+PROVIDER_LOOKUP
+
+STATE_ASSERTION
+
+RECEIPT_VALIDATION
+
+COMPOSITE
+
+
+=====================================================================
+57. UNKNOWN OUTCOME / RECONCILIATION
+=====================================================================
+
+اختبر:
+
+Provider receives request
+
+Provider performs effect
+
+Process crashes before local success
+
+Restart
+
+
+JASIM يجب ألا:
+
+blind retry
+
+
+بل:
+
+lookup idempotency/provider reference
+
+reconcile
+
+verify
+
+then repair/retry only if safe.
+
+
+=====================================================================
+58. DO NOT ENABLE MOYASAR / SHIPDAY YET
+=====================================================================
+
+الموجود القديم من Moyasar/Shipday:
+
+لا تحذفه إذا كان مفيدًا.
+
+صنفه:
+
+PROVIDER_ADAPTER_CANDIDATE
+
+WEBHOOK_ADAPTER_CANDIDATE
+
+SIGNATURE_VALIDATION_REUSABLE
+
+PAYLOAD_MAPPING_REUSABLE
+
+IDEMPOTENCY_LOGIC_REUSABLE
+
+ERROR_MAPPING_REUSABLE
+
+
+لكن:
+
+PAYMENT CAPTURE = DISABLED
+
+SHIPMENT CREATION = DISABLED
+
+REAL EXTERNAL MUTATION = DISABLED
+
+
+حتى اكتمال:
+
+Trusted Executor
++
+Receipt
++
+Verifier
++
+Reconciliation
+
+
+#####################################################################
+# PHASE H
+# FIRST REAL PROVIDER
+#####################################################################
+
+
+=====================================================================
+59. START WITH ONE LOW-RISK PROVIDER
+=====================================================================
+
+بعد اكتمال trust chain فقط:
+
+اختر Capability خارجية واحدة منخفضة المخاطر.
+
+لا تبدأ Payment كأول اختبار إذا يمكن اختيار شيء أبسط.
+
+
+Provider test:
+
+Intent
+↓
+Run
+↓
+Proposal if needed
+↓
+Approval
+↓
+DAG
+↓
+Trusted Executor
+↓
+Provider
+↓
+Receipt
+↓
+Verifier
+↓
+State
+↓
+Projection
+↓
+User Result
+
+
+=====================================================================
+60. CREDENTIAL RULE
+=====================================================================
+
+إذا credential غير موجودة:
+
+BLOCKED_BY_EXTERNAL_CREDENTIAL
+
+
+لا mock provider في production execution path.
+
+
+#####################################################################
+# PHASE I
+# GENERALIZATION TESTS
+#####################################################################
+
+
+=====================================================================
+61. TEST JASIM, NOT THE EXAMPLES
+=====================================================================
+
+بعد أن تعمل الحلقة:
+
+اختبر مشكلات غير مبرمجة مسبقًا.
+
+مثال:
+
+worker transportation
+
+elderly appointments transport
+
+food surplus redistribution
+
+farm equipment sharing
+
+building maintenance coordination
+
+empty truck capacity
+
+temporary staffing
+
+cold storage sharing
+
+community tools
+
+group purchasing
+
+
+لا Domain Handler.
+
+
+=====================================================================
+62. SAME DOMAIN / DIFFERENT INTENT
+=====================================================================
+
+اختبر:
+
+"أحتاج باص للدوام"
+→ SEARCH / MATCH / RUN
+
+
+"أريد تشغيل خدمة نقل"
+→ BUSINESS SETUP / WORKFLOW
+
+
+"صمم منصة كاملة لإدارة النقل"
+→ PERSISTENT SMART BUBBLE + optional World
+
+
+إذا الثلاثة تعطى نفس Output:
+FAIL.
+
+
+=====================================================================
+63. PROBLEM-FIRST TESTING
+=====================================================================
+
+لا تعطِ JASIM دائمًا اسم المنصة.
+
+مثال:
+
+"الشاحنات ترجع فارغة بعد التوصيل وأريد الاستفادة من المساحة."
+
+JASIM يجب أن يفهم:
+
+problem
+actors
+resources
+constraints
+possible marketplace/service model
+workflows
+real-world dependencies
+
+
+ولا يحتاج prompt:
+
+"Build truck capacity marketplace."
+
+
+=====================================================================
+64. RESOURCE GAP DETECTION
+=====================================================================
+
+JASIM يجب أن يميز:
+
+DIGITAL CAPABILITY
+
+EXTERNAL PROVIDER
+
+REAL-WORLD RESOURCE
+
+REGULATORY REQUIREMENT
+
+OWNER DECISION
+
+
+مثال:
+
+driver
+→ REAL_WORLD_RESOURCE
+
+maps
+→ EXTERNAL_PROVIDER
+
+subscription pricing
+→ OWNER_DECISION + JASIM assistance
+
+route state
+→ DIGITAL_STATE
+
+
+=====================================================================
+65. GENERALIZATION HARD GATE
+=====================================================================
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+FAKE_SUCCESS = 0
+
+UNSEEN_OUTPUT_FORM_SELECTION = PASS
+
+REFERENCE_RESOLUTION = PASS
+
+WORLD_ONLY_WHEN_JUSTIFIED = PASS
+
+RUN_WITHOUT_BUBBLE = PASS
+
+SMART_BUBBLE_WHEN_PERSISTENCE_REQUIRED = PASS
+
+NATURAL_LANGUAGE_EVOLUTION = PASS
+
+RESOURCE_GAP_DETECTION = PASS
+
+
+#####################################################################
+# PHASE J
+# DNA EVOLUTION
+#####################################################################
+
+
+=====================================================================
+66. DNA CURRENT MEANING
+=====================================================================
+
+Treat canonical:
+
+RuntimeWorldDefinition
+
+as current practical DNA representation unless code evidence suggests a better canonical abstraction.
+
+
+DNA describes generic:
+
+entities
+
+relationships
+
+capabilities
+
+policies
+
+views
+
+actions
+
+workflows
+
+permissions
+
+constraints
+
+
+لا create a DNAEngine class merely for terminology.
+
+
+=====================================================================
+67. DNA EVOLUTION
+=====================================================================
+
+اجعل:
+
+"أضف تقييمات"
+
+تنتج Structural evolution.
+
+
+"فوق 500 يحتاج موافقتي"
+
+تنتج Policy evolution.
+
+
+"أضف موظفًا محدود الصلاحية"
+
+Permission evolution.
+
+
+"إذا لم يتوفر فني داخلي ابحث خارجيًا"
+
+Workflow evolution.
+
+
+=====================================================================
+68. DNA COMPILER
+=====================================================================
+
+إذا formal compiler يصبح مفيدًا بعد نجاح mutation:
+
+يمكن أن يكون:
+
+GENERATE
+↓
+VALIDATE
+↓
+NORMALIZE
+↓
+RESOLVE CAPABILITIES
+↓
+RESOLVE REFERENCES
+↓
+CHECK POLICIES
+↓
+COMPILE
+↓
+VERSION
+↓
+ACTIVATE
+
+
+لكن لا تبنه prematurely إذا موجودة نفس semantics بوضوح داخل current composition/evolution functions.
+
+
+#####################################################################
+# PHASE K
+# PRODUCTION HARDENING
+#####################################################################
+
+
+=====================================================================
+69. ONLY AFTER GENERAL RUNTIME IS REAL
+=====================================================================
+
+بعد نجاح المراحل السابقة:
+
+Production Mobile Auth
+
+Secure Session Lifecycle
+
+Production DB
+
+Secrets
+
+Rate Limiting
+
+Monitoring
+
+Error Tracking
+
+Backups
+
+Security Tests
+
+Health Checks
+
+Graceful Shutdown
+
+Worker Recovery
+
+Production Deployment Proof
+
+
+=====================================================================
+70. MOBILE AUTH
+=====================================================================
+
+Final target:
+
+NATIVE CLIENT
++
+CANONICAL JASIM AUTH
+
+
+same user
+same permissions
+same Bubble
+same Runs
+same DB
+
+
+Secure storage:
+
+iOS Keychain
+
+Android Keystore-backed storage
+
+
+لا Production AsyncStorage token truth.
+
+
+#####################################################################
+# PHASE L
+# MULTI-USER SMART BUBBLES
+#####################################################################
+
+
+=====================================================================
+71. MULTI-USER MODEL
+=====================================================================
+
+Later add:
+
+owner
+
+members
+
+customer
+
+provider
+
+moderator
+
+roles
+
+invitations
+
+visibility
+
+public/private/unlisted/shared
+
+
+لكن نفس Bubble/World.
+
+لا separate app per role unless UX genuinely requires separate shell.
+
+
+#####################################################################
+# PHASE M
+# COMMERCIAL RUNTIME
+#####################################################################
+
+
+=====================================================================
+72. COMMERCIAL AFTER TRUST
+=====================================================================
+
+Payments تأتي بعد Trust Chain.
+
+Build canonical:
+
+Transaction lifecycle
+
+Pricing
+
+Commission
+
+Subscription
+
+Authorization
+
+Commit
+
+Fulfillment
+
+Verification
+
+Settlement
+
+Refund
+
+Compensation
+
+Reconciliation
+
+
+ولا تعيد legacy payment runtime كمسار موازٍ.
+
+
+#####################################################################
+# PHASE N
+# IOS / ANDROID
+#####################################################################
+
+
+=====================================================================
+73. FINAL MOBILE TARGET
+=====================================================================
+
+Expo Go = development preview.
+
+Final:
+
+Standalone iOS
+
+Standalone Android
+
+
+Requirements:
+
+production auth
+
+secure storage
+
+production API
+
+push
+
+deep links
+
+permissions
+
+background semantics
+
+same server runtime
+
+same Smart Bubbles
+
+same Runs
+
+cross-device continuity
+
+
+#####################################################################
+# ENGINEERING EFFICIENCY
+#####################################################################
+
+
+=====================================================================
+74. DO NOT WASTE TOKENS / AGENT WORK
+=====================================================================
+
+Optimize for completion, not code volume.
+
+Rules:
+
+- Search narrowly.
+- Trace active call paths.
+- Do not reread entire repo repeatedly.
+- One agent per genuinely independent problem.
+- Do not send multiple agents to redesign JASIM.
+- Do not produce repetitive architecture reports.
+- Targeted tests while coding.
+- Full regression at tranche boundaries.
+- No unrelated refactors.
+- No premature provider research.
+- No UI micro-polish before runtime correctness.
+
+
+=====================================================================
+75. AGENT USE
+=====================================================================
+
+Agents may be used for parallel independent work such as:
+
+Agent A:
+frontend legacy call trace
+
+Agent B:
+migration safety proof
+
+Agent C:
+mutation/ChangeSet tests
+
+
+لكن لا:
+
+Agent A redesigns Kernel
+Agent B redesigns Kernel
+Agent C redesigns Kernel
+
+
+Central architecture remains one.
+
+
+#####################################################################
+# QUALITY CLASSIFICATION
+#####################################################################
+
+
+=====================================================================
+76. STATUS TERMINOLOGY
+=====================================================================
+
+Use only:
+
+REAL
+
+PARTIAL
+
+MOCKED
+
+BLOCKED
+
+MISSING
+
+DEFERRED
+
+
+Do not use COMPLETE casually.
+
+
+=====================================================================
+77. COMPLETE MEANS PROVEN
+=====================================================================
+
+Example:
+
+Mutation COMPLETE requires:
+
+NL
+→ refs
+→ ChangeSet
+→ preview
+→ apply
+→ version
+→ persistence
+→ projection
+→ restart durability
+
+
+Trusted Execution COMPLETE requires:
+
+gate
+→ effect
+→ receipt
+→ independent verification
+→ reconciliation proof
+
+
+Mobile COMPLETE requires:
+
+standalone native
+→ auth
+→ secure session
+→ same canonical data
+→ runtime parity
+
+
+#####################################################################
+# FINAL REPORTING
+#####################################################################
+
+
+=====================================================================
+78. REPORT AFTER CURRENT CORE PHASES
+=====================================================================
+
+بعد:
+
+Phase A
++
+Phase B
++
+Phase C
+
+
+أعطني:
+
+SERVER_CANONICAL_TYPECHECK:
+PASS / FAIL
+
+ACTIVE_FRONTEND_TYPE_ERRORS:
+<number>
+
+ACTIVE_LEGACY_ROUTER_CALLS:
+<number>
+
+ACTIVE_LEGACY_CONTRACT_DEPENDENCIES:
+<number>
+
+DEAD_LEGACY_COMPONENTS_REMOVED_OR_ISOLATED:
+<number>
+
+WEB_CANONICAL_CALL_PATH:
+PASS / FAIL
+
+DB_MIGRATE:
+PASS / FAIL
+
+FRESH_TEMP_DB_MIGRATION:
+PASS / FAIL
+
+CURRENT_SCHEMA_CLONE_MIGRATION:
+PASS / FAIL
+
+CANONICAL_SCHEMA_DRIFT:
+NONE / FOUND
+
+BROAD_POSTGRESQL_PROOF:
+PASS / FAIL
+
+EXISTING_BUBBLE_NL_MUTATION:
+PASS / FAIL
+
+ENTITY_RESOLUTION:
+PASS / FAIL
+
+CHANGESET:
+PASS / FAIL
+
+HUMAN_PREVIEW:
+PASS / FAIL
+
+CONTENT_VERSION:
+PASS / FAIL
+
+CONTENT_VERSION_AUDIT:
+PASS / FAIL
+
+ATOMIC_MUTATION:
+PASS / FAIL
+
+STALE_CHANGESET:
+PASS / FAIL
+
+DATA_MUTATION:
+PASS / FAIL
+
+STRUCTURAL_MUTATION:
+PASS / FAIL
+
+POLICY_MUTATION:
+PASS / FAIL
+
+VIEW_MUTATION:
+PASS / FAIL
+
+PERMISSION_MUTATION:
+PASS / FAIL
+
+GENERIC_RENDERER_STRUCTURAL_EVOLUTION:
+PASS / FAIL
+
+MUTATION_SURVIVES_RESTART:
+PASS / FAIL
+
+SAME_BUBBLE_PRESERVED:
+PASS / FAIL
+
+DOMAIN_HANDLER_ADDED:
+YES / NO
+
+LEGACY_FALLBACK_EXECUTION_USED:
+YES / NO
+
+MOYASAR_REAL_EFFECTS:
+DISABLED
+
+SHIPDAY_REAL_EFFECTS:
+DISABLED
+
+OWNER_ACTION_REQUIRED:
+NO / YES
+
+
+=====================================================================
+79. AUTOMATIC CONTINUATION
+=====================================================================
+
+إذا Phase A PASS:
+انتقل Phase B.
+
+إذا Phase B PASS:
+انتقل Phase C.
+
+إذا Phase C PASS:
+انتقل Conversation Intelligence + Memory + Events.
+
+ثم:
+
+Approval Resume + Restart Recovery.
+
+ثم:
+
+Trusted Executor.
+
+ثم:
+
+Receipt + Verifier + Reconciliation.
+
+
+لا تتوقف بعد كل خطوة صغيرة لتسأل:
+
+"هل أتابع؟"
+
+
+=====================================================================
+80. STOP CONDITIONS
+=====================================================================
+
+توقف فقط إذا وجدت:
+
+DESTRUCTIVE DATA RISK
+
+IRREVERSIBLE PRODUCTION OPERATION
+
+MISSING REQUIRED EXTERNAL CREDENTIAL
+
+FUNDAMENTAL PRODUCT CONTRADICTION
+
+SECURITY GUARANTEE CANNOT BE PRESERVED
+
+
+غير ذلك:
+
+استخدم Engineering Judgment
+وأكمل.
+
+
+#####################################################################
+# FINAL GUIDING PRINCIPLE
+#####################################################################
+
+
+JASIM is not being rebuilt.
+
+JASIM is being completed.
+
+
+The goal is not:
+
+MORE FILES
+
+MORE FEATURES
+
+MORE PLATFORMS
+
+MORE DOMAIN HANDLERS
+
+
+The goal is:
+
+ONE GENERAL GENERATIVE SYSTEM
+THAT CAN UNDERSTAND A NEW PROBLEM,
+CHOOSE THE RIGHT RUNTIME FORM,
+CREATE OR REUSE THE RIGHT STATE,
+EVOLVE IT THROUGH NATURAL LANGUAGE,
+EXECUTE DURABLY,
+VERIFY REAL EFFECTS,
+REMEMBER CONTEXT,
+AND PRESENT THE SAME TRUTH
+ON WEB, IOS, AND ANDROID.
+
+
+IF THIS DOCUMENT'S EXACT IMPLEMENTATION DETAIL CONFLICTS
+WITH A BETTER PROVEN IMPLEMENTATION FOUND IN THE CODE:
+
+DO NOT FOLLOW THE DETAIL BLINDLY.
+
+PRESERVE:
+
+THE PRODUCT INVARIANTS
+THE SECURITY INVARIANTS
+THE STATE SEMANTICS
+THE ACCEPTANCE GATES
+
+AND IMPLEMENT THE TECHNICALLY STRONGER SOLUTION.
+
+
+BUT:
+
+NO ARCHITECTURAL DRIFT.
+NO SECOND JASIM.
+NO DOMAIN CHEATING.
+NO FAKE SUCCESS.
+NO UNVERIFIED EXTERNAL SUCCESS.
+
+
+BEGIN FROM PHASE A NOW.

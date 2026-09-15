@@ -1,0 +1,1372 @@
+# JASIM — CORE GAP CLOSURE PROGRAM
+
+## FINISH THE GENERAL RUNTIME WITHOUT TURNING EVERYTHING INTO A PLATFORM
+
+اعتمد النتيجة الحالية:
+
+```text
+JASIM GENERAL RUNTIME GATE: NOT PASSED
+```
+
+ولا أعتبر ذلك فشلًا.
+
+أعتبر أن لديك الآن Baseline حقيقيًا ثبت فيه:
+
+* Persistent Conversations.
+* Persistent Messages.
+* Output Envelope contracts.
+* Smart Bubble contracts.
+* Shared Web/Mobile runtime.
+* Arabic persistence E2E.
+* Runtime smoke tests.
+* World versioning.
+* Router regression scenarios.
+* Honest `blocked` behavior.
+
+من الآن:
+
+> لا تعِد بناء ما ثبت أنه يعمل.
+
+طبّق:
+
+```text
+KEEP
+↓
+CONNECT
+↓
+COMPLETE
+↓
+GENERALIZE
+↓
+VERIFY
+```
+
+---
+
+# 1. أهم تصحيح في فهم جاسم
+
+جاسم ليس:
+
+> Platform Builder
+
+فقط.
+
+ولا:
+
+> Bubble Builder
+
+فقط.
+
+ولا يجب أن يبني منصة أو Persistent Bubble لكل طلب.
+
+جاسم هو:
+
+> GENERAL INTELLIGENT ACTION + WORKFLOW + GENERATIVE RUNTIME
+
+أي أنه يفهم الهدف ثم يختار **أقل شكل Runtime مناسب لتحقيقه**.
+
+---
+
+# 2. المنصة ليست شرطًا
+
+إذا قال المستخدم:
+
+> بع سيارتي.
+
+لا يجب أن يرد النظام تلقائيًا:
+
+> سأبني لك منصة سيارات.
+
+قد يكون المطلوب فقط:
+
+```text
+collect missing data
+↓
+prepare listing
+↓
+publish through available capability
+↓
+monitor responses
+↓
+match buyers
+↓
+notify user
+```
+
+بدون Persistent Platform.
+
+---
+
+# 3. البيع بدون منصة يجب أن يكون من صميم جاسم
+
+اختبر طلبات مثل:
+
+> بع هاتفي بـ200 دينار.
+
+> عندي أثاث أريد بيعه.
+
+> اعرض هذه المعدة للإيجار.
+
+> ابحث لي عن مشتري لهذه السيارة.
+
+> أعلن عن هذه الخدمة.
+
+> بع هذه الكمية لأفضل مشترٍ.
+
+لا تنشئ منصة دائمة إلا إذا كان ذلك مفيدًا فعلًا.
+
+---
+
+# 4. الإعلان بدون منصة
+
+إذا قال:
+
+> أعلن عن خدمتي في تصميم الشعارات.
+
+يمكن أن يكون المسار:
+
+```text
+understand offer
+↓
+collect required details
+↓
+choose available advertising/publishing capability
+↓
+approval if spend/public publish
+↓
+execute
+↓
+receipt
+↓
+verify
+```
+
+ولا يحتاج إنشاء Smart Bubble دائمة إلا إذا كانت هناك حاجة لاحقة لإدارة حملة/خدمات/عملاء.
+
+---
+
+# 5. التوظيف بدون منصة
+
+مثال:
+
+> أريد موظف محاسبة خبرة 3 سنوات.
+
+لا تبنِ Hiring Platform.
+
+يمكن لجاسم:
+
+```text
+clarify requirements
+↓
+search/match candidates if capability exists
+↓
+rank
+↓
+present results
+↓
+contact/apply with approval
+↓
+track responses
+```
+
+---
+
+# 6. الشراء بدون منصة
+
+المستخدم:
+
+> اشترِ لي أفضل لابتوب بهذا الميزانية.
+
+يمكن أن يكون:
+
+```text
+search
+compare
+rank
+select
+approval
+purchase capability
+verify
+```
+
+ولا يحتاج Marketplace Bubble.
+
+---
+
+# 7. التوصيل بدون منصة
+
+المستخدم:
+
+> أرسل هذه القطعة إلى هذا العنوان.
+
+يمكن أن يكون Action/Workflow مباشرًا.
+
+لا تبنِ Delivery Platform.
+
+---
+
+# 8. الحجوزات بدون منصة
+
+> احجز لي موعدًا غدًا بعد الخامسة.
+
+قد تكون:
+
+```text
+availability lookup
+↓
+selection
+↓
+approval if needed
+↓
+booking
+↓
+verify
+```
+
+وليس Booking Platform.
+
+---
+
+# 9. المنصة تُبنى فقط عندما الطلب يحتاج بيئة مستمرة
+
+مثال:
+
+> أريد نظامًا أستقبل فيه طلبات العملاء وأدير الخدمات والموظفين والأسعار والمواعيد.
+
+هنا Persistent Smart Bubble مناسبة.
+
+الفرق يجب أن يفهمه Output Router.
+
+---
+
+# 10. Output Router النهائي
+
+أكمل Semantic Output Router بحيث يختار بين:
+
+```text
+TEXT
+STRUCTURED_RESULT
+EPHEMERAL_BUBBLE
+INTERACTIVE_BUBBLE
+DIRECT_ACTION
+WORKFLOW
+LONG_RUNNING_RUN
+TASK
+PERSISTENT_SMART_BUBBLE
+```
+
+ولا تجعل أحد هذه الخيارات Default دائمًا.
+
+---
+
+# 11. قاعدة اختيار الناتج
+
+استخدم مبدأ:
+
+> Choose the smallest durable surface that satisfies the user's real goal.
+
+أمثلة:
+
+```text
+simple question
+→ TEXT
+```
+
+```text
+comparison
+→ STRUCTURED_RESULT / RESULT BUBBLES
+```
+
+```text
+sell one item
+→ ACTION / WORKFLOW
+```
+
+```text
+monitor price
+→ LONG_RUNNING RUN
+```
+
+```text
+manage a recurring business/process
+→ PERSISTENT SMART BUBBLE
+```
+
+---
+
+# 12. لا تربط Bubble بالتجارة فقط
+
+Smart Bubble يمكن أن تمثل:
+
+* مشروعًا.
+* مساحة عمل.
+* عملية مستمرة.
+* نظام معرفة.
+* إدارة معدات.
+* تعليم.
+* فريقًا.
+* خدمات.
+* متجرًا.
+* شبكة متطوعين.
+* عمليات داخلية.
+
+لكن لا تجعلها إجبارية.
+
+---
+
+# 13. أهم قاعدة
+
+لا أريد:
+
+```text
+Goal
+↓
+Task
+↓
+World
+↓
+Bubble
+```
+
+لكل طلب.
+
+المسار الصحيح:
+
+```text
+Goal
+↓
+Understand
+↓
+Select Runtime Form
+↓
+Execute appropriately
+```
+
+---
+
+# 14. أكمل Model Provider الحقيقي
+
+اربط Model Provider موثوقًا عبر الـModel Gateway الحالي.
+
+لا تربط Core بمزود محدد.
+
+اختبر:
+
+```text
+Arabic
+English
+structured output
+invalid output
+timeout
+rate limit
+provider unavailable
+```
+
+---
+
+# 15. Semantic Output Selection
+
+بعد ربط النموذج، اجعله يقترح نوع الناتج.
+
+لكن القرار لا يعتمد على LLM وحدها.
+
+يجب أن يمر الاقتراح عبر Runtime validation.
+
+مثلاً:
+
+```text
+model proposes DIRECT_ACTION
+↓
+runtime checks requirements
+↓
+missing capability?
+↓
+BLOCKED or fallback
+```
+
+---
+
+# 16. Bubble Reference Resolution
+
+أكمل فهم:
+
+```text
+فقاعتي
+منصتي
+متجري
+الخدمة التي أنشأناها
+المنصة السابقة
+الفقاعة التي فيها الآيفون
+المشروع الثاني
+```
+
+لكن أيضًا افهم مراجع لأشياء ليست داخل Bubble.
+
+مثل:
+
+```text
+السيارة التي أرسلت صورتها
+المنتج الذي طلبت منك بيعه
+الحجز الذي عملناه
+الإعلان السابق
+المهمة التي بدأناها أمس
+```
+
+أي أن Reference Resolution يجب أن تكون عامة، لا Bubble-only.
+
+---
+
+# 17. General Reference Resolution
+
+صمم Resolution يدعم:
+
+```text
+bubble
+world
+task
+run
+entity
+listing
+transaction
+workflow
+message result
+external action
+```
+
+بحسب السياق.
+
+---
+
+# 18. Conversational direct actions
+
+اختبر:
+
+> بع الآيفون الذي حدثتك عنه.
+
+ثم:
+
+> خفض السعر إلى 250.
+
+ثم:
+
+> أوقف الإعلان يومين.
+
+ثم:
+
+> أعد نشره السبت.
+
+لا تنشئ منصة بلا داعٍ.
+
+حافظ على State للعملية نفسها.
+
+---
+
+# 19. Direct action lifecycle
+
+عمليات مثل البيع أو الإعلان قد تحتاج كيانًا Durable خفيفًا.
+
+مثلاً:
+
+```text
+Run / Listing / Campaign
+```
+
+لكن ذلك لا يعني World كامل.
+
+فرق بين:
+
+```text
+durable operation
+```
+
+و:
+
+```text
+persistent world
+```
+
+---
+
+# 20. Persistent Runs
+
+أضف/أكمل مفهومًا يسمح لمهام أن تستمر بدون World كامل.
+
+مثل:
+
+```text
+Sell Item Run
+Price Watch Run
+Booking Run
+Research Run
+Hiring Search Run
+Ad Campaign Run
+```
+
+هذه ليست Domain Modules.
+
+هي Instances مبنية من Capabilities عامة.
+
+---
+
+# 21. لا تسمِّ الـRuns حسب Domain في Core
+
+لا أريد Core classes مثل:
+
+```text
+SellCarRun
+HireAccountantRun
+RestaurantBookingRun
+```
+
+الصحيح:
+
+```text
+Run
++
+goal
++
+state
++
+capabilities
++
+workflow graph
+```
+
+---
+
+# 22. Direct commercial action
+
+جاسم يجب أن يستطيع نظريًا/فعليًا حسب Capabilities:
+
+```text
+sell
+buy
+rent
+advertise
+publish
+hire
+apply
+book
+request
+negotiate
+notify
+monitor
+schedule
+```
+
+دون Platform creation.
+
+---
+
+# 23. Platform creation is one capability of Jasim, not Jasim itself
+
+ثبت هذا حرفيًا:
+
+> Building a persistent Smart Bubble/platform is one possible outcome of Jasim, not the required path for using Jasim.
+
+---
+
+# 24. مثال أساسي — بيع مباشر
+
+المستخدم:
+
+> أريد بيع سيارتي.
+
+جاسم يطلب فقط البيانات الناقصة مثل:
+
+```text
+vehicle details
+price
+photos
+location
+contact preferences
+```
+
+ثم يحدد القدرات المطلوبة.
+
+إذا النشر متاح:
+
+ينفذ.
+
+إذا غير متاح:
+
+```text
+Reasoning: PASS
+Workflow: PASS
+Execution: BLOCKED
+Missing: publishing provider
+```
+
+لا يبني منصة سيارات.
+
+---
+
+# 25. مثال — شخص يريد فقط الإعلان
+
+> عندي دورة تدريبية وأريد الإعلان عنها.
+
+لا تنشئ Learning Platform.
+
+نفذ حملة/نشر حسب القدرات.
+
+---
+
+# 26. مثال — شخص يريد مشترين
+
+> ابحث لي عن أشخاص مهتمين بشراء أجهزة المطعم عندي.
+
+يمكن أن يكون:
+
+```text
+extract inventory
+↓
+search/match
+↓
+rank potential buyers
+↓
+contact with approval
+↓
+track responses
+```
+
+---
+
+# 27. مثال — توظيف مباشر
+
+> وظف لي مصممًا لمدة شهر.
+
+لا تنشئ Freelance Marketplace.
+
+---
+
+# 28. مثال — تقديم على وظيفة
+
+> قدم لي على وظائف استقبال مدارس مناسبة لسيرتي.
+
+هذا Workflow متعدد الخطوات وليس منصة.
+
+---
+
+# 29. مثال — البحث فقط
+
+> من أفضل 5 موردين لهذا المنتج؟
+
+نتيجة فقط.
+
+---
+
+# 30. مثال — مراقبة فقط
+
+> راقب سعر هذا المنتج وأخبرني إذا صار أقل من 100.
+
+Long-running run.
+
+---
+
+# 31. مثال — بناء منصة
+
+> أريد مساحة يبيع فيها عدة تجار منتجاتهم ويدير كل منهم طلباته وأنا آخذ عمولة.
+
+هنا Smart Bubble/World مبررة.
+
+---
+
+# 32. نفس جاسم يدعم الحالتين
+
+يجب أن يعمل كلا الطلبين:
+
+```text
+بع هاتفي.
+```
+
+و:
+
+```text
+أنشئ منصة يبيع فيها الناس هواتفهم.
+```
+
+الأول لا يحتاج Platform.
+
+الثاني قد يحتاج Persistent Smart Bubble.
+
+هذا Acceptance Test إلزامي.
+
+---
+
+# 33. Same-domain different runtime forms test
+
+أنشئ Tests لنفس المجال لكن بنوايا مختلفة.
+
+مثال السيارات:
+
+```text
+"كم سعر هذه السيارة؟"
+→ result
+```
+
+```text
+"بع سيارتي."
+→ action/workflow
+```
+
+```text
+"راقب أسعار هذه السيارة."
+→ long-running run
+```
+
+```text
+"أنشئ سوقًا للسيارات."
+→ persistent Smart Bubble
+```
+
+إذا النظام ينتج نفس Runtime Form للأربعة:
+
+Output Router غير عام.
+
+---
+
+# 34. مثال الخدمات
+
+```text
+"اكتب وصفًا لخدمتي."
+→ text
+```
+
+```text
+"أعلن عن خدمتي."
+→ action
+```
+
+```text
+"راقب العملاء المهتمين."
+→ run/workflow
+```
+
+```text
+"أنشئ لي نظامًا لإدارة خدماتي والعملاء."
+→ Smart Bubble
+```
+
+---
+
+# 35. مثال الوظائف
+
+```text
+"حسن إعلان الوظيفة."
+→ result/text
+```
+
+```text
+"ابحث عن مرشحين."
+→ search workflow
+```
+
+```text
+"تواصل مع أفضل ثلاثة بعد موافقتي."
+→ approval + action
+```
+
+```text
+"أنشئ نظام توظيف كامل للشركة."
+→ Smart Bubble
+```
+
+---
+
+# 36. Durable DAG Engine
+
+بعد Output Router وReference Resolution:
+
+أكمل:
+
+```text
+durable DAG
+workers
+leases
+heartbeats
+retries
+backoff
+join nodes
+branching
+resume
+scheduled nodes
+event-triggered resume
+```
+
+---
+
+# 37. Worker safety
+
+Worker لا يثق في DAG فقط.
+
+كل Action تعيد:
+
+```text
+authorization
+policy
+approval
+idempotency
+```
+
+قبل Side Effect عند الحاجة.
+
+---
+
+# 38. Independent Verifier
+
+أنشئ Verifier مستقلًا.
+
+الـTask أو Run لا يصبح `completed` لأن Provider قال success فقط.
+
+---
+
+# 39. Verification evidence
+
+خزن:
+
+```text
+expected result
+actual evidence
+verification strategy
+verification status
+checkedAt
+```
+
+---
+
+# 40. External capabilities
+
+ابدأ بعدد صغير من Providers الحقيقيين.
+
+لكن اختر قدرات عامة.
+
+مثل:
+
+```text
+search.web
+entity.create
+entity.update
+schedule.create
+notify.send
+publish.create
+```
+
+حسب المتاح.
+
+لا تبنِ كل Domains.
+
+---
+
+# 41. Multi-user authorization
+
+أكمل:
+
+```text
+bubble membership
+roles
+grants
+owner/member/customer/provider
+```
+
+لكن أيضًا العمليات المباشرة يجب أن تملك Ownership واضحًا.
+
+---
+
+# 42. Cross-Bubble
+
+أكمل Grants لعمليات تربط Bubble بأخرى.
+
+لكن لا تجعل Cross-Bubble prerequisite للبيع المباشر أو تنفيذ Action بسيطة.
+
+---
+
+# 43. Transactions
+
+ابنِ abstraction عامة.
+
+لكن لا تجعل كل عملية تحتاج Transaction World.
+
+مثال:
+
+شراء مباشر يمكن أن يكون Run مع Transaction object.
+
+---
+
+# 44. Long-running execution
+
+أكمل دعم:
+
+```text
+wait
+schedule
+monitor
+notify
+resume
+external event
+```
+
+بحيث جاسم يستطيع أداء أعمال مستمرة حتى بدون Bubble.
+
+---
+
+# 45. Generalization testing يجب أن يشمل non-platform requests
+
+الـ30+ سيناريو يجب ألا تكون:
+
+```text
+أنشئ منصة...
+أنشئ نظامًا...
+أنشئ مساحة...
+```
+
+فقط.
+
+هذا سيعطي اختبارًا منحازًا.
+
+---
+
+# 46. توزيع الـ30+ سيناريو
+
+على الأقل:
+
+```text
+6 direct actions
+6 simple/structured answers
+5 long-running runs
+5 persistent Smart Bubbles
+4 existing-Bubble mutations
+4 compound/mixed scenarios
+```
+
+وزد العدد إن أمكن.
+
+---
+
+# 47. أمثلة Direct Action للاختبار
+
+مثل:
+
+```text
+بع هذا المنتج.
+احجز هذا الموعد.
+أرسل هذه الرسالة.
+أعلن عن هذه الخدمة.
+قدم لي على هذه الفرصة.
+اطلب عرض سعر.
+```
+
+حسب القدرات الموثوقة المتوفرة.
+
+---
+
+# 48. أمثلة Long-running
+
+مثل:
+
+```text
+راقب السعر.
+تابع الردود.
+نبهني إذا ظهر مرشح مناسب.
+انتظر الموافقة ثم أكمل.
+راقب وصول المنتج.
+```
+
+---
+
+# 49. أمثلة Platform/Bubble
+
+مثل:
+
+```text
+أنشئ نظام إدارة...
+أنشئ مساحة متعددة المستخدمين...
+أنشئ سوقًا...
+أنشئ نظام حجوزات...
+```
+
+هذه فئة واحدة فقط من قدرات جاسم.
+
+---
+
+# 50. مثال مركب بدون منصة
+
+المستخدم:
+
+> أريد بيع مجموعة معدات مطعم. رتبها من الصور، اقترح أسعارًا، اكتب الإعلانات، انشرها حيث تستطيع، راقب المهتمين، وإذا جاء عرض أقل من 70% من السعر ارفضه، وإذا كان أعلى اطلب موافقتي.
+
+هذا Workflow/Run مركب.
+
+**لا تبنِ Restaurant Equipment Marketplace.**
+
+---
+
+# 51. مثال مركب آخر بدون منصة
+
+> ابحث لي عن موظف استقبال، فلتر المتقدمين حسب الخبرة واللغة، اختَر أفضل خمسة، أرسل لهم موعد مقابلة بعد موافقتي، وذكرني بنتائج المقابلات.
+
+لا يحتاج منصة توظيف دائمة بالضرورة.
+
+---
+
+# 52. مثال مركب مع Bubble
+
+> أنشئ نظامًا مستمرًا لإدارة التوظيف عندي لكل الوظائف والمرشحين والمقابلات والصلاحيات.
+
+هنا Smart Bubble منطقية.
+
+---
+
+# 53. Metric جديد إلزامي
+
+أضف إلى Generalization Report:
+
+```text
+OUTPUT FORM SELECTION ACCURACY
+```
+
+ويجب قياس هل اختار جاسم:
+
+```text
+answer
+action
+run
+workflow
+bubble
+```
+
+بشكل مناسب.
+
+---
+
+# 54. Over-building metric
+
+أضف:
+
+```text
+UNNECESSARY PERSISTENT WORLD RATE
+```
+
+نريدها منخفضة جدًا.
+
+إذا 80% من الأسئلة تنتج World:
+
+المعمارية ما تزال منحازة للمنصات.
+
+---
+
+# 55. Under-building metric
+
+أيضًا:
+
+```text
+INSUFFICIENT DURABILITY RATE
+```
+
+حتى لا يجيب جاسم بنص عندما الطلب يحتاج عملية طويلة أو World دائمة.
+
+---
+
+# 56. Bubble ليست شرط الذكاء
+
+جاسم intelligent حتى بدون Bubble.
+
+Bubble هي Surface مناسبة لبعض الطلبات.
+
+ثبت هذا في Architecture docs.
+
+---
+
+# 57. لا تجعل الأمثلة هي الحدود
+
+الـ20 مثالًا و5 السيناريوهات المركبة في التقرير:
+
+> Demonstrations / Tests only.
+
+لا تعتبرها قائمة Use Cases يدعمها جاسم حصريًا.
+
+اكتب صراحة في التقرير:
+
+```text
+These examples are not the supported-domain list.
+They are representative compositions of a general runtime.
+```
+
+---
+
+# 58. إذا طلب المستخدم شيئًا غير موجود في الأمثلة
+
+جاسم يجب أن:
+
+```text
+understand it
+↓
+decompose it
+↓
+select runtime form
+↓
+map general capabilities
+↓
+execute available parts
+↓
+block unsupported external actions honestly
+```
+
+وليس:
+
+```text
+example not recognized
+→ unsupported
+```
+
+---
+
+# 59. اختبار Unseen Domain
+
+استخدم Agent منفصلًا لا يقرأ الـ20 مثالًا.
+
+اطلب منه توليد أهداف من مجالات جديدة.
+
+اختبرها.
+
+---
+
+# 60. لا تعدل Core لإنجاح كل Unseen Test
+
+إذا احتاج test Capability جديدة:
+
+هذا Coverage gap.
+
+ليس سببًا تلقائيًا لإضافة Domain.
+
+---
+
+# 61. Web + Mobile
+
+اختبر Direct Actions أيضًا من الويب والموبايل.
+
+لا تختبر فقط إنشاء Bubbles.
+
+---
+
+# 62. Expo
+
+لا تعتبر Expo Go هدفًا.
+
+استمر نحو Standalone Mobile النهائي حسب البرنامج السابق.
+
+---
+
+# 63. Core Gap Closure order
+
+نفذ بالترتيب التالي ما لم يوجد Dependency مثبت يغيره:
+
+```text
+1. Real Model Provider
+2. Semantic Output Router
+3. General Reference Resolution
+4. Direct Action / Durable Run model
+5. Conversational Bubble Mutation
+6. Bubble Evolution
+7. Durable DAG Workers
+8. Independent Verifier
+9. Long-running Scheduler/Event Resume
+10. Multi-user Authorization
+11. Cross-Bubble Grants
+12. External Provider Adapters
+13. Transactions/Reconciliation
+14. Web/Mobile full parity
+15. 30+ Generalization Tests
+16. Final adversarial architecture audit
+```
+
+---
+
+# 64. لا تتوقف عند التقرير
+
+النتيجة الحالية ليست نهاية المهمة.
+
+استمر:
+
+```text
+IMPLEMENT
+↓
+TEST
+↓
+FAIL
+↓
+DIAGNOSE
+↓
+FIX
+↓
+RETEST
+```
+
+حتى تصبح النتيجة:
+
+```text
+JASIM GENERAL RUNTIME GATE: PASSED
+```
+
+أو يتبقى عائق خارجي حقيقي يحتاج Credential مني.
+
+---
+
+# 65. Final Acceptance — four requests, one domain
+
+هذا اختبار إلزامي:
+
+### Request A
+
+> كم تساوي هذه السيارة تقريبًا؟
+
+Expected:
+
+```text
+ANSWER / RESULT
+```
+
+### Request B
+
+> بع هذه السيارة.
+
+Expected:
+
+```text
+DIRECT ACTION / WORKFLOW / DURABLE RUN
+```
+
+### Request C
+
+> راقب أسعار السيارات المشابهة وأخبرني إذا ارتفعت.
+
+Expected:
+
+```text
+LONG-RUNNING MONITOR
+```
+
+### Request D
+
+> أنشئ لي سوقًا يبيع فيه الناس سياراتهم.
+
+Expected:
+
+```text
+PERSISTENT SMART BUBBLE
+```
+
+إذا أنتج النظام Platform في الحالات الأربع:
+
+FAIL.
+
+إذا أجاب بنص فقط في الحالات الأربع:
+
+FAIL.
+
+جاسم يجب أن يختار الشكل المناسب للهدف.
+
+---
+
+# 66. Final Acceptance — advertising
+
+اختبر:
+
+> أعلن عن هذا المنتج.
+
+ولا تنشئ منصة إعلانات.
+
+ثم:
+
+> أنشئ لي نظامًا أدير منه عشرات الحملات والعملاء والميزانيات.
+
+هنا Persistent Smart Bubble قد تكون صحيحة.
+
+---
+
+# 67. Final Acceptance — hiring
+
+اختبر:
+
+> ابحث لي عن موظف.
+
+بدون منصة.
+
+ثم:
+
+> أنشئ لي نظام توظيف دائم للشركة.
+
+مع Bubble إذا كانت الأنسب.
+
+---
+
+# 68. Final report correction
+
+في:
+
+```text
+docs/JASIM_FINAL_COMPLETION_REPORT.md
+```
+
+أضف قسمًا:
+
+# JASIM IS NOT PLATFORM-BOUND
+
+واشرح بالأدلة أن جاسم يستطيع اختيار:
+
+```text
+direct answer
+direct action
+workflow
+durable run
+smart bubble
+```
+
+حسب الهدف.
+
+---
+
+# 69. أعد تصنيف الـ20 مثالًا
+
+تأكد أن أمثلة التقرير ليست كلها Platform/Bubble-heavy.
+
+أريد أن توضح تنوع Runtime Forms.
+
+---
+
+# 70. Final statement
+
+لا تقل:
+
+> Jasim builds platforms for any domain.
+
+هذا وصف ناقص.
+
+الوصف الصحيح:
+
+> Jasim understands goals and composes general capabilities to answer, act, run workflows, perform long-running work, or create and evolve persistent Smart Bubbles when persistence is actually needed.
+
+---
+
+# FINAL DIRECTIVE
+
+جاسم ليس محصورًا بالمنصات.
+
+المنصة ليست شرطًا للبيع.
+
+المنصة ليست شرطًا للإعلان.
+
+المنصة ليست شرطًا للشراء.
+
+المنصة ليست شرطًا للتوظيف.
+
+المنصة ليست شرطًا للحجز.
+
+المنصة ليست شرطًا للمراقبة.
+
+Smart Bubble الدائمة تُنشأ عندما تكون هي أفضل شكل لتحقيق هدف المستخدم.
+
+أما إذا كان الهدف يمكن إنجازه مباشرة:
+
+> JASIM SHOULD ACT DIRECTLY.
+
+أكمل الـRuntime على هذا الأساس، ثم أثبت ذلك عبر الاختبارات الحقيقية.

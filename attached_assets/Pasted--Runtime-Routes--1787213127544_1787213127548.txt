@@ -1,0 +1,537 @@
+ممتاز. تابع التنفيذ، لكن قبل إضافة المزيد من Runtime Routes ثبّت هذه القاعدة المعمارية حتى لا ننحرف أثناء البناء:
+
+# 1. `bubbleId` يجب أن يكون علاقة اختيارية، لا شرطًا لكل Task
+
+إضافة `bubbleId` إلى Task صحيحة إذا كانت العلاقة:
+
+```text
+Task
+→ may reference Bubble
+```
+
+وليست:
+
+```text
+Every Task
+→ must have Bubble
+```
+
+جاسم ليس Bubble-only Runtime.
+
+---
+
+# 2. الأشكال المختلفة للطلب يجب أن تبقى ممكنة
+
+يجب أن يستطيع Runtime تمثيل جميع الحالات التالية:
+
+## A. إجابة مباشرة
+
+المستخدم:
+
+> ما الأفضل بين هذه الخيارات؟
+
+```text
+Conversation
+→ Message
+→ Result
+```
+
+بدون World وبدون Persistent Bubble.
+
+---
+
+## B. Action مباشرة
+
+المستخدم:
+
+> أعلن عن هذا المنتج.
+
+```text
+Conversation
+→ Task/Run
+→ Capabilities
+→ External Action
+```
+
+قد لا تحتاج Persistent Bubble.
+
+---
+
+## C. Workflow مستمرة
+
+المستخدم:
+
+> راقب سعر هذا المنتج وأخبرني عندما ينخفض.
+
+```text
+Conversation
+→ Durable Run
+→ Scheduler/Monitor
+```
+
+ولا يلزم إنشاء World كامل.
+
+---
+
+## D. إنشاء Bubble دائمة
+
+المستخدم:
+
+> أنشئ لي نظامًا أدير منه منتجاتي وطلباتي.
+
+```text
+Conversation
+→ Task
+→ Smart Bubble
+→ Durable World Runtime
+```
+
+---
+
+## E. تعديل Bubble موجودة
+
+المستخدم:
+
+> متجري الذي فيه الآيفون خفض سعره.
+
+```text
+Conversation
+→ resolve existing Bubble
+→ Task/Run referencing bubbleId
+→ mutate existing World Runtime
+```
+
+---
+
+# 3. العلاقة المقترحة
+
+حافظ معماريًا على إمكانية:
+
+```text
+Task {
+  conversationId
+  bubbleId?: nullable
+  ...
+}
+```
+
+إذا كان هذا متوافقًا مع تصميم المشروع.
+
+ولا تجعل `bubbleId NOT NULL` لمجرد أن Smart Bubbles أصبحت جزءًا أساسيًا من جاسم.
+
+---
+
+# 4. Bubble لا يجب أن تعتمد على Task واحدة
+
+نفس Bubble يجب أن تستطيع امتلاك تاريخ من Tasks/Runs:
+
+```text
+Smart Bubble
+├── Task A — create
+├── Task B — add entity
+├── Task C — change price
+├── Task D — modify policy
+├── Task E — advertise
+└── Run F  — scheduled monitoring
+```
+
+Task تنتهي.
+
+Bubble تستمر.
+
+---
+
+# 5. World الحالي لا تحذفه
+
+قرار الحفاظ على World الحالي صحيح.
+
+اجعل العلاقة:
+
+```text
+Smart Bubble
+↓
+optional durable World Runtime
+```
+
+بحيث World يبقى طبقة الحالة والتنفيذ الدائمة للBubble.
+
+لا تعِد كتابة World إذا كان versioning/state/history الحالي يعمل.
+
+---
+
+# 6. لا تجعل Bubble مجرد alias للWorld
+
+نحتاج فصل المسؤوليات:
+
+```text
+Smart Bubble
+= user-facing identity + semantic surface + presentation/reference context
+
+World Runtime
+= durable entities + state + workflows + policies + permissions + versions
+```
+
+يمكن ربطهما بقوة، لكن لا تدمجهما في جدول واحد فقط لتسهيل التنفيذ إذا كان ذلك سيخلط مسؤولياتهما.
+
+---
+
+# 7. نفذ Schema validation الآن
+
+شغّل:
+
+```text
+database/schema validation
+migrations validation
+typecheck
+API contract generation
+generated-client typecheck
+```
+
+وأصلح أي failure قبل بناء Runtime routes فوق Schema غير مستقرة.
+
+---
+
+# 8. بعد نجاح المخطط لا تبنِ CRUD فقط
+
+الخطوة التالية ليست مجرد:
+
+```text
+POST /conversation
+GET /conversation
+POST /bubble
+GET /bubble
+```
+
+ثم اعتبار Conversation/Bubble Runtime مكتملة.
+
+ابنِ Runtime behavior الفعلي.
+
+---
+
+# 9. Conversation Runtime
+
+أكمل:
+
+```text
+create conversation
+persist message
+append message
+load conversation
+list conversations
+resume conversation
+link message → task/run/bubble
+```
+
+مع Ownership حقيقي.
+
+---
+
+# 10. Message provenance
+
+كل رسالة أو عملية مهمة يجب أن نستطيع ربطها عند الحاجة بـ:
+
+```text
+conversationId
+messageId
+taskId?
+runId?
+bubbleId?
+worldId?
+```
+
+حتى نستطيع معرفة:
+
+> أي رسالة أدت إلى أي تغيير؟
+
+---
+
+# 11. Smart Bubble Runtime
+
+بعد ذلك أكمل:
+
+```text
+create bubble
+load bubble
+list user's bubbles
+expand bubble
+resolve bubble state
+link to world
+persist bubble
+archive bubble
+```
+
+لكن لا تجعل كل رسالة تنشئ Bubble.
+
+---
+
+# 12. أهم طبقة بعد CRUD: Output Router
+
+لا تؤجلها كثيرًا.
+
+نحتاج Runtime يقرر:
+
+```text
+TEXT
+STRUCTURED_RESULT
+EPHEMERAL_BUBBLE
+DIRECT_ACTION
+WORKFLOW
+DURABLE_RUN
+PERSISTENT_SMART_BUBBLE
+```
+
+بناءً على نية المستخدم.
+
+---
+
+# 13. اختبار إلزامي قبل التوسع
+
+اختبر نفس المجال بأربع طلبات:
+
+```text
+"كم سعر هذه السيارة؟"
+→ RESULT
+```
+
+```text
+"بع هذه السيارة."
+→ ACTION / RUN
+```
+
+```text
+"راقب أسعار السيارات المشابهة."
+→ DURABLE RUN
+```
+
+```text
+"أنشئ سوقًا للسيارات."
+→ PERSISTENT SMART BUBBLE
+```
+
+إذا الأربعة أنشؤوا Bubble:
+
+FAIL.
+
+---
+
+# 14. ثم Reference Resolution
+
+بعد أن تصبح المحادثة والفقاعات Persistent:
+
+ابدأ General Reference Resolution.
+
+ليس Bubble reference فقط.
+
+يجب أن يستطيع جاسم فهم:
+
+```text
+متجري
+منصتي
+الفقاعة السابقة
+السيارة التي أرسلتها
+الإعلان السابق
+الحجز الذي عملناه
+المنتج الذي أضفته أمس
+```
+
+وحل المرجع إلى الكيان الصحيح.
+
+---
+
+# 15. أهم Acceptance Test للفقاعات
+
+أنشئ Bubble دائمة:
+
+> أنشئ لي مساحة لإدارة خدماتي.
+
+ثم أضف خدمة.
+
+أغلق المحادثة.
+
+افتح محادثة جديدة أو استأنف القديمة وقل:
+
+> منصتي التي فيها خدمة التصميم اجعل سعر الخدمة 25.
+
+يجب أن:
+
+```text
+resolve bubble
+↓
+resolve service entity
+↓
+create mutation task/run
+↓
+reference existing bubbleId/worldId
+↓
+apply mutation
+↓
+version
+↓
+verify
+↓
+persist
+```
+
+لا تنشئ Bubble جديدة.
+
+---
+
+# 16. Direct-action Acceptance Test
+
+في نفس النظام قل:
+
+> بع هذا الهاتف بـ200.
+
+يجب ألا ينشئ Bubble دائمة فقط لأن Schema الجديدة تحتوي `bubbleId`.
+
+إذا احتاج Operation durable:
+
+استخدم Task/Run مناسبًا.
+
+---
+
+# 17. لا تقيد جاسم بالأمثلة
+
+ثبت داخل الاختبارات والوثائق:
+
+> The examples are acceptance tests, not supported-domain definitions.
+
+إذا جاء Goal جديد غير موجود ضمن الأمثلة:
+
+```text
+understand
+→ decompose
+→ choose runtime form
+→ compose general capabilities
+```
+
+ولا يبحث عن Example Handler مطابق.
+
+---
+
+# 18. لا تضف Domain enums مغلقة
+
+إذا أضفت Bubble/World metadata فلا تستخدم قائمة مغلقة مثل:
+
+```text
+CAR
+JOBS
+RESTAURANT
+REAL_ESTATE
+```
+
+كمصدر للمنطق.
+
+استخدم Schema/semantic metadata عامة.
+
+---
+
+# 19. بعد Conversation + Bubble read/create
+
+تابع مباشرة إلى:
+
+```text
+1. Persistent messages
+2. Output Router
+3. General reference resolution
+4. Direct Action / Durable Run model
+5. Existing-Bubble mutation
+6. Bubble evolution
+7. DAG workers
+8. Verifier/recovery
+```
+
+ولا تنشغل ببناء عشرات CRUD endpoints ليست لها رحلة مستخدم حقيقية.
+
+---
+
+# 20. اختبر Web وMobile من البداية
+
+أي Conversation/Bubble Runtime جديدة يجب أن تكون Contract واحدة يستعملها:
+
+```text
+Web
+Mobile
+```
+
+ولا تنشئ Business Logic مختلفة لكل Client.
+
+---
+
+# 21. حافظ على الـBaseline
+
+بعد كل Migration أو Runtime change أعد تشغيل:
+
+```text
+typecheck
+build
+runtime smoke
+world versioning
+conversation persistence
+8 unseen router scenarios
+ownership/security tests
+```
+
+إذا كسر تعديل جديد Test قديمًا:
+
+أصلحه قبل التوسع.
+
+---
+
+# 22. لا تتوقف عند نجاح TypeScript
+
+إذا نجح المخطط وTypeScript:
+
+تابع فورًا إلى Runtime الفعلي.
+
+النجاح المطلوب هو:
+
+```text
+write
+→ DB persistence
+→ API readback
+→ restart
+→ read again
+```
+
+وليس TypeScript فقط.
+
+---
+
+# 23. المطلوب من المرحلة الحالية
+
+أكمل الآن بالترتيب:
+
+```text
+SCHEMA VALIDATION
+↓
+TYPECHECK
+↓
+CONVERSATION RUNTIME
+↓
+MESSAGE PERSISTENCE
+↓
+SMART BUBBLE READ/CREATE
+↓
+OWNERSHIP TEST
+↓
+RESTART/PERSISTENCE TEST
+↓
+OUTPUT ROUTER
+↓
+DIRECT ACTION vs BUBBLE TEST
+```
+
+ثم استمر في برنامج Core Gap Closure السابق.
+
+---
+
+# القاعدة التي لا يجوز كسرها
+
+> A Bubble is available when the user's goal benefits from a persistent generative surface.
+
+> A Bubble is not a prerequisite for Jasim to think, search, sell, buy, advertise, schedule, monitor, compare, or execute a workflow.
+
+> `bubbleId` links work to a Bubble when one exists; it must not turn every Jasim operation into a platform.
+
+تابع التنفيذ على هذا الأساس ولا تتوقف عند إنشاء الجداول.

@@ -1,0 +1,299 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM SMART GENERATIVE EXPERIENCE
+
+# TASK 4A — ACTIVE GENERATIVE WORKSPACE PROJECTION + CONTEXT CONTRACT
+
+MODE INTENT:
+Focused implementation only.
+
+This is NOT yet the visual Workspace implementation.
+
+Task 1 = CLOSED / PASS
+Task 2 = CLOSED / PASS
+Task 3 = CLOSED / PASS
+
+Accepted current state:
+
+TASK 1:
+
+* PresentationDefinition is live in conversation runtime.
+* Presentation IR is runtime validated.
+* Invalid schemas/actions fail closed.
+* PresentationRenderer uses SchemaRenderer.
+
+TASK 2:
+
+* Unified generic Presentation Decision Layer.
+* Smallest-sufficient-output selection.
+* No domain-specific decision branches.
+
+TASK 3:
+
+* Generic SchemaRenderer = PASS.
+* Reusable primitives = 9.
+* Generalized components = 5.
+* New generic primitives = 16.
+* Tests = 39/39.
+* Domain-specific components added = 0.
+* READY_FOR_SMART_UI_TASK_4 = YES.
+
+Relevant reports:
+
+.local/tasks/smart-ui-task-1-report.md
+.local/tasks/smart-ui-task-2-report.md
+.local/tasks/smart-ui-task-3-report.md
+.local/tasks/jasim-smart-interface-delta-mapping.md
+
+Do NOT redo Tasks 1–3.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. GOAL
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Implement the generic server/shared projection contract for:
+
+ACTIVE GENERATIVE WORKSPACE
+
+The Workspace must represent:
+
+THE CURRENT VISUAL CONTEXT OF THE ACTIVE GOAL
+
+without becoming a new source of business truth.
+
+Task 4A should answer:
+
+"What canonical context should the UI receive in order to render the
+current active workspace safely and consistently?"
+
+Do NOT build the final Web layout yet.
+
+Task 4B will render it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. PERMANENT DEFINITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The Active Generative Workspace is NOT:
+
+* a Dashboard
+* a World
+* a Task replacement
+* a second Runtime
+* a Bubble
+* a client state store
+* a database entity by default
+
+It is:
+
+A SAFE PRESENTATION PROJECTION OF THE CURRENT ACTIVE CONTEXT.
+
+Conceptually:
+
+CANONICAL RUNTIME STATE
+↓
+AUTHORIZED PROJECTION
+↓
+WORKSPACE PROJECTION
+↓
+CURRENT PRESENTATION
+↓
+UI
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. THREE PERMANENT UI CONCEPTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Keep these distinctions explicit.
+
+# ADAPTIVE SURFACE
+
+what the user needs to see NOW.
+
+# ACTIVE GENERATIVE WORKSPACE
+
+the visual context that contains/coordinates the current goal and surfaces.
+
+# LIVING OBJECT
+
+something that continues AFTER the current response.
+
+Task 4A implements only the Workspace projection/context.
+
+Do NOT implement Living Objects yet.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. REUSE EXISTING CANONICAL STATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The Workspace must reference existing canonical objects.
+
+Reuse existing:
+
+Conversation
+
+Goal / Semantic Goal state
+
+ResultSet
+
+ReferenceBindings
+
+selected entities
+
+PresentationDefinition
+
+Run / Task references
+
+pending Action
+
+Approval reference
+
+Transaction / Order reference where already canonical
+
+World reference
+
+status
+
+provenance
+
+Do NOT duplicate them into a new Workspace truth model.
+
+Preferred design:
+
+references + authorized projection
+
+not:
+
+copying full canonical state.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. TARGET GENERIC CONTRACT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create or extend the smallest existing generic contract equivalent to:
+
+ActiveWorkspaceProjection
+
+Conceptually it may contain:
+
+workspaceId or deterministic context identity if actually required
+
+conversationReference
+
+activeGoalReference
+
+currentPresentation
+
+resultSetReference
+
+selectedEntityReferences
+
+referenceBindings or safe presentation form of them
+
+activeRunReference
+
+activeActionReference
+
+approvalReference
+
+transactionReference
+
+worldReference
+
+status
+
+attention
+
+availablePresentationActions
+
+updatedAt
+
+presentationVersion
+
+But:
+
+DO NOT blindly implement this exact field list.
+
+Inspect current existing contracts first.
+
+Reuse existing equivalent fields.
+
+Add only fields required by the current UI/runtime.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. NO NEW CANONICAL ENTITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Default requirement:
+
+NEW_DATABASE_TABLES = 0
+NEW_MIGRATIONS = 0
+
+The Workspace should normally be computed/projected from current canonical state.
+
+Do NOT create:
+
+workspaces table
+
+workspace_state table
+
+active_ui_state table
+
+generated_workspace table
+
+unless an unavoidable durable semantic requirement is proven.
+
+If such persistence appears necessary:
+
+STOP and report the blocker.
+
+Do not create migration automatically.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. ACTIVE GOAL SELECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Define generically how the current active context is selected.
+
+Reuse existing conversation/goal/run semantics.
+
+Do NOT invent:
+
+one active goal per domain
+
+or:
+
+carCurrentGoal
+
+shoppingCurrentGoal
+
+The Workspace should be able to project the currently relevant goal/context from the existing runtime.
+
+If multiple goals can exist:
+
+use existing runtime semantics to identify active/focused context.
+
+Do not create an unrelated new focus engine.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. RESULTSET CONTINUITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Workspace projection must preserve stable ResultSet identity where relevant.
+
+Example:
+
+User:
+"أعطني 5 خيارات."
+
+Workspace contains:
+ResultSet R1
+
+Then later:
+
+"قارن الثاني والرابع."
+
+Task 5 will morph the view later.
+
+But Task 4A must already make it possible for the UI to kn

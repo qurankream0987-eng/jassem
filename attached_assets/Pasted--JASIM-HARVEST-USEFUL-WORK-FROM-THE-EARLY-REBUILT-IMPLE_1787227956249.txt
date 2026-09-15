@@ -1,0 +1,773 @@
+# JASIM — HARVEST USEFUL WORK FROM THE EARLY REBUILT IMPLEMENTATION
+# EXTRACT → COMPARE → ADAPT → MERGE
+# DO NOT REPLACE THE CURRENT CANONICAL JASIM BLINDLY
+
+لديك implementation سابقة من JASIM بنيتها في البداية من الصفر قبل أن نثبت الـCanonical Source.
+
+هذه النسخة السابقة قد تحتوي على أجزاء جيدة ومكتملة ستختصر علينا وقتًا كبيرًا.
+
+المطلوب الآن:
+
+لا تحذفها.
+لا تعتمدها كاملة.
+لا ترمِ العمل الحالي.
+
+تعامل معها كالتالي:
+
+EARLY REBUILT JASIM
+=
+CANDIDATE IMPLEMENTATION LIBRARY
+
+والهدف:
+
+CURRENT CANONICAL JASIM
++
+USEFUL PROVEN COMPONENTS FROM EARLY IMPLEMENTATION
+↓
+ONE BETTER JASIM
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. LOCATE THE EARLY IMPLEMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+حدد فعليًا أين توجد النسخة التي بنيتها من الصفر في البداية.
+
+ابحث في:
+
+/home/runner/workspace/artifacts/*
+/home/runner/workspace/lib/*
+/home/runner/workspace/scripts/*
+
+وأي مسارات قديمة أخرى مرتبطة بها.
+
+حدد:
+
+EARLY_IMPLEMENTATION_PATHS:
+<paths>
+
+لا تفترض أن كل artifacts هي القديمة.
+افحص git history/imports/start scripts/old routers/components لمعرفة ما يعود فعليًا للنسخة المبنية من الصفر.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. DO NOT MERGE THE WHOLE OLD IMPLEMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ممنوع:
+
+copy old implementation over canonical JASIM
+
+أو:
+
+replace canonical runtime with old runtime
+
+المطلوب هو subsystem-level harvesting فقط.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. BUILD A COMPONENT INVENTORY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+استخرج من النسخة القديمة قائمة بالأجزاء المهمة مثل:
+
+- Conversation logic
+- Message persistence
+- Router/classifier
+- Smart Bubble structures
+- Generative UI / Schema Renderer
+- Bubble components
+- World Runtime
+- Task/Run orchestration
+- DAG
+- Capability registry
+- Connectors
+- Reference Resolution
+- Planning
+- Memory
+- Events
+- Auth/session
+- Mobile components
+- Web components
+- Rendering primitives
+- Utility libraries
+- Tests
+- Recovery logic
+- Retry logic
+- approval/proposal logic
+- versioning/change sets
+- provider abstractions
+
+لكل جزء حدد:
+
+OLD_IMPLEMENTATION
+CURRENT_CANONICAL_IMPLEMENTATION
+WHICH_IS_STRONGER
+MERGE_VALUE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. CLASSIFY EVERY OLD COMPONENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+استخدم فقط التصنيفات التالية:
+
+REUSE_AS_IS
+ADAPT_AND_MERGE
+EXTRACT_LOGIC_ONLY
+EXTRACT_TESTS_ONLY
+EXTRACT_UI_PRIMITIVES_ONLY
+KEEP_AS_REFERENCE
+REJECT
+
+لا تستخدم:
+
+REPLACE_ALL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. ACCEPT ONLY IF IT SAVES WORK OR IMPROVES QUALITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ادمج component قديم فقط إذا يحقق واحدًا على الأقل:
+
+- أكثر اكتمالًا من الحالي.
+- لديه tests حقيقية أفضل.
+- يحل فجوة موجودة حاليًا.
+- يقلل كمية الكود المطلوب بناؤها.
+- يحتوي abstraction عامة جيدة.
+- يحتوي Renderer أو UI primitives قابلة لإعادة الاستخدام.
+- يحتوي recovery/security logic مثبتة.
+- يحتوي connector/provider abstraction سليمة.
+- يحتوي implementation ناضجة يمكن تكييفها بسهولة.
+
+إذا دمجه سيزيد التعقيد أو duplication:
+لا تدمجه.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. FINAL PRODUCT INVARIANTS OVERRIDE OLD CODE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أي كود قديم يخالف الرؤية النهائية لا يُدمج كما هو.
+
+خصوصًا إذا النسخة القديمة تعتمد:
+
+World-first
+Task-first
+Platform-first
+Domain-first
+Template-first
+one-agent-per-domain
+
+فلا تنقل behavior هذا.
+
+يمكن استخراج:
+
+utilities
+algorithms
+storage
+renderer primitives
+tests
+connectors
+security
+recovery
+planning logic
+
+لكن semantics النهائية تبقى:
+
+Conversation
+↓
+Semantic Output Router
+├── TEXT
+├── STRUCTURED_RESULT
+├── EPHEMERAL_BUBBLE
+├── INTERACTIVE_BUBBLE
+├── DIRECT_ACTION
+├── WORKFLOW
+├── DURABLE_RUN
+└── PERSISTENT_SMART_BUBBLE
+        ↓
+     optional World
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. RUN MUST REMAIN INDEPENDENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا النسخة القديمة كانت تفعل:
+
+Run → Bubble
+أو
+Task → World
+أو
+Action → Platform
+
+لا تنقل هذا السلوك.
+
+ثبت:
+
+Run may have:
+bubbleId = null
+worldId = null
+
+مثال:
+
+"بع سيارتي"
+→ DIRECT_ACTION / DURABLE_RUN
+
+لا Bubble مطلوبة.
+
+"راقب السعر"
+→ DURABLE_RUN
+
+"أنشئ سوق سيارات"
+→ PERSISTENT_SMART_BUBBLE + optional World
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. WORLD MUST REMAIN OPTIONAL BEHIND BUBBLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا النسخة القديمة تحتوي World Runtime جيدة:
+يمكن استخراجها.
+
+لكن يجب تكييفها إلى:
+
+Persistent Smart Bubble
+→ optional World Runtime
+
+لا تجعل World واجهة Product مستقلة.
+
+ولا تجعل كل Bubble تحتاج World.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. SMART BUBBLE INTELLIGENCE MUST STAY CENTRAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا النسخة القديمة فيها Bubble-specific agents:
+لا تنقل هذا التصميم.
+
+استخرج فقط ما يفيد.
+
+الذكاء النهائي:
+
+Central JASIM Intelligence
++
+Conversation Context
++
+Bubble/World Scoped Context
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. HARVEST THE GENERATIVE UI WORK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+افحص النسخة القديمة بعناية بحثًا عن:
+
+SchemaRenderer
+GenUI
+dynamic renderer
+runtime-driven components
+JSON/schema → UI
+bubble expansion
+bubble actions
+dynamic forms
+generic cards
+lists
+tables
+charts
+media
+status
+timeline
+forms
+
+هذه قد تكون من أكثر الأجزاء التي تختصر علينا العمل الحالي.
+
+إذا كانت عامة وليست Domain-specific:
+ADAPT_AND_MERGE.
+
+إذا كانت مثل:
+
+CarScreen
+JobsPlatform
+RestaurantDashboard
+
+فاستخرج منها فقط primitives القابلة للتعميم.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. HARVEST THE PLANNER / INTENT ENGINE IF STRONGER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+قارن أي:
+
+intent engine
+planner
+router
+goal decomposition
+capability mapping
+
+في النسخة القديمة مع Semantic Router الحالي.
+
+إذا القديم يحتوي reasoning/planning أفضل:
+لا تستبدل Output Router الحالي مباشرة.
+
+استخرج المنطق المفيد داخل:
+
+Semantic Understanding Layer
+أو
+Planner
+
+مع الحفاظ على Output Form Selection الحالي.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. HARVEST CAPABILITIES / CONNECTORS CAREFULLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا النسخة القديمة تحتوي:
+
+api/connectors
+capability implementations
+provider adapters
+web search
+data extractors
+notification integrations
+storage adapters
+
+افحصها.
+
+لكن لا تفعل external effects حقيقية الآن إذا Trusted Executor/Receipt/Verifier غير مكتملة.
+
+يمكن دمجها كـ:
+
+REGISTERED_BUT_NOT_EXECUTABLE
+أو
+PROVIDER_ADAPTER_READY
+
+حتى execution trust layer تكتمل.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. HARVEST TESTS AGGRESSIVELY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+الاختبارات القديمة قيمة جدًا.
+
+استخرج أي tests تختبر:
+
+- unseen intents
+- generalization
+- world behavior
+- bubble rendering
+- planning
+- references
+- capabilities
+- retries
+- ownership
+- auth
+- recovery
+- provider failures
+- mobile/web parity
+
+حتى إذا implementation نفسها لا تستحق الدمج.
+
+صنفها:
+
+EXTRACT_TESTS_ONLY
+
+ثم شغّلها ضد JASIM الحالي بعد تكييفها.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. HARVEST RECOVERY / ERROR HANDLING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ابحث خصوصًا عن:
+
+retry policies
+timeout handling
+partial failures
+resume logic
+idempotency
+reconciliation
+state recovery
+transaction handling
+cancellation
+
+هذه غالبًا يمكن أن تختصر مراحل لاحقة.
+
+لكن لا تدمج code قديمًا إذا semantics غير متوافقة مع DAG الحالية.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. DO NOT CREATE DUPLICATE SYSTEMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ممنوع أن تكون النتيجة:
+
+Router A + Router B
+Capability Registry A + B
+Event system A + B
+Memory Engine A + B
+Task runtime A + B
+Bubble Renderer A + B
+
+اختر canonical owner واحدًا لكل concept.
+
+إذا استخرجت جزءًا قديمًا:
+ادمجه داخل الـCanonical subsystem الحالي.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. PRESERVE CURRENT PROVEN DAG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تستبدل DAG الحالية إذا القديمة لديها DAG أخرى.
+
+الحالية مثبتة في:
+
+claims
+leases
+heartbeat
+fencing
+retry
+recovery
+cancellation
+approval input binding
+
+يمكن استخراج فقط feature ناقصة من القديمة إذا كانت مفيدة.
+
+لا regression.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. PRESERVE CURRENT PROPOSAL / FINGERPRINT MODEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا القديمة تستخدم approval boolean أو authorization بسيطة:
+لا تنقلها.
+
+احتفظ بـ:
+
+Proposal
+Normalized Inputs
+Canonical Fingerprint
+Approval Binding
+Invalidation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. USE DIFF-DRIVEN HARVESTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لكل subsystem مهم:
+
+OLD
+vs
+CURRENT
+
+اسأل:
+
+What exists only in OLD?
+What exists only in CURRENT?
+What is stronger in OLD?
+What is stronger in CURRENT?
+Can OLD reduce remaining work?
+
+لا تعِد تحليل Product Vision.
+
+ركز على code delta.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. PRIORITY HARVEST AREAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+افحص هذه بالترتيب لأنها قد تختصر أكثر:
+
+1. Generic GenUI / Bubble Renderer
+2. Bubble interaction primitives
+3. Natural-language mutation logic
+4. Planner / goal decomposition
+5. Memory Engine
+6. Event APIs
+7. Capability/connector adapters
+8. Recovery / resume
+9. Context builder
+10. Mobile/Web shared runtime contracts
+11. Tests
+12. Security utilities
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. LOW-VALUE OLD WORK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تهدر وقتًا على:
+
+old UI polish
+obsolete route layouts
+domain-specific dashboards
+demo pages
+fake data
+mock success flows
+deprecated auth
+temporary preview code
+Expo-Go-only workarounds
+
+إلا إذا فيها primitive قابلة للاستخراج.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. NO EXPO GO ARCHITECTURE REGRESSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا النسخة القديمة بُنيت حول Expo Go limitations:
+لا تنقل هذه القيود.
+
+Expo Go:
+development preview only.
+
+Final mobile:
+Standalone iOS + Android.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. COMPATIBILITY GATE BEFORE MERGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+قبل دمج أي component قديم، يجب أن يمر:
+
+ARCHITECTURE_COMPATIBLE
+GENERAL_NOT_DOMAIN_LOCKED
+NO_DUPLICATE_CANONICAL_OWNER
+SECURITY_COMPATIBLE
+PERSISTENCE_COMPATIBLE
+BUBBLE_FIRST_COMPATIBLE
+RUN_INDEPENDENCE_COMPATIBLE
+
+إذا فشل واحد منها:
+ADAPT أو REJECT.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. MIGRATE TEST-FIRST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا component قديم يبدو مفيدًا:
+
+1. استخرج behavior/test.
+2. شغّل test ضد الحالي.
+3. أثبت الفجوة.
+4. انقل أقل كمية code تحقق behavior.
+5. شغّل regression.
+6. تابع.
+
+لا تنقل آلاف الأسطر ثم تختبر.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. DO NOT STOP CURRENT WORK UNNECESSARILY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هذه ليست إعادة مشروع جديدة.
+
+استمر في الـCanonical Task الحالي.
+
+استخدم النسخة القديمة كـAccelerator فقط.
+
+إذا component قديم مفيد:
+ادمجه أثناء نفس tranche المناسبة.
+
+إذا ليس مفيدًا:
+تجاهله.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. IMPORTANT: SMART BUBBLE PRODUCT GAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بما أن أهم gap الحالية هي:
+
+Generic Bubble Renderer
+Natural Language Bubble Mutation
+Bubble Lifecycle
+Conversation Context
+Memory/Events
+Approval Resume
+
+ابحث أولًا في النسخة القديمة هل يوجد أي implementation لها.
+
+إذا موجودة بنسبة جيدة:
+استخرجها قبل إعادة بنائها.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. EXAMPLE OF CORRECT HARVEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا النسخة القديمة تحتوي:
+
+Generic SchemaRenderer
++
+dynamic form renderer
++
+bubble expand/collapse
++
+runtime action binding
+
+والحالي يفتقدها:
+
+لا تعِد بناءها.
+
+افصلها من dependencies القديمة.
+حوّل contracts إلى canonical contracts.
+اربطها بـcurrent Bubble Runtime.
+أزل fake handlers.
+اختبرها.
+ادمجها.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. EXAMPLE OF INCORRECT HARVEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا القديمة تحتوي:
+
+CarsMarketplaceModule
+→ World
+→ CarsPage
+→ SellCarFlow
+
+لا تنقل module كاملة.
+
+استخرج فقط ما قد يكون عامًا:
+
+listing primitives
+entity renderer
+media upload primitive
+price field
+workflow utilities
+
+واجعل:
+
+"بع سيارة"
+→ Run
+
+و:
+
+"أنشئ سوق سيارات"
+→ Bubble/World
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. SECURITY REVIEW OF OLD CODE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+اعتبر old implementation غير موثوقة حتى الفحص.
+
+تحقق من:
+
+owner isolation
+IDOR
+mass assignment
+secret leakage
+client-side authorization
+fake completion
+unsafe provider calls
+raw token storage
+missing idempotency
+approval bypass
+
+لا تنقل vulnerability إلى canonical JASIM.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. FINAL GENERALIZATION CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أي component قديم يتم دمجه يجب أن يعمل على intent جديد غير موجود في examples.
+
+ممنوع نجاحه فقط على:
+
+cars
+jobs
+restaurants
+stores
+delivery
+
+استخدم unseen tests.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. REPORT ONLY HIGH-VALUE FINDINGS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا أريد تقريرًا طويلًا لكل ملف.
+
+أعطني جدولًا صغيرًا فقط:
+
+COMPONENT
+OLD STATUS
+CURRENT STATUS
+DECISION
+ESTIMATED WORK SAVED
+MERGED YES/NO
+
+ركز فقط على components ذات قيمة فعلية.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. REQUIRED FINAL SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بعد الفحص والدمج أعطني:
+
+EARLY IMPLEMENTATION FOUND:
+YES / NO
+
+HIGH-VALUE COMPONENTS FOUND:
+<number>
+
+GENUI/RENDERER REUSED:
+YES / NO
+
+BUBBLE LOGIC REUSED:
+YES / NO
+
+PLANNER/INTENT LOGIC REUSED:
+YES / NO
+
+MEMORY LOGIC REUSED:
+YES / NO
+
+EVENT LOGIC REUSED:
+YES / NO
+
+CONNECTORS REUSED:
+YES / NO
+
+RECOVERY LOGIC REUSED:
+YES / NO
+
+TESTS REUSED:
+YES / NO
+
+DOMAIN-SPECIFIC CODE IMPORTED INTO CORE:
+NO / YES
+
+DUPLICATE RUNTIME CREATED:
+NO / YES
+
+BUBBLE-FIRST PRESERVED:
+PASS / FAIL
+
+RUN-WITHOUT-BUBBLE PRESERVED:
+PASS / FAIL
+
+WORLD-OPTIONAL PRESERVED:
+PASS / FAIL
+
+FULL REGRESSION:
+PASS / FAIL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. FINAL RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا نريد اختيارًا بين:
+
+OLD JASIM
+أو
+CURRENT JASIM
+
+نريد:
+
+CURRENT CANONICAL JASIM
++
+BEST PROVEN PARTS OF EARLY JASIM
+↓
+STRONGER SINGLE JASIM
+
+استخرج القيمة من العمل القديم،
+ولا تستخرج أخطاءه المعمارية.
+
+إذا كان component قديم سيختصر علينا إعادة بناء شيء نحتاجه الآن:
+استخدمه.
+
+إذا كان سيعيدنا إلى World-first أو Platform-first أو Domain-hardcoded:
+لا تستخدمه إلا بعد تعميمه.
+
+ابدأ بهذا الفحص الآن وادمج فقط الأجزاء التي تثبت فائدتها.

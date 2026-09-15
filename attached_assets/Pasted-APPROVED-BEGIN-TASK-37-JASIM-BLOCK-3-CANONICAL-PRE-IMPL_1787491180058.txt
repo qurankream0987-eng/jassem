@@ -1,0 +1,343 @@
+APPROVED — BEGIN TASK #37.
+
+JASIM BLOCK 3
+CANONICAL PRE-IMPLEMENTATION MAPPING
+
+Proceed exactly according to the previously supplied:
+
+JASIM BLOCK 3 MASTER ARCHITECTURAL TEACHING CONSTITUTION
+
+and:
+
+JASIM BLOCK 3 CANONICAL PRE-IMPLEMENTATION MAPPING DIRECTIVE.
+
+The architecture has already been taught and understood.
+
+DO NOT repeat the Constitution.
+DO NOT rewrite the planning directive.
+DO NOT perform another broad architectural audit.
+
+Use the ACTUAL current canonical repository as the source of truth.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK #37 AUTHORIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AUTHORIZED:
+
+READ CODE
+TRACE ACTIVE PATHS
+INSPECT SCHEMA
+INSPECT MIGRATIONS
+INSPECT PAYMENT / COMMERCE / ECONOMIC LEGACY
+INSPECT TESTS
+INSPECT TRUSTED EXECUTION PATHS
+INSPECT WEBHOOKS
+INSPECT PAYMENT PROVIDER ADAPTERS
+PRODUCE CANONICAL MAPPING
+
+NOT AUTHORIZED:
+
+SOURCE CODE MODIFICATION
+DATABASE MODIFICATION
+MIGRATIONS
+SDK INSTALLATION
+REAL PAYMENT PROVIDER CONNECTION
+REAL PAYMENT
+LIVE CHECKOUT
+LIVE SUBSCRIPTION
+LIVE REFUND
+LIVE PAYOUT
+ACP IMPLEMENTATION
+AP2 IMPLEMENTATION
+BLOCK 3 IMPLEMENTATION
+PRODUCTION DEPLOYMENT
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DO NOT REOPEN ACCEPTED BLOCKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BLOCK_0   = CLOSED / PASS
+BLOCK_1   = CLOSED / PASS
+BLOCK_1_1 = CLOSED / PASS
+BLOCK_2   = CLOSED / PASS
+
+Do not rerun or redesign them unless a DIRECT concrete Block 3
+incompatibility is found in current canonical code.
+
+If such an incompatibility exists, report:
+
+INVARIANT:
+CURRENT CODE:
+DIRECT BLOCKING CONFLICT:
+MINIMUM REQUIRED CHANGE:
+
+Do not repair it during mapping.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FOCUS THE MAPPING ON THE HIGHEST-RISK QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Give concrete file/symbol evidence for these questions:
+
+1. Are TransactionIntent and payment already conflated anywhere?
+
+2. Is there an active canonical Order model, and is it actually needed?
+
+3. Is all money representation safe for KWD 3-decimal precision?
+
+4. Does any active payment or checkout path bypass:
+   Proposal
+   → Policy / Mandate
+   → Trusted Executor
+   → Attempt
+   → Receipt
+   → Verifier
+   → Reconciliation?
+
+5. Does any provider signature/HMAC currently produce VERIFIED directly?
+
+Required target:
+VALID_SIGNATURE_EQUALS_VERIFIED = NO
+
+6. Can Block 2 DelegationGrant be extended for financial constraints,
+   or is a PaymentMandate primitive genuinely necessary?
+
+7. Can existing ExternalActionSession securely host payment checkout?
+
+8. Can Block 2 external-event ingestion safely handle payment webhooks?
+
+9. Does a trustworthy financial/economic ledger already exist?
+
+10. Are Attempt Ledger and financial ledger currently confused?
+
+Required architectural target:
+ATTEMPT_LEDGER != FINANCIAL_LEDGER
+
+11. Are there raw payment credentials anywhere in:
+    DB
+    logs
+    runtime state
+    Bubble/World state
+    model context
+    environment forwarding?
+
+12. What legacy payment providers actually exist and which are active?
+
+13. Are historical commission percentages/prices hard-coded anywhere in
+    active production paths?
+
+14. Can current architecture represent:
+    CUSTOMER_PAYMENT
+    SELLER_PAYABLE
+    PROVIDER_COST
+    JASIM_REVENUE
+    separately?
+
+15. Can non-payment transactions complete without PaymentIntent?
+
+16. Are subscription and entitlement currently conflated?
+
+17. Can entitlement enforcement reuse current authorization primitives
+    without creating a second authorization truth?
+
+18. Can refund/capture/payout all reuse the canonical Trusted Executor
+    + Attempt + Verifier + Reconciliation path?
+
+19. Which concepts genuinely require new canonical persistence?
+
+20. What is the MINIMUM coherent Block 3 implementation delta?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MONEY SAFETY — HARD PRIORITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect every active monetary field and arithmetic path.
+
+Specifically prove:
+
+NO unsafe JavaScript floating-point monetary truth.
+
+KWD supports three decimal places correctly.
+
+Currency is explicitly bound to money.
+
+Amounts do not silently lose precision during:
+
+DB write/read
+JSON serialization
+API validation
+comparison
+fee calculation
+refund calculation
+subscription calculation
+
+If unsafe monetary representation exists:
+
+mark it:
+
+BLOCK_3_P0_CRITICAL
+
+Do not patch it during mapping.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PAYMENT TRUTH — HARD PRIORITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Map whether the architecture can enforce:
+
+CHECKOUT_CREATED != PAID
+
+PAYMENT_AUTHORIZED != CAPTURED
+
+CAPTURED != SETTLED
+
+SETTLED != PAYOUT_COMPLETED
+
+PROVIDER_RECEIPT != VERIFIED
+
+VALID_SIGNATURE != VERIFIED
+
+PAYMENT != JASIM_REVENUE
+
+TRANSACTION != PAYMENT
+
+SUBSCRIPTION != PAYMENT
+
+PAYMENT_SUCCESS != ENTITLEMENT_BY_UI
+
+These distinctions must survive the final Block 3 design.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LEGACY CODE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not delete or reactivate legacy payment code.
+
+Classify it.
+
+Especially search for:
+
+Moyasar
+Stripe
+Tap
+KNET
+checkout
+payment
+refund
+payout
+wallet
+balance
+escrow
+commission
+subscription
+billing
+
+For each active/legacy provider implementation state:
+
+ACTIVE
+LEGACY
+DEAD
+
+and:
+
+REUSABLE_ADAPTER
+REUSABLE_WEBHOOK_SECURITY
+REUSABLE_VALIDATION
+UNSAFE_DIRECT_EFFECT
+DOMAIN_SPECIFIC
+DO_NOT_REUSE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ACP / AP2
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not implement either.
+
+Only determine adapter fit.
+
+They must remain:
+
+ACP
+= OPTIONAL COMMERCE INTEROPERABILITY ADAPTER
+
+AP2
+= OPTIONAL AGENTIC PAYMENT AUTHORIZATION ADAPTER
+
+Neither may become canonical JASIM truth.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DATABASE DISCIPLINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not propose a table simply because a concept has a noun.
+
+For every proposed table prove:
+
+WHY CANONICAL STATE REQUIRES IT
+
+WHY EXISTING TABLES CANNOT SAFELY EXPRESS IT
+
+WHY ITS LIFECYCLE IS INDEPENDENT
+
+WHY AUDITABILITY / CONCURRENCY / RECOVERY REQUIRES PERSISTENCE
+
+Return:
+
+MINIMUM_NEW_TABLES_ESTIMATE
+MAXIMUM_JUSTIFIED_NEW_TABLES_ESTIMATE
+
+Do not optimize for artificially low table count either.
+
+Financial correctness is more important than table count.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ECONOMIC GENERALITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The mapping must prove the design does NOT require:
+
+CarPaymentEngine
+JobFeeEngine
+TransportSubscriptionEngine
+BookingBillingEngine
+DeliveryRevenueEngine
+
+Expected:
+
+DOMAIN_SPECIFIC_COMMERCE_ENGINES_PROPOSED = 0
+DOMAIN_SPECIFIC_PAYMENT_ENGINES_PROPOSED = 0
+DOMAIN_SPECIFIC_ECONOMICS_ENGINES_PROPOSED = 0
+DOMAIN_SPECIFIC_AGENTS_PROPOSED = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL OUTPUT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Produce exactly:
+
+.local/tasks/block3-canonical-mapping.md
+
+using the previously required A–Z structure,
+219-concept mapping,
+and final counters.
+
+Do not produce additional planning reports.
+
+At the end state clearly:
+
+BLOCK_3_IMPLEMENTATION_READY:
+YES / NO
+
+BLOCK_3_REQUIRES_PREVIOUS_BLOCK_REWORK:
+YES / NO
+
+READY_FOR_OWNER_REVIEW:
+YES / NO
+
+Then STOP.
+
+DO NOT BEGIN BLOCK 3 IMPLEMENTATION.
+
+TASK #37 IS NOW APPROVED.
+BEGIN THE CANONICAL MAPPING.

@@ -1,0 +1,1147 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM SMART GENERATIVE EXPERIENCE
+
+# TASK 5B — VISUAL UI MORPHING + WEB TRANSITIONS
+
+MODE INTENT:
+Focused Web presentation implementation only.
+
+Task 1 = CLOSED / PASS
+Task 2 = CLOSED / PASS
+Task 3 = CLOSED / PASS
+Task 4A = CLOSED / PASS
+Task 4B = CLOSED / PASS
+Task 5A = CLOSED / PASS
+
+Task 5A already proved the LOGIC.
+
+DO NOT redesign or duplicate it.
+
+Accepted Task 5A state:
+
+* ENTER supported
+* UPDATE supported
+* MORPH supported
+* EXIT supported
+* NO_CHANGE supported
+* stale projection overwrite blocked
+* reload reconstructs current presentation
+* conversation switch isolation works
+* Goal continuity works
+* ResultSet continuity works
+* ReferenceBindings continuity works
+* selection continuity works
+* Approval / Run / Transaction / World continuity works
+* presentationVersion continuity works
+* DOMAIN_SPECIFIC_MORPH_RULES_ADDED = 0
+* CLIENT_CANONICAL_TRUTH_ADDED = 0
+* READY_FOR_SMART_UI_TASK_5B = YES
+
+Canonical report:
+
+.local/tasks/smart-ui-task-5a-report.md
+
+Do NOT reimplement morphing semantics.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. GOAL
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Make the already-working UI Morphing visually coherent on Web.
+
+The user should EXPERIENCE:
+
+Results
+↓
+Comparison
+↓
+Form / Detail
+↓
+Approval
+↓
+Status
+
+as ONE evolving intelligent workspace.
+
+Not as:
+
+unrelated pages
+
+duplicate cards
+
+full-screen flashes
+
+endless stacked UI
+
+The visual system should communicate:
+
+"JASIM is reshaping the current workspace around my goal."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. PERMANENT RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LOGIC comes from Task 5A.
+
+VISUAL TRANSITION comes from Task 5B.
+
+Do NOT let animation/state drive canonical truth.
+
+Required:
+
+new server projection
+↓
+Task 5A classifies transition
+↓
+Task 5B visually represents transition
+
+Never:
+
+animation ends
+↓
+business state becomes complete
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. REUSE EXISTING VISUAL SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Reuse existing:
+
+Soap Glass
+
+Glass Window
+
+Pop
+
+existing motion utilities
+
+existing CSS transitions
+
+existing animation primitives
+
+existing design tokens
+
+Do NOT install:
+
+Framer Motion
+
+GSAP
+
+animation SDK
+
+new UI framework
+
+unless one of them is ALREADY in the project.
+
+Expected:
+
+NEW_EXTERNAL_SDKS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. MORPH VISUAL STATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use the transition classifications already produced by Task 5A.
+
+Render visually:
+
+ENTER
+UPDATE
+MORPH
+EXIT
+NO_CHANGE
+
+Each should have restrained semantics.
+
+Suggested direction:
+
+ENTER
+→ surface softly appears / expands
+
+UPDATE
+→ current surface updates without full re-entry animation
+
+MORPH
+→ old semantic surface transitions into new current surface
+
+EXIT
+→ Workspace collapses/clears gracefully
+
+NO_CHANGE
+→ no unnecessary animation
+
+Do not mechanically use these exact effects if existing visual system has better equivalents.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. MORPH, DON'T STACK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Critical visual invariant:
+
+SEARCH_RESULTS
+↓
+COMPARISON
+
+must visually become:
+
+COMPARISON
+
+not:
+
+SEARCH_RESULTS
++
+COMPARISON
+
+Likewise:
+
+APPROVAL
+↓
+STATUS
+
+must not leave an old actionable Approval underneath.
+
+The Active Workspace displays the CURRENT useful surface.
+
+Conversation history remains the historical record.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. CONTINUITY CUES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Although the surface changes, visually communicate continuity where appropriate.
+
+Examples:
+
+selected entity survives Results → Comparison
+
+same title/context may persist
+
+same entity imagery may remain recognizable
+
+same goal label may remain stable
+
+current status remains tied to same operation
+
+Do not overdo shared-element animation.
+
+The priority is clarity.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. SEARCH → COMPARISON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Target experience:
+
+User sees Search Results.
+
+Then:
+
+"قارن الثاني والرابع."
+
+Workspace should transition to Comparison without:
+
+page navigation
+
+losing Conversation
+
+flashing empty UI
+
+rendering old and new interfaces simultaneously
+
+The selected entities should clearly correspond to the prior results.
+
+Stable references come from Task 5A.
+
+Do not infer identity visually.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. COMPARISON → UPDATED RESULTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+Comparison is visible.
+
+User:
+"أبي مثل الثاني لكن أرخص."
+
+Runtime replans.
+
+Workspace receives updated Search Results.
+
+Visual transition should make sense:
+
+Comparison
+↓
+Updated Results
+
+Do not pretend this is a completely unrelated search.
+
+If the current goal/context label exists, preserve it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. FORM → APPROVAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+Workspace shows Form.
+
+User submits required values.
+
+Server accepts.
+
+New projection:
+APPROVAL
+
+Expected visual behavior:
+
+Form leaves current active role
+
+Approval becomes dominant
+
+Conversation remains available
+
+No stale submit button remains actionable.
+
+No client-side approval invention.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. APPROVAL → STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is a critical transition.
+
+User approves.
+
+Button click alone must NOT instantly animate to success.
+
+Instead:
+
+approval action
+↓
+server/runtime
+↓
+projection changes
+↓
+Task 5A classifies
+↓
+Workspace transitions to STATUS / TIMELINE
+
+If runtime says:
+
+VERIFYING
+
+show verifying state.
+
+If:
+
+INCONCLUSIVE
+
+show inconclusive state.
+
+If:
+
+FAILED
+
+show failure.
+
+Do not visually fake success.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. UPDATE SEMANTICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When same semantic presentation updates:
+
+SEARCH_RESULTS v1
+→ SEARCH_RESULTS v2
+
+avoid treating it as full scene replacement.
+
+Prefer subtle update.
+
+Examples:
+
+new candidate appears
+
+price changes
+
+status changes
+
+ranking changes
+
+Do not restart every animation.
+
+Do not reset scroll unnecessarily when inappropriate.
+
+But do not preserve stale layout state if it conflicts with current projection.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. EXIT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When active rich Workspace context genuinely ends:
+
+Workspace should close/collapse gracefully.
+
+Conversation regains primary/full space.
+
+Do NOT remove ongoing canonical Task merely because Workspace exited.
+
+Presentation exit ≠ task deletion.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. NO_CHANGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If Task 5A says:
+
+NO_CHANGE
+
+avoid animation.
+
+This prevents visual noise during:
+
+polling
+refetch
+same-version render
+unrelated conversation updates
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. SOAP GLASS LANGUAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use visual language similar to:
+
+soft depth
+
+translucent layers
+
+controlled blur
+
+thin luminous borders
+
+subtle highlights
+
+smooth surface expansion
+
+gentle Pop transition
+
+Do not turn every transition into a glowing spectacle.
+
+JASIM should feel:
+
+premium
+calm
+intelligent
+alive
+
+not:
+
+gaming UI
+constant neon animation
+visual chaos
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. BUBBLE RELATIONSHIP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not redesign Bubbles.
+
+Bubbles may:
+
+appear
+expand
+collapse
+open a surface
+represent presentation
+
+But Active Workspace remains the visual context.
+
+Do not create one persistent Bubble for each morph step.
+
+Search Bubble
+Comparison Bubble
+Approval Bubble
+Status Bubble
+
+must NOT all accumulate as active persistent objects.
+
+Living Objects come later in Task 6.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. CONVERSATION-FIRST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+At all times:
+
+Conversation remains visible or immediately available.
+
+Workspace transition must not feel like leaving JASIM Chat and entering another app.
+
+User can continue typing during/after transitions.
+
+Avoid animation blocking input.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. FOCUS MANAGEMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Visual morph must handle keyboard/accessibility focus correctly.
+
+Example:
+
+Form button is focused.
+
+Form morphs to Approval.
+
+Do not leave focus on destroyed DOM.
+
+Move focus intelligently to:
+
+new surface heading
+
+or first relevant control
+
+when appropriate.
+
+Do not steal focus from chat input on every harmless UPDATE.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. REDUCED MOTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Respect:
+
+prefers-reduced-motion
+
+or existing project equivalent.
+
+When reduced motion is enabled:
+
+Morphs should remain understandable through instant/low-motion state changes.
+
+Functionality must not depend on animation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. PERFORMANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not keep full previous presentations permanently mounted just for animation.
+
+Previous surface may exist briefly during transition if necessary.
+
+After transition:
+
+dispose obsolete presentation DOM.
+
+Avoid:
+
+large hidden grids
+
+multiple maps
+
+multiple approval forms
+
+historical workspace surfaces remaining mounted
+
+Use existing React transition patterns carefully.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. NO CANONICAL STATE IN ANIMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Allowed:
+
+previousPresentationKey
+
+currentPresentationKey
+
+transitionPhase
+
+animation direction
+
+layout measurement
+
+Forbidden:
+
+selected canonical entity
+
+ResultSet truth
+
+approval truth
+
+transaction truth
+
+World truth
+
+Run truth
+
+Animation state is disposable.
+
+Canonical state comes from projection.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. STALE PROJECTION VISUAL BEHAVIOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 5A already blocks stale projection overwrite.
+
+Task 5B must not visually revive a stale surface during transition cleanup.
+
+Race example:
+
+P1 Results
+→ P2 Comparison
+→ P3 Approval
+
+If delayed P1 UI transition callback finishes later:
+
+it must not restore Results.
+
+Current projection/version always wins.
+
+Add focused test around transition cleanup if practical.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. COLLAPSE DURING TRANSITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If user collapses Workspace during morph:
+
+do not break transition state.
+
+When reopened:
+
+render CURRENT server projection.
+
+Not:
+
+old outgoing surface.
+
+Collapse remains local presentation behavior.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. CONVERSATION SWITCH DURING TRANSITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If user changes conversation during transition:
+
+cancel/discard visual transition belonging to old conversation.
+
+Render new conversation's current projection.
+
+Zero visual/context leakage.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. RESPONSIVE WEB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Transitions must work on:
+
+large desktop
+
+laptop
+
+narrow browser
+
+If Workspace changes size:
+
+avoid layout jumps that make chat unusable.
+
+On narrow Web:
+
+surface replacement may use panel/sheet-like transition if current Web architecture already supports it.
+
+Do NOT redesign native Mobile.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. REPRESENTATIVE MORPH SCENARIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use real Task 5A transition logic with controlled test/runtime fixtures:
+
+SEARCH_RESULTS
+→ COMPARISON
+→ FORM
+→ APPROVAL
+→ STATUS
+→ TIMELINE
+
+Verify:
+
+one Workspace shell
+
+one current primary presentation
+
+no accumulated active surfaces
+
+same Conversation remains present
+
+no domain-specific transitions
+
+no canonical client state
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. NON-COMMERCE MORPH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prove visual morphing is generic.
+
+Example:
+
+DOCUMENT
+→ COMPARISON
+→ FORM
+
+or equivalent supported generic semantic sequence.
+
+No checkout/payment assumption in morph engine.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. WORLD MORPH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If existing generic World presentation is available:
+
+WORLD_SUMMARY
+→ updated WORLD_SUMMARY / WORKSPACE
+
+after real conversation mutation.
+
+Transition should update same context.
+
+Do not create World-specific animation architecture.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. ERROR / BLOCKED MORPH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Any surface may transition into:
+
+WARNING
+ERROR_STATE
+STATUS blocked
+INCONCLUSIVE state
+
+These are first-class truthful outcomes.
+
+Example:
+
+APPROVAL
+→ INCONCLUSIVE STATUS
+
+must visually work as naturally as:
+
+APPROVAL
+→ SUCCESS STATUS
+
+Do not make error states feel like renderer crashes.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. LOADING DURING MORPH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not blank current Workspace immediately whenever new request starts.
+
+Use a minimal pending indicator if useful.
+
+Keep last trusted presentation visible where safe until new canonical projection arrives.
+
+But:
+
+make it visually clear if action/search is updating.
+
+Once new projection arrives:
+
+Morph.
+
+Do not let old presentation remain actionable if runtime has invalidated it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. PRESENTATION ACTION SAFETY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 7 handles final Trusted Action Dispatcher.
+
+Task 5B must preserve:
+
+expectedPresentationVersion
+
+typed actions
+
+Task 1 validation
+
+Do not refactor action execution broadly.
+
+Do not let transition wrappers strip action metadata.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. VISUAL POLISH BOUNDARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do enough visual polish to prove JASIM's experience.
+
+Do NOT attempt final branding perfection.
+
+Task 5B should establish:
+
+morph behavior
+
+spacing continuity
+
+surface coherence
+
+basic Soap Glass transition
+
+not:
+
+marketing-level final animations
+
+complex 3D bubbles
+
+canvas backgrounds
+
+new visual effects engine
+
+Keep FREE scope bounded.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. FOCUSED TESTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add focused tests proving at minimum:
+
+1. ENTER visually mounts one current surface.
+
+2. UPDATE does not duplicate current surface.
+
+3. MORPH replaces old semantic surface with new.
+
+4. EXIT removes Workspace surface appropriately.
+
+5. NO_CHANGE does not restart transition.
+
+6. Search → Comparison produces one current presentation.
+
+7. Form → Approval removes stale Form actions.
+
+8. Approval → Status only occurs after projection change.
+
+9. failed/inconclusive Status can replace Approval truthfully.
+
+10. stale transition callback cannot revive old presentation.
+
+11. collapse during transition reopens latest projection.
+
+12. conversation switch cancels old visual transition.
+
+13. previous DOM is removed after transition.
+
+14. reduced-motion mode remains functional.
+
+15. keyboard focus remains valid after morph.
+
+16. Conversation remains usable.
+
+17. no canonical state stored in transition mechanism.
+
+18. no domain-specific visual morph rule.
+
+19. Task 5A logical classification remains authoritative.
+
+20. Smart Bubble regression passes.
+
+21. Task 4B Workspace regression passes.
+
+22. plain chat regression passes.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. VISUAL SMOKE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run Web and visually inspect representative transitions:
+
+SEARCH_RESULTS → COMPARISON
+
+FORM → APPROVAL
+
+APPROVAL → STATUS
+
+STATUS update
+
+Workspace EXIT
+
+Also inspect:
+
+large desktop
+
+narrow Web
+
+reduced motion if practical
+
+Check:
+
+no white screen
+
+no clipped Workspace
+
+no double surface
+
+no broken chat
+
+no stuck overlay
+
+no stale clickable buttons
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. VERIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run:
+
+Task 5B focused tests
+
+Task 5A regression
+
+Task 4B regression
+
+affected Tasks 1–4 presentation regressions
+
+Web TypeScript
+
+Server TypeScript only if shared types changed
+
+Web production build
+
+git diff --check
+
+Web smoke check
+
+Do NOT run:
+
+all Blocks
+
+Mobile suite
+
+Final Production Closure
+
+deployment
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. CHANGE BOUNDARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expected files:
+
+ActiveGenerativeWorkspace
+
+small visual transition helper/hook
+
+Workspace styles
+
+possibly shared visual transition tokens
+
+focused tests
+
+Do NOT add:
+
+database table
+
+migration
+
+SDK
+
+animation framework
+
+Expected:
+
+NEW_DATABASE_TABLES = 0
+NEW_MIGRATIONS = 0
+NEW_EXTERNAL_SDKS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create exactly:
+
+.local/tasks/smart-ui-task-5b-report.md
+
+Sections:
+
+CAUSE
+
+VISUAL_MORPH_ARCHITECTURE
+
+REUSED_MOTION_SYSTEM
+
+ENTER
+
+UPDATE
+
+MORPH
+
+EXIT
+
+NO_CHANGE
+
+SOAP_GLASS_TRANSITIONS
+
+CONVERSATION_CONTINUITY
+
+FOCUS_MANAGEMENT
+
+REDUCED_MOTION
+
+STALE_TRANSITION_PROTECTION
+
+COLLAPSE_BEHAVIOR
+
+CONVERSATION_SWITCH
+
+RESPONSIVE_WEB
+
+PERFORMANCE
+
+CLIENT_STATE_BOUNDARY
+
+DOMAIN_GENERICITY
+
+FILES_CHANGED
+
+TESTS
+
+VISUAL_SMOKE
+
+Final counters:
+
+SMART_UI_TASK_5B =
+PASS / PARTIAL / FAIL
+
+VISUAL_UI_MORPHING =
+PASS / FAIL
+
+MORPH_ENTER_VISUAL =
+PASS / FAIL
+
+MORPH_UPDATE_VISUAL =
+PASS / FAIL
+
+MORPH_REPLACE_VISUAL =
+PASS / FAIL
+
+MORPH_EXIT_VISUAL =
+PASS / FAIL
+
+NO_CHANGE_AVOIDS_REANIMATION =
+YES / NO
+
+ONE_CURRENT_WORKSPACE_SURFACE =
+YES / NO
+
+OLD_SURFACE_REMOVED_AFTER_MORPH =
+YES / NO
+
+CONVERSATION_REMAINS_USABLE =
+YES / NO
+
+STALE_VISUAL_REVIVAL_BLOCKED =
+YES / NO
+
+COLLAPSE_REOPENS_CURRENT_PROJECTION =
+YES / NO
+
+CONVERSATION_SWITCH_VISUALLY_ISOLATED =
+YES / NO
+
+REDUCED_MOTION =
+PASS / FAIL
+
+FOCUS_MANAGEMENT =
+PASS / FAIL
+
+RESPONSIVE_WEB_MORPHING =
+PASS / FAIL
+
+DOMAIN_SPECIFIC_VISUAL_MORPH_RULES_ADDED = <number>
+
+CLIENT_CANONICAL_TRUTH_ADDED = <number>
+
+NEW_DATABASE_TABLES =
+0
+
+NEW_MIGRATIONS =
+0
+
+NEW_EXTERNAL_SDKS =
+0
+
+TASK_5A_REGRESSION =
+PASS / FAIL
+
+TASK_4B_REGRESSION =
+PASS / FAIL
+
+SMART_BUBBLE_REGRESSION =
+PASS / FAIL
+
+PLAIN_CHAT_REGRESSION =
+PASS / FAIL
+
+WEB_TYPESCRIPT =
+PASS / FAIL
+
+WEB_PRODUCTION_BUILD =
+PASS / FAIL
+
+WEB_VISUAL_SMOKE =
+PASS / FAIL
+
+BLOCKS_0_TO_3_1_REMAIN_CLOSED =
+YES / NO
+
+READY_FOR_SMART_UI_TASK_6 =
+YES / NO
+
+If NO:
+list only the exact blocker.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Task 5B:
+
+STOP.
+
+DO NOT implement Living Objects.
+
+DO NOT implement Active Objects Rail.
+
+DO NOT redesign Mobile.
+
+DO NOT begin Trusted Action Dispatcher.
+
+DO NOT start production closure.
+
+Return only:
+
+Task 5B verdict
+
+visual morphing status
+
+test count
+
+visual smoke result
+
+domain-specific visual rules added
+
+client canonical truth added
+
+READY_FOR_SMART_UI_TASK_6
+
+BEGIN TASK 5B.

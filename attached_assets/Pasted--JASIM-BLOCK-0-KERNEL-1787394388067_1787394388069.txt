@@ -1,0 +1,2775 @@
+# =====================================================================
+# JASIM — BLOCK 0
+# KERNEL TRUST + AUTHORIZATION + RECOVERY CLOSURE
+#
+# EXECUTIVE IMPLEMENTATION ORDER
+#
+# THIS BLOCK EXISTS BECAUSE TASK #24 FOUND REAL FOUNDATION GAPS.
+#
+# THREE INTERNAL PHASES:
+#
+# PHASE A — AUTH / IDENTITY / CROSS-OWNER ISOLATION
+# PHASE B — TRUSTED EXECUTOR / PRIVILEGE / EXECUTION BOUNDARY
+# PHASE C — RUN RESTART / LEASES / MIGRATION SAFETY
+#
+# DO NOT BUILD PRODUCT FEATURES.
+# DO NOT BUILD ECONOMIC FEATURES.
+# DO NOT REDESIGN JASIM.
+# =====================================================================
+
+
+ابدأ تنفيذ:
+
+JASIM BLOCK 0 — KERNEL TRUST + RECOVERY CLOSURE
+
+الآن.
+
+هذا Block ليس Architecture Study.
+
+وليس Documentation Task.
+
+وليس Audit فقط.
+
+المطلوب:
+
+INSPECT
+→ IDENTIFY EXACT ACTIVE GAP
+→ IMPLEMENT MINIMAL GENERAL FIX
+→ RUN REAL PROOF
+→ FIX FAILURES
+→ RETEST
+→ RETURN EVIDENCE
+
+
+=====================================================================
+0. WHY BLOCK 0 EXISTS
+=====================================================================
+
+Task #24 established:
+
+AUTH = FAIL
+
+CROSS_OWNER_ISOLATION = FAIL
+
+TRUSTED_EXECUTOR = FAIL
+
+RUN_RESTART = FAIL
+
+DATABASE_MIGRATIONS = FAIL
+
+
+while important existing foundation already passes:
+
+CANONICAL_RUNTIME = PASS
+
+DATABASE_STATE_TRUTH = PASS
+
+GENERATED_DNA_KERNEL_SAFETY = PASS
+
+ATTEMPT_LEDGER = PASS
+
+IDEMPOTENCY = PASS
+
+INDEPENDENT_VERIFIER = PASS
+
+RECONCILIATION = PASS
+
+FAKE_SUCCESS = 0
+
+PHASE_7_GENERALIZATION = PASS
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+TASK_22 = PASS
+
+TASK_26 = PASS
+
+
+Therefore:
+
+DO NOT rebuild proven subsystems.
+
+Fix only the foundation defects that prevent us from safely adding:
+
+Universal Capability Fabric
+
+Economic Network
+
+Realtime Tracking
+
+External Actions
+
+Payments
+
+Commercial Runtime
+
+later.
+
+
+=====================================================================
+1. COST DISCIPLINE — CRITICAL
+=====================================================================
+
+Replit execution consumes paid resources.
+
+Be extremely targeted.
+
+DO NOT:
+
+- reread historical JASIM documentation
+- regenerate architectural reports
+- create another "proposed architecture"
+- launch many duplicate sub-agents
+- inspect unrelated frontend pages
+- rebuild Web Research
+- rebuild Image Generation
+- rebuild Artifact Storage
+- rebuild Artifact Lineage
+- rebuild Smart Bubble
+- rebuild World/DNA
+- rebuild ModelPolicy
+- resume Phase 12 calibration
+- build Scheduler
+- build Cross-user Discovery
+- build Multi-role product UX
+- build Maps
+- build Payments
+- build Economics Engine
+- build Billing
+- build Notifications
+- build commercial features
+- implement any of the 30 examples as features
+- make unnecessary external model/provider calls
+
+Use repository search narrowly.
+
+Inspect active execution paths only.
+
+
+=====================================================================
+2. ARCHITECTURAL CONSTITUTION REMAINS ACTIVE
+=====================================================================
+
+The previously approved:
+
+Architectural Constitution / Acceptance Philosophy
+
+remains binding.
+
+Permanent rule:
+
+DO NOT solve a problem by adding domain-specific code.
+
+BLOCK 0 should require:
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+DOMAIN_SPECIFIC_HANDLER_REQUIRED = 0
+
+
+No:
+
+Car*
+Job*
+Debt*
+Driver*
+Marketplace*
+Repair*
+
+domain implementation belongs in this Block.
+
+
+=====================================================================
+3. CANONICAL SYSTEM INVARIANTS
+=====================================================================
+
+Preserve:
+
+ONE canonical Runtime
+
+ONE canonical PostgreSQL state truth
+
+ONE identity truth
+
+ONE authorization truth
+
+ONE execution boundary
+
+ONE Attempt Ledger truth
+
+ONE Receipt truth
+
+ONE Verifier truth
+
+ONE reconciliation path
+
+
+Do not introduce:
+
+parallel session system
+
+parallel authorization middleware
+
+parallel execution runtime
+
+parallel worker state database
+
+parallel migration system
+
+
+=====================================================================
+4. REQUIRED EXECUTION METHOD
+=====================================================================
+
+For each defect:
+
+1. locate exact active code path
+2. identify root cause
+3. determine whether existing canonical primitive already solves it
+4. reuse canonical primitive where possible
+5. make smallest general repair
+6. create targeted proof
+7. execute real canonical path
+8. restart where required
+9. rerun affected test
+10. only then classify PASS
+
+
+Do NOT classify PASS from:
+
+code review alone
+
+TypeScript success alone
+
+unit test that mocks the real path
+
+Regex checks
+
+comments
+
+documentation
+
+expected behavior
+
+
+=====================================================================
+# ================================================================
+# PHASE A
+# AUTH / IDENTITY / CROSS-OWNER ISOLATION
+# ================================================================
+=====================================================================
+
+
+=====================================================================
+5. SERVER-AUTHENTICATED IDENTITY IS ABSOLUTE
+=====================================================================
+
+Permanent invariant:
+
+CLIENT-SUPPLIED:
+
+userId
+
+ownerId
+
+role
+
+actorId
+
+principalId
+
+membershipId
+
+MUST NEVER DEFINE AUTHENTICATED IDENTITY.
+
+
+The client may send a resource reference.
+
+Example:
+
+bubbleId
+
+runId
+
+artifactId
+
+conversationId
+
+
+But identity must come only from:
+
+server-verified session
+
+server-verified token
+
+server-established authenticated principal
+
+or another explicitly canonical trusted authentication mechanism.
+
+
+Conceptually:
+
+authenticatedPrincipal =
+    resolveServerAuthenticatedPrincipal(request)
+
+NOT:
+
+authenticatedPrincipal =
+    request.body.ownerId
+
+
+=====================================================================
+6. FIND ALL ACTIVE IDENTITY SOURCES
+=====================================================================
+
+Targeted search active runtime for identity extraction in:
+
+HTTP routes
+
+tRPC procedures if active
+
+REST routes
+
+WebSocket handshake
+
+WebSocket subscribe messages
+
+SSE/realtime if active
+
+background workers
+
+Run recovery
+
+generated execution
+
+Artifact access
+
+Bubble mutation
+
+World mutation
+
+research result access
+
+lineage access
+
+
+Classify each identity source as:
+
+SERVER_AUTHENTICATED
+
+CLIENT_ASSERTED
+
+LEGACY
+
+TEST_ONLY
+
+
+Any production CLIENT_ASSERTED identity authority must be removed.
+
+
+=====================================================================
+7. CANONICAL PRINCIPAL
+=====================================================================
+
+Use/reuse one canonical authenticated principal shape.
+
+Conceptually:
+
+AuthenticatedPrincipal {
+  userId
+  sessionId?
+  accountId?
+  authType
+  authenticatedAt?
+  capabilities/roles only when server-resolved
+}
+
+
+Do not let arbitrary client payload enrich privilege.
+
+
+If current architecture already has equivalent:
+
+reuse it.
+
+Do not create AuthV2 unless genuinely necessary.
+
+
+=====================================================================
+8. VALID SESSION PROOF
+=====================================================================
+
+Execute real server path with:
+
+VALID_SESSION
+
+
+Expected:
+
+request succeeds only according to authorization policy.
+
+
+Prove against at least:
+
+conversation read
+
+Bubble read
+
+Run read
+
+Artifact preview
+
+one mutation endpoint
+
+
+Required:
+
+VALID_SESSION = PASS
+
+
+=====================================================================
+9. INVALID SESSION PROOF
+=====================================================================
+
+Test:
+
+random token/session
+
+tampered token/session
+
+malformed credential
+
+unknown session
+
+
+Expected:
+
+authentication rejected.
+
+
+Required:
+
+INVALID_SESSION = BLOCKED
+
+
+=====================================================================
+10. EXPIRED SESSION PROOF
+=====================================================================
+
+Create/use genuinely expired authentication state.
+
+Do not merely mock:
+
+isExpired = true
+
+
+Hit actual server auth path.
+
+
+Expected:
+
+BLOCKED
+
+
+Required:
+
+EXPIRED_SESSION = BLOCKED
+
+
+=====================================================================
+11. MISSING AUTH PROOF
+=====================================================================
+
+Private canonical endpoints must reject missing authentication.
+
+
+Test representative resources.
+
+
+Required:
+
+PRIVATE_ANONYMOUS_ACCESS = 0
+
+
+=====================================================================
+12. FORGED OWNER PROOF
+=====================================================================
+
+Create:
+
+User A
+
+User B
+
+
+Authenticate as B.
+
+
+Then submit requests containing:
+
+ownerId = A
+
+userId = A
+
+actorId = A
+
+where accepted by request schema.
+
+
+Expected:
+
+client-supplied identity does not grant A authority.
+
+
+Test:
+
+Conversation
+
+Bubble
+
+World
+
+Run
+
+Artifact
+
+Lineage
+
+Mutation
+
+generated execution
+
+
+Required:
+
+FORGED_OWNER_SUCCESS = 0
+
+
+=====================================================================
+13. WEBSOCKET AUTHENTICATION — CRITICAL
+=====================================================================
+
+Task #24 explicitly identified WebSocket identity as unsafe.
+
+Fix it structurally.
+
+
+WebSocket identity must be established during authenticated handshake
+or equivalent canonical authentication step.
+
+
+Do NOT accept identity authority from a later message such as:
+
+{
+  "userId": "...",
+  "ownerId": "..."
+}
+
+
+A WebSocket connection must have an immutable server-authenticated principal.
+
+
+Conceptually:
+
+connection.principal = verifyHandshake(...)
+
+
+Later messages may contain:
+
+resourceId
+
+subscription intent
+
+action parameters
+
+
+but cannot replace:
+
+connection.principal.userId
+
+
+=====================================================================
+14. WEBSOCKET SUBSCRIPTION AUTHORIZATION
+=====================================================================
+
+Authentication alone is insufficient.
+
+
+Every private subscription must check:
+
+principal
+
+resource
+
+relationship/policy
+
+before subscribing.
+
+
+Test:
+
+A socket → A Bubble = PASS
+
+A socket → A Run = PASS
+
+B socket → A Bubble = BLOCKED
+
+B socket → A Run = BLOCKED
+
+B socket claiming ownerId=A = BLOCKED
+
+anonymous socket → private resource = BLOCKED
+
+expired socket credential = BLOCKED
+
+
+Required:
+
+CLIENT_CONTROLLED_WS_IDENTITY = 0
+
+CROSS_OWNER_WS_SUBSCRIPTIONS = 0
+
+
+=====================================================================
+15. SOCKET REAUTH / RECONNECT
+=====================================================================
+
+If runtime supports reconnect:
+
+re-authenticate or revalidate canonical session according to current design.
+
+Do not trust stale client identity indefinitely.
+
+
+Do not invent a new reconnect protocol if existing one is safe.
+
+
+=====================================================================
+16. GENERATED EXECUTION OWNER SCOPE
+=====================================================================
+
+Task #24 reported some generated-execution store paths
+lack intrinsic owner scoping.
+
+
+Locate exact production-active paths.
+
+
+Do not broad-refactor every store.
+
+
+Fix the active authorization boundary.
+
+
+Dangerous example:
+
+generatedStore.get(resourceId)
+
+
+followed by use without principal check.
+
+
+Expected semantic behavior:
+
+getAuthorized(resourceId, principal)
+
+or:
+
+resource
+→ canonical ownership relation
+→ policy evaluation
+→ authorized result
+
+
+Use existing canonical authorization infrastructure where possible.
+
+
+=====================================================================
+17. RELATIONAL AUTHORIZATION
+=====================================================================
+
+Do NOT assume every record must directly contain ownerId.
+
+
+Authorization may derive from canonical graph:
+
+Artifact
+→ Run
+→ Conversation
+→ Owner
+
+
+Receipt
+→ Attempt
+→ Run
+→ Owner
+
+
+Entity
+→ World
+→ Bubble
+→ Owner
+
+
+Generated execution
+→ Run/World
+→ Owner
+
+
+Use canonical relations.
+
+Do not duplicate ownerId merely to make tests easier.
+
+
+=====================================================================
+18. PARTICIPANT AUTHORIZATION
+=====================================================================
+
+Some future resources will be shared/multi-party.
+
+Do not implement full Multi-role Bubble now.
+
+But authorization layer must not assume:
+
+ONLY OWNER OR NOTHING.
+
+
+Preserve room for generic policy such as:
+
+OWNER
+
+AUTHORIZED_MEMBER
+
+TRANSACTION_PARTICIPANT
+
+PUBLIC_PROJECTION
+
+
+Do not build those product features now.
+
+Only avoid architectural dead-end.
+
+
+=====================================================================
+19. FULL CROSS-OWNER MATRIX
+=====================================================================
+
+Execute cross-owner proof against:
+
+Conversation
+
+Memory
+
+Bubble
+
+World
+
+Run
+
+Task
+
+Attempt
+
+Receipt
+
+Artifact
+
+Artifact preview
+
+Artifact lineage
+
+ResearchResult
+
+SourceReference
+
+Structured Findings if directly addressable
+
+MutationIntent
+
+ChangeSet
+
+generated execution store
+
+
+For relevant operations:
+
+READ
+
+WRITE
+
+MUTATE
+
+EXECUTE
+
+SUBSCRIBE
+
+PREVIEW
+
+
+Required:
+
+CROSS_OWNER_PRIVATE_READS = 0
+
+CROSS_OWNER_PRIVATE_WRITES = 0
+
+CROSS_OWNER_PRIVATE_EXECUTIONS = 0
+
+CROSS_OWNER_PRIVATE_SUBSCRIPTIONS = 0
+
+
+=====================================================================
+20. INDIRECT OBJECT REFERENCE ATTACKS
+=====================================================================
+
+Test guessed/known IDs owned by another account.
+
+
+Examples:
+
+known artifactId
+
+known runId
+
+known Bubble ID
+
+known lineage ID
+
+
+Authentication as B must not be enough.
+
+
+Required:
+
+IDOR_PRIVATE_ACCESS = 0
+
+
+=====================================================================
+21. ERROR PRIVACY
+=====================================================================
+
+Unauthorized requests must not unnecessarily expose:
+
+resource existence
+
+resource owner identity
+
+private title
+
+provider metadata
+
+storage paths
+
+database internals
+
+stack trace
+
+secret/config values
+
+
+Follow canonical policy:
+
+403
+
+or concealment through 404
+
+as appropriate.
+
+
+=====================================================================
+22. AUTH PHASE HARD GATE
+=====================================================================
+
+PHASE A does not pass unless:
+
+AUTH = PASS
+
+VALID_SESSION = PASS
+
+INVALID_SESSION = BLOCKED
+
+EXPIRED_SESSION = BLOCKED
+
+MISSING_SESSION_PRIVATE_ACCESS = BLOCKED
+
+FORGED_OWNER = BLOCKED
+
+WEBSOCKET_AUTH = PASS
+
+CLIENT_CONTROLLED_WS_IDENTITY = 0
+
+CROSS_OWNER_ISOLATION = PASS
+
+CROSS_OWNER_PRIVATE_READS = 0
+
+CROSS_OWNER_PRIVATE_WRITES = 0
+
+CROSS_OWNER_PRIVATE_EXECUTIONS = 0
+
+CROSS_OWNER_PRIVATE_SUBSCRIPTIONS = 0
+
+IDOR_PRIVATE_ACCESS = 0
+
+
+If Phase A hard gate fails:
+
+STOP BLOCK 0.
+
+Do not continue to Phase B.
+
+
+=====================================================================
+# ================================================================
+# PHASE B
+# TRUSTED EXECUTOR / PRIVILEGE / EXECUTION BOUNDARY
+# ================================================================
+=====================================================================
+
+
+=====================================================================
+23. LOCATE EXACT ADMIN BYPASS
+=====================================================================
+
+Task #24 reported:
+
+TRUSTED_EXECUTOR = FAIL
+
+because an admin bypass still requires explicit restriction/proof.
+
+
+Find the exact ACTIVE code path.
+
+
+Do not assume all admin functionality is unsafe.
+
+
+Classify exact bypass:
+
+REQUIRED_ADMIN_OPERATION
+
+LEGACY_BYPASS
+
+DEBUG_BYPASS
+
+TEST_ONLY_BYPASS
+
+UNSAFE_PRODUCTION_BYPASS
+
+EMERGENCY_OPERATION
+
+
+Return file/path/function names in internal proof report,
+but final report can remain concise.
+
+
+=====================================================================
+24. ADMIN PRIVILEGE IS NOT EXECUTION TRUTH
+=====================================================================
+
+Permanent invariant:
+
+ADMINISTRATOR
+!=
+VERIFIER
+
+ADMINISTRATOR
+!=
+PROVIDER SUCCESS
+
+ADMINISTRATOR
+!=
+EXECUTION RECEIPT
+
+
+An admin cannot legitimately convert:
+
+PROPOSED
+
+directly into:
+
+VERIFIED
+
+
+without canonical evidence.
+
+
+=====================================================================
+25. ADMIN CANNOT FORGE SUCCESS
+=====================================================================
+
+Prove:
+
+admin cannot create fake provider success
+
+admin cannot fabricate verified receipt
+
+admin cannot rewrite failed Attempt into successful Attempt
+
+admin cannot overwrite immutable Attempt history
+
+admin cannot silently impersonate user for private execution
+outside explicit audited policy
+
+
+Required:
+
+ADMIN_CAN_FORGE_VERIFIED_RESULT = NO
+
+ADMIN_CAN_OVERWRITE_ATTEMPT = NO
+
+
+=====================================================================
+26. EXPLICIT ADMIN OPERATIONS
+=====================================================================
+
+If legitimate administrative operations exist:
+
+make them explicit.
+
+
+They should have:
+
+authenticated admin principal
+
+specific capability/action
+
+specific policy
+
+auditable purpose
+
+target resource
+
+reason where appropriate
+
+event/audit record
+
+
+Do not leave a generic:
+
+admin=true → skipAllChecks()
+
+
+=====================================================================
+27. TRUSTED EXECUTOR REMAINS SINGLE EFFECTFUL GATE
+=====================================================================
+
+Effectful execution must follow canonical chain:
+
+Intent
+
+→ Proposal
+
+→ Capability validation
+
+→ Policy
+
+→ Approval when needed
+
+→ Fingerprint/fence validation
+
+→ Trusted Executor
+
+→ Attempt
+
+→ Effect/Provider
+
+→ Receipt
+
+→ Independent Verifier
+
+→ Runtime transition
+
+→ Reconciliation if uncertain
+
+
+No alternative shortcut.
+
+
+=====================================================================
+28. SEARCH ACTIVE PROVIDER INVOCATIONS
+=====================================================================
+
+Targeted inspect direct calls to provider adapters/services.
+
+
+Classify:
+
+NON_EFFECTFUL_READ
+
+EFFECTFUL_WRITE
+
+LEGACY
+
+TEST_ONLY
+
+
+Effectful production paths must enter Trusted Executor.
+
+
+Required:
+
+DIRECT_EFFECTFUL_PROVIDER_BYPASS = 0
+
+
+Do not break legitimate read-only capabilities merely to satisfy counter.
+
+
+=====================================================================
+29. GENERATED DNA / WORLD EXECUTION PRIVILEGE
+=====================================================================
+
+Generated DNA is untrusted configuration/proposal.
+
+
+It may define:
+
+entities
+
+workflow request
+
+capability requirement
+
+view
+
+policy proposal
+
+
+It cannot:
+
+invoke provider adapter
+
+set VERIFIED
+
+forge receipt
+
+approve itself
+
+grant itself authority
+
+change principal
+
+bypass Trusted Executor
+
+
+Required:
+
+GENERATED_EXECUTION_PRIVILEGE = 0
+
+
+=====================================================================
+30. UI EXECUTION PRIVILEGE
+=====================================================================
+
+Web/Mobile UI may submit:
+
+intent
+
+action request
+
+approval
+
+parameters
+
+
+It may not directly perform canonical provider effect.
+
+
+Required:
+
+CLIENT_DIRECT_EFFECT = 0
+
+
+=====================================================================
+31. APPROVAL IS NOT EXECUTION
+=====================================================================
+
+Explicitly test:
+
+approved action
+
+but provider not called yet.
+
+
+State must not claim:
+
+EXECUTED
+
+or:
+
+VERIFIED
+
+
+Permanent:
+
+AUTHORIZED != EXECUTED
+
+
+=====================================================================
+32. EXECUTION IS NOT VERIFICATION
+=====================================================================
+
+Provider returns response.
+
+
+Before independent verification:
+
+do not automatically claim VERIFIED
+unless current verifier contract explicitly verifies synchronously
+as part of canonical flow.
+
+
+Permanent:
+
+EXECUTED != VERIFIED
+
+
+=====================================================================
+33. RECEIPT IS NOT VERIFICATION
+=====================================================================
+
+Receipt may prove:
+
+provider response occurred
+
+
+but not automatically business truth.
+
+
+Permanent:
+
+RECEIPT != VERIFICATION
+
+
+=====================================================================
+34. INCONCLUSIVE IS NOT SUCCESS
+=====================================================================
+
+Test uncertain effect.
+
+
+Expected:
+
+INCONCLUSIVE
+
+→ reconciliation
+
+
+Never:
+
+INCONCLUSIVE → success for UX convenience.
+
+
+=====================================================================
+35. REUSE ATTEMPT LEDGER
+=====================================================================
+
+Attempt Ledger already passes.
+
+
+Do not redesign it.
+
+
+Re-prove only affected invariants:
+
+failed Attempt retained
+
+retry uses new Attempt ID
+
+old receipt not overwritten
+
+fence/version semantics retained
+
+
+Required:
+
+ATTEMPT_LEDGER = PASS
+
+
+=====================================================================
+36. REPLAY APPROVAL SECURITY
+=====================================================================
+
+Test whether:
+
+approval generated for:
+
+User A
+Run X
+Action Y
+fingerprint/version Z
+
+
+can be replayed for:
+
+User B
+
+Run X2
+
+different parameters
+
+stale version.
+
+
+Expected:
+
+BLOCKED.
+
+
+Required:
+
+CROSS_CONTEXT_APPROVAL_REPLAY = 0
+
+
+=====================================================================
+37. STALE APPROVAL / FINGERPRINT
+=====================================================================
+
+If underlying effect parameters mutate after approval:
+
+old approval must not authorize new effect
+when current architecture uses fingerprint/fence validation.
+
+
+Required:
+
+STALE_APPROVAL_EXECUTION = 0
+
+
+=====================================================================
+38. ADMIN BYPASS REMOVAL MUST NOT BREAK OPERATIONS
+=====================================================================
+
+After repair:
+
+existing legitimate administrative paths
+must continue to work through explicit policy.
+
+
+Do not solve safety by deleting needed functionality blindly.
+
+
+=====================================================================
+39. ADVERSARIAL EXECUTION TESTS
+=====================================================================
+
+Attempt:
+
+1. forged provider result
+
+2. forged receipt
+
+3. forged verifier state
+
+4. direct adapter call
+
+5. cross-owner approved proposal reuse
+
+6. stale approval replay
+
+7. generated DNA provider invocation
+
+8. client-direct effect
+
+9. admin force-success
+
+10. overwrite failed attempt
+
+
+Required:
+
+all unsafe attempts blocked.
+
+
+=====================================================================
+40. PHASE B HARD GATE
+=====================================================================
+
+PHASE B PASS requires:
+
+TRUSTED_EXECUTOR = PASS
+
+ADMIN_BYPASS_CLASSIFIED = PASS
+
+ADMIN_EXECUTION_BYPASS = 0
+
+ADMIN_CAN_FORGE_VERIFIED_RESULT = NO
+
+ADMIN_CAN_OVERWRITE_ATTEMPT = NO
+
+DIRECT_EFFECTFUL_PROVIDER_BYPASS = 0
+
+GENERATED_EXECUTION_PRIVILEGE = 0
+
+CLIENT_DIRECT_EFFECT = 0
+
+CROSS_CONTEXT_APPROVAL_REPLAY = 0
+
+STALE_APPROVAL_EXECUTION = 0
+
+ATTEMPT_LEDGER = PASS
+
+INDEPENDENT_VERIFIER = PASS
+
+RECONCILIATION = PASS
+
+FAKE_SUCCESS = 0
+
+
+If Phase B hard gate fails:
+
+STOP.
+
+Do not proceed to Phase C.
+
+
+=====================================================================
+# ================================================================
+# PHASE C
+# RUN RESTART / LEASE RECOVERY / MIGRATION SAFETY
+# ================================================================
+=====================================================================
+
+
+=====================================================================
+41. WHY RUN RESTART IS CRITICAL
+=====================================================================
+
+Future JASIM economic/real-world flows will look like:
+
+Need
+
+→ Match
+
+→ Booking
+
+→ Payment
+
+→ Delivery
+
+→ Tracking
+
+→ Completion
+
+
+A server restart must not:
+
+restart the whole workflow
+
+repeat completed effects
+
+lose dependencies
+
+forget Attempts
+
+duplicate payment
+
+duplicate bookings
+
+create false success.
+
+
+Therefore RUN_RESTART must be proven before Blocks 1–3.
+
+
+=====================================================================
+42. USE REAL CANONICAL DAG
+=====================================================================
+
+Create a generic multi-node Run using current canonical Runtime.
+
+
+At least:
+
+Node A
+
+→ Node B
+
+→ Node C
+
+→ Node D
+
+
+Requirements:
+
+real persisted Run
+
+real persisted nodes/tasks
+
+actual canonical worker
+
+real dependency relation
+
+validated output binding between at least two nodes
+
+
+Do not make the primary proof an isolated in-memory fake DAG.
+
+
+=====================================================================
+43. NODE TYPES
+=====================================================================
+
+Use safe existing capabilities.
+
+At least one node should produce canonical output
+used by a later node.
+
+
+External paid provider calls are NOT required.
+
+
+Do not consume unnecessary quota.
+
+
+=====================================================================
+44. RESTART BOUNDARY TEST
+=====================================================================
+
+Execute until:
+
+A = VERIFIED/COMPLETED
+
+B = VERIFIED/COMPLETED
+
+C = PENDING or safely RUNNING boundary
+
+D = WAITING/PENDING dependency
+
+
+Then intentionally restart:
+
+worker/runtime process.
+
+
+After restart prove:
+
+A remains completed
+
+B remains completed
+
+A is not re-executed
+
+B is not re-executed
+
+C recovered according to lease state
+
+D waits until C completes
+
+Attempt history unchanged
+
+Run status truthful
+
+
+Required:
+
+COMPLETED_NODE_REEXECUTION = 0
+
+
+=====================================================================
+45. PROCESS CRASH SIMULATION
+=====================================================================
+
+Test a non-graceful worker termination
+where safe in isolated proof environment.
+
+
+Do not only test graceful restart.
+
+
+Recovery must depend on durable state,
+not process memory.
+
+
+=====================================================================
+46. LEASE MODEL
+=====================================================================
+
+Inspect current canonical lease/worker claim semantics.
+
+
+Must support equivalent concepts:
+
+worker/lease owner
+
+lease expiration
+
+claim timestamp
+
+fenceVersion/token
+
+renewal heartbeat where applicable
+
+atomic claim
+
+reclaim after expiry
+
+
+Do not add second lease system.
+
+
+=====================================================================
+47. LEASE RECLAIM TEST
+=====================================================================
+
+Worker A:
+
+claims Node C.
+
+
+Worker A disappears.
+
+
+Wait/simulate legitimate lease expiry.
+
+
+Worker B:
+
+reclaims Node C.
+
+
+Expected:
+
+exactly one active valid owner.
+
+
+Required:
+
+LEASE_RECOVERY = PASS
+
+
+=====================================================================
+48. FENCE REJECTION
+=====================================================================
+
+After Worker B has newer valid fence/version:
+
+simulate late Worker A completion.
+
+
+Expected:
+
+old worker cannot commit stale result.
+
+
+Required:
+
+STALE_WORKER_COMMIT = 0
+
+
+This is a hard safety condition.
+
+
+=====================================================================
+49. DOUBLE CLAIM PROTECTION
+=====================================================================
+
+Simulate two workers attempting to claim same available node.
+
+
+Expected:
+
+one valid claim.
+
+
+Required:
+
+SIMULTANEOUS_VALID_NODE_OWNERS = 1 maximum
+
+
+=====================================================================
+50. EFFECTFUL NODE UNKNOWN OUTCOME
+=====================================================================
+
+Test or reuse existing canonical effect simulation for:
+
+provider call may have happened
+
+worker dies before final state persisted
+
+
+On recovery:
+
+DO NOT blindly call provider again.
+
+
+Expected:
+
+INCONCLUSIVE
+
+→ reconciliation
+
+→ safe transition/retry only when evidence allows.
+
+
+Required:
+
+BLIND_EFFECT_RETRY_AFTER_RESTART = 0
+
+
+=====================================================================
+51. KNOWN PRE-EFFECT FAILURE
+=====================================================================
+
+Distinguish:
+
+worker dies BEFORE external effect began
+
+
+from:
+
+outcome unknown AFTER effect boundary.
+
+
+If conclusively before effect:
+
+retry may be safe according to idempotency policy.
+
+
+This distinction must remain explicit.
+
+
+=====================================================================
+52. RUN STATE TRANSITIONS
+=====================================================================
+
+Audit restart transitions so Run cannot become:
+
+SUCCESS
+
+while required node remains:
+
+FAILED
+
+INCONCLUSIVE
+
+PENDING
+
+or BLOCKED
+
+
+unless workflow semantics explicitly allow it.
+
+
+Required:
+
+FALSE_RUN_SUCCESS = 0
+
+
+=====================================================================
+53. GRACEFUL SHUTDOWN
+=====================================================================
+
+Fix only runtime shutdown safety relevant to worker/recovery.
+
+
+Shutdown should:
+
+stop claiming new execution work
+
+stop/coordinate lease renewal
+
+persist known durable states
+
+avoid corrupting active Attempt
+
+close worker loops
+
+close DB connection safely
+
+allow leases to expire/release according to canonical policy
+
+
+Do not block indefinitely waiting for external providers.
+
+
+=====================================================================
+54. STARTUP RECOVERY
+=====================================================================
+
+On runtime start:
+
+identify recoverable work
+
+respect valid leases
+
+reclaim expired leases
+
+do not recreate completed nodes
+
+do not regenerate Runs from prompts
+
+
+Use PostgreSQL durable state.
+
+
+=====================================================================
+55. RUN RESTART SECURITY
+=====================================================================
+
+Recovered work must preserve original authenticated ownership context.
+
+
+Worker restart must NOT turn:
+
+owner A Run
+
+into:
+
+system-unscoped Run
+
+that can access any user's resources.
+
+
+Authorization/ownership context must remain durable or resolvable.
+
+
+=====================================================================
+56. MIGRATION SAFETY — SCOPE
+=====================================================================
+
+Task #24 marked:
+
+DATABASE_MIGRATIONS = FAIL
+
+because complete proof was absent.
+
+
+Do NOT redesign schema.
+
+Do NOT edit production DB manually.
+
+
+Only validate/fix canonical migration mechanism.
+
+
+=====================================================================
+57. FRESH DATABASE MIGRATION
+=====================================================================
+
+Create isolated empty PostgreSQL test database.
+
+
+Run canonical migration command.
+
+
+Expected:
+
+all migrations apply
+
+current schema produced
+
+canonical server boots
+
+basic persistence works
+
+
+Required:
+
+FRESH_DATABASE_MIGRATION = PASS
+
+
+=====================================================================
+58. REPRESENTATIVE EXISTING DATABASE UPGRADE
+=====================================================================
+
+Create isolated database representing legitimate earlier schema/version.
+
+
+Prefer:
+
+actual prior migration checkpoint
+
+not manually invented partial schema.
+
+
+Run current migration path.
+
+
+Expected:
+
+upgrade succeeds
+
+data required for proof remains
+
+server boots
+
+
+Required:
+
+EXISTING_DATABASE_UPGRADE = PASS
+
+
+=====================================================================
+59. MIGRATION LEDGER
+=====================================================================
+
+Verify migration system correctly records applied migrations.
+
+
+Re-running canonical migrate should not:
+
+duplicate columns
+
+drop data unexpectedly
+
+reapply destructive operation
+
+
+Required:
+
+MIGRATION_LEDGER = PASS
+
+
+=====================================================================
+60. NO DIRECT SCHEMA HACKS
+=====================================================================
+
+Search active startup/deployment code for:
+
+manual ALTER TABLE
+
+CREATE TABLE IF NOT EXISTS
+
+ad-hoc schema repair
+
+production boot-time schema mutations
+
+
+Distinguish legitimate initialization from unsafe schema hacking.
+
+
+Required:
+
+DIRECT_PRODUCTION_SCHEMA_HACKS = 0
+
+
+If legacy hacks exist:
+
+remove only after migration path safely replaces them.
+
+
+=====================================================================
+61. DESTRUCTIVE MIGRATION REVIEW
+=====================================================================
+
+Review current migration set for:
+
+DROP TABLE
+
+DROP COLUMN
+
+destructive rename
+
+data type narrowing
+
+NOT NULL without backfill
+
+unsafe unique constraint
+
+unbounded irreversible data rewrite
+
+
+Do not claim safety by grep only.
+
+
+For any destructive migration:
+
+prove safe migration path
+or classify as blocker.
+
+
+Required:
+
+DESTRUCTIVE_UNSAFE_MIGRATIONS = 0
+
+
+=====================================================================
+62. MIGRATION FAILURE DETECTION
+=====================================================================
+
+In isolated test environment,
+where reasonably possible:
+
+simulate migration failure.
+
+
+Expected:
+
+migration reports failure
+
+application does not report READY against incompatible schema
+
+no silent partial-success claim
+
+
+Required:
+
+MIGRATION_FAILURE_DETECTION =
+PASS / PARTIAL with exact limitation
+
+
+=====================================================================
+63. READINESS — MINIMUM FIX ONLY
+=====================================================================
+
+Task #24 reported HEALTH_READINESS = PARTIAL.
+
+
+Do not build full observability project.
+
+
+Only ensure readiness protects execution.
+
+
+Distinguish:
+
+LIVENESS:
+process exists
+
+READINESS:
+safe to serve canonical work
+
+
+Readiness should at minimum validate:
+
+DB connection
+
+schema/migration compatibility
+
+runtime initialization
+
+worker initialization
+
+
+If storage is mandatory to route being requested,
+that route must fail truthfully when storage unavailable.
+
+
+Do not make optional provider downtime kill all JASIM.
+
+
+=====================================================================
+64. BACKUP/RESTORE — DO NOT EXPAND BLOCK
+=====================================================================
+
+Task #24 found:
+
+BACKUP = PARTIAL
+
+RESTORE_PROOF = MISSING
+
+
+Do NOT spend Block 0 implementing broad production backup infrastructure
+unless a tiny required change is unavoidable.
+
+
+At end report exact status unchanged/updated.
+
+
+Final backup/restore proof belongs near final production deployment.
+
+
+=====================================================================
+65. PRODUCTION DEPLOYMENT — DO NOT REQUIRE NOW
+=====================================================================
+
+Do not activate Replit Deployment just to pass Block 0.
+
+
+Block 0 proofs should run in production-compatible canonical runtime
+as far as current environment permits.
+
+
+Actual production deployment smoke remains later final gate.
+
+
+=====================================================================
+66. PHASE C HARD GATE
+=====================================================================
+
+PHASE C PASS requires:
+
+RUN_RESTART = PASS
+
+MULTI_NODE_DAG = PASS
+
+COMPLETED_NODE_REEXECUTION = 0
+
+LEASE_RECOVERY = PASS
+
+STALE_WORKER_COMMIT = 0
+
+DOUBLE_VALID_WORKER_CLAIM = 0
+
+BLIND_EFFECT_RETRY_AFTER_RESTART = 0
+
+FALSE_RUN_SUCCESS = 0
+
+GRACEFUL_SHUTDOWN = PASS or justified PARTIAL only if safety proven
+
+STARTUP_RECOVERY = PASS
+
+
+DATABASE_MIGRATIONS = PASS
+
+FRESH_DATABASE_MIGRATION = PASS
+
+EXISTING_DATABASE_UPGRADE = PASS
+
+MIGRATION_LEDGER = PASS
+
+DIRECT_PRODUCTION_SCHEMA_HACKS = 0
+
+DESTRUCTIVE_UNSAFE_MIGRATIONS = 0
+
+
+=====================================================================
+# ================================================================
+# BLOCK 0 FINAL REGRESSION
+# ================================================================
+=====================================================================
+
+
+=====================================================================
+67. REGRESSION PRINCIPLE
+=====================================================================
+
+Do not rerun everything in JASIM.
+
+Run one targeted grouped regression only after all Block 0 fixes.
+
+
+Required existing critical regressions:
+
+canonical server/runtime typecheck
+
+Phase 7 Generalization
+
+Trusted Executor suite
+
+Attempt Ledger
+
+Independent Verifier
+
+Reconciliation
+
+Task #22 Artifact → Bubble
+
+Task #26 Research → Image → Artifact → Lineage
+
+Web production build
+
+Mobile typecheck
+
+
+Do not rerun external image/search provider generation
+if existing persisted-valid regression proves the path
+and code touched did not require a new provider side effect.
+
+
+=====================================================================
+68. REQUIRED REGRESSION INVARIANTS
+=====================================================================
+
+Must remain:
+
+PHASE_7_GENERALIZATION = PASS
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+DOMAIN_SPECIFIC_HANDLER_REQUIRED = 0
+
+TASK_22 = PASS
+
+TASK_26 = PASS
+
+ATTEMPT_LEDGER = PASS
+
+VERIFIER = PASS
+
+RECONCILIATION = PASS
+
+FAKE_SUCCESS = 0
+
+
+=====================================================================
+69. DO NOT TOUCH PHASE 12
+=====================================================================
+
+Keep:
+
+MODEL_POLICY_IMPLEMENTATION = PASS
+
+MODEL_POLICY_ECONOMIC_CALIBRATION = PARTIAL
+
+
+Do not resume calibration.
+
+Do not spend provider quota.
+
+Do not change model mappings.
+
+
+=====================================================================
+70. NO FUTURE PRODUCT WORK IN BLOCK 0
+=====================================================================
+
+Explicitly forbidden until Block 0 report:
+
+Universal Capability Fabric
+
+Economic Offering/Need
+
+Cross-user discovery
+
+Multi-role Bubble
+
+Scheduler
+
+Tracking product features
+
+Map integration
+
+Notifications
+
+Payments
+
+External checkout
+
+Economics Engine
+
+Billing
+
+Entitlements
+
+
+Even if implementation naturally reveals the future interface,
+do not continue into Block 1.
+
+
+=====================================================================
+71. NO MOCK-ONLY PASS
+=====================================================================
+
+Any Block 0 PASS must include real canonical runtime proof.
+
+
+Acceptable supportive evidence:
+
+unit tests
+
+integration tests
+
+typecheck
+
+build
+
+
+But primary critical paths require actual execution.
+
+
+Examples:
+
+WebSocket auth:
+real socket handshake/subscription proof
+
+Run restart:
+actual process/worker restart
+
+migration:
+actual isolated PostgreSQL databases
+
+owner isolation:
+two real test principals/accounts
+
+
+=====================================================================
+72. EVIDENCE ARTIFACT
+=====================================================================
+
+Create one concise internal proof file, for example:
+
+docs/proofs/BLOCK_0_KERNEL_TRUST_RECOVERY.md
+
+or existing canonical proof location.
+
+
+It should contain:
+
+test
+expected
+actual
+PASS/FAIL
+relevant IDs/timestamps where safe
+restart evidence
+migration database evidence
+
+
+Do not include:
+
+secrets
+
+auth tokens
+
+passwords
+
+private user data
+
+
+Do not generate multiple duplicate reports.
+
+
+=====================================================================
+73. FINAL BLOCK 0 HARD GATE
+=====================================================================
+
+BLOCK 0 may be marked PASS only if:
+
+
+================================================
+IDENTITY
+================================================
+
+AUTH = PASS
+
+VALID_SESSION = PASS
+
+INVALID_SESSION = BLOCKED
+
+EXPIRED_SESSION = BLOCKED
+
+PRIVATE_ANONYMOUS_ACCESS = 0
+
+FORGED_OWNER = BLOCKED
+
+WEBSOCKET_AUTH = PASS
+
+CLIENT_CONTROLLED_WS_IDENTITY = 0
+
+
+================================================
+ISOLATION
+================================================
+
+CROSS_OWNER_ISOLATION = PASS
+
+GENERATED_EXECUTION_OWNER_SCOPE = PASS
+
+CROSS_OWNER_PRIVATE_READS = 0
+
+CROSS_OWNER_PRIVATE_WRITES = 0
+
+CROSS_OWNER_PRIVATE_EXECUTIONS = 0
+
+CROSS_OWNER_PRIVATE_SUBSCRIPTIONS = 0
+
+IDOR_PRIVATE_ACCESS = 0
+
+
+================================================
+EXECUTION
+================================================
+
+TRUSTED_EXECUTOR = PASS
+
+ADMIN_EXECUTION_BYPASS = 0
+
+ADMIN_CAN_FORGE_VERIFIED_RESULT = NO
+
+ADMIN_CAN_OVERWRITE_ATTEMPT = NO
+
+DIRECT_EFFECTFUL_PROVIDER_BYPASS = 0
+
+GENERATED_EXECUTION_PRIVILEGE = 0
+
+CLIENT_DIRECT_EFFECT = 0
+
+CROSS_CONTEXT_APPROVAL_REPLAY = 0
+
+STALE_APPROVAL_EXECUTION = 0
+
+
+================================================
+TRUTH
+================================================
+
+ATTEMPT_LEDGER = PASS
+
+INDEPENDENT_VERIFIER = PASS
+
+RECONCILIATION = PASS
+
+FAKE_SUCCESS = 0
+
+
+================================================
+RECOVERY
+================================================
+
+RUN_RESTART = PASS
+
+MULTI_NODE_DAG = PASS
+
+LEASE_RECOVERY = PASS
+
+STALE_WORKER_COMMIT = 0
+
+COMPLETED_NODE_REEXECUTION = 0
+
+DOUBLE_VALID_WORKER_CLAIM = 0
+
+BLIND_EFFECT_RETRY_AFTER_RESTART = 0
+
+FALSE_RUN_SUCCESS = 0
+
+STARTUP_RECOVERY = PASS
+
+
+================================================
+MIGRATIONS
+================================================
+
+DATABASE_MIGRATIONS = PASS
+
+FRESH_DATABASE_MIGRATION = PASS
+
+EXISTING_DATABASE_UPGRADE = PASS
+
+MIGRATION_LEDGER = PASS
+
+DIRECT_PRODUCTION_SCHEMA_HACKS = 0
+
+DESTRUCTIVE_UNSAFE_MIGRATIONS = 0
+
+
+================================================
+GENERALIZATION REGRESSION
+================================================
+
+PHASE_7_GENERALIZATION = PASS
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+DOMAIN_SPECIFIC_HANDLER_REQUIRED = 0
+
+
+=====================================================================
+74. IF A HARD GATE CANNOT PASS
+=====================================================================
+
+Do NOT weaken the assertion.
+
+Do NOT rename FAIL to PARTIAL merely to proceed.
+
+Do NOT create a fake proof.
+
+
+Return exact blocker:
+
+ROOT_CAUSE
+
+AFFECTED_PATH
+
+WHY IT CANNOT SAFELY PASS
+
+MINIMUM NEXT GENERAL FIX
+
+
+Do not start Block 1.
+
+
+=====================================================================
+75. FINAL REPORT FORMAT
+=====================================================================
+
+Return exactly this structured report:
+
+
+JASIM_BLOCK_0:
+PASS / PARTIAL / FAIL
+
+
+================================================
+PHASE A — IDENTITY
+================================================
+
+AUTH:
+PASS / FAIL
+
+VALID_SESSION:
+PASS / FAIL
+
+INVALID_SESSION:
+BLOCKED / FAIL
+
+EXPIRED_SESSION:
+BLOCKED / FAIL
+
+PRIVATE_ANONYMOUS_ACCESS:
+<number>
+
+FORGED_OWNER:
+BLOCKED / FAIL
+
+WEBSOCKET_AUTH:
+PASS / FAIL
+
+CLIENT_CONTROLLED_WS_IDENTITY:
+<number>
+
+
+================================================
+OWNER ISOLATION
+================================================
+
+CROSS_OWNER_ISOLATION:
+PASS / FAIL
+
+GENERATED_EXECUTION_OWNER_SCOPE:
+PASS / FAIL
+
+CROSS_OWNER_PRIVATE_READS:
+<number>
+
+CROSS_OWNER_PRIVATE_WRITES:
+<number>
+
+CROSS_OWNER_PRIVATE_EXECUTIONS:
+<number>
+
+CROSS_OWNER_PRIVATE_SUBSCRIPTIONS:
+<number>
+
+IDOR_PRIVATE_ACCESS:
+<number>
+
+
+================================================
+PHASE B — TRUSTED EXECUTION
+================================================
+
+TRUSTED_EXECUTOR:
+PASS / FAIL
+
+ADMIN_BYPASS_CLASSIFICATION:
+<exact classification>
+
+ADMIN_EXECUTION_BYPASS:
+<number>
+
+ADMIN_CAN_FORGE_VERIFIED_RESULT:
+YES / NO
+
+ADMIN_CAN_OVERWRITE_ATTEMPT:
+YES / NO
+
+DIRECT_EFFECTFUL_PROVIDER_BYPASS:
+<number>
+
+GENERATED_EXECUTION_PRIVILEGE:
+<number>
+
+CLIENT_DIRECT_EFFECT:
+<number>
+
+CROSS_CONTEXT_APPROVAL_REPLAY:
+<number>
+
+STALE_APPROVAL_EXECUTION:
+<number>
+
+ATTEMPT_LEDGER:
+PASS / FAIL
+
+INDEPENDENT_VERIFIER:
+PASS / FAIL
+
+RECONCILIATION:
+PASS / FAIL
+
+FAKE_SUCCESS:
+<number>
+
+
+================================================
+PHASE C — RECOVERY
+================================================
+
+RUN_RESTART:
+PASS / FAIL
+
+MULTI_NODE_DAG:
+PASS / FAIL
+
+LEASE_RECOVERY:
+PASS / FAIL
+
+STALE_WORKER_COMMIT:
+<number>
+
+COMPLETED_NODE_REEXECUTION:
+<number>
+
+DOUBLE_VALID_WORKER_CLAIM:
+<number>
+
+BLIND_EFFECT_RETRY_AFTER_RESTART:
+<number>
+
+FALSE_RUN_SUCCESS:
+<number>
+
+STARTUP_RECOVERY:
+PASS / FAIL
+
+GRACEFUL_SHUTDOWN:
+PASS / PARTIAL / FAIL
+
+
+================================================
+MIGRATIONS
+================================================
+
+DATABASE_MIGRATIONS:
+PASS / FAIL
+
+FRESH_DATABASE_MIGRATION:
+PASS / FAIL
+
+EXISTING_DATABASE_UPGRADE:
+PASS / FAIL
+
+MIGRATION_LEDGER:
+PASS / FAIL
+
+MIGRATION_FAILURE_DETECTION:
+PASS / PARTIAL / FAIL
+
+DIRECT_PRODUCTION_SCHEMA_HACKS:
+<number>
+
+DESTRUCTIVE_UNSAFE_MIGRATIONS:
+<number>
+
+
+================================================
+REGRESSION
+================================================
+
+PHASE_7_GENERALIZATION:
+PASS / FAIL
+
+TASK_22:
+PASS / FAIL
+
+TASK_26:
+PASS / FAIL
+
+TRUSTED_EXECUTOR_REGRESSION:
+PASS / FAIL
+
+ATTEMPT_LEDGER_REGRESSION:
+PASS / FAIL
+
+VERIFIER_REGRESSION:
+PASS / FAIL
+
+RECONCILIATION_REGRESSION:
+PASS / FAIL
+
+WEB_PRODUCTION_BUILD:
+PASS / FAIL
+
+MOBILE_TYPECHECK:
+PASS / FAIL
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS:
+<number>
+
+DOMAIN_SPECIFIC_HANDLER_REQUIRED:
+<number>
+
+
+================================================
+UNCHANGED DEFERRED ITEMS
+================================================
+
+MODEL_POLICY_IMPLEMENTATION:
+PASS
+
+MODEL_POLICY_ECONOMIC_CALIBRATION:
+PARTIAL
+
+SCHEDULER:
+MISSING / unchanged
+
+CROSS_USER_DISCOVERY:
+MISSING / unchanged
+
+MULTI_ROLE_BUBBLE:
+MISSING / unchanged
+
+MAPS:
+MISSING / unchanged
+
+PAYMENTS:
+MISSING / unchanged
+
+COMMERCIAL_RUNTIME:
+MISSING / unchanged
+
+
+================================================
+NEXT GATE
+================================================
+
+READY_FOR_UNIVERSAL_CAPABILITY_FABRIC:
+YES / NO
+
+
+If NO:
+
+BLOCKERS:
+1.
+2.
+3.
+
+
+OWNER_ACTION_REQUIRED_NOW:
+NONE
+
+unless an unavoidable external requirement genuinely blocks
+a Block 0 proof.
+
+
+=====================================================================
+76. STOP CONDITION
+=====================================================================
+
+After producing the Block 0 report:
+
+STOP.
+
+
+Do NOT:
+
+start Block 1
+
+implement the 30 examples
+
+implement economic network
+
+implement Scheduler
+
+implement Maps
+
+implement Payments
+
+resume Phase 12 calibration
+
+or start Production Deployment.
+
+
+Wait for review of the Block 0 evidence.
+
+
+BEGIN BLOCK 0 NOW.

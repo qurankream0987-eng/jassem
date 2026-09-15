@@ -1,0 +1,1297 @@
+# JASIM — FULL ARCHITECTURE TRUTH + GENERAL RUNTIME IMPLEMENTATION
+
+ممتاز. أعتبر ما قمت به حتى الآن **مرحلة Discovery أولية ناجحة**، لكن لا أعتبرها تدقيقًا نهائيًا للمشروع ولا دليلًا على اكتمال جاسم.
+
+أنت ذكرت بوضوح أنك لم تقرأ كل ملف وكل مسار، وإنما درست الملفات الأكثر تأثيرًا.
+
+المرحلة التالية الآن هي الانتقال من:
+
+> Architecture Understanding
+
+إلى:
+
+> Architecture Truth + Runtime Proof + Generalization Proof
+
+ولا أريد تقريرًا نظريًا جديدًا فقط.
+
+أريد فحصًا أعمق، ثم تنفيذًا، ثم إثباتًا بالتشغيل الحقيقي.
+
+---
+
+# 1. لا تفترض أن الموجود الحالي هو المعمارية النهائية
+
+وجود:
+
+* Task DNA
+* World
+* Runtime
+* approvals
+* actions
+* events
+* mobile chat
+* task world screen
+
+لا يعني تلقائيًا أن جاسم أصبح النظام العام الذي نريده.
+
+افحص هل هذه الأجزاء بالفعل قابلة لتركيب عوالم جديدة عامة، أم أنها ما تزال مصممة أساسًا حول:
+
+> Task execution
+
+فقط.
+
+الهدف النهائي أوسع:
+
+> JASIM = General Generative Runtime
+
+---
+
+# 2. افحص الفرق بين Task وWorld
+
+هذه نقطة مهمة جدًا.
+
+لا أريد أن يكون:
+
+```text
+World = Task Details Page
+```
+
+العالم في جاسم يجب أن يكون Runtime Entity مستقلة ذات دورة حياة.
+
+افحص التنفيذ الحالي وأجب عمليًا:
+
+هل الـWorld الحالي يستطيع أن يحتوي على:
+
+```text
+actors
+entities
+collections
+relationships
+state
+views
+actions
+workflows
+permissions
+events
+transactions
+automation
+memory
+version
+```
+
+أم أنه مجرد Container لمهمة؟
+
+إذا كان الثاني:
+
+وسع الـWorld Model بطريقة عامة.
+
+---
+
+# 3. استخرج Runtime Call Graph الحقيقي
+
+لا تعتمد على أسماء الملفات.
+
+ابدأ من:
+
+```text
+POST / message
+```
+
+أو نقطة دخول رسالة المستخدم الفعلية.
+
+ثم تتبع الاستدعاءات كاملة حتى آخر Side Effect.
+
+أريد Call Graph حقيقيًا يوضح:
+
+```text
+Chat
+→ Intent
+→ Context
+→ Planner
+→ DNA
+→ World
+→ Runtime
+→ Action
+→ Tool/Connector
+→ Result
+→ Verification
+→ Persistence
+→ UI
+```
+
+ضع بجانب كل طبقة:
+
+```text
+REAL
+PARTIAL
+MOCKED
+DISCONNECTED
+MISSING
+```
+
+---
+
+# 4. افحص كل مصادر الحقيقة
+
+حدد أين يتم تخزين:
+
+```text
+conversation state
+task state
+world state
+workflow state
+action state
+approval state
+user memory
+world memory
+events
+execution results
+UI state
+```
+
+وتأكد أنه لا توجد حالة أساسية مخزنة فقط داخل:
+
+```text
+LLM prompt
+frontend state
+temporary runtime memory
+```
+
+---
+
+# 5. نحتاج World Schema عام
+
+أنشئ أو حسّن تعريفًا عامًا للعالم.
+
+لا تربطه بمجال معين.
+
+نريد مفهومًا قريبًا من:
+
+```ts
+WorldDefinition {
+  id
+  owner
+  conversationId
+
+  actors
+  entities
+  relationships
+
+  capabilities
+  actions
+  workflows
+
+  policies
+  permissions
+
+  state
+  events
+
+  views
+  transactions
+
+  metadata
+  version
+  status
+}
+```
+
+هذا مثال معماري فقط.
+
+استخدم التصميم الأنسب للمشروع الحالي.
+
+---
+
+# 6. Generative UI ليست شاشة Task ثابتة
+
+راجع شاشة عالم المهمة الحالية.
+
+إذا كانت الواجهة تعرف مسبقًا ماذا تعرض، فهذه ليست Generative UI كاملة.
+
+المطلوب:
+
+```text
+Runtime State
++
+Schema
++
+Role
++
+Actions
++
+Workflow State
++
+Permissions
+↓
+UI Projection
+```
+
+أي أن Renderer يقرر ماذا يعرض من وصف العالم وحالته، لا من:
+
+```text
+taskType
+domainName
+```
+
+---
+
+# 7. ابنِ UI Primitives عامة
+
+بدل Components مرتبطة بمجالات، استخدم primitives مثل:
+
+```text
+Text
+Heading
+Metric
+Status
+EntityCard
+Collection
+Table
+List
+Form
+Field
+Media
+Action
+Tabs
+Timeline
+Progress
+Approval
+Search
+Filter
+Sort
+Chat
+Map
+Schedule
+Transaction
+```
+
+القائمة ليست مغلقة.
+
+لكن يجب أن تكون primitives قابلة للتركيب.
+
+---
+
+# 8. الفقاعات هي المدخل البصري للعوالم
+
+الواجهة المعتمدة لجاسم:
+
+> Main Chat واحدة.
+
+داخل المحادثة تظهر Generative Bubbles.
+
+Bubble قد تمثل:
+
+* نتيجة.
+* كيانًا.
+* عملية.
+* مجموعة.
+* مهمة.
+* عالمًا كاملًا.
+* Workflow.
+* Approval.
+* Transaction.
+
+لكن Bubble لا تكون نسخة مصغرة جامدة.
+
+يجب أن تستطيع فتح Runtime View أوسع عند الحاجة.
+
+---
+
+# 9. لا تنشئ صفحة مختلفة لكل عالم
+
+ممنوع:
+
+```text
+/jobs
+/cars
+/restaurants
+/real-estate
+/delivery
+```
+
+بهدف دعم المجالات.
+
+يجب أن يكون هناك Runtime Route عام مثلًا:
+
+```text
+/world/:worldId
+```
+
+أو التصميم المكافئ الموجود بالمشروع.
+
+والـWorld Renderer هو من يولد المحتوى.
+
+---
+
+# 10. المحادثات المتعددة
+
+نحتاج من الواجهة الرئيسية:
+
+```text
+New Conversation
+Conversation History
+Open Conversation
+Resume Conversation
+Archive Conversation
+```
+
+وكل محادثة يمكن أن تحتوي:
+
+```text
+0..N Worlds
+0..N Tasks
+0..N Generated Bubbles
+```
+
+لا تفترض:
+
+```text
+1 conversation = 1 task
+```
+
+إلا إذا كانت هناك ضرورة معمارية مثبتة.
+
+---
+
+# 11. العلاقة الصحيحة
+
+راجع Data Model حتى يصبح قادرًا على تمثيل شيء قريب من:
+
+```text
+User
+ └── Conversations
+      ├── Messages
+      ├── Tasks
+      └── Worlds
+           ├── Entities
+           ├── Workflows
+           ├── Actions
+           ├── Events
+           └── Versions
+```
+
+مع إمكانية وجود علاقات أكثر تعقيدًا لاحقًا.
+
+---
+
+# 12. تعديل عالم موجود بالمحادثة
+
+هذا Acceptance Test إلزامي.
+
+المستخدم يقول:
+
+> أنشئ لي منصة تربط أصحاب السيارات بالورش.
+
+بعد الإنشاء والتفاعل معها، يعود للدردشة ويقول:
+
+> أضف تقييمًا للورش بعد انتهاء الإصلاح.
+
+يجب ألا ينشئ عالمًا جديدًا تلقائيًا.
+
+يجب أن:
+
+```text
+resolve referenced world
+inspect current schema
+understand requested delta
+plan migration
+validate
+apply change
+version world
+re-render
+```
+
+ثم يظهر التقييم في نفس العالم.
+
+---
+
+# 13. World Evolution
+
+نحتاج دعمًا فعليًا لـ:
+
+```text
+WorldVersion
+WorldChangeSet
+Migration
+Validation
+Rollback
+```
+
+حتى لا يكون تعديل العالم عبارة عن overwrite غير آمن.
+
+---
+
+# 14. افحص Task DNA الحالي
+
+حدد هل Task DNA الحالي:
+
+A. مجرد وصف للهدف؟
+
+أم:
+
+B. Intermediate Representation قابلة للتنفيذ؟
+
+المطلوب أقرب إلى B.
+
+يجب أن تستطيع تمثيل:
+
+```text
+goals
+inputs
+constraints
+dependencies
+capabilities
+steps
+outputs
+verification
+approval requirements
+failure policy
+recovery policy
+UI projection requirements
+```
+
+---
+
+# 15. Execution Graph
+
+لا تجعل التنفيذ يعتمد على Sequence ثابتة.
+
+يجب أن يستطيع Planner إنتاج DAG عندما تحتاج المهمة إلى:
+
+```text
+parallel execution
+dependencies
+branching
+approval gates
+retry
+fallback
+replan
+```
+
+---
+
+# 16. General Capability Registry
+
+افحص جميع القدرات الحالية.
+
+أنشئ Matrix:
+
+```text
+Capability
+Implementation
+Real?
+Provider
+Side effect?
+Approval?
+Verifier?
+Fallback?
+```
+
+ولا تضع اسم Domain كـCapability إلا إذا كان هناك سبب حقيقي.
+
+الأفضل أن تكون قدرات عامة.
+
+مثال:
+
+```text
+search
+extract
+rank
+match
+store
+retrieve
+generate
+calculate
+schedule
+notify
+request_input
+transact
+execute
+monitor
+```
+
+---
+
+# 17. Capability Discovery
+
+صمم النظام بحيث يمكن إضافة Capability جديدة دون تعديل Planner المركزي في كل مرة.
+
+يجب أن تستطيع Capability تعريف نفسها عبر Metadata مثل:
+
+```text
+inputs
+outputs
+constraints
+risk
+cost
+latency
+provider
+permissions
+verification
+```
+
+حتى يستطيع Planner اختيارها.
+
+---
+
+# 18. Planner لا يجب أن يعتمد على أمثلة محفوظة
+
+ابحث في المشروع عن:
+
+```text
+if intent
+switch domain
+keyword routing
+template selection
+example matching
+```
+
+إذا كانت تستخدم كـfast path بسيط فلا مشكلة.
+
+لكن لا يجوز أن تكون هي مصدر العمومية.
+
+اختبر النظام بطلبات لا توجد كلماتها في Routers الحالية.
+
+---
+
+# 19. Unknown Intent Test
+
+أعطِ النظام طلبًا جديدًا تمامًا لا يوجد له Intent مسجل مسبقًا.
+
+يجب ألا ينهار إلى:
+
+```text
+unsupported
+```
+
+فقط لأن الاسم غير معروف.
+
+يجب أن يحاول تفكيكه إلى قدرات عامة.
+
+---
+
+# 20. اختبار مهم جدًا
+
+مثال:
+
+> أريد نظامًا تستلم فيه الأسر فائض الطعام، ثم يتم العثور على متطوع قريب، وإذا لم يقبل أحد خلال 10 دقائق يتم توسيع النطاق، وبعد الاستلام يرسل إثباتًا بالصورة.
+
+لا تضف FoodDonation domain.
+
+يجب أن يستنتج:
+
+```text
+actors
+listing/request
+location
+matching
+timer
+fallback
+notification
+acceptance
+proof upload
+completion workflow
+```
+
+إذا نجح، فهذا دليل أفضل على العمومية.
+
+---
+
+# 21. اختبار آخر
+
+> لدي مجموعة ملاعب خاصة وأريد أن يحجز الناس الساعات المتاحة، ويختلف السعر في نهاية الأسبوع، وإذا ألغى الشخص متأخرًا تخصم رسوم.
+
+لا تبنِ SportsBooking template.
+
+استخرج:
+
+```text
+resource
+availability
+schedule
+dynamic pricing
+booking
+payment policy
+cancellation
+fee
+notification
+```
+
+---
+
+# 22. اختبار ثالث
+
+> أريد أن أجمع طلبات شراء عدة مطاعم للخضار يوميًا ثم أرسل طلبًا موحدًا لأفضل مورد.
+
+يجب أن يستطيع تركيب:
+
+```text
+multi-tenant inputs
+aggregation
+schedule
+comparison
+supplier ranking
+procurement action
+approval
+transaction
+```
+
+دون RestaurantProcurementModule مخصص.
+
+---
+
+# 23. Self-questioning الصحيح
+
+عند نقص معلومة، لا يخمن جاسم.
+
+مثلاً:
+
+> بع سيارتي.
+
+يسأل فقط عن البيانات اللازمة.
+
+ثم يكمل نفس الخطة بعد وصولها.
+
+اختبر أن:
+
+```text
+awaiting_input
+```
+
+حالة Runtime حقيقية وليست رسالة Chat فقط.
+
+---
+
+# 24. Approval حقيقي
+
+إذا احتاج Action حساسًا:
+
+```text
+payment
+external message
+publish listing
+delete
+purchase
+```
+
+اختبر:
+
+```text
+ready
+→ awaiting_approval
+→ approval
+→ execute exactly once
+```
+
+واختبر رفض الموافقة أيضًا.
+
+---
+
+# 25. Idempotency
+
+هذه نقطة ممتازة موجودة لديك حسب تقريرك.
+
+وسع اختبارها.
+
+أرسل نفس Action مرتين.
+
+يجب ألا ينتج Side Effect مزدوج.
+
+خصوصًا:
+
+```text
+payment
+email
+publish
+booking
+transaction
+```
+
+---
+
+# 26. Verifier مستقل
+
+وجود `completed` لا يعني النجاح.
+
+المطلوب:
+
+```text
+Executor says success
+↓
+Verifier inspects reality
+↓
+PASS / FAIL
+```
+
+مثال:
+
+إذا كانت Action هي إنشاء Record:
+
+تحقق من قاعدة البيانات.
+
+إذا إرسال رسالة خارجية:
+
+تحقق من Provider response / delivery state عندما يكون متاحًا.
+
+---
+
+# 27. Recovery
+
+اختبر فشل خطوة وسط Workflow.
+
+مثلاً:
+
+```text
+step1 PASS
+step2 PASS
+step3 FAIL
+step4 pending
+```
+
+ثم تحقق من:
+
+```text
+retry
+repair
+replan
+resume
+```
+
+دون إعادة تنفيذ Side Effects الناجحة.
+
+---
+
+# 28. Restart Test إلزامي
+
+ابدأ Workflow.
+
+أوقف API Server.
+
+شغله مجددًا.
+
+ثم أكمل المهمة.
+
+يجب ألا تضيع:
+
+```text
+task
+world
+workflow
+approval
+events
+pending actions
+```
+
+---
+
+# 29. Session isolation
+
+بما أنك فحصت Ownership:
+
+وسع الاختبار إلى:
+
+```text
+User A cannot:
+read
+modify
+approve
+execute
+resume
+open
+```
+
+World أو Task لـUser B.
+
+ليس فقط API GET.
+
+اختبر Actions أيضًا.
+
+---
+
+# 30. Mobile/Web parity
+
+لا نريد منطقًا مختلفًا جذريًا بين Web وMobile.
+
+الـRuntime واحد.
+
+API واحد.
+
+World Schema واحدة.
+
+Generative UI schema واحدة قدر الإمكان.
+
+يمكن Renderer أن يختلف بصريًا حسب الجهاز.
+
+لكن لا تنشئ:
+
+```text
+mobile runtime
+web runtime
+```
+
+بمنطقين مختلفين.
+
+---
+
+# 31. OpenAPI وOrval
+
+استمر في استخدام API Contract كمرجع.
+
+لا تكتب Types يدويًا إذا كانت مشتقة من Contract.
+
+أضف CI check يمنع Drift بين:
+
+```text
+API
+OpenAPI
+Generated Client
+Frontend usage
+```
+
+---
+
+# 32. Mobile session
+
+ما طبقته جيد.
+
+لكن اختبر أيضًا:
+
+```text
+expired token
+revoked token
+tampered token
+logout
+app restart
+secure-store unavailable
+network offline
+```
+
+ولا تجعل فشل session يؤدي إلى loop غير منتهٍ.
+
+---
+
+# 33. Streaming
+
+اختبر أن Streaming ليس UI illusion.
+
+أريد:
+
+```text
+server emits events/chunks
+client consumes progressively
+```
+
+وليس:
+
+```text
+wait for complete result
+then animate text
+```
+
+---
+
+# 34. Event Model
+
+كل تغير مهم في Runtime يفضل أن يولد Event واضحًا.
+
+مثل:
+
+```text
+WORLD_CREATED
+INPUT_REQUESTED
+INPUT_RECEIVED
+PLAN_CREATED
+ACTION_STARTED
+ACTION_COMPLETED
+ACTION_FAILED
+APPROVAL_REQUESTED
+APPROVAL_GRANTED
+STATE_CHANGED
+WORLD_UPDATED
+WORKFLOW_COMPLETED
+```
+
+لا تجعل Event Log مجرد Debug Log.
+
+---
+
+# 35. Auditability
+
+نحتاج القدرة لاحقًا على معرفة:
+
+> لماذا فعل جاسم هذا؟
+
+لذلك اربط عند الحاجة:
+
+```text
+action
+plan
+reason
+capability
+provider
+result
+verification
+user approval
+```
+
+دون تخزين Chain-of-Thought داخلي.
+
+نريد Decision Metadata، وليس التفكير السري للـLLM.
+
+---
+
+# 36. Cost awareness
+
+صمم Planner بحيث يمكنه لاحقًا مراعاة:
+
+```text
+cost
+latency
+reliability
+risk
+```
+
+عند اختيار Capability/Provider.
+
+حتى نستطيع تبديل Providers دون إعادة بناء Core.
+
+---
+
+# 37. Provider abstraction
+
+لا تربط العقل مباشرة بـ:
+
+```text
+OpenAI
+Anthropic
+Gemini
+specific search API
+specific payment provider
+```
+
+استخدم Interfaces/Adapters.
+
+---
+
+# 38. لا تعيد بناء كل شيء إذا كان الموجود جيدًا
+
+قاعدة مهمة:
+
+```text
+KEEP → CONNECT → GENERALIZE → REPLACE ONLY WHEN NECESSARY
+```
+
+إذا كانت هناك طبقة تعمل جيدًا، لا تستبدلها لمجرد كتابة معمارية أجمل.
+
+---
+
+# 39. المطلوب منك الآن عمليًا
+
+ابدأ بعمل:
+
+```text
+docs/JASIM_ARCHITECTURE_TRUTH.md
+```
+
+ولكن لا تتوقف عنده.
+
+بعده نفذ P0/P1/P2 المطلوبة للوصول إلى Universal Runtime.
+
+التقرير يجب أن يتضمن:
+
+```text
+existing components
+actual runtime path
+missing links
+hard-coded paths
+duplicates
+dead code
+mocked behavior
+persistence gaps
+generality gaps
+security gaps
+```
+
+---
+
+# 40. ثم ابدأ الإصلاحات
+
+الأولوية الآن ليست إضافة Features كثيرة.
+
+الأولوية:
+
+```text
+1. Canonical Runtime
+2. Canonical World Model
+3. Capability Registry
+4. Execution Graph
+5. Persistence
+6. Event Model
+7. Verification
+8. Generative UI Projection
+9. Chat ↔ World continuity
+10. Generalization
+```
+
+---
+
+# 41. احذف الاعتماد على Task-only worldview
+
+لا تحذف Task.
+
+Task ستظل مفهومًا مهمًا.
+
+لكن:
+
+> كل World ليس Task.
+
+وقد يحتوي World على عدة Tasks.
+
+وقد تنتهي Task ويبقى World.
+
+وقد يقوم المستخدم بإنشاء عالم ثم إجراء عشرات العمليات فيه لاحقًا.
+
+هذه نقطة أساسية جدًا.
+
+---
+
+# 42. Acceptance Test رئيسي
+
+نفذ End-to-End التالي:
+
+المستخدم:
+
+> أنشئ لي مساحة أستطيع فيها عرض أشياء للإيجار، ويحدد كل شخص مدة الإيجار والسعر والتأمين.
+
+جاسم يسأل عن أقل معلومات ضرورية إن احتاج.
+
+ثم ينشئ World.
+
+يضيف المستخدم عنصرًا.
+
+ثم مستخدم آخر يبحث.
+
+يجد العنصر.
+
+يرسل طلب إيجار.
+
+المالك يوافق.
+
+تتغير الحالة.
+
+ثم يعود المالك للمحادثة ويقول:
+
+> من الآن إذا تجاوزت قيمة الشيء 500 دينار اطلب تأمينًا بنسبة 20%.
+
+جاسم يعدل نفس World.
+
+ثم أضف عنصرًا جديدًا بقيمة >500.
+
+يجب أن تظهر السياسة الجديدة تلقائيًا.
+
+**ممنوع كتابة RentalPlatform خصيصًا للاختبار.**
+
+---
+
+# 43. Acceptance Test للعمومية
+
+بعد انتهاء التنفيذ:
+
+استخدم Agent منفصل لا يعرف قائمة أمثلتنا.
+
+اطلب منه توليد:
+
+```text
+30 unseen scenarios
+```
+
+ثم شغلها ضد جاسم.
+
+صنف النتائج:
+
+```text
+PASS
+PARTIAL
+FAIL
+```
+
+ولكل FAIL اكتب السبب:
+
+```text
+missing primitive
+missing capability
+planner failure
+runtime failure
+UI projection failure
+policy failure
+connector unavailable
+```
+
+لا تصلح FAIL بكتابة Domain Handler جديد.
+
+---
+
+# 44. Generality Score
+
+أنشئ Metric داخل تقرير الاختبار:
+
+```text
+Generalization Success Rate
+```
+
+مثال:
+
+```text
+24/30 = 80%
+```
+
+لكن يجب أن يكون PASS صارمًا.
+
+لا تعتبر مجرد فهم النص نجاحًا.
+
+PASS يعني أن النظام بنى خطة وعالمًا/عملية قابلة للتنفيذ حسب السيناريو.
+
+---
+
+# 45. لا تدع Agent يحكم على نفسه فقط
+
+استخدم منفصلين على الأقل:
+
+```text
+Implementation Agent
+Verification Agent
+```
+
+والأفضل أيضًا:
+
+```text
+Adversarial Generalization Agent
+```
+
+---
+
+# 46. معايير النجاح الجديدة
+
+لا أريد عبارة:
+
+> architecture implemented
+
+بدون الأدلة التالية:
+
+```text
+runtime logs
+test names
+database evidence
+API responses
+world state before/after
+event sequence
+restart results
+negative tests
+generalization results
+```
+
+---
+
+# 47. ممنوع الادعاءات التالية دون دليل
+
+لا تقل:
+
+```text
+fully generic
+production ready
+secure
+complete
+100%
+universal
+```
+
+إلا إذا أثبت الاختبارات ذلك.
+
+استخدم توصيفًا دقيقًا.
+
+---
+
+# 48. الواجهة المعتمدة
+
+حافظ على واجهة جاسم التي تم اعتمادها.
+
+لا تعد تصميم التطبيق من الصفر.
+
+المطلوب أن تصبح:
+
+> واجهة واحدة مركزها المحادثة.
+
+مع:
+
+```text
+conversation history
+new chat
+generative bubbles
+world opening
+back to chat
+world persistence
+world modification through chat
+```
+
+---
+
+# 49. Soap Glass
+
+حافظ على هوية Soap Glass البصرية الموجودة.
+
+لكن افصل:
+
+```text
+Visual Design System
+```
+
+عن:
+
+```text
+Runtime Schema
+```
+
+حتى يمكن تغيير الشكل مستقبلًا دون تغيير منطق العالم.
+
+---
+
+# 50. الهدف الذي أريدك أن تعمل نحوه
+
+أريد أن أصل إلى مرحلة أستطيع فيها كتابة فكرة لم نناقشها معك من قبل.
+
+ولا يسأل جاسم:
+
+> أي Template تريد؟
+
+ولا يحتاج المطور إلى إضافة Domain جديد.
+
+بل:
+
+```text
+understand
+decompose
+compose capabilities
+create runtime world
+generate UI
+execute
+observe
+verify
+evolve
+```
+
+وهذه هي النقطة التي سنعتبر عندها أن جاسم بدأ يتحول فعلًا إلى النظام العام المقصود.
+
+ابدأ الآن.
+
+لا تكتفِ بالتقرير.
+
+افحص، نفذ، شغّل، اختبر، أصلح، ثم أعد الاختبار.
+
+وفي نهاية هذه المرحلة أعطني:
+
+```text
+JASIM_ARCHITECTURE_TRUTH.md
+JASIM_GENERAL_RUNTIME_REPORT.md
+JASIM_GENERALIZATION_TEST_REPORT.md
+```
+
+مع الأدلة الفعلية لكل ادعاء.

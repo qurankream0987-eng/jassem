@@ -1,0 +1,664 @@
+# JASIM — POST FINAL AUDIT CLOSURE DIRECTIVE
+# SECURITY → VERIFIED EXECUTION → CONTINUITY → PRODUCTION → UX → EXPANSION
+
+اعتمد Final Canonical Completion Audit الأخير كحقيقة التنفيذ الحالية.
+
+الحكم المقبول:
+
+GENERAL GENERATIVE RUNTIME READY = YES
+VERIFIED EXECUTION READY = NO
+PRODUCTION READY = NO
+
+لا نعيد بناء الـCore.
+
+المطلوب الآن إغلاق الفجوات المتبقية بالترتيب التالي.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 1 — P0 CROSS-OWNER SECURITY PATCHES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هذه المرحلة تسبق #19/#20/#21.
+
+أغلق الثغرات الثلاث المثبتة:
+
+1. buildConversationHistory
+2. seedAuthorizedProposalApproval
+3. createRuntimeSemanticEvent
+
+### A. Conversation History
+
+`buildConversationHistory` يجب أن يفرض ownerId الحقيقي.
+
+ممنوع:
+conversationId فقط → history
+
+المطلوب:
+ownerId + conversationId
+→ load canonical conversation
+→ ownership validation
+→ history
+
+Negative test:
+
+User A requests User B conversation history
+→ ACCESS_DENIED
+
+### B. seedAuthorizedProposalApproval
+
+هذه helper خطرة لأنها تستطيع seed proposal/run بدون إثبات ownership.
+
+إذا هي test-only:
+اعزلها بوضوح داخل test-only surface.
+
+إذا تستخدم Runtime فعلي:
+يجب قبل insert:
+
+load Run
+→ verify ownerId
+→ verify proposal relationship
+→ then seed
+
+لا يوجد server helper يتجاوز ownership فقط لأنه "internal".
+
+### C. Semantic Event Write
+
+createRuntimeSemanticEvent يجب ألا يقبل:
+
+correlationId
+resourceId
+bubbleId
+runId
+taskId
+worldId
+
+ويربطها بمالك آخر.
+
+قبل write:
+resolve referenced resource
+→ verify same owner/scope
+→ insert
+
+إذا Event system يحتاج system-generated events:
+استخدم trusted system context صريح،
+لا bypass عشوائي.
+
+Exit Gate:
+
+CONVERSATION_HISTORY_CROSS_OWNER = BLOCKED
+SEED_APPROVAL_CROSS_OWNER = BLOCKED
+EVENT_WRITE_CROSS_OWNER = BLOCKED
+
+CROSS_OWNER_MATRIX = PASS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 2 — EXECUTION ATTEMPT LEDGER / RECEIPT V2
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RunReceipt الحالية ليست كافية.
+
+لا تحذفها إذا تستخدمها UI.
+
+أضف canonical immutable execution attempt ledger.
+
+المفهوم:
+
+ONE NODE
+may have
+MANY EXECUTION ATTEMPTS
+
+كل attempt immutable.
+
+الحقول المنطقية:
+
+attemptId
+ownerId
+runId
+nodeId
+nodeKey
+proposalId?
+capabilityId
+capabilityVersion?
+provider?
+fingerprint
+idempotencyKey
+attemptNumber
+leaseToken/fenceVersion snapshot
+startedAt
+finishedAt?
+executionStatus
+providerReference?
+normalizedResult?
+normalizedError?
+verificationStatus
+createdAt
+
+لا secrets.
+
+Retries:
+لا overwrite للattempt السابقة.
+
+كل retry:
+new immutable attempt.
+
+dag_nodes.attemptCount يمكن أن يبقى aggregate،
+لكن ليس audit truth.
+
+Required proof:
+
+Attempt 1 fails
+Attempt 2 succeeds
+
+DB must preserve both attempts.
+
+Report:
+
+IMMUTABLE_ATTEMPTS = PASS
+NODE_ATTEMPT_HISTORY = PASS
+FINGERPRINT_PER_ATTEMPT = PASS
+IDEMPOTENCY_PER_ATTEMPT = PASS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 3 — INDEPENDENT VERIFIER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هذه أهم فجوة معمارية الآن.
+
+أخرج verification من buildRunReceipt.
+
+ممنوع:
+
+Executor
+→ decides verified
+
+المطلوب:
+
+Executor
+→ Execution Attempt
+→ Receipt
+→ Independent Verifier
+→ Verification Record
+→ Final Run/Node verified state
+
+Verification statuses:
+
+VERIFIED
+FAILED
+INCONCLUSIVE
+
+INCONCLUSIVE must NEVER become success.
+
+Verifier interface يجب أن يكون عامًا، لا OpenAI-specific.
+
+مثلاً strategies:
+
+INTERNAL_STATE_ASSERTION
+DATABASE_READBACK
+PROVIDER_LOOKUP
+RECEIPT_VALIDATION
+COMPOSITE
+
+### For current openai-chat capability
+
+بما أن sideEffects = none:
+
+التحقق يمكن أن يثبت:
+
+- execution attempt exists
+- capability result schema valid
+- expected completion/output present
+- token usage metadata valid
+- run/node relationship صحيح
+- no execution error
+
+لكن لا تعتبر provider call receipt وحدها "verified" بدون verifier pass.
+
+### Negative proofs
+
+missing output
+→ FAILED أو INCONCLUSIVE
+
+corrupt receipt
+→ FAILED
+
+unknown provider state
+→ INCONCLUSIVE
+
+INCONCLUSIVE
+→ run not final-success
+
+Required:
+
+VERIFIER_SEPARATE_COMPONENT = PASS
+VERIFIED_STATE = PASS
+FAILED_STATE = PASS
+INCONCLUSIVE_STATE = PASS
+INCONCLUSIVE_AS_SUCCESS = NO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 4 — RECONCILIATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بعد وجود attempt ledger وVerifier:
+
+أكمل canonical reconciliation.
+
+السيناريو:
+
+executor sends provider request
+provider effect happens
+process crashes
+local attempt remains uncertain
+server restarts
+
+المسار الصحيح:
+
+find uncertain attempt
+→ idempotency/providerReference lookup
+→ provider/state query
+→ create reconciliation result
+→ verifier
+→ update canonical status
+
+لا blind retry.
+
+Current capabilities sideEffects:none،
+لذلك ابنِ البنية واختبرها deterministic test provider أو internal capability.
+
+لا تفعّل Payment الآن.
+
+Exit:
+
+UNKNOWN_OUTCOME_RECONCILIATION = PASS
+BLIND_RETRY = NO
+DUPLICATE_EXTERNAL_EFFECT = NO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 5 — CONVERSATION SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Memory موجودة.
+Reference Resolution موجودة.
+
+الفجوة:
+summary مفقودة، والـLLM يرى فقط 8 recent messages.
+
+ابنِ canonical durable conversation summary.
+
+Summary يجب تحتوي:
+
+important decisions
+persistent constraints
+active Bubble references
+important entity references
+active/pending Runs
+pending approvals
+open questions
+
+ولا تكون transactional truth.
+
+Context:
+
+recent messages
++
+summary
++
+relevant memories
++
+active Bubble/Run state
++
+pending approvals
+
+اختبار:
+
+50+ turns
+
+ثم:
+"الخط الذي أضفناه قبل فترة اجعل سعره أقل"
+
+يجب حل المرجع الصحيح.
+
+Exit:
+
+CONVERSATION_SUMMARY = PASS
+50_PLUS_TURN_CONTINUITY = PASS
+BOUNDED_CONTEXT = PASS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 6 — GENERATIVE ROUTING HARDENING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا hardcode الأمثلة.
+
+المشكلة الحالية:
+
+"أريد أن أعمل كمدرس"
+و
+"أنشئ منصة تربط المدرسين"
+
+كلاهما قد يصبح persistent_smart_bubble.
+
+حسّن outputRouterPrompt والاختبارات بحيث يفهم الفرق بين:
+
+individual intent
+service setup
+durable operation
+platform/system creation
+
+استخدم principle:
+
+choose the SMALLEST sufficient output form.
+
+مثال:
+
+"أحتاج مدرس"
+→ direct_action / search/match/run
+
+"أريد العمل كمدرس"
+→ workflow / interactive bubble / durable run
+
+"أريد تشغيل خدمة مدرسين"
+→ workflow/business setup
+
+"أنشئ منصة تربط المدرسين والطلاب"
+→ persistent_smart_bubble
+
+لا keyword rules.
+
+أضف 20+ intent-distinction tests
+عبر مجالات مختلفة.
+
+Exit:
+
+ROUTING_DISTINCTION = PASS
+PLATFORM_OVERGENERATION = LOW / NONE
+DOMAIN_RULES = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 7 — GENERALIZATION RETEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+التدقيق الحالي:
+
+1/5 verified
+4/5 inconclusive بسبب model rate limit.
+
+لا نسمي هذا PASS كامل.
+
+أعد الاختبار عندما API متاحة.
+
+استخدم:
+
+5 original unseen
++
+5 new unseen prompts generated at test time
+
+No Core modifications between prompts.
+
+Report:
+
+GENERALIZATION = x/10
+
+Require:
+
+>= 8/10 justified correct
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+FAKE_SUCCESS = 0
+
+وأي API rate limit:
+INCONCLUSIVE
+وليس FAIL ولا PASS.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 8 — PRODUCTION OPERATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أكمل فقط ما أثبته Audit ناقصًا.
+
+### Health
+
+أضف endpoint خفيف:
+
+/api/health
+
+يفحص على الأقل:
+
+process alive
+DB reachable
+canonical runtime initialized
+
+ولا يكشف secrets.
+
+يفضل:
+liveness
+readiness
+إذا مناسب.
+
+### Graceful Shutdown
+
+SIGTERM / SIGINT:
+
+stop accepting new work
+stop worker polling
+finish/release current lease safely
+close DB/server resources
+exit cleanly
+
+### Worker Recovery
+
+Canonical worker يجب تشغيله من boot،
+لا legacy api/core worker.
+
+إذا هناك reusable recovery logic قديمة:
+port logic only.
+
+### Secrets
+
+startup validation:
+
+SESSION_SECRET exists
+minimum entropy/length policy
+production-required configuration
+
+Fail fast in production.
+
+### Observability
+
+structured logs مع:
+
+requestId
+conversationId?
+runId?
+nodeId?
+bubbleId?
+capabilityId?
+providerRequestId?
+duration
+status
+verificationStatus
+
+لا tokens/secrets/private raw data.
+
+لا تحتاج distributed tracing معقدة الآن إذا structured observability كافية.
+
+### Migration deployment
+
+db:migrate failure في production:
+يجب ألا يكون warning فقط إذا migration مطلوبة.
+
+حدد deploy policy صريحة:
+migration fail
+→ deployment fail safely
+
+Exit:
+
+HEALTH_CHECK = PASS
+GRACEFUL_SHUTDOWN = PASS
+CANONICAL_WORKER_RECOVERY = PASS
+PRODUCTION_SECRET_VALIDATION = PASS
+STRUCTURED_LOGGING = PASS
+MIGRATION_FAILURE_POLICY = PASS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 9 — TASK #19
+DISPLAY AI RESULT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بعد Verified Execution foundation.
+
+اعرض الـAI completion الحقيقي في conversation.
+
+المستخدم يجب أن يرى:
+
+result content
+run status
+verified / failed / inconclusive when relevant
+
+لا تعرض internal receipt structure مباشرة إلا في diagnostics.
+
+UI should distinguish:
+
+RUNNING
+COMPLETED_AWAITING_VERIFICATION
+VERIFIED
+FAILED
+INCONCLUSIVE
+
+إذا capability sideEffects:none
+يمكن تبسيط UX،
+لكن state model يبقى صحيحًا.
+
+Web + Mobile contract same.
+
+Exit:
+
+OPENAI_COMPLETION_VISIBLE = PASS
+VERIFICATION_STATE_VISIBLE = PASS
+WEB = PASS
+MOBILE = PASS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 10 — TASK #20
+FAILURE / RETRY UX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا capability fails:
+
+لا silent success
+لا generic completed card
+
+اعرض:
+
+what failed
+safe retry availability
+whether external effect may have occurred
+verification state
+
+Retry button only if server determines retry is safe.
+
+لا client decides idempotency.
+
+Emit canonical failure event.
+
+Exit:
+
+FAILURE_VISIBLE = PASS
+SAFE_RETRY = PASS
+UNSAFE_RETRY_BLOCKED = PASS
+RUN_CAPABILITY_FAILED_EVENT = PASS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 11 — DO NOT START #21 YET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+#21:
+images + web search + more capabilities
+
+DEFER until:
+
+CROSS_OWNER_SECURITY = PASS
+IMMUTABLE_ATTEMPTS = PASS
+INDEPENDENT_VERIFIER = PASS
+RECONCILIATION = PASS
+GENERALIZATION_RETEST acceptable
+PRODUCTION OPERATIONS core = PASS
+
+بعدها نوسع capability surface.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL EXIT MATRIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بعد تنفيذ ما سبق أعطني:
+
+CROSS_OWNER_SECURITY:
+PASS / FAIL
+
+EXECUTION_ATTEMPT_LEDGER:
+PASS / FAIL
+
+RECEIPT_V2:
+PASS / FAIL
+
+INDEPENDENT_VERIFIER:
+PASS / FAIL
+
+INCONCLUSIVE_STATE:
+PASS / FAIL
+
+RECONCILIATION:
+PASS / FAIL
+
+CONVERSATION_SUMMARY:
+PASS / FAIL
+
+50_PLUS_TURN_CONTEXT:
+PASS / FAIL
+
+ROUTING_DISTINCTION:
+PASS / FAIL
+
+GENERALIZATION:
+x/10
+
+HEALTH_CHECK:
+PASS / FAIL
+
+GRACEFUL_SHUTDOWN:
+PASS / FAIL
+
+WORKER_RECOVERY:
+PASS / FAIL
+
+STRUCTURED_OBSERVABILITY:
+PASS / FAIL
+
+PRODUCTION_SECRET_VALIDATION:
+PASS / FAIL
+
+TASK_19_AI_RESULT_UI:
+PASS / FAIL
+
+TASK_20_FAILURE_UX:
+PASS / FAIL
+
+TASK_21:
+DEFERRED
+
+Then recalculate:
+
+GENERAL_GENERATIVE_RUNTIME_READY:
+YES / NO
+
+VERIFIED_EXECUTION_READY:
+YES / NO
+
+PRODUCTION_READY:
+YES / NO
+
+STANDALONE_MOBILE_READY:
+YES / NO
+
+COMMERCIAL_READY:
+YES / NO
+
+Do not redefine these statuses to make the report look better.

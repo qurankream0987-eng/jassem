@@ -1,0 +1,231 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM SMART GENERATIVE EXPERIENCE
+
+# TASK 1 — PRESENTATION IR LIVE WIRING + RUNTIME VALIDATION
+
+MODE INTENT:
+Focused implementation only.
+
+Do NOT redesign JASIM.
+
+Accepted architecture is already fixed.
+
+Blocks 0 through 3.1 remain CLOSED / PASS.
+
+Canonical UI delta mapping:
+
+.local/tasks/jasim-smart-interface-delta-mapping.md
+
+Read only the relevant presentation findings from that report before changing code.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GOAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Make the EXISTING presentation contract participate in the real live runtime path and ensure every structured presentation entering the renderer is runtime validated.
+
+Reuse the existing:
+
+* presentation-fabric.ts
+* PresentationDefinition
+* SemanticPresentationInput
+* SchemaRenderer
+
+Do NOT create a competing presentation-v2 system.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ACCEPTED ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Target path:
+
+CANONICAL RUNTIME STATE
+↓
+AUTHORIZED / EXISTING PROJECTION
+↓
+SemanticPresentationInput
+↓
+existing presentation compiler/fabric
+↓
+RUNTIME VALIDATION
+↓
+PresentationDefinition / existing IR
+↓
+SchemaRenderer
+
+The LLM/provider must never send arbitrary executable React/JS directly to the renderer.
+
+Presentation remains presentation only.
+
+It does NOT own business truth.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCOPE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect only the active code paths required for:
+
+1. existing presentation-fabric
+2. PresentationDefinition
+3. SemanticPresentationInput
+4. SchemaRenderer
+5. live conversation/runtime response → presentation path
+6. current runtime schema validation facilities
+
+Implement the minimum wiring necessary.
+
+Use the project's existing validation library/system.
+
+Do NOT install dependencies.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REQUIRED BEHAVIOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A valid semantic structured presentation:
+
+runtime response
+→ presentation fabric
+→ validation
+→ trusted renderer
+
+must succeed.
+
+An invalid presentation:
+
+invalid semantic type
+
+invalid payload shape
+
+unknown privileged action
+
+invalid schema version if applicable
+
+must FAIL CLOSED.
+
+It must NOT:
+
+fall back to arbitrary HTML
+
+fall back to generated JavaScript
+
+silently render malformed privileged actions
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DO NOT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT build:
+
+* Active Workspace
+* UI Morphing
+* Living Objects
+* Active Objects Rail
+* Mobile renderer redesign
+* Presentation Decision Layer
+* Final Soap Glass redesign
+* new database tables
+* migrations
+* new SDKs
+* final acceptance suite
+
+Those are later tasks.
+
+Do NOT reopen:
+
+Goal
+Planner
+Capabilities
+Discovery
+Payments
+World runtime
+Reference resolution
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add focused tests proving:
+
+1. valid PresentationDefinition renders through live path
+2. invalid presentation schema is rejected
+3. unknown presentation type cannot invoke arbitrary component
+4. malformed action does not reach execution
+5. existing plain-text conversation response still works
+6. existing Bubble presentation regression still works
+
+Run only focused affected tests.
+
+Also run:
+
+TypeScript check for affected packages/modules.
+
+Do NOT run all historical JASIM suites.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DELIVERABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Update code only as necessary.
+
+Create:
+
+.local/tasks/smart-ui-task-1-report.md
+
+Report exactly:
+
+CAUSE
+CURRENT_PATH
+CHANGES
+FILES
+TESTS
+
+PRESENTATION_IR_LIVE =
+PASS / FAIL
+
+PRESENTATION_RUNTIME_VALIDATION =
+PASS / FAIL
+
+ARBITRARY_COMPONENT_INJECTION =
+BLOCKED / NOT_BLOCKED
+
+PLAIN_TEXT_REGRESSION =
+PASS / FAIL
+
+BUBBLE_PRESENTATION_REGRESSION =
+PASS / FAIL
+
+NEW_DATABASE_TABLES =
+0
+
+NEW_MIGRATIONS =
+0
+
+NEW_EXTERNAL_SDKS =
+0
+
+BLOCKS_0_TO_3_1_REMAIN_CLOSED =
+YES / NO
+
+READY_FOR_SMART_UI_TASK_2 =
+YES / NO
+
+If NO:
+list only the exact blocker.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Task 1 passes, STOP.
+
+Do NOT continue to Task 2.
+
+Do NOT broaden scope.
+
+Do NOT start final UI implementation.
+
+Return only the concise Task 1 result.
+
+BEGIN TASK 1.

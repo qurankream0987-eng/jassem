@@ -1,0 +1,738 @@
+اعتمد تحديث المهمة #14 كما هو، وابدأ التنفيذ داخل نفس المهمة دون إنشاء Task مكررة.
+
+المرحلة السابقة الخاصة بـMain Chat تعتبر Baseline مثبتًا:
+
+```text
+Web Main Chat → Conversation Turn
+Mobile Main Chat → Conversation Turn
+Message persistence → REAL
+Automatic Task creation for every prompt → REMOVED
+```
+
+لا تعِد بناء هذه الطبقة ما لم يظهر Regression حقيقي.
+
+# 1. الهدف الحالي
+
+نريد الآن نقل جاسم من:
+
+```text
+TEXT / EPHEMERAL BUBBLE / SAFE INTERACTIVE BUBBLE
+```
+
+إلى Output Runtime عام يستطيع اختيار الشكل المناسب للهدف:
+
+```text
+TEXT
+STRUCTURED_RESULT
+EPHEMERAL_BUBBLE
+INTERACTIVE_BUBBLE
+DIRECT_ACTION
+WORKFLOW
+DURABLE_RUN
+PERSISTENT_SMART_BUBBLE
+```
+
+لكن بدون السماح للنموذج بتنفيذ Side Effects أثناء التصنيف.
+
+# 2. Output Router هو مصنف ومخطط أولي، وليس Executor
+
+المسار الصحيح:
+
+```text
+User Turn
+↓
+Model Gateway
+↓
+Proposed Output Envelope
+↓
+Schema Validation
+↓
+Semantic Validation
+↓
+Runtime Feasibility Check
+↓
+Capability Availability Check
+↓
+Output Form Accepted / Downgraded / Blocked
+```
+
+ولا:
+
+```text
+Model chooses ACTION
+↓
+external execution immediately
+```
+
+# 3. النموذج غير موثوق
+
+تعامل مع كل مخرجات النموذج كـUntrusted Input.
+
+تحقق من:
+
+```text
+outputType
+requiredCapabilities
+target references
+requested persistence
+risk level
+required inputs
+```
+
+ولا تسمح للنموذج بإرسال:
+
+```text
+provider function name
+arbitrary code
+ownerId
+permission override
+approval bypass
+raw database operation
+```
+
+# 4. Semantic Output Envelope
+
+وسع العقد الحالي ليكون قادرًا على وصف النتيجة المقترحة مثلًا:
+
+```text
+outputType
+summary
+structuredPayload?
+bubbleProposal?
+runProposal?
+actionProposal?
+requiredCapabilities[]
+missingInputs[]
+references[]
+persistenceIntent
+confidence / ambiguity metadata
+```
+
+استخدم تصميم المشروع الحالي الأنسب، ولا تعتبر هذا Schema حرفيًا إلزاميًا.
+
+# 5. لا تخلق Task تلقائيًا عند DIRECT_ACTION
+
+إذا كان المستخدم يقول:
+
+> بع هذا الهاتف.
+
+لا يجب أن يكون القرار:
+
+```text
+DIRECT_ACTION
+↓
+create Task + World automatically
+```
+
+يمكن أن ينتج:
+
+```text
+Run
+```
+
+أو execution intent مناسب.
+
+# 6. Durable Run — كيان مستقل حقيقي
+
+أنشئ/أكمل `Run` كـAggregate دائم مستقل عن `Task`.
+
+يجب أن تستطيع Run أن توجد بدون:
+
+```text
+bubbleId
+worldId
+taskId
+```
+
+عند عدم الحاجة.
+
+العلاقات يجب أن تكون اختيارية حسب الحالة.
+
+مثال مفاهيمي:
+
+```text
+Run
+- id
+- ownerId
+- conversationId?
+- bubbleId?
+- taskId?
+- goal
+- status
+- executionGraph?
+- currentState
+- requiredCapabilities
+- idempotencyKey
+- createdAt
+- updatedAt
+- resumeAt?
+```
+
+استخدم أسماء المشروع الحالية إن كانت أفضل.
+
+# 7. Run ليست Bubble
+
+مثال:
+
+> راقب سعر هذا المنتج.
+
+يمكن أن ينتج:
+
+```text
+DURABLE_RUN
+```
+
+بدون Smart Bubble دائمة.
+
+# 8. Run ليست World
+
+مثال:
+
+> بع سيارتي.
+
+قد تحتاج عملية تستمر عدة أيام:
+
+```text
+collect data
+prepare listing
+publish
+monitor replies
+request approval
+resume
+```
+
+لكن هذا لا يعني إنشاء World كامل.
+
+# 9. Run ليست Task القديمة بشكل اسم جديد
+
+قبل تنفيذها، افحص Task الحالية.
+
+حدد الفرق الواضح في المسؤولية:
+
+```text
+Task = unit of planned work / existing runtime abstraction
+Run = durable execution instance / lifecycle
+```
+
+إذا كان يمكن توسيع abstraction الحالية بأمان دون ازدواجية، افعل ذلك.
+
+لا تنشئ طبقتين تؤديان نفس الوظيفة.
+
+لكن لا تجبر كل Run على الارتباط بـWorld أو Bubble فقط لأن Task الحالية تفعل ذلك.
+
+# 10. Run lifecycle
+
+صمم lifecycle عامة وقابلة للتوسع، مثل:
+
+```text
+created
+awaiting_input
+ready
+awaiting_approval
+scheduled
+running
+waiting
+blocked
+verifying
+completed
+failed
+cancelled
+```
+
+لا يلزم استخدام نفس الأسماء إذا كان المشروع لديه حالات Canonical بالفعل.
+
+# 11. Run Events
+
+أضف Events واضحة مثل:
+
+```text
+RUN_CREATED
+RUN_INPUT_REQUIRED
+RUN_READY
+RUN_APPROVAL_REQUIRED
+RUN_SCHEDULED
+RUN_STARTED
+RUN_WAITING
+RUN_BLOCKED
+RUN_RESUMED
+RUN_FAILED
+RUN_COMPLETED
+```
+
+مع Correlation واضح للمحادثة والمالك.
+
+# 12. Idempotency
+
+كل إنشاء أو Transition حساسة لـRun يجب أن تحترم Idempotency.
+
+اختبر:
+
+```text
+same request twice
+client retry
+parallel create
+server retry
+```
+
+ولا تنشئ Run مكررة دون سبب.
+
+# 13. Ownership
+
+User A لا يستطيع:
+
+```text
+read
+resume
+cancel
+modify
+approve
+inspect events
+```
+
+Run تخص User B.
+
+اختبر ذلك على الخادم، وليس UI فقط.
+
+# 14. Restart durability
+
+اختبر:
+
+```text
+Create Run
+↓
+persist
+↓
+restart API
+↓
+read Run
+```
+
+ويجب أن تعود بنفس الحالة.
+
+# 15. لا تضف Worker execution الحقيقي قبل تثبيت العقود
+
+في هذه المرحلة يمكن تأسيس:
+
+```text
+Run persistence
+state
+events
+references
+idempotency
+```
+
+قبل تفعيل أي Provider خارجي.
+
+لكن لا تسجل نجاحًا خارجيًا وهميًا.
+
+# 16. DIRECT_ACTION يجب ألا يعني Side Effect أثناء التصنيف
+
+إذا اختار Router:
+
+```text
+DIRECT_ACTION
+```
+
+فالناتج في هذه المرحلة هو:
+
+```text
+validated execution intent
+```
+
+وليس:
+
+```text
+action already executed
+```
+
+# 17. Workflow output
+
+إذا كان الهدف متعدد الخطوات لكنه لا يحتاج Persistence طويلة:
+
+يمكن أن يقترح:
+
+```text
+WORKFLOW
+```
+
+وإذا كان يحتاج انتظار/جدولة/استئناف:
+
+يفضل:
+
+```text
+DURABLE_RUN
+```
+
+ضع معيارًا واضحًا بينهما.
+
+# 18. Persistent Smart Bubble
+
+لا تنشئها إلا عندما الهدف يحتاج:
+
+```text
+durable user-facing surface
+persistent entities/state
+repeated interaction
+ongoing management
+multi-step evolution
+```
+
+# 19. اختبار نفس المجال بأشكال مختلفة
+
+هذا Acceptance Test إلزامي.
+
+## Request 1
+
+> كم سعر هذه السيارة تقريبًا؟
+
+Expected:
+
+```text
+STRUCTURED_RESULT / TEXT
+```
+
+## Request 2
+
+> بع هذه السيارة.
+
+Expected:
+
+```text
+DIRECT_ACTION / DURABLE_RUN
+```
+
+## Request 3
+
+> راقب أسعار السيارات المشابهة وأخبرني إذا نزلت.
+
+Expected:
+
+```text
+DURABLE_RUN
+```
+
+## Request 4
+
+> أنشئ لي سوقًا للسيارات.
+
+Expected:
+
+```text
+PERSISTENT_SMART_BUBBLE
+```
+
+إذا الأربعة ينتجون نفس النوع:
+
+FAIL.
+
+# 20. اختبار منصة مقابل فعل مباشر
+
+اختبر:
+
+```text
+"أعلن عن هذه الخدمة."
+→ ACTION / RUN
+```
+
+مقابل:
+
+```text
+"أنشئ لي نظامًا أدير منه حملات إعلانية لعملائي."
+→ PERSISTENT SMART BUBBLE
+```
+
+# 21. لا تضف Domain-specific output rules
+
+ممنوع:
+
+```text
+if cars → run
+if jobs → bubble
+```
+
+القرار يعتمد على:
+
+```text
+goal
+durability
+interaction pattern
+side effects
+number of actors
+statefulness
+lifecycle
+```
+
+# 22. Downgrade behavior
+
+إذا النموذج اقترح:
+
+```text
+DIRECT_ACTION
+```
+
+لكن لا توجد Capability موثوقة:
+
+لا تنفذ.
+
+أعد حالة مثل:
+
+```text
+output intent: DIRECT_ACTION
+execution: BLOCKED
+reason: CAPABILITY_UNAVAILABLE
+```
+
+أو downgrade إلى plan/structured response إذا كان ذلك صادقًا ومفيدًا.
+
+لا تحول الطلب إلى Bubble فقط لتجنب الحجب.
+
+# 23. Missing model behavior
+
+احتفظ بالسلوك الصحيح الحالي:
+
+```text
+message persisted
+model unavailable
+503
+no assistant success message
+no Task
+no Run pretending success
+no World
+```
+
+# 24. Invalid model output
+
+احتفظ أيضًا:
+
+```text
+invalid envelope
+→ 502 / structured failure
+```
+
+ولا تستخدم fallback مخفيًا يصنع نتيجة مزيفة.
+
+# 25. Main Chat integration
+
+بعد توسعة Output Router:
+
+حدث Web وMobile لعرض الأنواع الجديدة بصدق.
+
+لكن لا تنفذ Business Logic في Client.
+
+Client يعرض Server Runtime Truth فقط.
+
+# 26. عرض DIRECT_ACTION المقترحة
+
+قبل التنفيذ الفعلي قد يعرض العميل مثلًا:
+
+```text
+جاسم فهم أنك تريد تنفيذ هذه العملية.
+```
+
+مع الحالة الحقيقية:
+
+```text
+READY
+BLOCKED
+AWAITING_INPUT
+```
+
+حسب Runtime.
+
+# 27. عرض DURABLE_RUN
+
+اعرض للمستخدم حالة Run بطريقة عامة مثل:
+
+```text
+قيد الإعداد
+بانتظار معلومات
+بانتظار موافقتك
+مجدولة
+قيد التنفيذ
+بانتظار حدث
+متوقفة
+مكتملة
+```
+
+ولا تجعل UI تعتمد على Domain.
+
+# 28. لا تبنِ DAG الكامل في نفس Commit إذا كان سيخلط المرحلة
+
+أولًا أثبت:
+
+```text
+semantic output selection
+Run contract
+Run persistence
+Run ownership
+Run events
+Run idempotency
+restart durability
+```
+
+ثم انتقل إلى Durable DAG Workers ضمن المرحلة التالية من المهمة #14.
+
+# 29. Regression Suite
+
+بعد التنفيذ شغّل كل Baseline السابق:
+
+```text
+API typecheck
+Web typecheck
+Mobile typecheck
+build
+runtime smoke
+conversation persistence
+message ordering
+conversation isolation
+bubble isolation
+world isolation
+bubble without world
+bubble with world
+Output Router text
+no automatic Task creation
+```
+
+ثم أضف Tests جديدة لـ:
+
+```text
+semantic output forms
+Run creation
+Run without Bubble
+Run optionally linked to Bubble
+Run ownership
+Run idempotency
+Run restart durability
+no external side effect during classification
+```
+
+# 30. اختبار مهم جدًا — البيع دون منصة
+
+المستخدم:
+
+> أريد بيع جهاز اللابتوب الذي عندي.
+
+Expected:
+
+```text
+Output:
+DIRECT_ACTION or DURABLE_RUN
+```
+
+وليس:
+
+```text
+PERSISTENT_SMART_BUBBLE
+```
+
+إلا إذا طلب المستخدم إدارة عملية بيع مستمرة كمنصة.
+
+# 31. اختبار مهم جدًا — الإعلان دون منصة
+
+> أعلن عن خدمتي.
+
+Expected:
+
+```text
+ACTION / RUN
+```
+
+ولا تنشئ Ads Platform.
+
+# 32. اختبار مهم جدًا — التوظيف دون منصة
+
+> ابحث لي عن محاسب.
+
+Expected:
+
+```text
+WORKFLOW / RUN
+```
+
+ولا تنشئ Hiring Platform.
+
+# 33. اختبار Building Platform كطلب صريح
+
+> أنشئ لي نظامًا دائمًا لإدارة التوظيف والمرشحين والمقابلات.
+
+Expected:
+
+```text
+PERSISTENT_SMART_BUBBLE
+```
+
+# 34. Generality invariant
+
+ثبت اختبارًا يقول:
+
+```text
+same domain + different intent
+→ different runtime form when appropriate
+```
+
+هذا أهم من اختبار Domain names.
+
+# 35. التقرير المرحلي
+
+حدّث تقرير المهمة #14 وأضف:
+
+```text
+SEMANTIC OUTPUT ROUTER:
+<REAL/PARTIAL>
+
+DURABLE RUN MODEL:
+<REAL/PARTIAL>
+
+RUN WITHOUT BUBBLE:
+<PASS/FAIL>
+
+RUN OWNERSHIP:
+<PASS/FAIL>
+
+RUN IDEMPOTENCY:
+<PASS/FAIL>
+
+RUN RESTART DURABILITY:
+<PASS/FAIL>
+
+EXTERNAL SIDE EFFECTS DURING CLASSIFICATION:
+MUST BE ZERO
+```
+
+# 36. بعد نجاح هذه المرحلة
+
+انتقل داخل نفس المهمة #14 إلى:
+
+```text
+General Reference Resolution
+↓
+Conversational Direct Actions
+↓
+Bubble Mutation
+↓
+Bubble Evolution
+↓
+Durable DAG Workers
+↓
+Independent Verifier
+↓
+Scheduler / Event Resume
+```
+
+ولا تنشئ مهمة جديدة إذا كانت المهمة #14 هي برنامج التنفيذ النهائي المعتمد.
+
+# FINAL RULE
+
+ثبت معماريًا:
+
+> Jasim decides what kind of runtime the user's goal needs before deciding how to execute it.
+
+> A direct action does not require a platform.
+
+> A durable run does not require a Bubble.
+
+> A Smart Bubble does not require a World unless durable world state is actually needed.
+
+> The model proposes. The Runtime validates. Only trusted execution layers may perform side effects.
+
+ابدأ الآن تنفيذ هذه المرحلة داخل المهمة #14، اختبرها، أصلح أي Regression، ثم انتقل تلقائيًا للمرحلة التالية من برنامج الإكمال.

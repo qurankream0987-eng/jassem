@@ -1,0 +1,1438 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM SMART GENERATIVE EXPERIENCE
+
+# TASK 6B — ACTIVE OBJECTS RAIL + WEB LIVING OBJECTS EXPERIENCE
+
+MODE INTENT:
+Focused Web presentation implementation only.
+
+Task 1 = CLOSED / PASS
+Task 2 = CLOSED / PASS
+Task 3 = CLOSED / PASS
+Task 4A = CLOSED / PASS
+Task 4B = CLOSED / PASS
+Task 5A = CLOSED / PASS
+Task 5B = CLOSED / PASS
+Task 6A = CLOSED / PASS
+
+Accepted Task 6A result:
+
+* LivingObjectProjection exists
+* projection is owner-scoped
+* projection is bounded
+* projection reconstructs from canonical records
+* eligible ongoing Tasks/Runs are supported
+* persistent Worlds are supported
+* Persistent Smart Bubbles are supported
+* simple text does NOT create Living Object
+* search-only does NOT create Living Object
+* comparison-only does NOT create Living Object
+* document summary alone does NOT create Living Object
+* related Task + Run can be merged into one user-facing Living Object
+* domain-specific Living Object models added = 0
+* new tables = 0
+* migrations = 0
+* READY_FOR_SMART_UI_TASK_6B = YES
+
+Canonical report:
+
+.local/tasks/smart-ui-task-6a-report.md
+
+DO NOT redo Living Object eligibility.
+
+DO NOT create new persistence.
+
+DO NOT redesign Runtime.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. GOAL
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Build the WEB presentation for ongoing Living Objects as a generic:
+
+ACTIVE OBJECTS RAIL
+
+The Rail should give the user a compact view of work that continues beyond the current response.
+
+Examples:
+
+◉ مراقبة سعر اللابتوب
+
+◉ طلب الآيفون
+
+◉ بيع السيارة
+
+◉ شركة النقل
+
+◉ حجز الموعد
+
+But these examples must all render through the SAME generic architecture.
+
+The Rail is NOT:
+
+a dashboard
+
+a domain menu
+
+a second navigation system
+
+a Bubble desktop full of floating windows
+
+a list of every historical task
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. PERMANENT UI MODEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Preserve the three concepts:
+
+# ADAPTIVE SURFACE
+
+what the user needs NOW
+
+# ACTIVE GENERATIVE WORKSPACE
+
+the visual context of the current active goal
+
+# LIVING OBJECT
+
+what continues AFTER now
+
+# ACTIVE OBJECTS RAIL
+
+the compact visual index of Living Objects
+
+The Rail should make durable work easy to return to without competing with the main Conversation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. TARGET DESKTOP COMPOSITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Conceptually:
+
+┌─────────────────────────────────────────────┐
+│ JASIM                                       │
+├──────────────┬────────────────────┬─────────┤
+│              │                    │         │
+│ Conversation │ Active Workspace   │ Active  │
+│              │                    │ Objects │
+│              │                    │ Rail    │
+│              │                    │         │
+├──────────────┴────────────────────┴─────────┤
+│ Main conversation input                     │
+└─────────────────────────────────────────────┘
+
+But DO NOT mechanically force three equal columns.
+
+Rail should be lightweight.
+
+Possible forms:
+
+thin vertical rail
+compact side strip
+collapsible tray
+small floating edge rail
+
+Use current JASIM layout and Soap Glass system.
+
+Do not turn it into a full sidebar of cards.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. RAIL APPEARS ONLY WHEN USEFUL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If user has zero Living Objects:
+
+do not show an empty permanent Rail.
+
+Conversation remains clean.
+
+If user has one or more:
+
+show compact active Rail.
+
+If all objects are completed/archived and none need attention:
+
+Rail may collapse/minimize according to chosen generic UX.
+
+Do not create visual clutter.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. USE REAL LIVING OBJECT PROJECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use the real Task 6A projection/endpoint.
+
+Do NOT create local mock objects.
+
+Do NOT hardcode:
+
+monitor
+order
+World
+delivery
+
+The Rail must consume real:
+
+LivingObjectProjection[]
+
+or existing equivalent.
+
+No fake statuses.
+
+No fake progress.
+
+No fake attention.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. ONE GENERIC RAIL ITEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Build/reuse ONE generic component equivalent to:
+
+LivingObjectRailItem
+
+It may display:
+
+icon/presentation glyph
+
+title
+
+short summary
+
+status
+
+attention
+
+progress when real
+
+updated state
+
+small primary affordance
+
+Do not create:
+
+MonitorRailItem
+OrderRailItem
+WorldRailItem
+CarSaleRailItem
+DeliveryRailItem
+
+The semantic type may influence icon/presentation hint only.
+
+No business logic by type.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. LIVING OBJECT VISUAL FORM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A Living Object may render compactly as:
+
+Orb
+
+Capsule
+
+Mini-card
+
+Rail item
+
+Use the current Soap Glass / Pop language.
+
+But do NOT make every item a large floating Bubble.
+
+Preferred:
+
+compact
+recognizable
+low visual noise
+easy to scan
+
+Use Orb/Bubble styling as brand language, not architecture.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. ATTENTION MUST DRIVE VISUAL EMPHASIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use canonical attention from Task 6A.
+
+Examples:
+
+NONE
+→ quiet
+
+INFO
+→ subtle indicator
+
+ACTION_REQUIRED
+→ stronger indicator
+
+APPROVAL_REQUIRED
+→ clear attention state
+
+BLOCKED
+→ blocked visual state
+
+FAILED
+→ clear failure state
+
+COMPLETED
+→ subdued completion
+
+Do not base urgency on domain.
+
+Do not use constant bright animations for normal active objects.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. ATTENTION PRIORITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Rail ordering should respect Task 6A generic ordering.
+
+High-attention objects should appear before quiet monitoring objects.
+
+Example conceptual order:
+
+APPROVAL_REQUIRED
+ACTION_REQUIRED
+BLOCKED
+FAILED
+ACTIVE/RUNNING
+MONITORING
+RECENTLY_COMPLETED
+
+Do not invent new ordering client-side if server projection already provides deterministic order.
+
+Prefer server order.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. CLICK / OPEN BEHAVIOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Clicking/opening a Living Object should NOT create a new app.
+
+Preferred behavior:
+
+Living Object
+↓
+resolve underlying canonical reference
+↓
+focus/open relevant context
+↓
+Active Generative Workspace displays the current appropriate presentation
+
+Conversation remains available.
+
+Reuse existing safe navigation/reference semantics.
+
+Do NOT create domain pages.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. OPEN EXISTING WORKSPACE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+Rail:
+◉ طلب الآيفون
+
+User opens it.
+
+Expected:
+
+same JASIM conversation experience
+
+*
+
+Active Workspace shows current order/status context
+
+Not:
+
+navigate to /orders/app/phone/123
+
+unless an existing generic route architecture already requires a neutral detail route.
+
+Prefer returning to the canonical conversation/context.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. WORLD LIVING OBJECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+◉ شركة نقل الموظفين
+
+Open:
+
+Active Workspace displays generic World summary/workspace.
+
+Conversation remains usable.
+
+User can say:
+
+"غير الاشتراك إلى 30."
+
+Do NOT create:
+
+TransportApp
+TransportDashboard
+TransportRailItem
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. MONITOR LIVING OBJECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+◉ مراقبة اللابتوب
+
+Possible compact fields:
+
+title
+target summary
+status
+last update
+
+Do not show current price unless canonical projection contains it.
+
+Do not poll/fetch separately from component if server projection already provides relevant state.
+
+No Monitor-specific business logic.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. ORDER / PROCESS LIVING OBJECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+◉ طلب الآيفون
+جارٍ التجهيز
+
+Later:
+
+في الطريق
+
+Later:
+
+تم التسليم
+
+All status must derive from canonical projection.
+
+Do not allow component to locally advance lifecycle.
+
+No:
+
+setStatus("delivered")
+
+from UI presentation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. APPROVAL ATTENTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When an existing Living Object enters:
+
+APPROVAL_REQUIRED
+
+Rail should clearly surface it.
+
+Opening it should focus the relevant Approval presentation in Workspace.
+
+Do NOT create a second approval object.
+
+Approval is attention on the existing process.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. BLOCKED / FAILED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Living Objects must represent truthful negative states.
+
+Examples:
+
+"مزود البحث غير متصل"
+
+"تعذر التحقق"
+
+"يحتاج إجراء منك"
+
+Do not hide blocked objects just because they are visually inconvenient.
+
+Do not mark them completed.
+
+Rail should help user notice issues.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. COMPLETED OBJECTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Completed objects should not dominate Rail.
+
+Use Task 6A lifecycle classification.
+
+Possible:
+
+briefly show as recent completed
+
+then place outside primary active view
+
+Do not delete canonical history.
+
+Do not invent archive state if not canonical.
+
+Task 6B presentation may simply hide older completed items according to bounded projection.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. BOUNDED DISPLAY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not render hundreds of objects.
+
+Use server projection's bounded collection.
+
+If more objects exist than Rail can display:
+
+use a generic:
+
+"المزيد"
+
+or expanded rail view
+
+Do NOT fetch/render full history by default.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. COLLAPSE / EXPAND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Rail itself may collapse.
+
+Allowed local presentation state:
+
+collapsed
+
+expanded
+
+hovered
+
+focused
+
+Do not alter canonical Living Objects.
+
+Collapsing Rail:
+
+must not pause monitor
+
+cancel order
+
+close World
+
+stop Run
+
+change attention
+
+It is purely visual.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. RELOAD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Reload Web.
+
+Expected:
+
+Rail reconstructs from real Living Object projection.
+
+No LocalStorage-only proof.
+
+No client-generated identities.
+
+Existing canonical objects produce same semantic Living Objects.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. CONVERSATION SWITCH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Clarify intended scope based on Task 6A projection.
+
+If Living Objects are user-global:
+
+Rail may remain across conversations.
+
+If scoped to current context:
+
+bind appropriately.
+
+Use actual Task 6A contract.
+
+Do not guess.
+
+Whichever current architecture supports, document it clearly.
+
+Most important:
+
+never leak other user's objects.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. ACTIVE WORKSPACE + RAIL RELATIONSHIP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Rail selects/returns to durable context.
+
+Workspace displays current active context.
+
+Do not duplicate full object details in Rail.
+
+Example:
+
+Rail:
+◉ بيع السيارة
+3 عروض
+
+Workspace after open:
+rich negotiation / proposals / status
+
+This separation is intentional.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. MORPHING INTEGRATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Opening a Living Object may cause Workspace presentation to change.
+
+Reuse Tasks 5A/5B Morphing.
+
+Do NOT create:
+
+LivingObjectMorphEngine
+
+Existing Workspace Morphing remains the only morph mechanism.
+
+Example:
+
+Current:
+Search Results
+
+Open:
+Order Living Object
+
+Projection changes/focus changes appropriately.
+
+Workspace morphs to:
+STATUS
+
+using existing mechanism.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. SMART BUBBLE COMPATIBILITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Persistent Smart Bubbles may qualify as Living Objects through Task 6A.
+
+Do NOT render them twice:
+
+once as Smart Bubble
+
+and once as unrelated duplicate Rail item
+
+unless the product intentionally shows:
+
+same canonical object
+→ compact Rail representation
+→ optional expanded Bubble representation
+
+Both must share same underlying identity.
+
+Avoid duplicate user-facing process identity.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. ONE OBJECT, MULTIPLE PRESENTATION FORMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Permanent rule:
+
+Living Object = semantic projection.
+
+It may appear as:
+
+compact Rail item
+
+Orb
+
+expanded Bubble
+
+Workspace context
+
+But these are multiple projections of ONE underlying canonical process.
+
+Not separate objects.
+
+This should be visible in component keys/reference handling.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. NO DRAG REQUIREMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Desktop may support nice Orb/window interactions if already available.
+
+But core Living Object UX must not depend on:
+
+dragging
+
+free placement
+
+manual window arrangement
+
+Rail must work through normal click/keyboard interaction.
+
+This prepares for Mobile later.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. KEYBOARD ACCESSIBILITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Rail must support:
+
+tab navigation
+
+focus indicators
+
+Enter/Space open behavior where appropriate
+
+accessible names
+
+status/attention announcements where practical
+
+Do not encode object meaning purely by color.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. RTL / LTR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Rail must work in Arabic RTL and English/LTR.
+
+Check:
+
+ordering
+
+text alignment
+
+status badges
+
+numbers
+
+money
+
+mixed product names
+
+Rail edge positioning
+
+Do not hardcode left/right assumptions unnecessarily.
+
+Use logical CSS properties where practical.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. RESPONSIVE WEB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Large Desktop:
+
+vertical side Rail may be appropriate.
+
+Laptop:
+
+compact Rail.
+
+Narrow Web:
+
+Rail may become:
+
+horizontal strip
+
+drawer
+
+compact tray
+
+Do NOT build native Mobile version.
+
+Task 8 handles Mobile.
+
+But narrow Web must remain usable.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. VISUAL NOISE CONTROL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Avoid:
+
+all objects glowing
+
+continuous pulsing
+
+large bouncing Orbs
+
+multiple overlapping windows
+
+constant animation
+
+Use motion only for:
+
+new attention
+
+new object appearing
+
+status transition
+
+open/close
+
+Keep normal monitoring objects quiet.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. NO FINAL BRANDING REDESIGN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Reuse current visual system.
+
+Do not spend this task rebuilding:
+
+colors
+
+typography system
+
+home screen
+
+navigation
+
+backgrounds
+
+marketing visuals
+
+Task 6B only creates a coherent Rail using current Soap Glass language.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. CLIENT STATE BOUNDARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Allowed:
+
+rail collapsed
+
+rail expanded
+
+focused object
+
+temporary hover
+
+temporary open animation
+
+Forbidden:
+
+Living Object status truth
+
+attention truth
+
+progress truth
+
+canonical object creation
+
+order lifecycle
+
+World lifecycle
+
+monitor state
+
+Target:
+
+CLIENT_CANONICAL_TRUTH_ADDED = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use existing safe action entry points for:
+
+open
+
+resume
+
+review
+
+if already available.
+
+Do NOT implement final Trusted Action Dispatcher.
+
+Task 7 handles action unification.
+
+If Rail object exposes unsupported actions:
+
+do not invent them.
+
+Only render validated actions from Task 6A projection.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. STALE OBJECT PROTECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If Living Object projection updates while Rail is open:
+
+current projection wins.
+
+Examples:
+
+object becomes COMPLETED
+
+attention clears
+
+approval becomes stale
+
+object is no longer eligible
+
+Rail must update/remove/change visual state.
+
+Do not preserve stale local copy.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. OBJECT DISAPPEARS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If object is no longer returned by authorized/bounded Living Object projection:
+
+remove it from active Rail.
+
+Do not retain because React had it previously.
+
+If currently opened Workspace refers to it:
+
+Workspace runtime/projection truth determines what happens next.
+
+Do not create fake local fallback object.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. FOCUSED VISUAL SCENARIO — MONITOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Underlying canonical monitor exists.
+
+Rail:
+
+◉ مراقبة السعر
+هادئ / نشط
+
+Open:
+
+Workspace shows relevant status/details.
+
+No duplicate process.
+
+Reload:
+
+same Living Object reappears.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. FOCUSED VISUAL SCENARIO — ORDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Active Order O1.
+
+Rail:
+
+◉ طلب الآيفون
+جارٍ التجهيز
+
+Open:
+Workspace STATUS / TIMELINE
+
+Canonical update:
+ready for delivery
+
+Rail updates.
+
+Workspace may morph via Tasks 5A/5B.
+
+Canonical completion:
+Rail moves/removes according to bounded lifecycle policy.
+
+No local lifecycle mutation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. FOCUSED VISUAL SCENARIO — WORLD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Persistent World W1.
+
+Rail:
+
+◉ شركة نقل الموظفين
+
+Open:
+generic World Workspace.
+
+User changes commercial terms through Conversation.
+
+Projection refreshes same World.
+
+Rail remains same underlying reference.
+
+No new object.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. FOCUSED ATTENTION SCENARIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Living Object initially:
+
+attention = NONE
+
+Later canonical state:
+
+WAITING_APPROVAL
+
+Projection:
+APPROVAL_REQUIRED
+
+Rail visually emphasizes object.
+
+Open:
+Approval Workspace.
+
+After resolution:
+attention updates appropriately.
+
+Do not create separate approval Rail item.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. NEGATIVE SCENARIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Conversation produces:
+
+simple text
+
+search results
+
+comparison
+
+document summary
+
+Expected:
+
+No new Rail object unless Task 6A returns eligible Living Object.
+
+Task 6B must NEVER infer eligibility from visible rich UI.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. DEDUPLICATION VISUAL PROOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use the Task + Run merged case from Task 6A.
+
+Expected:
+
+ONE Rail item.
+
+Not:
+
+Task item
++
+Run item
+
+Both may exist canonically.
+
+User sees one meaningful process.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. DOMAIN GENERALITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prove same component handles at least:
+
+monitor-like object
+
+order-like object
+
+World
+
+generic durable Run
+
+without domain-specific component code.
+
+Target:
+
+DOMAIN_SPECIFIC_RAIL_COMPONENTS_ADDED = 0
+
+DOMAIN_SPECIFIC_RAIL_BRANCHES_ADDED = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. FOCUSED TESTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add focused tests proving at minimum:
+
+1. no Living Objects → Rail hidden/minimal.
+
+2. one Living Object → one generic Rail item.
+
+3. multiple objects respect projection ordering.
+
+4. bounded result does not render unlimited history.
+
+5. Task+Run merged object renders once.
+
+6. monitor object uses generic component.
+
+7. order object uses same generic component.
+
+8. World uses same generic component.
+
+9. attention changes visual emphasis.
+
+10. approval-required does not create second object.
+
+11. progress absent when unknown.
+
+12. object open focuses/opens appropriate existing context.
+
+13. Workspace uses existing Morphing mechanism.
+
+14. reload reconstructs Rail.
+
+15. stale object update replaces old projection.
+
+16. removed object disappears.
+
+17. collapse does not mutate canonical state.
+
+18. conversation remains usable.
+
+19. keyboard access works.
+
+20. RTL structure works.
+
+21. narrow Web layout remains usable.
+
+22. no domain-specific Rail component.
+
+23. no client canonical truth.
+
+24. simple search does not create Rail object.
+
+25. comparison does not create Rail object.
+
+26. Smart Bubble identity does not create accidental duplicate process.
+
+27. Task 6A regression.
+
+28. Task 5B regression.
+
+29. Active Workspace regression.
+
+30. plain chat regression.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. VISUAL SMOKE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run Web and inspect:
+
+A. zero active objects
+
+B. one monitor
+
+C. active order
+
+D. persistent World
+
+E. approval-required object
+
+F. completed/recent object if projection provides it
+
+Check:
+
+Conversation remains dominant
+
+Workspace remains coherent
+
+Rail is compact
+
+attention visible
+
+no giant Bubble clutter
+
+no overlap
+
+no white screen
+
+no duplicate user process
+
+large Desktop
+
+laptop/narrow Web
+
+RTL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. VERIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run:
+
+Task 6B focused tests
+
+Task 6A regression
+
+Task 5B regression
+
+affected Smart UI regressions
+
+Web TypeScript
+
+Server TypeScript only if shared response/types changed
+
+Web production build
+
+git diff --check
+
+Web visual smoke
+
+Do NOT run:
+
+all historical Blocks
+
+Mobile suite
+
+Final Production Closure
+
+deployment
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. CHANGE BOUNDARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expected:
+
+ActiveObjectsRail
+
+LivingObjectRailItem
+
+Living Object projection query hook/wiring
+
+small styling/layout integration
+
+possibly small Workspace focus/open integration
+
+focused tests
+
+Do NOT add:
+
+database
+
+migration
+
+SDK
+
+new runtime state engine
+
+Expected:
+
+NEW_DATABASE_TABLES = 0
+
+NEW_MIGRATIONS = 0
+
+NEW_EXTERNAL_SDKS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+47. REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create exactly:
+
+.local/tasks/smart-ui-task-6b-report.md
+
+Sections:
+
+CAUSE
+
+RAIL_ARCHITECTURE
+
+LIVING_OBJECT_QUERY_WIRING
+
+GENERIC_RAIL_ITEM
+
+VISUAL_HIERARCHY
+
+ATTENTION_PRESENTATION
+
+ORDERING
+
+BOUNDED_DISPLAY
+
+OPEN_WORKSPACE_BEHAVIOR
+
+MORPHING_INTEGRATION
+
+SMART_BUBBLE_COMPATIBILITY
+
+DEDUPLICATION
+
+COLLAPSE_EXPAND
+
+RELOAD
+
+STALE_OBJECT_BEHAVIOR
+
+RTL_LTR
+
+RESPONSIVE_WEB
+
+ACCESSIBILITY
+
+CLIENT_STATE_BOUNDARY
+
+DOMAIN_GENERICITY
+
+FILES_CHANGED
+
+TESTS
+
+VISUAL_SMOKE
+
+Final counters:
+
+SMART_UI_TASK_6B =
+PASS / PARTIAL / FAIL
+
+ACTIVE_OBJECTS_RAIL =
+PASS / FAIL
+
+LIVING_OBJECT_WEB_PRESENTATION =
+PASS / FAIL
+
+RAIL_HIDDEN_WHEN_EMPTY =
+YES / NO
+
+GENERIC_RAIL_ITEM =
+PASS / FAIL
+
+ATTENTION_PRESENTATION =
+PASS / FAIL
+
+BOUNDED_DISPLAY =
+PASS / FAIL
+
+DEDUPLICATED_USER_FACING_PROCESS =
+PASS / FAIL
+
+TASK_RUN_MERGED_RAIL_ITEMS =
+1 / >1
+
+OPEN_TO_ACTIVE_WORKSPACE =
+PASS / FAIL
+
+USES_EXISTING_UI_MORPHING =
+YES / NO
+
+CONVERSATION_REMAINS_PRIMARY =
+YES / NO
+
+RELOAD_RECONSTRUCTION =
+PASS / FAIL
+
+STALE_OBJECT_REMOVAL =
+PASS / FAIL
+
+RTL =
+PASS / FAIL
+
+NARROW_WEB =
+PASS / FAIL
+
+KEYBOARD_ACCESSIBILITY =
+PASS / FAIL
+
+DOMAIN_SPECIFIC_RAIL_COMPONENTS_ADDED = <number>
+
+DOMAIN_SPECIFIC_RAIL_BRANCHES_ADDED = <number>
+
+CLIENT_CANONICAL_TRUTH_ADDED = <number>
+
+FAKE_STATUS_COUNT = <number>
+
+FAKE_PROGRESS_COUNT = <number>
+
+NEW_DATABASE_TABLES =
+0
+
+NEW_MIGRATIONS =
+0
+
+NEW_EXTERNAL_SDKS =
+0
+
+TASK_6A_REGRESSION =
+PASS / FAIL
+
+TASK_5B_REGRESSION =
+PASS / FAIL
+
+ACTIVE_WORKSPACE_REGRESSION =
+PASS / FAIL
+
+SMART_BUBBLE_REGRESSION =
+PASS / FAIL
+
+PLAIN_CHAT_REGRESSION =
+PASS / FAIL
+
+WEB_TYPESCRIPT =
+PASS / FAIL
+
+WEB_PRODUCTION_BUILD =
+PASS / FAIL
+
+WEB_VISUAL_SMOKE =
+PASS / FAIL
+
+BLOCKS_0_TO_3_1_REMAIN_CLOSED =
+YES / NO
+
+READY_FOR_SMART_UI_TASK_7 =
+YES / NO
+
+If NO:
+list only exact blocker.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+48. STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Task 6B:
+
+STOP.
+
+DO NOT implement Trusted Action Dispatcher.
+
+DO NOT redesign Mobile.
+
+DO NOT start Task 7.
+
+DO NOT start Final Production Closure.
+
+Return only:
+
+Task 6B verdict
+
+Active Objects Rail status
+
+test count
+
+visual smoke result
+
+duplicate user-facing process count
+
+domain-specific Rail count
+
+client canonical truth added
+
+READY_FOR_SMART_UI_TASK_7
+
+BEGIN TASK 6B.

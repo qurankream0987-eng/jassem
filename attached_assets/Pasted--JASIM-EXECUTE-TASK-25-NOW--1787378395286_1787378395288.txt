@@ -1,0 +1,867 @@
+# ================================================================
+# JASIM — EXECUTE TASK #25 NOW
+# PHASE 12 — MODEL INTELLIGENCE ECONOMY
+# ================================================================
+
+ابدأ الآن بتنفيذ:
+
+Task #25 — JASIM Model Intelligence Economy
+
+اعتمد توجيه Phase 12 الكامل الذي أعطيتك إياه سابقاً
+كـ AUTHORITATIVE IMPLEMENTATION SPECIFICATION لهذه المهمة.
+
+لا تختصره إلى مجرد إضافة T0/T1/T2/T3.
+
+الهدف هو إغلاق Phase 12 عملياً وبالأدلة.
+
+================================================
+1. SCOPE LOCK
+================================================
+
+نفّذ #25 فقط.
+
+لا تبدأ:
+
+#22 — RuntimeArtifact → Existing Smart Bubble
+#23 — Research → Evidence → Image Generation
+#24 — Final Production Readiness
+
+ولا تبدأ Commercial Runtime.
+
+ولا تعيد بناء:
+
+Canonical Runtime
+Smart Bubble
+World/DNA
+Run/DAG
+Trusted Executor
+Attempt Ledger
+Verifier
+Reconciliation
+Conversation Summary
+Memory
+Web Research
+Image Generation
+Artifact Storage
+
+إلا بأقل تعديل متوافق تتطلبه Phase 12.
+
+================================================
+2. IMPORTANT PRODUCT REQUIREMENT
+================================================
+
+جاسم متوقع أن يكون عالي الاستخدام.
+
+لذلك نريد:
+
+T0 = deterministic / zero LLM
+
+T1 = capable high-volume DEFAULT intelligence
+
+T2 = advanced reasoning
+
+T3 = deep generative reasoning
+
+القاعدة:
+
+USE THE CHEAPEST SUFFICIENT INTELLIGENCE.
+
+لكن:
+
+DO NOT use an intentionally weak model as T1
+just because it is cheaper.
+
+T1 must remain good enough for everyday JASIM:
+
+Arabic conversation
+Kuwaiti/Gulf Arabic
+Q&A
+writing
+translation
+summaries
+intent
+routing
+simple planning
+reference interpretation
+memory extraction
+normal research synthesis
+ordinary Bubble interaction
+
+The MAJORITY of normal JASIM usage should land on T1.
+
+T3 should be exceptional.
+
+================================================
+3. DO NOT WASTE TOKENS DURING DEVELOPMENT
+================================================
+
+Do NOT repeat repository-wide audits.
+
+Do NOT reread historical JASIM documents.
+
+Do NOT produce another architecture plan.
+
+Do NOT repeatedly dump large logs.
+
+Use:
+
+TARGETED SEARCH
+→ ACTIVE CANONICAL CODE
+→ MINIMAL EXTENSION
+→ TARGETED TEST
+→ MEASURE
+→ CONTINUE
+
+Use existing Model Gateway.
+
+SECOND MODEL GATEWAY = FORBIDDEN.
+
+Use sub-agents only for truly independent work
+and keep their number minimal.
+
+================================================
+4. FIRST IMPLEMENTATION STEP
+================================================
+
+Perform the targeted MODEL CALL GRAPH audit requested in Phase 12.
+
+Find every ACTIVE canonical model invocation and determine:
+
+- purpose
+- frequency
+- current provider/model
+- current context size
+- structured/text output
+- whether deterministic T0 is possible
+- whether another existing semantic call can provide the same information
+- target T1/T2/T3 tier
+
+Especially identify waste like:
+
+message
+→ classifier LLM
+→ router LLM
+→ intent LLM
+→ response LLM
+
+when semantic work can safely be consolidated.
+
+Do not weaken correctness merely to reduce calls.
+
+================================================
+5. BUILD THE POLICY INTO THE EXISTING GATEWAY
+================================================
+
+Implement/reuse:
+
+ModelPolicy
+ModelTaskProfile
+ModelSelectionDecision
+ModelProfile
+ModelBudget
+
+through the EXISTING model/provider gateway.
+
+Provider/model mapping must be configuration-driven.
+
+Never hard-code one provider into JASIM Core.
+
+Check CURRENT official provider documentation before final model configuration.
+
+Evaluate actual available models.
+
+Do not rely on old documentation or previous assumptions.
+
+================================================
+6. ROUTING RULE
+================================================
+
+Model selection must NOT be keyword-based.
+
+Forbidden:
+
+if message contains "منصة"
+→ T3
+
+Required:
+
+known caller purpose
++
+semantic complexity
++
+ambiguity
++
+novelty
++
+structural requirements
++
+task depth
+→ ModelPolicy
+
+Example:
+
+"ما معنى منصة SaaS؟"
+→ T1
+
+but:
+
+"أنشئ نظاماً جديداً يربط عدة أطراف بعقود وسياسات وتدفقات معقدة"
+→ may require T3
+
+even without the word "منصة".
+
+================================================
+7. MODEL POWER != EXECUTION AUTHORITY
+================================================
+
+Preserve permanently:
+
+MODEL POWER
+!=
+ACTION AUTHORITY
+
+A simple high-risk instruction may use T1 for understanding
+while Policy/Approval/Trusted Executor enforce safety.
+
+T3 receives no extra execution authority.
+
+Do not modify the trusted execution chain.
+
+================================================
+8. FALLBACK != ESCALATION
+================================================
+
+Keep these independent.
+
+PROVIDER FALLBACK:
+
+T1 Provider A unavailable
+→ T1 equivalent Provider B
+
+MODEL ESCALATION:
+
+T1 intelligence insufficient
+→ T2
+
+then if genuinely necessary:
+
+T2
+→ T3
+
+Provider failure must NOT automatically cause intelligence escalation.
+
+Persist reasons separately.
+
+================================================
+9. SIMPLE CHAT ECONOMY
+================================================
+
+This is a critical product metric.
+
+For normal chat we want approximately:
+
+one synchronous semantic/generation model call per turn.
+
+Target:
+
+SIMPLE_CHAT_MEDIAN_SYNC_MODEL_CALLS = 1
+
+Do NOT introduce:
+
+router model
++
+answer model
++
+judge model
+
+for ordinary conversation.
+
+Do not disable required intelligence just to hit the metric.
+
+Remove actual duplicate semantic calls.
+
+================================================
+10. CONTEXT ECONOMY
+================================================
+
+Do not send all JASIM state to every model.
+
+Use:
+
+Conversation Summary
++
+recent relevant turns
++
+resolved references
++
+relevant memories
++
+relevant Bubble/World state
++
+relevant active Run
++
+bounded source evidence
+
+Only.
+
+Use MINIMUM SUFFICIENT CONTEXT.
+
+Prove this with the long-conversation test defined in Phase 12.
+
+================================================
+11. SUMMARY / MEMORY ECONOMY
+================================================
+
+Conversation Summary must become incremental.
+
+Do not repeatedly summarize entire conversation history.
+
+Expected:
+
+previous summary
++
+new unsummarized turns
+→ new summary
+
+And:
+
+FULL_HISTORY_RESUMMARIZED = NO
+
+Audit memory extraction too.
+
+Do not waste a dedicated model call on every trivial message if durable memory extraction can be safely:
+
+piggybacked
+triggered selectively
+or batched.
+
+Use T1 for routine memory intelligence.
+
+================================================
+12. STRUCTURED OUTPUTS
+================================================
+
+Use strict structured outputs wherever current provider supports them for:
+
+routing
+intent
+plans
+memory candidates
+mutation intent
+ChangeSet
+WorldDefinition
+other machine-consumed results
+
+Continue server-side validation.
+
+Structured LLM output remains UNTRUSTED until validated.
+
+================================================
+13. PROMPT / CACHE ECONOMY
+================================================
+
+Keep stable prompt prefixes stable.
+
+Use prompt versioning.
+
+Use provider prompt/context caching where actually supported.
+
+Track real cache metrics when exposed.
+
+If unsupported:
+
+report UNSUPPORTED.
+
+Do not fake cache success.
+
+Do NOT build a generic semantic answer cache in Phase 12.
+
+================================================
+14. USAGE / COST TRUTH
+================================================
+
+Reuse or minimally extend canonical execution/attempt/event storage.
+
+Do not build a competing ledger if avoidable.
+
+For real model calls record enough to know:
+
+owner
+purpose
+tier
+provider
+model
+input tokens
+cached tokens if available
+output tokens
+reasoning tokens if available
+latency
+fallback
+escalation
+estimated cost
+actual provider cost only if genuinely supplied
+prompt version
+error category
+timestamps
+
+Records must survive restart.
+
+Never store secrets.
+
+Do not hard-code provider pricing in JASIM Core.
+
+================================================
+15. MODEL BUDGETS
+================================================
+
+Implement internal model budgets:
+
+model calls
+input tokens
+output tokens
+reasoning tokens where applicable
+escalation count
+estimated cost
+quality floor
+
+Do NOT build customer subscription quotas yet.
+
+If task genuinely requires a stronger tier but policy/budget forbids it:
+
+return truthful controlled status.
+
+Do NOT silently give a knowingly inadequate result.
+
+================================================
+16. EVALUATION — CRITICAL
+================================================
+
+Do not choose models from marketing descriptions alone.
+
+Build/reuse JASIM-specific evaluation data.
+
+Test:
+
+Arabic
+Kuwaiti/Gulf Arabic
+English
+mixed technical Arabic/English
+normal chat
+writing
+translation
+summaries
+routing
+references
+simple plans
+complex plans
+research synthesis
+Bubble mutation
+policy reasoning
+World generation
+novel business systems
+cross-capability reasoning
+ambiguous prompts
+recovery/replanning
+adversarial prompts
+
+Use a representative evaluation set.
+
+Do not waste provider money merely to inflate test count.
+
+================================================
+17. ECONOMIC BASELINE
+================================================
+
+Compare:
+
+ALL_T3_BASELINE
+
+against:
+
+ROUTED_MODEL_POLICY
+
+for model-relevant representative tasks.
+
+Measure:
+
+quality
+tokens
+cached tokens
+reasoning tokens
+latency
+estimated cost
+repairs
+fallbacks
+escalations
+tier distribution
+
+Target approximately:
+
+ROUTED QUALITY >= 95% of ALL_T3 aggregate quality
+
+while materially reducing cost.
+
+Do not manipulate routing to manufacture an arbitrary saving percentage.
+
+================================================
+18. HARD PROOFS
+================================================
+
+Run/create the proofs from the Phase 12 specification including:
+
+test:jasim-model-policy
+test:jasim-model-escalation
+test:jasim-model-fallback
+test:jasim-context-economy
+test:jasim-model-usage-ledger
+test:jasim-model-economy
+
+and the budget/simple-chat proofs or equivalent canonical tests.
+
+Must prove:
+
+T0_MODEL_CALLS = 0
+
+T1 handles normal usage
+
+T2 handles justified advanced reasoning
+
+T3 handles genuine deep-generative tasks
+
+NO_KEYWORD_TIER_CHEATING
+
+bounded escalation
+
+provider fallback separate from escalation
+
+context minimization
+
+incremental summary
+
+usage durability after restart
+
+quality floor
+
+simple-chat economy
+
+================================================
+19. REGRESSION
+================================================
+
+After implementation rerun:
+
+Phase 7 Generalization
+
+Phase 11:
+- web research
+- image generation
+- cross-capability
+- security
+- restart
+
+and relevant:
+
+Trusted Executor
+Attempt Ledger
+Independent Verifier
+Reconciliation
+cross-owner isolation
+Conversation Summary
+Bubble mutation
+Production Operations
+
+Then:
+
+server typecheck
+web typecheck
+mobile typecheck
+Web production build
+
+Phase 12 must not purchase lower AI cost
+by damaging JASIM's existing architecture.
+
+================================================
+20. HARD EXIT GATE
+================================================
+
+Do NOT call Task #25 or Phase 12 complete unless:
+
+MODEL_POLICY = PASS
+
+EXISTING_MODEL_GATEWAY_REUSED = YES
+
+SECOND_MODEL_RUNTIME_CREATED = NO
+
+T0 = PASS
+T0_MODEL_CALLS = 0
+
+T1 = PASS
+T2 = PASS
+T3 = PASS
+
+NO_KEYWORD_TIER_CHEATING = PASS
+
+MODEL_ESCALATION = PASS
+ESCALATION_BOUNDED = PASS
+
+PROVIDER_FALLBACK = PASS
+FALLBACK_ESCALATION_SEPARATION = PASS
+
+CONTEXT_MINIMIZATION = PASS
+
+INCREMENTAL_SUMMARY = PASS
+
+STRUCTURED_OUTPUT_POLICY = PASS
+
+MODEL_USAGE_LEDGER = PASS
+USAGE_RESTART_DURABILITY = PASS
+
+MODEL_BUDGET = PASS
+QUALITY_FLOOR = PASS
+
+PHASE_7_GENERALIZATION = PASS
+
+PHASE_11_REGRESSION = PASS
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+TRUSTED_EXECUTOR_BYPASS = 0
+
+FAKE_SUCCESS = 0
+
+================================================
+21. FINAL REPORT
+================================================
+
+When finished return a concise engineering report.
+
+Use:
+
+PHASE_12:
+PASS / PARTIAL / FAIL
+
+TASK_25:
+PASS / PARTIAL / FAIL
+
+
+MODEL_POLICY:
+PASS / FAIL
+
+MODEL_GATEWAY_REUSED:
+YES / NO
+
+SECOND_MODEL_RUNTIME_CREATED:
+NO expected
+
+
+T0:
+PASS / FAIL
+T0_MODEL_CALLS:
+<number>
+
+
+T1:
+PASS / FAIL
+T1_PROVIDER:
+<provider>
+T1_MODEL:
+<model>
+
+
+T2:
+PASS / FAIL
+T2_PROVIDER:
+<provider>
+T2_MODEL:
+<model>
+
+
+T3:
+PASS / FAIL
+T3_PROVIDER:
+<provider>
+T3_MODEL:
+<model>
+
+
+SIMPLE_CHAT_MEDIAN_SYNC_MODEL_CALLS:
+<number>
+
+SIMPLE_CHAT_P95_SYNC_MODEL_CALLS:
+<number>
+
+NORMAL_CHAT_T3_RATE:
+<percent>
+
+
+MODEL_ESCALATION:
+PASS / FAIL
+
+ESCALATION_RATE:
+<percent>
+
+
+PROVIDER_FALLBACK:
+PASS / FAIL
+
+FALLBACK_RATE:
+<percent>
+
+FALLBACK_ESCALATION_SEPARATION:
+PASS / FAIL
+
+
+CONTEXT_MINIMIZATION:
+PASS / FAIL
+
+CONTEXT_REDUCTION_PERCENT:
+<percent>
+
+
+INCREMENTAL_SUMMARY:
+PASS / FAIL
+
+
+PROMPT_CACHE:
+PASS / PARTIAL / UNSUPPORTED
+
+CACHE_HIT_RATE:
+<percent / unsupported>
+
+
+STRUCTURED_OUTPUTS:
+PASS / FAIL
+
+
+MODEL_USAGE_LEDGER:
+PASS / FAIL
+
+USAGE_RESTART_DURABILITY:
+PASS / FAIL
+
+
+MODEL_BUDGET:
+PASS / FAIL
+
+QUALITY_FLOOR:
+PASS / FAIL
+
+
+ALL_T3_QUALITY:
+<number>
+
+ROUTED_QUALITY:
+<number>
+
+QUALITY_RETENTION_PERCENT:
+<percent>
+
+
+ALL_T3_ESTIMATED_COST:
+<number>
+
+ROUTED_ESTIMATED_COST:
+<number>
+
+COST_REDUCTION_PERCENT:
+<percent>
+
+
+T0_SHARE:
+<percent>
+
+T1_SHARE:
+<percent>
+
+T2_SHARE:
+<percent>
+
+T3_SHARE:
+<percent>
+
+
+PHASE_7_GENERALIZATION:
+PASS / FAIL
+
+PHASE_11_REGRESSION:
+PASS / FAIL
+
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS:
+0 expected
+
+FAKE_SUCCESS:
+0 expected
+
+
+SERVER_TYPECHECK:
+PASS / FAIL
+
+WEB_TYPECHECK:
+PASS / FAIL
+
+MOBILE_TYPECHECK:
+PASS / FAIL
+
+WEB_PRODUCTION_BUILD:
+PASS / FAIL
+
+
+TASK_22_STATUS:
+PARTIAL
+
+TASK_23_STATUS:
+MISSING
+
+TASK_24_STARTED:
+NO
+
+
+OWNER_ACTION_REQUIRED:
+NONE
+or exact unavoidable external configuration only
+
+================================================
+22. STOP AFTER REPORT
+================================================
+
+After finishing #25:
+
+DO NOT start #22.
+
+DO NOT start #23.
+
+DO NOT start #24.
+
+DO NOT begin Commercial Runtime.
+
+Return the Phase 12 evidence first.
+
+================================================
+23. EXECUTION AUTHORIZATION
+================================================
+
+Task #25 is now authorized for execution.
+
+Do not stop after planning.
+
+Do not merely create interfaces/documents.
+
+Do not mark implementation complete from code inspection.
+
+Proceed:
+
+INSPECT TARGETEDLY
+→ IMPLEMENT
+→ TEST
+→ MEASURE
+→ OPTIMIZE
+→ RETEST
+→ RUN REGRESSIONS
+→ PROVE
+→ REPORT
+
+Do not ask for confirmation between safe, internal,
+non-destructive implementation steps.
+
+BEGIN TASK #25 — JASIM MODEL INTELLIGENCE ECONOMY NOW.

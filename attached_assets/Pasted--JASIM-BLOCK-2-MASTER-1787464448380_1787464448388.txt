@@ -1,0 +1,5112 @@
+"""
+=======================================================================
+JASIM — BLOCK 2 MASTER ARCHITECTURAL TEACHING CONSTITUTION
+=======================================================================
+
+AGENT-NATIVE REAL-WORLD EXECUTION
++ COORDINATION FABRIC
+
+POST BLOCK-1.1 ARCHITECTURE
+
+STATUS OF PREVIOUS FOUNDATION:
+
+BLOCK 0   = CLOSED / PASS
+BLOCK 1   = CLOSED / PASS
+BLOCK 1.1 = CLOSED / PASS
+
+BLOCK 2   = NOT STARTED
+BLOCK 3   = NOT STARTED
+
+
+THIS DOCUMENT IS:
+
+    architectural teaching,
+    product reasoning,
+    economic prioritization,
+    execution semantics,
+    acceptance philosophy.
+
+
+THIS DOCUMENT IS NOT:
+
+    permission to immediately implement,
+    permission to rewrite the runtime,
+    permission to connect many providers,
+    permission to start payments,
+    or a domain feature backlog.
+
+
+Correct workflow after absorbing this document:
+
+    UNDERSTAND
+        ↓
+    INSPECT ACTUAL CANONICAL CODE
+        ↓
+    PRODUCE BLOCK 2 CANONICAL MAPPING
+        ↓
+    OWNER REVIEW
+        ↓
+    FINAL BLOCK 2 EXECUTION ORDER
+        ↓
+    IMPLEMENT
+        ↓
+    HARD GATE
+        ↓
+    STOP
+
+
+=======================================================================
+0. THE BLOCK 2 QUESTION
+=======================================================================
+
+Block 1 answered:
+
+    "WHAT DOES THE USER WANT,
+     AND WHICH GENERAL CAPABILITIES ARE REQUIRED?"
+
+
+Block 1.1 answered:
+
+    "WHERE MAY A COMPATIBLE IMPLEMENTATION
+     OF A CAPABILITY COME FROM?"
+
+
+Block 2 must answer:
+
+    "HOW DOES JASIM COORDINATE THE GOAL
+     ACROSS PEOPLE,
+     AGENTS,
+     RESOURCES,
+     TIME,
+     EVENTS,
+     LOCATIONS,
+     CAPACITY,
+     PROVIDERS,
+     AND REAL-WORLD OPERATIONS?"
+
+
+Block 2 transforms JASIM from:
+
+    UNIVERSAL SEMANTIC + ECONOMIC INTELLIGENCE
+
+into:
+
+    UNIVERSAL OPERATIONAL INTELLIGENCE.
+
+
+=======================================================================
+1. BLOCK 2 IS NOT "THE MAPS BLOCK"
+=======================================================================
+
+Do not misunderstand Block 2 as:
+
+    maps
+    +
+    notifications
+    +
+    booking
+    +
+    delivery.
+
+
+Those are examples of projections/compositions.
+
+
+The actual primitives are:
+
+    AUTHORITY
+
+    PARTICIPATION
+
+    DELEGATION
+
+    TIME
+
+    WAITING
+
+    EVENTS
+
+    AVAILABILITY
+
+    CAPACITY
+
+    RESERVATION
+
+    ALLOCATION
+
+    NOTIFICATION
+
+    OBSERVATION
+
+    LOCATION
+
+    TRACKING
+
+    PROVIDER HEALTH
+
+    REMOTE TASK EXECUTION
+
+    MULTI-PARTY COORDINATION
+
+    EXTERNAL ACTION EXECUTION
+
+
+If those primitives are correct:
+
+    transportation works,
+    maintenance works,
+    booking works,
+    warehousing works,
+    equipment sharing works,
+    delivery works,
+    hiring coordination works,
+    field services work,
+    future unknown operational systems work.
+
+
+=======================================================================
+2. PERMANENT JASIM INVARIANTS
+=======================================================================
+
+The following remain immutable:
+
+
+ONE_JASIM = True
+
+ONE_CENTRAL_INTELLIGENCE = True
+
+ONE_CANONICAL_RUNTIME = True
+
+ONE_POSTGRESQL_TRUTH = True
+
+ONE_CAPABILITY_SEMANTIC_SYSTEM = True
+
+ONE_TRUSTED_EXECUTOR = True
+
+ONE_VERIFICATION_TRUTH = True
+
+ONE_AUTHORIZATION_TRUTH = True
+
+
+LLM_IS_UNTRUSTED_INTELLIGENCE = True
+
+REMOTE_AGENT_IS_UNTRUSTED_PROVIDER = True
+
+REMOTE_TOOL_IS_UNTRUSTED_PROVIDER = True
+
+CLIENT_IS_NOT_EXECUTION_AUTHORITY = True
+
+
+CAPABILITY != PROVIDER
+
+PROTOCOL != PROVIDER
+
+PROTOCOL != CANONICAL_TRUTH
+
+PROJECTION != CANONICAL_STATE
+
+
+AUTHORIZED != EXECUTED
+
+EXECUTED != VERIFIED
+
+RECEIPT != VERIFICATION
+
+
+UNKNOWN != SUCCESS
+
+UNKNOWN != FAILURE
+
+
+NO_FAKE_SUCCESS = True
+
+
+=======================================================================
+3. BLOCK 2 MUST REUSE BLOCK 1.1
+=======================================================================
+
+Block 1.1 created the critical separation:
+
+    SEMANTIC CAPABILITY
+        !=
+    CAPABILITY PROVIDER
+
+
+Block 2 must NOT bypass it.
+
+
+Bad:
+
+    notificationService.sendSMS()
+
+    mapsClient.trackDriver()
+
+    deliveryClient.createDelivery()
+
+
+Preferred:
+
+    NOTIFY
+        ↓
+    Provider Resolver
+        ↓
+    compatible provider
+
+
+    TRACK
+        ↓
+    Provider Resolver
+        ↓
+    compatible provider
+
+
+    DELIVER
+        ↓
+    generic composition
+        ↓
+    provider requirements
+
+
+Provider-specific code belongs behind adapters.
+
+
+=======================================================================
+4. BLOCK 2 PRIMARY ARCHITECTURE
+=======================================================================
+
+
+USER GOAL
+    ↓
+JASIM CENTRAL INTELLIGENCE
+    ↓
+SEMANTIC CAPABILITY GRAPH
+    ↓
+BLOCK 1 ECONOMIC / STATE OBJECTS
+    ↓
+BLOCK 1.1 PROVIDER DISCOVERY
+    ↓
+POLICY
+    ↓
+DELEGATION / AUTHORITY
+    ↓
+REAL-WORLD COORDINATION GRAPH
+    ↓
+DURABLE RUN
+    ↓
+TIME / EVENT / RESOURCE GATES
+    ↓
+TRUSTED EXECUTOR
+    ↓
+NATIVE / MCP / A2A / FUTURE PROVIDER
+    ↓
+OBSERVATIONS / RECEIPTS
+    ↓
+VERIFIER
+    ↓
+RECONCILIATION
+    ↓
+CANONICAL STATE
+    ↓
+LIVE PROJECTION
+    ↓
+WEB / IOS / ANDROID
+
+
+=======================================================================
+5. PRIORITY ORDER
+=======================================================================
+
+Block 2 must be implemented in dependency order.
+
+
+P0 — FOUNDATIONAL OPERATIONAL PRIMITIVES
+
+    Participation
+    Role/Permission/Scope
+    Delegation
+    Revocation
+
+    TemporalTrigger
+    DurableWait
+    Deadline
+    EventSubscription
+
+    Availability
+    Capacity
+    Reservation
+    Allocation
+    Concurrency
+
+
+P1 — LIVE OPERATIONAL PRIMITIVES
+
+    Notification
+    ProviderAvailability
+
+    Observation
+    LocationObservation
+    TrackSession
+
+    RealtimeProjection
+
+
+P2 — GENERAL REAL-WORLD COMPOSITIONS
+
+    Booking
+    Dispatch
+    Delivery
+    Remote Task execution
+    Multi-party operations
+
+
+P3 — LONG-TAIL EXECUTION
+
+    Computer Use
+    advanced presence
+    advanced optimization
+    route optimization
+    optional richer protocol integration
+
+
+Do not implement P3 while P0 is weak.
+
+
+=======================================================================
+6. WHY P0 COMES FIRST
+=======================================================================
+
+Without P0 JASIM may say:
+
+    "I found someone."
+
+but cannot safely say:
+
+    "They are assigned."
+
+
+It may say:
+
+    "A warehouse has capacity."
+
+but cannot safely say:
+
+    "10 tons are reserved."
+
+
+It may say:
+
+    "I will remind you tomorrow."
+
+but cannot reliably wake tomorrow.
+
+
+It may say:
+
+    "The agent can negotiate."
+
+without being able to prove:
+
+    what authority was delegated.
+
+
+Therefore P0 converts semantic intelligence into operational truth.
+
+
+=======================================================================
+=======================================================================
+PART I — PARTICIPATION + AUTHORITY
+=======================================================================
+=======================================================================
+
+7. PARTICIPANT IS GENERAL
+=======================================================================
+
+Block 2 must support actors such as:
+
+    human
+    organization
+    generated business
+    external provider
+    AI agent
+    service operator
+
+
+Do not hard-code participant classes around domains.
+
+
+Conceptually:
+
+
+class ParticipantKind:
+    HUMAN = "HUMAN"
+    ORGANIZATION = "ORGANIZATION"
+    GENERATED_WORLD = "GENERATED_WORLD"
+    AGENT = "AGENT"
+    PROVIDER = "PROVIDER"
+
+
+But reuse existing Entity/Actor semantics before creating new ontology.
+
+
+=======================================================================
+8. MEMBERSHIP
+=======================================================================
+
+Persistent Smart Bubbles may require multiple participants.
+
+
+Generic concepts:
+
+    Membership
+
+    Role
+
+    Permission
+
+    Scope
+
+    Invitation
+
+    Revocation
+
+
+Examples:
+
+generated business:
+
+    owner
+    staff
+    customer
+    provider
+
+
+transport World:
+
+    operator
+    driver
+    dispatcher
+
+
+maintenance World:
+
+    manager
+    technician
+    resident
+
+
+These labels are generated World semantics.
+
+Kernel enforcement stays generic.
+
+
+=======================================================================
+9. DO NOT BUILD DOMAIN AUTHORIZATION
+=======================================================================
+
+Forbidden:
+
+    if role == "driver":
+        ...
+
+    if role == "restaurant_manager":
+        ...
+
+    if role == "technician":
+        ...
+
+
+Preferred:
+
+    subject
+    role
+    permission
+    capability
+    resource
+    scope
+
+
+Example:
+
+    role = "driver"
+
+may have:
+
+    permission:
+        VIEW_ASSIGNED_TRIP
+
+        UPDATE_OWN_LOCATION
+
+        MARK_ASSIGNED_TASK_COMPLETE
+
+
+Kernel evaluates permission.
+
+Not domain name.
+
+
+=======================================================================
+10. SHARED VISIBILITY
+=======================================================================
+
+Block 1 supported semantic visibility such as:
+
+    PRIVATE
+    UNLISTED
+    SHARED
+    PUBLIC
+
+
+Block 2 must make SHARED operational.
+
+
+SHARED must NOT mean:
+
+    everybody with URL can access.
+
+
+It should require explicit authorization semantics such as:
+
+    membership
+    invitation
+    grant
+    scope
+    expiry
+
+
+This absorbs deferred follow-up #35.
+
+
+=======================================================================
+11. DELEGATION IS NOT ROLE
+=======================================================================
+
+Role answers:
+
+    what a participant normally may do.
+
+
+Delegation answers:
+
+    what authority one principal temporarily grants another actor
+    for a particular purpose.
+
+
+This is essential for agents.
+
+
+=======================================================================
+12. DELEGATION GRANT
+=======================================================================
+
+Conceptually:
+
+
+@dataclass
+class DelegationGrant:
+    principal_ref: str
+
+    delegate_ref: str
+
+    purpose: str
+
+    allowed_capabilities: list[str]
+
+    denied_capabilities: list[str]
+
+    resource_scope: list[str]
+
+    constraints: dict
+
+    monetary_limit: dict | None
+
+    valid_from: str
+
+    expires_at: str
+
+    revocable: bool
+
+    max_delegation_depth: int
+
+    fingerprint: str
+
+    status: str
+
+
+Do not create this exact class blindly if current Proposal/Approval
+contracts can carry the same semantics.
+
+
+Reuse first.
+
+
+=======================================================================
+13. AUTHORITY MONOTONICITY
+=======================================================================
+
+This is one of Block 2's strongest invariants.
+
+
+AUTHORITY_CHILD <= AUTHORITY_PARENT
+
+
+If User delegates:
+
+    SEARCH
+    COMPARE
+    NEGOTIATE
+
+
+but:
+
+    ACCEPT = NO
+    PAY = NO
+
+
+JASIM cannot delegate to another agent:
+
+    PAY = YES
+
+
+Never.
+
+
+=======================================================================
+14. AUTHORITY MUST SHRINK THROUGH CHAINS
+=======================================================================
+
+Example:
+
+
+USER
+    ↓
+allows JASIM:
+SEARCH + NEGOTIATE
+MAX 5,000 KWD
+NO PAYMENT
+
+
+JASIM
+    ↓
+delegates research agent:
+SEARCH ONLY
+
+
+Research Agent
+    ↓
+cannot delegate:
+NEGOTIATE
+
+
+Correct relationship:
+
+
+AgentAuthority
+    ⊆
+JasimAuthority
+    ⊆
+UserGrant
+
+
+=======================================================================
+15. PURPOSE BINDING
+=======================================================================
+
+Authority is not reusable merely because capability names match.
+
+
+Example:
+
+User authorizes:
+
+    SEND_MESSAGE
+
+for:
+
+    supplier negotiation
+
+
+That authorization must not be reused for:
+
+    marketing campaign.
+
+
+Purpose belongs in:
+
+    delegation
+    proposal
+    fingerprint
+    external action session
+
+
+Reuse Block 0/1 trust mechanisms.
+
+
+=======================================================================
+16. REVOCATION
+=======================================================================
+
+A principal must be able to revoke future authority.
+
+
+Revocation must prevent:
+
+    unstarted executions
+
+    newly delegated tasks
+
+    future provider sessions
+
+
+It must not rewrite history.
+
+
+Past attempts remain immutable.
+
+
+=======================================================================
+17. EXPIRY
+=======================================================================
+
+Delegated authority must support expiry.
+
+
+Example:
+
+    negotiate until 18:00 today.
+
+
+After expiry:
+
+    execution is blocked.
+
+
+Never rely on model memory.
+
+
+=======================================================================
+=======================================================================
+PART II — TIME
+=======================================================================
+=======================================================================
+
+18. TIME IS CANONICAL SYSTEM STATE
+=======================================================================
+
+The LLM must not "remember to do something later."
+
+
+Time-dependent behavior requires persisted deterministic state.
+
+
+Examples:
+
+    tomorrow at 08:00
+
+    every weekday
+
+    30 minutes after assignment
+
+    before deadline
+
+    after provider timeout
+
+    when price changes
+
+    when event occurs
+
+
+=======================================================================
+19. TEMPORAL TRIGGER
+=======================================================================
+
+Conceptual model:
+
+
+class TriggerType:
+    AT = "AT"
+    AFTER = "AFTER"
+    RECURRING = "RECURRING"
+    DEADLINE = "DEADLINE"
+    CONDITION = "CONDITION"
+    EVENT = "EVENT"
+
+
+@dataclass
+class TemporalTrigger:
+    trigger_id: str
+
+    type: str
+
+    timezone: str
+
+    schedule: dict | None
+
+    condition_ref: str | None
+
+    event_ref: str | None
+
+    target_run_ref: str
+
+    target_node_ref: str | None
+
+    next_fire_at: str | None
+
+    state: str
+
+    version: int
+
+
+Use current runtime types if equivalent.
+
+
+=======================================================================
+20. TIMEZONE IS REQUIRED
+=======================================================================
+
+A recurring schedule without timezone is incomplete.
+
+
+Example:
+
+    every weekday 05:45
+
+
+must mean:
+
+    05:45 in a defined timezone.
+
+
+Persist timezone semantics.
+
+
+Do not rely on server timezone.
+
+
+=======================================================================
+21. DURABLE WAIT
+=======================================================================
+
+A Run waiting 3 hours should NOT hold:
+
+    worker
+    process
+    open request
+    in-memory timer
+
+
+Correct:
+
+
+RunNode
+    ↓
+WAITING
+    ↓
+persist wake condition
+    ↓
+release worker
+    ↓
+time/event occurs
+    ↓
+claim with lease/fence
+    ↓
+resume SAME Run
+
+
+=======================================================================
+22. WAIT MUST SURVIVE RESTART
+=======================================================================
+
+Mandatory acceptance:
+
+    start Run
+
+    schedule wait
+
+    stop process
+
+    restart server
+
+    trigger becomes due
+
+    SAME Run continues
+
+
+No duplicate Run.
+
+No duplicate effect.
+
+
+=======================================================================
+23. DEADLINE
+=======================================================================
+
+Deadline differs from simple timer.
+
+
+Example:
+
+Supplier must reply:
+
+    before 16:00.
+
+
+At deadline:
+
+    evaluate state.
+
+
+Possible:
+
+    complete
+    escalate
+    replan
+    cancel
+    notify
+
+
+Do not model deadline as prose.
+
+
+=======================================================================
+24. RECURRING SCHEDULE
+=======================================================================
+
+Examples:
+
+    worker transport every weekday
+
+    monthly subscription action
+
+    weekly report
+
+    maintenance inspection
+
+
+Requirements:
+
+    recurrence rule
+
+    timezone
+
+    next occurrence
+
+    pause
+
+    resume
+
+    cancel
+
+    restart durability
+
+    deduplication
+
+
+=======================================================================
+25. CONDITION WATCH
+=======================================================================
+
+Example:
+
+    "Buy when price < 100."
+
+
+Block 2 owns:
+
+    condition monitoring semantics.
+
+
+Block 3 later owns:
+
+    payment execution.
+
+
+Conceptually:
+
+
+ConditionWatch:
+    subject
+    signal
+    operator
+    threshold
+    evaluation policy
+    polling/subscription source
+    next evaluation
+    expiry
+
+
+Do not confuse condition detection with authority to act.
+
+
+=======================================================================
+26. TIME + AUTHORITY
+=======================================================================
+
+A future execution must re-check:
+
+    authority
+
+    expiry
+
+    policy
+
+    provider availability
+
+at wake time.
+
+
+Authorization that was valid when scheduled may not remain valid later.
+
+
+=======================================================================
+=======================================================================
+PART III — EVENTS
+=======================================================================
+=======================================================================
+
+27. EVENTS DRIVE OPERATIONS
+=======================================================================
+
+Examples:
+
+    RESOURCE_RESERVED
+
+    ASSIGNMENT_CREATED
+
+    PROVIDER_TASK_UPDATED
+
+    LOCATION_OBSERVED
+
+    DEADLINE_REACHED
+
+    NOTIFICATION_DELIVERED
+
+    BOOKING_CONFIRMED
+
+
+Actual event names may differ.
+
+
+Do not build domain-specific Event Bus.
+
+
+=======================================================================
+28. CANONICAL EVENT != CLIENT EVENT
+=======================================================================
+
+Canonical:
+
+    event persisted in JASIM.
+
+
+Projection:
+
+    WebSocket
+    SSE
+    AG-UI
+    push
+
+
+Projection loss must not lose truth.
+
+
+=======================================================================
+29. EVENT SUBSCRIPTION
+=======================================================================
+
+Generic subscription should capture:
+
+    subscriber
+
+    event filter
+
+    source
+
+    resource scope
+
+    callback/run continuation
+
+    expiry
+
+    state
+
+
+Potential sources:
+
+    internal events
+
+    provider callbacks
+
+    webhook
+
+    MCP Task update
+
+    A2A Task update
+
+    schedule
+
+    location provider
+
+    notification provider
+
+
+=======================================================================
+30. EVENT IDEMPOTENCY
+=======================================================================
+
+External systems may deliver same webhook multiple times.
+
+
+Processing must be:
+
+    idempotent.
+
+
+Duplicate provider event:
+
+    must not create duplicate booking,
+    duplicate assignment,
+    duplicate payment,
+    duplicate notification workflow.
+
+
+=======================================================================
+31. ORDERING
+=======================================================================
+
+Do not assume global perfect event ordering.
+
+
+Where ordering matters, use:
+
+    version
+    observedAt
+    provider sequence
+    canonical state validation
+
+
+A stale update must not silently overwrite newer truth.
+
+
+=======================================================================
+=======================================================================
+PART IV — AVAILABILITY + CAPACITY
+=======================================================================
+=======================================================================
+
+32. AVAILABILITY IS GENERAL
+=======================================================================
+
+The same primitive must describe:
+
+    technician availability
+
+    seat availability
+
+    warehouse capacity
+
+    equipment time
+
+    appointment slot
+
+    hotel room
+
+    laboratory machine
+
+    worker availability
+
+    vehicle availability
+
+
+No domain Availability engines.
+
+
+=======================================================================
+33. CAPACITY
+=======================================================================
+
+Capacity is typed.
+
+
+Examples:
+
+    seats = 12
+
+    storage = 10 tons
+
+    room = 30 people
+
+    equipment = 1 unit
+
+    worker time = 4 hours
+
+
+Preserve:
+
+    quantity
+    unit
+    period
+    resource
+
+
+=======================================================================
+34. UNIT NORMALIZATION
+=======================================================================
+
+Block 1 matching already requires typed semantics.
+
+Block 2 operational capacity must preserve unit correctness.
+
+
+Example:
+
+    Need:
+        10 tons
+
+
+Offerings:
+
+    6,000 kg
+    +
+    4 tons
+
+
+May satisfy:
+
+    10 tons
+
+
+after deterministic normalization.
+
+
+LLM does not perform canonical unit truth.
+
+
+=======================================================================
+35. AVAILABILITY WINDOW
+=======================================================================
+
+Conceptually:
+
+
+@dataclass
+class AvailabilityWindow:
+    resource_ref: str
+
+    start_at: str
+    end_at: str
+
+    timezone: str
+
+    quantity_available: dict | None
+
+    recurrence: dict | None
+
+    status: str
+
+    version: int
+
+
+=======================================================================
+36. RESERVATION
+=======================================================================
+
+Reservation converts:
+
+    possibility
+
+into:
+
+    allocated operational state.
+
+
+Conceptually:
+
+
+@dataclass
+class Reservation:
+    reservation_id: str
+
+    resource_ref: str
+
+    requester_ref: str
+
+    quantity: dict | None
+
+    start_at: str
+    end_at: str
+
+    status: str
+
+    idempotency_key: str
+
+    version: int
+
+
+=======================================================================
+37. RESERVATION IS HIGH-VALUE
+=======================================================================
+
+Search says:
+
+    "something exists."
+
+
+Match says:
+
+    "something fits."
+
+
+Reservation says:
+
+    "this scarce capacity has been allocated."
+
+
+That is a major commercial transition.
+
+
+Reservation unlocks:
+
+    booking
+    rentals
+    transport seats
+    warehouse capacity
+    industrial equipment
+    services
+    appointments
+
+
+Therefore it is P0.
+
+
+=======================================================================
+38. CONCURRENCY
+=======================================================================
+
+Example:
+
+Warehouse:
+
+    total = 10 tons
+
+User A reserves:
+
+    7 tons
+
+
+Simultaneously User B requests:
+
+    5 tons
+
+
+Both cannot succeed.
+
+
+Required:
+
+    transactional locking
+    or
+    atomic compare-and-swap
+    or equivalent deterministic concurrency protection.
+
+
+Never use:
+
+    LLM check then insert.
+
+
+=======================================================================
+39. COMPOSITE RESERVATION
+=======================================================================
+
+Block 1 supports composite Match semantics.
+
+Block 2 should make allocation possible.
+
+
+Need:
+
+    10 tons.
+
+
+Provider A:
+
+    6
+
+
+Provider B:
+
+    4
+
+
+Reservation workflow may require:
+
+    reserve A
+    reserve B
+    atomic/compensating strategy
+
+
+If A succeeds and B fails:
+
+do not silently claim success.
+
+
+Use:
+
+    rollback
+    release
+    compensation
+    or truthful partial state.
+
+
+=======================================================================
+40. RESERVATION EXPIRY
+=======================================================================
+
+Temporary holds should support expiry.
+
+
+Example:
+
+    hold seat for 5 minutes.
+
+
+After expiry:
+
+    capacity returns.
+
+
+Do not leak reserved capacity forever.
+
+
+=======================================================================
+=======================================================================
+PART V — NOTIFICATIONS
+=======================================================================
+=======================================================================
+
+41. NOTIFY IS A SEMANTIC CAPABILITY
+=======================================================================
+
+Possible provider channels:
+
+    IN_APP
+
+    PUSH
+
+    EMAIL
+
+    SMS
+
+    MCP provider
+
+    future messaging provider
+
+
+Do not make channel the capability identity.
+
+
+=======================================================================
+42. NOTIFICATION INTENT
+=======================================================================
+
+Conceptually:
+
+
+NotificationIntent:
+    recipient
+    purpose
+    content_ref
+    urgency
+    allowed_channels
+    privacy_class
+    expiry
+
+
+Provider resolution selects actual channel.
+
+
+=======================================================================
+43. NOTIFICATION STATES
+=======================================================================
+
+Do not collapse everything into:
+
+    sent.
+
+
+Possible truth states:
+
+
+QUEUED
+
+PROVIDER_ACCEPTED
+
+SENT
+
+DELIVERED
+
+READ
+
+FAILED
+
+INCONCLUSIVE
+
+
+Only claim what provider supports.
+
+
+=======================================================================
+44. READ IS NOT DELIVERED
+=======================================================================
+
+Provider says:
+
+    delivered
+
+
+does not prove:
+
+    read.
+
+
+Do not fabricate engagement.
+
+
+=======================================================================
+45. USER PREFERENCES
+=======================================================================
+
+Notification routing may consider:
+
+    user channel preference
+    quiet hours
+    urgency
+    cost
+    privacy
+    provider availability
+
+
+But critical operational policy may override optional preferences
+only when authorized.
+
+
+=======================================================================
+46. RECURRING NOTIFICATIONS
+=======================================================================
+
+Example:
+
+    remind 1 hour before trip.
+
+
+Should be:
+
+    schedule
+        ↓
+    TemporalTrigger
+        ↓
+    NOTIFY
+
+
+Not separate reminder implementation.
+
+
+=======================================================================
+=======================================================================
+PART VI — OBSERVATIONS + LOCATION + TRACKING
+=======================================================================
+=======================================================================
+
+47. OBSERVATION IS A GENERAL CONCEPT
+=======================================================================
+
+An external provider tells JASIM:
+
+    "I observed X."
+
+
+Observation is evidence.
+
+Not eternal truth.
+
+
+Possible:
+
+    LocationObservation
+
+    StatusObservation
+
+    PriceObservation
+
+    AvailabilityObservation
+
+    SensorObservation
+
+
+Reuse existing evidence/provenance primitives where possible.
+
+
+=======================================================================
+48. LOCATION IS OBSERVED
+=======================================================================
+
+Never store only:
+
+    driver.currentLat
+    driver.currentLng
+
+
+as if permanent truth.
+
+
+Conceptually:
+
+
+@dataclass
+class LocationObservation:
+    subject_ref: str
+
+    observed_at: str
+
+    source_provider_ref: str
+
+    latitude: float | None
+    longitude: float | None
+
+    accuracy_meters: float | None
+
+    semantic_location: str | None
+
+    provenance_ref: str | None
+
+    expires_at: str | None
+
+
+=======================================================================
+49. LOCATION FRESHNESS
+=======================================================================
+
+User asks:
+
+    "Where is the driver?"
+
+
+Last location:
+
+    25 minutes old.
+
+
+Correct:
+
+    "Last known location..."
+
+or:
+
+    STALE
+
+
+Not:
+
+    "Driver is here now."
+
+
+=======================================================================
+50. LOCATION SOURCE MATTERS
+=======================================================================
+
+These are different evidence qualities:
+
+
+DEVICE_GPS
+
+TRANSPORT_PROVIDER
+
+MANUAL_REPORT
+
+MCP_PROVIDER
+
+A2A_AGENT
+
+SENSOR
+
+
+Do not silently treat them equally.
+
+
+=======================================================================
+51. TRACK SESSION
+=======================================================================
+
+Tracking is a relationship over time.
+
+
+Conceptually:
+
+
+@dataclass
+class TrackSession:
+    subject_ref: str
+
+    purpose: str
+
+    start_at: str
+
+    end_at: str | None
+
+    source_provider_refs: list[str]
+
+    current_observation_ref: str | None
+
+    state: str
+
+
+Same primitive:
+
+    driver
+    courier
+    technician
+    shipment
+    bus
+    boat
+    machine
+    field worker
+
+
+=======================================================================
+52. TRACK != MAP
+=======================================================================
+
+TRACK means:
+
+    follow changing state/location.
+
+
+MAP means:
+
+    visual geographic projection.
+
+
+A TrackSession may exist without coordinates.
+
+
+Example:
+
+    shipment:
+        "At Kuwait sorting center."
+
+
+That is trackable.
+
+But may not justify a map marker.
+
+
+=======================================================================
+53. MAP IS A PROJECTION
+=======================================================================
+
+If real coordinates exist:
+
+    LocationObservation
+        ↓
+    authorized geographic projection
+        ↓
+    Map
+
+
+Do not let map state become canonical location truth.
+
+
+=======================================================================
+54. ETA IS AN ESTIMATE
+=======================================================================
+
+ETA requires:
+
+    source
+    generated_at
+    freshness
+    method/provider
+
+
+Do not fabricate ETA from distance alone unless explicitly labeled as
+a deterministic estimate with known model.
+
+
+Prefer:
+
+    ETA unavailable
+
+over fake precision.
+
+
+=======================================================================
+55. ROUTE
+=======================================================================
+
+Route data also belongs to a provider/algorithm output.
+
+It may change.
+
+
+Store/represent:
+
+    route evidence
+    provider
+    generatedAt
+    expiry/version
+
+
+Not absolute truth.
+
+
+=======================================================================
+=======================================================================
+PART VII — REALTIME CLIENT EXPERIENCE
+=======================================================================
+=======================================================================
+
+56. REALTIME IS NOT A SECOND DATABASE
+=======================================================================
+
+Correct:
+
+
+Canonical DB/Event
+        ↓
+Projection
+        ↓
+Realtime Transport
+        ↓
+Client
+
+
+Not:
+
+
+WebSocket state
+        =
+business truth.
+
+
+=======================================================================
+57. AG-UI COMPATIBILITY
+=======================================================================
+
+Block 1.1 established:
+
+    AG-UI = ADAPTER FIT
+
+
+Block 2 may implement a compatibility adapter if it removes meaningful
+custom transport work.
+
+
+Potential mapping:
+
+
+JASIM RUN START
+    → RUN_STARTED
+
+
+JASIM RUN END
+    → RUN_FINISHED
+
+
+DAG NODE START
+    → STEP_STARTED
+
+
+CAPABILITY INVOCATION
+    → TOOL_CALL events
+
+
+AUTHORIZED PRESENTATION STATE
+    → STATE_SNAPSHOT
+
+
+AUTHORIZED PROJECTION UPDATE
+    → STATE_DELTA
+
+
+=======================================================================
+58. DO NOT EXPOSE INTERNAL REASONING
+=======================================================================
+
+AG-UI supports reasoning-related events.
+
+JASIM must not assume private model chain-of-thought should be streamed.
+
+
+Only expose:
+
+    user-safe progress
+    structured status
+    tool/capability activity
+    approved summaries
+
+
+Do not expose hidden reasoning.
+
+
+=======================================================================
+59. CLIENT RECONNECT
+=======================================================================
+
+Client reconnect should:
+
+    obtain fresh authorized canonical projection
+
+then:
+
+    resume live deltas.
+
+
+Do not depend on perfect event delivery during disconnect.
+
+
+=======================================================================
+60. MOBILE PARITY
+=======================================================================
+
+Web and Mobile receive the same semantic truth.
+
+
+Different rendering/layout is allowed.
+
+
+Different business state is not.
+
+
+=======================================================================
+=======================================================================
+PART VIII — PROVIDER OPERATIONAL STATE
+=======================================================================
+=======================================================================
+
+61. PROVIDER CATALOG != PROVIDER HEALTH
+=======================================================================
+
+Block 1.1 catalog says:
+
+    provider exists.
+
+
+Block 2 must determine:
+
+    can provider operate now?
+
+
+These are different.
+
+
+=======================================================================
+62. PROVIDER AVAILABILITY
+=======================================================================
+
+Possible states:
+
+
+AVAILABLE
+
+DEGRADED
+
+UNAVAILABLE
+
+UNKNOWN
+
+STALE
+
+
+Do not mark available merely because:
+
+    provider is registered.
+
+
+=======================================================================
+63. PROVIDER HEALTH EVIDENCE
+=======================================================================
+
+Health may come from:
+
+    local health check
+    remote health endpoint
+    recent verified execution
+    protocol discovery
+    provider status signal
+
+
+Do not ask LLM to guess provider health.
+
+
+=======================================================================
+64. PROVIDER SELECTION
+=======================================================================
+
+Block 2 may extend provider selection with operational context:
+
+
+semantic fit
+
+trust
+
+freshness
+
+health
+
+cost class
+
+latency class
+
+privacy
+
+jurisdiction
+
+historical verified success
+
+
+No opaque AI "provider score" without evidence.
+
+
+=======================================================================
+65. FALLBACK
+=======================================================================
+
+Provider A fails.
+
+Fallback to Provider B only if:
+
+    semantics equivalent
+
+    policy allows substitution
+
+    user constraints allow
+
+    sensitive authorization remains valid
+
+
+Do not silently switch:
+
+    bank
+    merchant
+    identity provider
+    sensitive communication recipient
+
+
+when substitution changes meaning.
+
+
+=======================================================================
+=======================================================================
+PART IX — MCP REAL EXECUTION
+=======================================================================
+=======================================================================
+
+66. BLOCK 1.1 ONLY NORMALIZED MCP
+=======================================================================
+
+Block 2 may now operationalize MCP where justified.
+
+
+But do not connect dozens of MCP servers.
+
+
+Goal:
+
+prove ONE general runtime path.
+
+
+=======================================================================
+67. CURRENT MCP MODEL
+=======================================================================
+
+Target current protocol semantics at adapter boundary.
+
+
+MCP 2026-07-28 provides:
+
+    stateless request model
+
+    server discovery
+
+    cacheable catalogs
+
+    Tasks extension
+
+    authorization hardening
+
+
+Do not make canonical runtime depend on protocol version.
+
+
+=======================================================================
+68. MCP TOOL EXECUTION
+=======================================================================
+
+Correct path:
+
+
+JASIM RunNode
+    ↓
+ProviderBinding
+    ↓
+MCP Adapter
+    ↓
+remote tool call
+    ↓
+provider response
+    ↓
+Attempt
+    ↓
+Receipt
+    ↓
+Verifier
+    ↓
+Canonical state
+
+
+Never:
+
+MCP result
+    ↓
+VERIFIED
+
+
+automatically.
+
+
+=======================================================================
+69. MCP TASKS
+=======================================================================
+
+Long-running MCP action:
+
+
+JASIM RunNode
+    ↓
+MCP call
+    ↓
+remote Task handle
+    ↓
+persist handle
+    ↓
+WAITING_REMOTE
+    ↓
+task update / poll
+    ↓
+result
+    ↓
+JASIM verification
+
+
+The external task belongs to the provider.
+
+The JASIM Run remains canonical.
+
+
+=======================================================================
+70. MCP TASK CANCELLATION
+=======================================================================
+
+JASIM cancellation may request:
+
+    remote task cancel.
+
+
+But local state must distinguish:
+
+    CANCEL_REQUESTED
+
+from:
+
+    PROVIDER_CANCELLED
+
+
+if confirmation is unavailable.
+
+
+=======================================================================
+71. REMOTE TASK RESTART
+=======================================================================
+
+After JASIM server restart:
+
+    reload Run
+
+    reload provider binding
+
+    reload remote task reference
+
+    continue observation
+
+
+Do not create second external task blindly.
+
+
+=======================================================================
+=======================================================================
+PART X — A2A REAL DELEGATION
+=======================================================================
+=======================================================================
+
+72. A2A ROLE IN BLOCK 2
+=======================================================================
+
+A2A allows JASIM to delegate bounded work to another agent system.
+
+
+A2A Agent:
+
+    is a provider.
+
+
+It is not:
+
+    a peer authority.
+
+
+=======================================================================
+73. AGENT CARD IS METADATA
+=======================================================================
+
+Agent Card tells JASIM:
+
+    declared identity
+
+    skills
+
+    input/output modalities
+
+    protocol interface
+
+    security requirements
+
+
+It does not tell JASIM:
+
+    whether the agent is trusted.
+
+
+=======================================================================
+74. A2A DELEGATION CONTRACT
+=======================================================================
+
+Before delegation define:
+
+
+task objective
+
+typed input
+
+minimum context
+
+allowed capabilities
+
+forbidden capabilities
+
+resource scope
+
+time limit
+
+delegated authority
+
+expected output
+
+verification requirement
+
+
+=======================================================================
+75. MINIMUM DISCLOSURE
+=======================================================================
+
+A remote agent must not receive:
+
+    all conversation history
+
+    full memory
+
+    complete World
+
+    unrelated private data
+
+
+Send only:
+
+    task-relevant authorized projection.
+
+
+=======================================================================
+76. A2A RESULT
+=======================================================================
+
+Remote agent result is:
+
+    provider output.
+
+
+Not:
+
+    canonical truth.
+
+
+Validate:
+
+    schema
+
+    provenance
+
+    ownership
+
+    authority
+
+    semantics
+
+    provider identity
+
+
+Then use Verifier as appropriate.
+
+
+=======================================================================
+77. AGENT HIERARCHY
+=======================================================================
+
+Avoid recursive uncontrolled delegation.
+
+
+Use:
+
+    max delegation depth
+
+    explicit authority propagation
+
+    traceable parent task
+
+    cancellation
+
+
+=======================================================================
+78. MULTI-AGENT IS OPTIONAL
+=======================================================================
+
+Do not delegate when:
+
+    deterministic function is sufficient
+
+    local capability is sufficient
+
+    one model call is sufficient
+
+
+Delegation must create measurable value.
+
+
+=======================================================================
+=======================================================================
+PART XI — COMPUTER USE
+=======================================================================
+=======================================================================
+
+79. COMPUTER USE IS LAST-RESORT INTEROPERABILITY
+=======================================================================
+
+Computer Use is useful when:
+
+    no safe API
+
+    no native provider
+
+    no MCP provider
+
+    no A2A provider
+
+
+and:
+
+    task still requires interaction with an external digital system.
+
+
+=======================================================================
+80. COMPUTER USE IS NOT A GENERAL REPLACEMENT FOR APIs
+=======================================================================
+
+Prefer structured provider integrations where available.
+
+
+Computer-use suffers from:
+
+    UI changes
+
+    ambiguity
+
+    prompt injection
+
+    session state
+
+    captcha
+
+    network failure
+
+    visual uncertainty
+
+
+Use only where economically justified.
+
+
+=======================================================================
+81. COMPUTER USE SANDBOX
+=======================================================================
+
+Require equivalent boundaries:
+
+
+isolated browser
+
+allowed origins
+
+scoped credentials
+
+download restrictions
+
+upload restrictions
+
+clipboard restrictions
+
+network policy
+
+session expiry
+
+audit trail
+
+
+No arbitrary browsing with production secrets.
+
+
+=======================================================================
+82. CREDENTIALS
+=======================================================================
+
+Do not put:
+
+    passwords
+    auth tokens
+    payment credentials
+
+
+into ordinary model context.
+
+
+Use controlled credential injection/storage mechanisms.
+
+
+=======================================================================
+83. CONSEQUENTIAL ACTION GATE
+=======================================================================
+
+Example:
+
+JASIM fills job application.
+
+
+Safe:
+
+    prepare fields
+    attach CV
+
+
+Consequential:
+
+    submit application
+
+
+If policy requires approval:
+
+
+PREPARED
+    ↓
+Approval
+    ↓
+SUBMIT
+
+
+=======================================================================
+84. COMPUTER USE SUCCESS
+=======================================================================
+
+Browser displays:
+
+    "Success!"
+
+
+That is an observation.
+
+Not necessarily verified external truth.
+
+
+Use:
+
+    external callback
+    readback
+    provider status
+    resulting state
+
+
+when available.
+
+
+=======================================================================
+=======================================================================
+PART XII — BOOKING
+=======================================================================
+=======================================================================
+
+85. BOOKING IS A COMPOSITION
+=======================================================================
+
+Do not create universal domain-specific booking engines.
+
+
+Generic:
+
+
+Need
+    ↓
+Discover
+    ↓
+Match
+    ↓
+Availability
+    ↓
+Reservation
+    ↓
+Terms
+    ↓
+Confirm
+    ↓
+Schedule
+    ↓
+Notify
+
+
+Payment may be:
+
+    absent
+
+    optional
+
+    required later.
+
+
+=======================================================================
+86. BOOKING CONCURRENCY
+=======================================================================
+
+Two users request one slot.
+
+
+Only one may succeed.
+
+
+This must be a DB/runtime guarantee.
+
+
+Not model logic.
+
+
+=======================================================================
+87. BOOKING EXPIRY
+=======================================================================
+
+Temporary reservation may expire before payment/confirmation.
+
+
+Return capacity correctly.
+
+
+=======================================================================
+88. BOOKING CANCELLATION
+=======================================================================
+
+Cancellation may cause:
+
+    capacity release
+
+    notification
+
+    refund requirement
+
+    fee evaluation
+
+
+Block 2 owns state/operations.
+
+Block 3 owns money implications.
+
+
+=======================================================================
+=======================================================================
+PART XIII — DISPATCH
+=======================================================================
+=======================================================================
+
+89. DISPATCH IS GENERAL
+=======================================================================
+
+Same structure supports:
+
+    plumber
+    technician
+    courier
+    emergency replacement employee
+    maintenance worker
+    mobile clinic
+
+
+Generic:
+
+
+Need
+    ↓
+hard constraints
+    ↓
+available participants/resources
+    ↓
+Match
+    ↓
+Assignment
+    ↓
+Notify
+    ↓
+Track
+    ↓
+Completion
+
+
+=======================================================================
+90. ASSIGNMENT
+=======================================================================
+
+Assignment should be canonical state.
+
+
+Do not confuse:
+
+    offered job
+
+with:
+
+    accepted assignment.
+
+
+Possible states:
+
+    OFFERED
+    ACCEPTED
+    DECLINED
+    EXPIRED
+    CANCELLED
+    ACTIVE
+    COMPLETED
+
+
+=======================================================================
+91. NO REAL RESOURCE
+=======================================================================
+
+If no technician/driver/person exists:
+
+    BLOCKED_BY_RESOURCE
+
+
+Do not generate a fake person.
+
+
+=======================================================================
+=======================================================================
+PART XIV — DELIVERY
+=======================================================================
+=======================================================================
+
+92. DELIVERY IS NOT A DOMAIN
+=======================================================================
+
+Delivery can transport:
+
+    product
+
+    food
+
+    document
+
+    furniture
+
+    equipment
+
+    person? (then likely transport semantics)
+
+    material
+
+
+Do not build separate Core per payload type.
+
+
+=======================================================================
+93. DELIVERY COMPOSITION
+=======================================================================
+
+
+TransferRequirement
+    ↓
+pickup
+    ↓
+destination
+    ↓
+time window
+    ↓
+item constraints
+    ↓
+capacity requirement
+    ↓
+Discover
+    ↓
+Match
+    ↓
+Quote
+    ↓
+Assign
+    ↓
+Schedule
+    ↓
+Notify
+    ↓
+Track
+    ↓
+Proof of completion
+
+
+=======================================================================
+94. DELIVERY PROOF
+=======================================================================
+
+Completion evidence may include:
+
+    provider status
+
+    signed receipt
+
+    recipient confirmation
+
+    photo artifact
+
+    location event
+
+
+Policy determines adequate verification.
+
+
+Do not automatically trust one string:
+
+    delivered.
+
+
+=======================================================================
+95. BLOCK 3 BOUNDARY
+=======================================================================
+
+Block 2 can prove:
+
+    delivery completed.
+
+
+Block 3 can then trigger:
+
+    payment release
+    payout
+    commission
+    revenue event
+
+
+Never reverse this dependency.
+
+
+=======================================================================
+=======================================================================
+PART XV — MULTI-PARTY COORDINATION
+=======================================================================
+=======================================================================
+
+96. TRANSACTIONS MAY INVOLVE MANY PARTICIPANTS
+=======================================================================
+
+Examples:
+
+
+farmer
+restaurant
+carrier
+cold storage
+
+
+or:
+
+
+employee
+employer
+transport operator
+driver
+JASIM
+
+
+Do not assume:
+
+    buyer + seller only.
+
+
+=======================================================================
+97. PARTICIPANT OBLIGATION
+=======================================================================
+
+Persistent operations may need generic obligations:
+
+
+who
+
+must do what
+
+by when
+
+under what terms
+
+verification requirement
+
+
+Block 3 may later attach economic implications.
+
+
+=======================================================================
+98. FARM → RESTAURANT EXAMPLE
+=======================================================================
+
+
+Farm Offering
+    ↓
+Restaurant Need
+    ↓
+Match
+    ↓
+TransactionIntent
+
+
+If quantity > threshold:
+
+    Transport Need
+        +
+    Cold Storage Need
+
+
+Then:
+
+    additional discovery
+
+    availability
+
+    reservations
+
+    scheduling
+
+    coordination
+
+
+One composed process.
+
+
+No:
+
+    FarmerRestaurantLogisticsCore.
+
+
+=======================================================================
+=======================================================================
+PART XVI — TRUST EVIDENCE
+=======================================================================
+=======================================================================
+
+99. TRUST IS EVIDENCE-BASED
+=======================================================================
+
+Possible evidence:
+
+    identity verified
+
+    license verified
+
+    document uploaded
+
+    history observed
+
+    transaction completed
+
+    provider confirmation
+
+
+Do not let LLM invent:
+
+    trusted seller
+
+    trusted driver
+
+    verified technician
+
+
+without evidence.
+
+
+=======================================================================
+100. EVIDENCE FRESHNESS
+=======================================================================
+
+A verification can expire.
+
+
+Example:
+
+    driver's license was verified 2 years ago.
+
+
+Policy may require refresh.
+
+
+Truth needs:
+
+    source
+    verifiedAt
+    expiresAt
+    status
+
+
+=======================================================================
+101. TRUST SCORE CAUTION
+=======================================================================
+
+Historical documents contained numeric Trust Scores.
+
+Do not blindly revive one opaque universal score.
+
+
+Prefer explainable evidence dimensions.
+
+
+If ranking uses trust score:
+
+    preserve inputs
+    provenance
+    uncertainty.
+
+
+=======================================================================
+=======================================================================
+PART XVII — OBSERVABILITY
+=======================================================================
+=======================================================================
+
+102. OBSERVABILITY != TRUTH
+=======================================================================
+
+Attempt Ledger:
+
+    execution truth.
+
+
+Semantic Events:
+
+    canonical business/runtime events.
+
+
+OpenTelemetry:
+
+    observability.
+
+
+Keep separate.
+
+
+=======================================================================
+103. OPENTELEMETRY COMPATIBILITY
+=======================================================================
+
+Where useful use OpenTelemetry-compatible tracing/metrics for:
+
+    model calls
+
+    capability discovery
+
+    provider resolution
+
+    MCP calls
+
+    A2A delegation
+
+    provider latency
+
+    scheduler wakeups
+
+    reservation contention
+
+    notification delivery
+
+    computer-use sessions
+
+
+Do not create a second immutable execution ledger.
+
+
+=======================================================================
+104. GENAI TELEMETRY
+=======================================================================
+
+Capture where already available:
+
+    model
+
+    input token count
+
+    output token count
+
+    latency
+
+    provider
+
+    result class
+
+
+Avoid logging sensitive prompts by default.
+
+
+Full content tracing should be:
+
+    opt-in / redacted / policy-controlled.
+
+
+=======================================================================
+105. ECONOMIC TELEMETRY
+=======================================================================
+
+Block 2 must make later Block 3 economics measurable.
+
+
+Track enough to estimate:
+
+
+AI_COST_PER_RUN
+
+PROVIDER_COST_PER_RUN
+
+NOTIFICATION_COST
+
+TRACKING_PROVIDER_COST
+
+EXTERNAL_AGENT_COST
+
+COMPUTER_USE_COST
+
+RESERVATION_SUCCESS_RATE
+
+BOOKING_COMPLETION_RATE
+
+DELIVERY_SUCCESS_RATE
+
+TIME_TO_MATCH
+
+TIME_TO_FULFILL
+
+
+Block 3 will use these for:
+
+    contribution margin
+
+    pricing
+
+    revenue policy.
+
+
+=======================================================================
+=======================================================================
+PART XVIII — ECONOMIC PRIORITY
+=======================================================================
+=======================================================================
+
+106. BLOCK 2 MUST BE ECONOMICALLY ORDERED
+=======================================================================
+
+Do not prioritize visually impressive features over primitives that
+create verified outcomes.
+
+
+High leverage:
+
+    Reservation
+
+    Scheduler
+
+    Delegation
+
+    Notification
+
+    Provider Resolution
+
+    Multi-party coordination
+
+
+Why?
+
+They turn:
+
+    discovery
+
+into:
+
+    fulfilled outcomes.
+
+
+=======================================================================
+107. RESERVATION HAS DIRECT REVENUE LEVERAGE
+=======================================================================
+
+Once JASIM can reserve:
+
+    seat
+
+    time slot
+
+    equipment
+
+    warehouse capacity
+
+    technician
+
+
+Block 3 can later monetize:
+
+    booking fee
+
+    usage fee
+
+    transaction fee
+
+    subscription.
+
+
+=======================================================================
+108. SCHEDULER HAS RECURRING REVENUE LEVERAGE
+=======================================================================
+
+Recurring services need Scheduler.
+
+
+Examples:
+
+    worker transport
+
+    subscription delivery
+
+    recurring appointments
+
+    maintenance contracts
+
+
+Recurring operations support recurring revenue.
+
+
+=======================================================================
+109. PROVIDER FABRIC REDUCES ENGINEERING COST
+=======================================================================
+
+Block 1.1 + Block 2 should avoid:
+
+    one custom integration per business.
+
+
+This increases:
+
+    service coverage / engineering cost.
+
+
+That ratio is strategically important.
+
+
+=======================================================================
+110. COMPUTER USE HAS LONG-TAIL VALUE
+=======================================================================
+
+Computer Use can expand coverage.
+
+But must be evaluated by:
+
+    success rate
+    operational cost
+    latency
+    risk
+
+
+Do not use it where cost exceeds user/economic value.
+
+
+=======================================================================
+=======================================================================
+PART XIX — SERVICE ACCEPTANCE EXAMPLES
+=======================================================================
+=======================================================================
+
+111. EXAMPLE — "JASIM FIND ME A PLUMBER NOW"
+=======================================================================
+
+
+Need
+    ↓
+location
+    ↓
+availability
+    ↓
+hard constraints
+    ↓
+Match
+    ↓
+Assignment
+    ↓
+Notify
+    ↓
+Track
+
+
+If no provider:
+
+    BLOCKED_BY_RESOURCE
+
+
+If notification provider missing:
+
+    operation may become partially blocked.
+
+
+No PlumberAgent.
+
+
+=======================================================================
+112. EXAMPLE — "WHERE IS THE TECHNICIAN?"
+=======================================================================
+
+
+Reference Resolution
+    ↓
+Active Engagement / Assignment
+    ↓
+TrackSession
+    ↓
+fresh LocationObservation?
+        │
+        ├── YES → Tracker / Map
+        │
+        └── NO → truthful unavailable/stale status
+
+
+No fake coordinates.
+
+
+=======================================================================
+113. EXAMPLE — "I NEED 10 TONS OF COLD STORAGE"
+=======================================================================
+
+
+Need:
+10 tons
+1 week
+temperature constraint
+location constraint
+
+
+↓
+Discover
+
+↓
+Hard filtering
+
+↓
+Composite Match:
+6 tons + 4 tons
+
+↓
+Atomic reservation strategy
+
+↓
+Schedule / confirmation
+
+
+Block 3 later:
+
+    payment.
+
+
+=======================================================================
+114. EXAMPLE — "RENT MY FARM MACHINE"
+=======================================================================
+
+
+Idle Resource
+    ↓
+Offering
+    ↓
+Availability
+    ↓
+Discovery
+    ↓
+Reservation
+    ↓
+Pickup/return schedule
+    ↓
+Completion
+
+
+Block 3:
+
+    payment
+    deposit if legally/provider supported
+    fees.
+
+
+=======================================================================
+115. EXAMPLE — "RUN EMPLOYEE TRANSPORT"
+=======================================================================
+
+Requires:
+
+
+participants
+
+roles
+
+vehicles
+
+capacity
+
+routes
+
+stops
+
+schedules
+
+reservations
+
+notifications
+
+tracking
+
+
+Block 2 must support this with general primitives.
+
+
+Do not build WorkerTransportRuntime.
+
+
+=======================================================================
+116. EXAMPLE — "I NEED A BUS TO WORK"
+=======================================================================
+
+This must NOT generate a platform.
+
+
+Need
+    ↓
+Search
+    ↓
+Match existing transport Offering
+    ↓
+reserve if applicable
+
+
+Same transport semantics.
+
+Different user intent.
+
+
+=======================================================================
+117. EXAMPLE — BUILDING MAINTENANCE
+=======================================================================
+
+Generated World:
+
+    residents
+    requests
+    technician skills
+    zones
+    assignments
+
+
+Operational flow:
+
+    request
+    ↓
+    Match
+    ↓
+    availability
+    ↓
+    assignment
+    ↓
+    notify
+    ↓
+    visit
+    ↓
+    completion
+
+
+Follow-up:
+
+    "Do not assign work today to the technician
+     who was late yesterday."
+
+
+Expected:
+
+    same Bubble
+
+    policy mutation
+
+not:
+
+    new maintenance handler.
+
+
+=======================================================================
+118. EXAMPLE — "APPLY FOR THIS JOB"
+=======================================================================
+
+Possible:
+
+
+Structured API Provider?
+    ↓ yes
+execute through provider
+
+
+MCP provider?
+    ↓ yes
+trusted tool path
+
+
+A2A?
+    ↓ if appropriate
+bounded delegation
+
+
+None?
+    ↓
+Computer Use candidate
+
+
+If final submission requires approval:
+
+    prepare
+    ↓
+    preview
+    ↓
+    approve
+    ↓
+    execute
+
+
+=======================================================================
+119. EXAMPLE — "NEGOTIATE BUT DO NOT BUY"
+=======================================================================
+
+
+DelegationGrant:
+
+    SEARCH = YES
+    COMPARE = YES
+    NEGOTIATE = YES
+
+    ACCEPT = NO
+    PAY = NO
+
+
+Remote agent cannot exceed this.
+
+
+This is a critical Block 2 acceptance test.
+
+
+=======================================================================
+120. EXAMPLE — PRICE WATCH
+=======================================================================
+
+
+User:
+
+    "Notify me if price drops below 250."
+
+
+Block 2:
+
+    condition watch
+    durable schedule/subscription
+    provider observation
+    NOTIFY
+
+
+No payment.
+
+
+If:
+
+    "Buy if below 250"
+
+
+Block 2 detects condition.
+
+Block 3 later validates:
+
+    mandate/payment authority.
+
+
+=======================================================================
+121. EXAMPLE — MULTI-PARTY AGRICULTURE
+=======================================================================
+
+
+farmer
+    ↓ Offering
+
+restaurant
+    ↓ Need
+
+Match
+    ↓ TransactionIntent
+
+quantity high?
+    ↓
+
+transport requirement
++
+cold-storage requirement
+
+↓
+provider discovery
+
+↓
+reservation
+
+↓
+multi-party coordination
+
+
+This must be one composed operational graph.
+
+
+=======================================================================
+122. EXAMPLE — ELDERLY MEDICAL TRANSPORT
+=======================================================================
+
+Need:
+
+    transport
+
+    schedule
+
+    optional caregiver
+
+
+Real resources:
+
+    vehicle
+
+    driver
+
+    caregiver
+
+
+External data:
+
+    appointment
+
+
+Regulatory/privacy constraints:
+
+    health information
+
+
+JASIM must truthfully identify missing resources/regulatory requirements.
+
+
+No fake medical capability.
+
+
+=======================================================================
+123. EXAMPLE — UNKNOWN DOMAIN
+=======================================================================
+
+User says:
+
+    "Our research lab has a microscope that is unused
+     every night. Let nearby startups reserve it."
+
+
+Expected primitives:
+
+    Resource
+
+    Capacity/availability
+
+    Offering
+
+    Need
+
+    Match
+
+    Reservation
+
+    Schedule
+
+    Permission
+
+    Notification
+
+
+No LabMarketplace Core.
+
+
+=======================================================================
+=======================================================================
+PART XX — WHAT BLOCK 2 MUST NOT DO
+=======================================================================
+=======================================================================
+
+124. NO PAYMENT IMPLEMENTATION
+=======================================================================
+
+Block 3 owns:
+
+    PaymentIntent
+
+    authorization
+
+    capture
+
+    settlement
+
+    payout
+
+    refund
+
+    commissions
+
+    subscriptions/entitlements
+
+
+Block 2 may prepare:
+
+    payment requirement
+
+    reservation requiring payment
+
+    financial obligation
+
+
+But must not fake payment.
+
+
+=======================================================================
+125. NO JASIM COMMERCIAL BILLING
+=======================================================================
+
+Do not implement:
+
+    JASIM plans
+
+    commissions
+
+    success fees
+
+    billing
+
+    subscriptions
+
+
+inside Block 2.
+
+
+Only necessary operational subscription scheduling semantics may exist
+if generic.
+
+
+Commercial accounting belongs Block 3.
+
+
+=======================================================================
+126. NO ESCROW
+=======================================================================
+
+Do not create an internal escrow flag and call it escrow.
+
+
+Block 3 may support escrow only if:
+
+    legal/provider support exists.
+
+
+=======================================================================
+127. NO DOMAIN PACKS
+=======================================================================
+
+Do not revive historical:
+
+    Product Pack
+
+    Food Pack
+
+    Job Pack
+
+    Delivery Pack
+
+
+General architecture supersedes those ideas.
+
+
+=======================================================================
+128. NO MASS PROVIDER INTEGRATION
+=======================================================================
+
+Do not connect:
+
+    5 map vendors
+
+    5 messaging vendors
+
+    5 delivery vendors
+
+    10 MCP servers
+
+
+One or a very small number of provider proofs is enough.
+
+
+We test:
+
+    architecture.
+
+Not vendor count.
+
+
+=======================================================================
+129. NO MAP ENGINE
+=======================================================================
+
+Use provider-neutral geospatial projection.
+
+
+Do not build custom navigation engine.
+
+
+=======================================================================
+130. NO AGENT SWARM
+=======================================================================
+
+A2A support does not mean:
+
+    spawn many agents.
+
+
+Central JASIM remains coordinator.
+
+
+=======================================================================
+131. NO NEW WORKFLOW ENGINE
+=======================================================================
+
+Use current canonical Run/DAG.
+
+
+MCP Tasks/A2A Tasks fit beneath Run nodes.
+
+
+=======================================================================
+=======================================================================
+PART XXI — COST DISCIPLINE
+=======================================================================
+=======================================================================
+
+132. BUILD MINIMUM GENERIC DELTA
+=======================================================================
+
+Prefer:
+
+    small set of powerful operational primitives
+
+
+over:
+
+    large list of handlers.
+
+
+=======================================================================
+133. LOCAL TESTS FIRST
+=======================================================================
+
+Most Block 2 architecture can be proven using:
+
+    local fixtures
+
+    local mock provider
+
+    deterministic clocks
+
+    controlled events
+
+    local A2A/MCP endpoints
+
+
+without paid providers.
+
+
+=======================================================================
+134. REAL PROVIDER TESTS
+=======================================================================
+
+Use real provider E2E only if needed to prove:
+
+    the trust boundary
+
+or:
+
+    operational behavior impossible to prove locally.
+
+
+Do not spend money proving vendor marketing.
+
+
+=======================================================================
+135. PROVIDER COST IS DATA
+=======================================================================
+
+Provider cost should enter:
+
+    Provider metadata
+
+    telemetry
+
+    economic analysis
+
+
+Not hard-coded domain logic.
+
+
+=======================================================================
+136. MODEL CALL MINIMIZATION
+=======================================================================
+
+Do not call LLM to:
+
+    decrement capacity
+
+    compare timestamps
+
+    validate permission
+
+    decide reservation conflicts
+
+    calculate recurring dates
+
+    check authority subset
+
+    validate coordinates
+
+
+Use deterministic code.
+
+
+=======================================================================
+=======================================================================
+PART XXII — SECURITY
+=======================================================================
+=======================================================================
+
+137. NEW BLOCK 2 THREATS
+=======================================================================
+
+Focus security analysis on new boundaries:
+
+
+delegation escalation
+
+stale authority
+
+shared-resource leakage
+
+reservation race
+
+event replay
+
+webhook spoofing
+
+provider task hijacking
+
+cross-owner external-task reuse
+
+location privacy leak
+
+stale location misrepresentation
+
+notification disclosure
+
+provider substitution
+
+computer-use prompt injection
+
+credential leakage
+
+malicious remote agent
+
+malicious MCP result
+
+
+Reuse Block 0 security foundation.
+
+
+=======================================================================
+138. LOCATION PRIVACY
+=======================================================================
+
+Location can be highly sensitive.
+
+
+Projection must consider:
+
+    who may see
+
+    precision
+
+    purpose
+
+    time window
+
+    freshness
+
+
+Example:
+
+customer may need:
+
+    approximate technician progress
+
+
+but not:
+
+    technician home location.
+
+
+=======================================================================
+139. TRACKING CONSENT / POLICY
+=======================================================================
+
+Tracking must be purpose-bound.
+
+
+Do not track indefinitely.
+
+
+End TrackSession when purpose ends.
+
+
+=======================================================================
+140. NOTIFICATION PRIVACY
+=======================================================================
+
+Do not send sensitive content through channel not authorized for it.
+
+
+Example:
+
+SMS may carry:
+
+    "Your appointment is tomorrow."
+
+
+not necessarily:
+
+    full medical data.
+
+
+=======================================================================
+141. EVENT AUTHENTICATION
+=======================================================================
+
+Provider callbacks require:
+
+    signature/identity verification
+    provider binding
+    idempotency
+    purpose
+    owner/run correlation
+
+
+Do not trust arbitrary callback payload.
+
+
+=======================================================================
+142. REMOTE TASK OWNERSHIP
+=======================================================================
+
+Remote task reference must bind to:
+
+    owner
+
+    Run
+
+    node
+
+    ProviderBinding
+
+    purpose
+
+
+Another owner cannot attach/reuse it.
+
+
+=======================================================================
+=======================================================================
+PART XXIII — FAILURE SEMANTICS
+=======================================================================
+=======================================================================
+
+143. FAILURE IS FIRST-CLASS
+=======================================================================
+
+Examples:
+
+
+NO_RESOURCE
+
+NO_PROVIDER
+
+PROVIDER_UNAVAILABLE
+
+PROVIDER_TIMEOUT
+
+RESERVATION_CONFLICT
+
+AUTHORITY_EXPIRED
+
+DELEGATION_REVOKED
+
+REMOTE_TASK_FAILED
+
+REMOTE_TASK_UNKNOWN
+
+LOCATION_STALE
+
+NOTIFICATION_FAILED
+
+CONDITION_EXPIRED
+
+
+Map to existing canonical taxonomy where possible.
+
+
+=======================================================================
+144. INCONCLUSIVE
+=======================================================================
+
+External uncertainty remains:
+
+    INCONCLUSIVE.
+
+
+Do not retry an uncertain side effect blindly.
+
+
+Use existing Reconciliation.
+
+
+=======================================================================
+145. PARTIAL MULTI-PARTY FAILURE
+=======================================================================
+
+Example:
+
+Transport reserved.
+
+Cold storage failed.
+
+
+Do not say:
+
+    workflow succeeded.
+
+
+Possible:
+
+    release transport reservation
+
+    replan storage
+
+    ask user
+
+    remain partial/blocked
+
+
+Depends on policy.
+
+
+=======================================================================
+146. COMPENSATION
+=======================================================================
+
+Some workflows require compensation rather than rollback.
+
+
+Example:
+
+external reservation A cannot atomically roll back with B.
+
+
+Define:
+
+    compensating action
+
+
+only where provider supports it.
+
+
+=======================================================================
+=======================================================================
+PART XXIV — BLOCK 2 GENERALIZATION TESTS
+=======================================================================
+=======================================================================
+
+147. FREEZE ARCHITECTURE
+=======================================================================
+
+After planned acceptance tests:
+
+freeze operational primitives.
+
+
+Then run unseen goals.
+
+
+No domain patches between unseen tests.
+
+
+=======================================================================
+148. KNOWN TEST CATEGORIES
+=======================================================================
+
+Must include at least:
+
+
+1. worker transport
+
+2. emergency technician
+
+3. cold storage capacity
+
+4. composite capacity
+
+5. equipment sharing
+
+6. booking
+
+7. delivery
+
+8. price watch
+
+9. delegated negotiation
+
+10. generated business operational schedule
+
+11. multi-party agriculture
+
+12. medical transport with regulatory boundary
+
+13. remote MCP Task
+
+14. remote A2A delegation
+
+15. computer-use candidate / safe block
+
+
+=======================================================================
+149. SAME PRIMITIVE TESTS
+=======================================================================
+
+Same Reservation primitive:
+
+    warehouse
+    seat
+    machine
+    appointment
+
+
+Same Track primitive:
+
+    driver
+    shipment
+    technician
+    equipment
+
+
+Same Notification primitive:
+
+    transport
+    booking
+    maintenance
+
+
+Same Delegation primitive:
+
+    procurement
+    hiring
+    supplier negotiation
+
+
+Same Scheduler:
+
+    transport
+    reporting
+    monitoring
+    maintenance
+
+
+No domain variants.
+
+
+=======================================================================
+150. UNSEEN TESTS
+=======================================================================
+
+After freeze:
+
+test >= 12 genuinely unseen operational goals.
+
+
+Allowed truthful outcomes:
+
+
+COMPOSED
+
+BLOCKED_BY_PROVIDER
+
+BLOCKED_BY_RESOURCE
+
+MISSING_GENERIC_CAPABILITY
+
+REQUIRES_HUMAN
+
+REQUIRES_OWNER_DECISION
+
+REQUIRES_REGULATORY_REVIEW
+
+INSUFFICIENT_INFORMATION
+
+INCONCLUSIVE
+
+
+Do not patch Core after each test.
+
+
+=======================================================================
+=======================================================================
+PART XXV — ECONOMIC ACCEPTANCE
+=======================================================================
+=======================================================================
+
+151. USER VALUE
+=======================================================================
+
+For each known operational scenario report:
+
+    what real value Block 2 creates.
+
+
+Examples:
+
+Reservation:
+
+    guarantees scarce resource allocation.
+
+
+Tracking:
+
+    reduces uncertainty.
+
+
+Scheduler:
+
+    enables recurring operations.
+
+
+Delegation:
+
+    reduces human attention.
+
+
+Notifications:
+
+    reduce missed events.
+
+
+=======================================================================
+152. USER REVENUE UNLOCKED
+=======================================================================
+
+Block 2 should prove it enables owners to monetize:
+
+
+idle capacity
+
+recurring transport
+
+bookable time
+
+equipment
+
+services
+
+warehousing
+
+multi-party operations
+
+
+without yet implementing platform revenue collection.
+
+
+=======================================================================
+153. JASIM REVENUE UNLOCKED
+=======================================================================
+
+Block 2 does not realize commercial revenue yet.
+
+But it should produce operational evidence Block 3 can monetize:
+
+
+VERIFIED_BOOKING
+
+VERIFIED_SERVICE_COMPLETION
+
+VERIFIED_DELIVERY
+
+VERIFIED_RESERVATION_USE
+
+VERIFIED_HIRE/OUTCOME where applicable
+
+
+Block 3 converts these into RevenueEvents.
+
+
+=======================================================================
+154. HIGH-VALUE BLOCK 2 CAPABILITIES
+=======================================================================
+
+Rank first:
+
+
+1. Delegation
+
+2. Scheduler / DurableWait
+
+3. Reservation / Capacity
+
+4. EventSubscription
+
+5. Provider execution
+
+6. Notification
+
+7. Tracking
+
+
+Why?
+
+Together they unlock:
+
+    recurring business
+    B2B
+    resource monetization
+    service fulfillment
+    generated business operations.
+
+
+=======================================================================
+=======================================================================
+PART XXVI — MAPPING REQUIREMENTS AFTER THIS DOCUMENT
+=======================================================================
+=======================================================================
+
+155. REPLIT MUST NOT IMPLEMENT YET
+=======================================================================
+
+After reading this constitution:
+
+produce a Canonical Mapping only.
+
+
+Inspect actual current implementations for:
+
+
+Membership / sharing
+
+Role / permission
+
+Approval / delegation-related types
+
+events
+
+scheduler/timers
+
+jobs/workers
+
+availability
+
+capacity
+
+reservation
+
+notifications
+
+location
+
+tracking
+
+provider health
+
+external actions
+
+MCP adapter boundary
+
+A2A adapter boundary
+
+realtime transport
+
+Web/Mobile live projection
+
+telemetry
+
+
+=======================================================================
+156. MAPPING ACTION CLASSES
+=======================================================================
+
+Every Block 2 target receives one:
+
+
+REUSE
+
+EXTEND
+
+ADAPTER_ONLY
+
+NEW_GENERIC_PRIMITIVE_REQUIRED
+
+DEFER_BLOCK_3
+
+NO_CHANGE
+
+
+No implementation during mapping.
+
+
+=======================================================================
+157. MAPPING PRIORITY
+=======================================================================
+
+Map P0 first:
+
+
+authority/delegation
+
+time/wait
+
+events
+
+availability/capacity/reservation
+
+
+because these determine later design.
+
+
+=======================================================================
+=======================================================================
+PART XXVII — BLOCK 2 HARD GATE
+=======================================================================
+=======================================================================
+
+158. ARCHITECTURE GATE
+=======================================================================
+
+
+BLOCK_0_REMAINS_CLOSED = YES
+
+BLOCK_1_REMAINS_CLOSED = YES
+
+BLOCK_1_1_REMAINS_CLOSED = YES
+
+
+ONE_CANONICAL_RUNTIME = PASS
+
+NEW_PARALLEL_RUNTIME = 0
+
+DOMAIN_SPECIFIC_OPERATIONAL_ENGINES = 0
+
+
+=======================================================================
+159. PARTICIPATION GATE
+=======================================================================
+
+
+MEMBERSHIP = PASS
+
+ROLE_PERMISSION_SCOPE = PASS
+
+SHARED_GRANTS = PASS
+
+INVITATION = PASS
+
+REVOCATION = PASS
+
+
+DELEGATION = PASS
+
+AUTHORITY_MONOTONICITY = PASS
+
+PURPOSE_BOUND_DELEGATION = PASS
+
+DELEGATION_EXPIRY = PASS
+
+DELEGATION_REVOCATION = PASS
+
+AUTHORITY_ESCALATION = 0
+
+
+=======================================================================
+160. TIME GATE
+=======================================================================
+
+
+TEMPORAL_TRIGGER = PASS
+
+TIMEZONE = PASS
+
+DURABLE_WAIT = PASS
+
+RESTART_AFTER_WAIT = PASS
+
+DEADLINE = PASS
+
+RECURRING_SCHEDULE = PASS
+
+CONDITION_WATCH = PASS
+
+PAUSE_RESUME_CANCEL = PASS
+
+
+=======================================================================
+161. EVENT GATE
+=======================================================================
+
+
+EVENT_SUBSCRIPTION = PASS
+
+EXTERNAL_EVENT_IDEMPOTENCY = PASS
+
+EVENT_REPLAY_SAFETY = PASS
+
+STALE_EVENT_PROTECTION = PASS
+
+
+=======================================================================
+162. CAPACITY GATE
+=======================================================================
+
+
+AVAILABILITY = PASS
+
+CAPACITY = PASS
+
+UNIT_NORMALIZATION = PASS
+
+RESERVATION = PASS
+
+ATOMIC_RESERVATION = PASS
+
+RESERVATION_CONFLICT = PASS
+
+RESERVATION_EXPIRY = PASS
+
+COMPOSITE_RESERVATION = PASS
+
+
+DOUBLE_BOOKING = 0
+
+
+=======================================================================
+163. NOTIFICATION GATE
+=======================================================================
+
+
+NOTIFICATION_INTENT = PASS
+
+PROVIDER_NEUTRAL_NOTIFICATION = PASS
+
+NOTIFICATION_STATE_TRUTH = PASS
+
+NO_FAKE_DELIVERY = PASS
+
+
+=======================================================================
+164. LOCATION / TRACKING GATE
+=======================================================================
+
+
+LOCATION_OBSERVATION = PASS
+
+LOCATION_PROVENANCE = PASS
+
+LOCATION_FRESHNESS = PASS
+
+TRACK_SESSION = PASS
+
+TRACK_NOT_MAP = PASS
+
+MAP_IS_PROJECTION = PASS
+
+NO_FAKE_GPS = PASS
+
+NO_FAKE_ROUTE = PASS
+
+NO_FAKE_ETA = PASS
+
+
+=======================================================================
+165. PROVIDER EXECUTION GATE
+=======================================================================
+
+
+PROVIDER_HEALTH = PASS
+
+PROVIDER_OPERATIONAL_RESOLUTION = PASS
+
+SAFE_FALLBACK = PASS
+
+
+MCP_REAL_EXECUTION_PATH = PASS
+
+MCP_REMOTE_TASK = PASS
+
+MCP_REMOTE_TASK_RESTART = PASS
+
+
+A2A_BOUNDED_DELEGATION = PASS
+
+A2A_MINIMUM_DISCLOSURE = PASS
+
+A2A_AUTHORITY_ESCALATION = 0
+
+REMOTE_AGENT_CAN_FORGE_VERIFIED = NO
+
+
+=======================================================================
+166. REAL-WORLD COMPOSITION GATE
+=======================================================================
+
+
+BOOKING_COMPOSITION = PASS
+
+DISPATCH_COMPOSITION = PASS
+
+DELIVERY_COMPOSITION = PASS
+
+MULTI_PARTY_COORDINATION = PASS
+
+
+DOMAIN_SPECIFIC_BOOKING_ENGINE = 0
+
+DOMAIN_SPECIFIC_DELIVERY_ENGINE = 0
+
+DOMAIN_SPECIFIC_TRACKING_ENGINE = 0
+
+DOMAIN_SPECIFIC_NOTIFICATION_ENGINE = 0
+
+
+=======================================================================
+167. COMPUTER USE GATE
+=======================================================================
+
+If Computer Use is implemented in Block 2:
+
+
+COMPUTER_USE_BOUNDARY = PASS
+
+ISOLATION = PASS
+
+CREDENTIAL_PROTECTION = PASS
+
+CONSEQUENTIAL_ACTION_GATE = PASS
+
+BROWSER_SUCCESS_IS_VERIFIED = NO
+
+
+If deferred:
+
+    SAFE_DEFERRED
+
+is acceptable if all P0/P1/P2 goals do not require it.
+
+
+=======================================================================
+168. SECURITY GATE
+=======================================================================
+
+
+CROSS_OWNER_LEAKS = 0
+
+CROSS_OWNER_REMOTE_TASK_REUSE = 0
+
+LOCATION_PRIVACY_LEAKS = 0
+
+DELEGATION_ESCALATIONS = 0
+
+EVENT_REPLAY_DOUBLE_EFFECTS = 0
+
+DOUBLE_RESERVATIONS = 0
+
+CLIENT_DIRECT_EFFECT = 0
+
+UNTRUSTED_URL_EXECUTION = 0
+
+FAKE_SUCCESS = 0
+
+
+=======================================================================
+169. GENERALIZATION GATE
+=======================================================================
+
+
+KNOWN_OPERATIONAL_SCENARIOS = PASS
+
+UNSEEN_OPERATIONAL_GOALS_TESTED >= 12
+
+UNSEEN_GENERALIZATION = PASS
+
+
+DOMAIN_SPECIFIC_FIXES_DURING_UNSEEN = 0
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+DOMAIN_SPECIFIC_AGENTS = 0
+
+DOMAIN_SPECIFIC_UI_COMPONENTS = 0
+
+
+=======================================================================
+170. ECONOMIC LEVERAGE GATE
+=======================================================================
+
+
+RESOURCE_CAPACITY_MONETIZATION_READY = PASS
+
+RECURRING_BUSINESS_OPERATIONS_READY = PASS
+
+BOOKABLE_SERVICE_READY = PASS
+
+B2B_COORDINATION_READY = PASS
+
+MULTI_PARTY_VALUE_FLOW_READY = PASS
+
+
+PAYMENT_EXECUTED = NO
+
+JASIM_REVENUE_REALIZED = NO
+
+
+Those belong Block 3.
+
+
+=======================================================================
+171. OBSERVABILITY GATE
+=======================================================================
+
+
+RUN_TRACEABILITY = PASS
+
+PROVIDER_TRACEABILITY = PASS
+
+DELEGATION_TRACEABILITY = PASS
+
+SCHEDULER_TRACEABILITY = PASS
+
+RESERVATION_TRACEABILITY = PASS
+
+
+AI_COST_OBSERVABLE = PASS / EXISTING_PASS
+
+PROVIDER_COST_OBSERVABLE = PASS / PARTIAL
+
+
+TELEMETRY_IS_CANONICAL_TRUTH = NO
+
+
+=======================================================================
+=======================================================================
+PART XXVIII — FINAL BLOCK 2 PRODUCT MEANING
+=======================================================================
+=======================================================================
+
+172. WHAT JASIM SHOULD BE ABLE TO DO AFTER BLOCK 2
+=======================================================================
+
+After Block 2, JASIM should be able to understand and operationalize
+requests such as:
+
+
+"Find me a technician and send him."
+
+"Where is the technician?"
+
+"Reserve ten tons of cold storage for next week."
+
+"I need a bus every weekday at six."
+
+"Notify everyone one hour before departure."
+
+"Do not send jobs to that provider today."
+
+"Find suppliers and negotiate, but do not buy."
+
+"If the supplier does not answer in two hours, try another."
+
+"Let three companies share this machine."
+
+"Book this time slot."
+
+"Arrange delivery after the sale."
+
+"Track my shipment."
+
+"Find capacity from multiple providers if one is not enough."
+
+"Let my employee manage bookings but not prices."
+
+"Use another compatible provider if the first is unavailable."
+
+"Apply for this job, but ask me before the final submission."
+
+
+Without creating domain-specific Core for those examples.
+
+
+=======================================================================
+173. WHAT WILL STILL BE MISSING
+=======================================================================
+
+After Block 2 JASIM may coordinate real-world operations.
+
+Block 3 still owns:
+
+
+real payment runtime
+
+agentic payment mandate
+
+ACP/AP2 adapters
+
+capture
+
+settlement
+
+payout
+
+refund
+
+escrow only if legally supported
+
+fees
+
+commissions
+
+subscriptions
+
+billing
+
+entitlements
+
+usage metering
+
+revenue accounting
+
+final commercial production proof
+
+
+=======================================================================
+174. THE TRANSFORMATION
+=======================================================================
+
+Before Block 2:
+
+
+JASIM:
+    "I understand what must happen."
+
+
+After Block 1.1:
+
+
+JASIM:
+    "I understand what must happen
+     and where capabilities may come from."
+
+
+After Block 2:
+
+
+JASIM:
+    "I can coordinate what must happen
+     through time,
+     people,
+     resources,
+     providers,
+     reservations,
+     notifications,
+     tracking,
+     and delegated agents,
+     while preserving truth and authority."
+
+
+After Block 3:
+
+
+JASIM:
+    "I can also safely turn verified outcomes
+     into commerce,
+     payment,
+     settlement,
+     and economic revenue."
+
+
+=======================================================================
+175. FINAL BLOCK 2 PRINCIPLE
+=======================================================================
+
+The purpose of Block 2 is NOT:
+
+    to build maps,
+    buses,
+    warehouses,
+    plumbers,
+    delivery,
+    appointment apps.
+
+
+The purpose is to teach JASIM the general operational laws of reality:
+
+
+WHO HAS AUTHORITY?
+
+WHO PARTICIPATES?
+
+WHAT RESOURCE EXISTS?
+
+HOW MUCH CAPACITY EXISTS?
+
+WHEN IS IT AVAILABLE?
+
+CAN IT BE RESERVED?
+
+WHAT EVENT OCCURRED?
+
+WHAT MUST WAIT?
+
+WHEN MUST THE RUN WAKE?
+
+WHO MUST BE NOTIFIED?
+
+WHAT WAS OBSERVED?
+
+HOW FRESH IS THE OBSERVATION?
+
+WHO IS BEING TRACKED?
+
+WHICH PROVIDER CAN ACT?
+
+WHAT DID THE PROVIDER ACTUALLY DO?
+
+CAN ANOTHER AGENT ACT ON OUR BEHALF?
+
+HOW MUCH AUTHORITY MAY IT RECEIVE?
+
+WHAT HAPPENS WHEN ONE PART OF A MULTI-PARTY OPERATION FAILS?
+
+WHAT IS VERIFIED?
+
+WHAT REMAINS UNKNOWN?
+
+
+Once JASIM understands and enforces those laws generically,
+
+worker transport is merely one composition.
+
+delivery is merely one composition.
+
+equipment rental is merely one composition.
+
+maintenance is merely one composition.
+
+booking is merely one composition.
+
+and a future real-world business we have never imagined
+becomes another composition.
+
+
+=======================================================================
+176. REPLIT STOP INSTRUCTION
+=======================================================================
+
+After absorbing this document:
+
+DO NOT IMPLEMENT BLOCK 2.
+
+DO NOT INSTALL NEW SDKs.
+
+DO NOT CONNECT PAID PROVIDERS.
+
+DO NOT CONNECT PRODUCTION MAPS.
+
+DO NOT CONNECT PRODUCTION SMS.
+
+DO NOT IMPLEMENT PAYMENT.
+
+DO NOT START BLOCK 3.
+
+
+The next required step is only:
+
+    JASIM BLOCK 2
+    CANONICAL PRE-IMPLEMENTATION MAPPING
+
+
+That mapping must determine:
+
+    what already exists,
+
+    what can be reused,
+
+    what must be extended,
+
+    what needs a new generic primitive,
+
+    what needs an adapter,
+
+    what should be deferred,
+
+    and the minimum coherent Block 2 delta.
+
+
+END OF BLOCK 2 MASTER ARCHITECTURAL TEACHING CONSTITUTION.
+=======================================================================
+"""

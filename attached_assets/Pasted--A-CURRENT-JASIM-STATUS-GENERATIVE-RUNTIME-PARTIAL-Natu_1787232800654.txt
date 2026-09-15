@@ -1,0 +1,307 @@
+# A. CURRENT JASIM STATUS
+
+**GENERATIVE RUNTIME:**  
+**PARTIAL** — يوجد مسار فعلي من Natural Language إلى Output Envelope صارم، Conversation/Message، Bubble، Run، Proposal، Approval، وDAG محلي. لكنه لا يكوّن بعد حلقة Generative Runtime كاملة عبر Bubble mutation، Memory، Summary، External Execution، Verification، وRecovery.
+
+**SMART BUBBLE PRODUCT:**  
+**PARTIAL** — lifecycle وownership وprojection موجودة ومثبتة جزئيًا، لكن mutation الطبيعي لفقاعة موجودة غير مكتمل، وMobile لا يملك Production Auth، وcontent rendering غير متكافئ بالكامل.
+
+**TRUSTED EXECUTION:**  
+**PARTIAL FOUNDATION / MISSING PRODUCT CAPABILITY** — يوجد Trusted Local Capability Registry وDAG وleases وfencing وretry. لا يوجد Trusted Executor خارجي مكتمل مع Receipt مستقل وVerifier وReconciliation.
+
+**WEB:**  
+**PARTIAL** — Web يعمل ضد Canonical Runtime ويعرض Bubble states، لكن المسار الكامل من intent إلى تعديل Bubble حقيقي غير مكتمل.
+
+**MOBILE:**  
+**PARTIAL / DEVELOPMENT PREVIEW** — Expo Web/preview يعمل، لكن Native Production Auth غير موصول، ولا يمكن اعتبار Mobile Production جاهزًا.
+
+**PRODUCTION:**  
+**BLOCKED** — يوجد إعداد تشغيل وSecrets requirements، لكن canonical typecheck الحالي يفشل بـ **1323 خطأ TypeScript**، إضافة إلى عدم اكتمال Auth/Provider/Monitoring/Release verification.
+
+**COMMERCIAL:**  
+**DEFERRED** — توجد أجزاء قديمة مثل commerce وpayment/webhook ledger، لكنها ليست Commercial Runtime canonical مكتملة.
+
+---
+
+# B. WHAT IS COMPLETE
+
+المقصود هنا Complete فقط عندما يوجد دليل فعلي مناسب:
+
+- **Owner-scoped Conversation/Message persistence** — مثبتة في PostgreSQL proof.
+- **Strict Output Envelope validation** — النموذج غير موثوق، والـserver يتحقق من schema قبل الحفظ.
+- **Bubble بدون World** — مثبتة.
+- **Persistent Bubble مع World اختياري** — مثبتة.
+- **Run مستقل عن Bubble** — مدعوم في schema وRuntime.
+- **DAG foundation**:
+  - dependency validation
+  - cycle detection
+  - leases
+  - heartbeat
+  - fencing
+  - stale worker rejection
+  - retry scheduling
+  - cancellation
+- **Proposal fingerprinting وapproval binding** — موجودان في canonical runtime.
+- **Server-owned presentation versioning** — مثبت عبر compare-and-swap وstale-version rejection.
+- **Owner isolation الأساسي** للـConversation/Bubble/World/Run/Proposal.
+- **Web/Mobile contract package** باسم `@workspace/jasim-bubble-contract`.
+- **Web Bubble lifecycle renderer** للحالات compact/expanded/full-screen/loading/empty/error/blocked.
+- **RTL وSoap Glass shell** موجودان في Web وMobile preview.
+- **PostgreSQL focused Smart Bubble proof**:
+  - نجح.
+  - يثبت list/projection/owner isolation/versioning/archive/restore.
+- **Canonical Vitest suite**:
+  - 33 test files
+  - 460 tests passed
+
+---
+
+# C. WHAT IS STILL MISSING
+
+| Priority | Gap | Status | Size | Blocks | Reusable old component? |
+|---|---|---|---|---|---|
+| CRITICAL | Canonical typecheck/build integrity | BLOCKED | LARGE | Production, full regression | NO_USEFUL_OLD_COMPONENT |
+| CRITICAL | Full canonical PostgreSQL runtime proof | PARTIAL | MEDIUM | Release confidence | NO_USEFUL_OLD_COMPONENT |
+| CRITICAL | Natural-language existing-Bubble mutation | MISSING | LARGE | Final Smart Bubble product | NO_USEFUL_OLD_COMPONENT |
+| CRITICAL | Entity resolution داخل Bubble ثم ChangeSet/Preview/Apply | PARTIAL | LARGE | Existing-Bubble control | Some entity primitives reusable |
+| HIGH | Content versioning distinct from presentation versioning | MISSING | MEDIUM | Truthful Bubble updates | NO_USEFUL_OLD_COMPONENT |
+| HIGH | Conversation summary and bounded continuity | PARTIAL | MEDIUM | Natural continuation | Old context builder only partially reusable |
+| HIGH | Runtime Memory integration with canonical Conversation/Bubble | PARTIAL | LARGE | Long-lived generative behavior | Old Memory Engine reusable as primitive |
+| HIGH | Event list/get canonical API | PARTIAL | SMALL | Auditability and UI history | Existing event tables reusable |
+| HIGH | Bubble↔Task positive linked-flow proof | PARTIAL | MEDIUM | Task/Bubble continuity | NO_USEFUL_OLD_COMPONENT |
+| HIGH | Bubble↔multiple Runs positive proof | PARTIAL | SMALL | Bubble-first invariant evidence | Existing Run table reusable |
+| HIGH | Approval resume after restart | DEFERRED | LARGE | Reliable execution recovery | Task #7 owns this path |
+| HIGH | Trusted Executor + external Receipt | MISSING | LARGE | Any real external effect | Ledger primitives reusable |
+| HIGH | Independent Verifier | MISSING | LARGE | Verified external execution | NO_USEFUL_OLD_COMPONENT |
+| HIGH | Reconciliation loop connected to execution | PARTIAL | LARGE | Provider reliability | External action ledger/reconciler reusable |
+| HIGH | Native Mobile Auth/session attachment | DEFERRED | MEDIUM | Standalone iOS/Android runtime | Existing session primitives reusable |
+| MEDIUM | Mobile schema/content renderer parity | PARTIAL | MEDIUM | Same Bubble experience | NO_USEFUL_OLD_COMPONENT |
+| MEDIUM | Full cross-device E2E | MISSING | MEDIUM | Release confidence | NO_USEFUL_OLD_COMPONENT |
+| MEDIUM | Provider adapters connected to canonical capabilities | PARTIAL | LARGE | First real provider | Old adapters reusable selectively |
+| LATER | Multi-user roles/members/invitations/shared Bubbles | PARTIAL | LARGE | Collaboration product | Old permission primitives reusable |
+| LATER | Commercial transaction lifecycle | DEFERRED | LARGE | Commercial launch | Old commerce primitives reusable selectively |
+| LATER | iOS/Android store release pipeline | DEFERRED | MEDIUM | App Store/Play Store | NO_USEFUL_OLD_COMPONENT |
+
+## Task #14 exit gate
+
+| Exit gate | Current truth |
+|---|---|
+| Generic Bubble Renderer | PARTIAL — Web strong; Mobile status/lifecycle renderer only |
+| Natural-language existing-Bubble mutation | MISSING |
+| Entity-in-Bubble resolution | PARTIAL — heuristic World entity lookup exists, no complete mutation path |
+| ChangeSet | PARTIAL — manual World API exists, not composed from chat |
+| Human-readable preview | MISSING for Bubble mutation |
+| Content versioning | MISSING |
+| Presentation versioning | COMPLETE at server layer |
+| Bubble without World | COMPLETE |
+| Persistent Bubble with World | COMPLETE |
+| Task without World | PARTIAL — current Task creation always stores a task World snapshot; `worldId` may be null |
+| Run without Bubble | PARTIAL/REAL — supported, but broader proof is not currently clean |
+| Multiple Runs same Bubble | PARTIAL — schema permits it, positive acceptance proof is missing |
+| Bubble survives Run | PARTIAL — aggregates are separate, but completion continuity is not proven |
+| Conversation context | PARTIAL |
+| Conversation summary | MISSING |
+| Memory | PARTIAL as legacy subsystem, not canonical Bubble continuity |
+| Event list/get | PARTIAL — embedded events exist; no canonical independent list/get procedures |
+| Approval resume | PARTIAL/DEFERRED to Task #7 |
+| Approval after restart | DEFERRED |
+| Web/Mobile same Bubble | PARTIAL — shared contract exists; Native Auth blocks production proof |
+| Soap Glass | PARTIAL — visual shell proven, real Bubble-content parity not proven |
+| RTL | COMPLETE visually for current surfaces |
+| PostgreSQL proofs | PARTIAL — focused Bubble proof passes; broad proof reaches an independent Task schema failure |
+| Full canonical regression | PARTIAL — 460 Vitest tests pass, but `pnpm --dir canonical/جاسم/app run check` fails with 1323 errors |
+
+## Specific existing-Bubble scenario
+
+For:
+
+> «متجري الذي فيه الآيفون خفض سعره»
+
+Current behavior:
+
+1. Resolve Bubble — **PARTIAL/REAL** through owner-scoped token scoring.
+2. Resolve entity — **PARTIAL** through entities stored inside World schema.
+3. Understand mutation — **MISSING** as a complete semantic mutation pipeline.
+4. Create ChangeSet — **MISSING from chat**; manual World API only.
+5. Preview — **MISSING**.
+6. Approval — **AVAILABLE as separate Proposal/Task primitives**, not connected to this Bubble mutation.
+7. Apply internal change — **AVAILABLE manually through World evolution**, not from this sentence.
+8. Create content version — **MISSING**.
+9. Refresh Bubble projection — **AVAILABLE after explicit server mutation**, not after natural-language mutation.
+
+---
+
+# D. NEXT 3 CRITICAL TRANCHES
+
+1. **Canonical integrity and regression repair**
+   - Fix the current 1323 TypeScript errors.
+   - Resolve the canonical `tasks` schema/runtime mismatch.
+   - Make the full PostgreSQL proof pass without masking independent failures.
+   - Re-run canonical tests, runtime smoke, and restart/recovery tests.
+
+2. **Finish the Smart Bubble generative mutation loop**
+   - Existing Bubble/entity reference resolution.
+   - Mutation intent normalization.
+   - Server-generated ChangeSet.
+   - Human-readable preview.
+   - Approval policy when required.
+   - Atomic content/version update.
+   - Projection refresh.
+   - Web/Mobile re-render.
+   - Add positive PostgreSQL and E2E acceptance proofs.
+
+3. **Build verified execution boundary**
+   - Trusted Executor contract.
+   - Provider-specific execution adapter.
+   - Durable execution Receipt.
+   - Independent Verifier.
+   - Reconciliation and repair/retry rules.
+   - Keep all unconfigured capabilities explicitly blocked.
+
+---
+
+# E. OWNER ACTION REQUIRED NOW
+
+**NONE**
+
+لا توجد حاليًا خطوة خارجية يجب أن ينفذها صاحب المشروع قبل إكمال الترانشات البرمجية الأولى. الإصلاحات الحالية — TypeScript، schema، Bubble mutation، tests، وruntime — يستطيع Replit تنفيذها دون حساب خارجي.
+
+---
+
+# F. OWNER ACTION REQUIRED LATER
+
+## Providers
+
+| Action | Exact requirement | Blocks |
+|---|---|---|
+| Create provider accounts | Search/email/calendar/notification/payment/commerce accounts حسب Capability المختارة | First real provider |
+| Provide API keys or OAuth credentials | Provider-specific credentials stored through workspace Secrets | Provider execution |
+| Approve provider scopes | OAuth scopes أو API permissions اللازمة | Read/write provider actions |
+| Configure webhooks | Verified callback URL, signing secret/token | Reliable inbound provider state |
+
+## iOS
+
+| Action | Exact requirement | Blocks |
+|---|---|---|
+| Apple Developer membership | Active Apple Developer account | iOS signing/TestFlight |
+| Confirm Team ID | Apple Team ID | Bundle registration/signing |
+| Register Bundle ID | Final iOS Bundle Identifier | App Store build |
+| App Store Connect app | App record and metadata | TestFlight/release |
+| Provide release content | Icons, screenshots, description, privacy answers | Store submission |
+| Accept review/legal requirements | Privacy and product declarations | App Review |
+
+## Android
+
+| Action | Exact requirement | Blocks |
+|---|---|---|
+| Google Play Console account | Active developer account | Android release |
+| Confirm package ID | Final Android application/package identifier | Store registration |
+| Configure signing | Upload key / Play App Signing | AAB release |
+| Create Play listing | Metadata, screenshots, privacy information | Production rollout |
+| Select testing track | Internal/closed/open testing decision | Release progression |
+
+## Production infrastructure
+
+| Action | Exact requirement | Blocks |
+|---|---|---|
+| Provide production secrets | `SESSION_SECRET`, provider secrets, production AI/provider credentials | Production operation |
+| Confirm production database | PostgreSQL database and migration policy | Durable production runtime |
+| Confirm domain/DNS | Production HTTPS domain and DNS control | Public API/webhooks |
+| Approve monitoring/error provider | Account and credentials if external monitoring is chosen | Production observability |
+| Approve storage strategy | S3-compatible bucket/account if external object storage is required | Persistent media/artifacts |
+
+## Commercial launch
+
+| Action | Exact requirement | Blocks |
+|---|---|---|
+| Merchant/payment account | Moyasar or selected processor merchant account | Payments |
+| Business verification | Provider/legal verification | Live transactions |
+| Pricing/commission decisions | Product/business decision | Commercial transaction policy |
+| Legal/privacy text approval | Owner-approved policies and terms | Public/commercial launch |
+
+---
+
+# G. WHAT REPLIT CAN COMPLETE WITHOUT ME
+
+- Fix canonical TypeScript/build errors.
+- Repair the Task schema/runtime mismatch.
+- Complete Bubble natural-language mutation.
+- Add ChangeSet and preview contracts.
+- Add content versioning.
+- Connect Conversation context, summaries, and Memory.
+- Add event list/get procedures.
+- Add Bubble↔Task/Run projection tests.
+- Add restart/recovery and security-negative tests.
+- Build Trusted Executor/Receipt/Verifier/Reconciliation interfaces.
+- Implement provider adapters after the provider choice is known.
+- Implement Native Auth client flow once the canonical session contract is fixed.
+- Produce iOS/Android build configuration and verify local builds.
+- Improve Mobile renderer parity.
+- Add Web/Mobile E2E tests.
+- Add release checks, migrations, health checks, and observability wiring.
+- Reuse only useful primitives from the old implementation without restoring the old duplicate runtime.
+
+---
+
+# H. HARD BLOCKERS REQUIRING ME
+
+- Provider account creation and provider approval.
+- API keys/OAuth credentials for real external services.
+- Apple Developer membership and Team ID.
+- Google Play Console account.
+- Signing ownership/configuration for release builds.
+- Production domain/DNS ownership.
+- Merchant/payment account and business verification.
+- Legal/privacy/terms approval.
+- Product decisions that cannot be inferred:
+  - first provider to activate
+  - pricing/commission
+  - public/private/shared Bubble policy
+  - final branding and store content
+
+لا أحتاج منك الآن إلى Apple/Google credentials أو Provider keys حتى نكمل الترانشات الداخلية الأولى.
+
+---
+
+# I. FINAL PATH TO JASIM
+
+```text
+CURRENT STATE:
+Constrained canonical generative runtime foundation
+        ↓
+Canonical build/schema/regression integrity
+        ↓
+GENERAL GENERATIVE RUNTIME READY:
+Conversation → intent → reference resolution
+→ Bubble/Run/Task selection
+→ ChangeSet/preview/approval
+→ durable versioned state
+→ projection refresh
+→ Web/Mobile continuation
+        ↓
+Trusted Executor + Receipt + Independent Verifier
+        ↓
+PRODUCTION READY:
+Auth, migrations, secrets, monitoring, rate limits,
+recovery, provider configuration, deployment validation
+        ↓
+Commercial Runtime:
+payments, pricing, commission, transaction lifecycle,
+refund/compensation, reconciliation
+        ↓
+IOS / ANDROID RELEASE READY:
+native auth, signing, store configuration,
+TestFlight, Play testing, store review
+```
+
+الحقيقة الحالية تقع بين **Runtime Foundation** و**Generative Runtime Ready**. لم يصل المنتج بعد إلى **Final Product Complete**.
+
+---
+
+# J. NEXT ACTION
+
+**NEXT RECOMMENDED TASK:**  
+إصلاح Canonical Runtime integrity أولًا: معالجة أخطاء TypeScript الحالية، إصلاح Task schema/runtime mismatch، ثم تشغيل full canonical regression وPostgreSQL proof بالكامل.
+
+**OWNER ACTION NEEDED BEFORE STARTING IT:**  
+**NO**

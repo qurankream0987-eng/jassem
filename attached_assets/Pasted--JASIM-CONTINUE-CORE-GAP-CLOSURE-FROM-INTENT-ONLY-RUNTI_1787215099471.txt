@@ -1,0 +1,1149 @@
+# JASIM — CONTINUE CORE GAP CLOSURE
+
+## FROM INTENT-ONLY RUNTIME TO TRUSTED EXECUTION
+
+اعتمد الدفعة الحالية كـBaseline مثبتة ولا تعِد بناءها.
+
+المثبت الآن:
+
+```text
+Persistent Conversations
+Persistent Messages
+Semantic Output Router
+Durable Runs
+Run persistence
+Run events
+Run idempotency
+Run ownership isolation
+Restart durability
+Parallel idempotent create
+Intent-only Direct Action / Workflow / Durable Run
+Persistent Smart Bubble output intent
+No external side effects during classification
+Honest CAPABILITY_UNAVAILABLE blocking
+Web + Mobile display server runtime truth
+```
+
+هذه الطبقات تعتبر:
+
+```text
+BASELINE — DO NOT REWRITE WITHOUT A PROVEN REGRESSION
+```
+
+الآن انتقل داخل نفس **Task #14** إلى المرحلة التالية.
+
+---
+
+# PHASE 1 — GENERAL REFERENCE RESOLUTION
+
+قبل تفعيل التنفيذ الخارجي، أكمل Reference Resolution عامة.
+
+لا تبنِ:
+
+```text
+BubbleReferenceResolverOnly
+```
+
+بل:
+
+> GENERAL RUNTIME REFERENCE RESOLUTION
+
+يجب أن يستطيع المستخدم الإشارة طبيعيًا إلى أشياء سبق إنشاؤها أو استخدامها.
+
+أمثلة:
+
+```text
+متجري
+منصتي
+الفقاعة التي فيها الآيفون
+السيارة التي طلبت منك بيعها
+الإعلان السابق
+المنتج الذي أضفناه أمس
+الخدمة الثانية
+المهمة السابقة
+العملية التي ما زالت تنتظر
+```
+
+---
+
+## 1.1 أنواع المراجع
+
+Resolver يجب أن يستطيع حل مراجع إلى:
+
+```text
+Conversation
+Message
+Bubble
+World
+Entity
+Run
+Task
+Workflow
+Action/Intent
+Transaction
+Version
+```
+
+بحسب الموجود فعليًا في Runtime.
+
+---
+
+## 1.2 لا تثق بالنموذج وحده
+
+Model يمكنه اقتراح المرشح.
+
+لكن Runtime يجب أن يتحقق من:
+
+```text
+owner
+conversation scope
+entity existence
+bubble/world relationship
+recency
+semantic match
+authorization
+```
+
+---
+
+## 1.3 حالات الغموض
+
+إذا كان المرجع واضحًا:
+
+نفّذ resolution دون سؤال إضافي.
+
+مثال:
+
+لدى المستخدم Bubble واحدة فيها iPhone ويقول:
+
+> متجري الذي فيه الآيفون.
+
+يجب Resolve مباشرة.
+
+إذا كان هناك مرشحان متساويان فعليًا:
+
+```text
+status = awaiting_input
+```
+
+واطلب سؤال Clarification قصيرًا.
+
+لا تخمّن.
+
+---
+
+# PHASE 2 — REFERENCE EVIDENCE
+
+لا يكفي إرجاع ID فقط.
+
+احفظ عند الحاجة Metadata مثل:
+
+```text
+referenceType
+resolvedId
+resolutionMethod
+confidence
+evidence
+conversationId
+messageId
+resolvedAt
+```
+
+حتى يمكن تفسير:
+
+> لماذا اختار جاسم هذه الفقاعة؟
+
+دون كشف Chain of Thought.
+
+---
+
+# PHASE 3 — DIRECT ACTION EXECUTION CONTRACT
+
+بعد نجاح Reference Resolution، ابدأ فصل:
+
+```text
+INTENT
+```
+
+عن:
+
+```text
+EXECUTION
+```
+
+المسار الصحيح:
+
+```text
+User Turn
+↓
+Semantic Output Router
+↓
+Validated Intent
+↓
+Reference Resolution
+↓
+Execution Proposal
+↓
+Capability Resolution
+↓
+Policy
+↓
+Approval
+↓
+Execution
+↓
+Receipt
+↓
+Verification
+```
+
+لا تقفز من Output Router مباشرة إلى Provider.
+
+---
+
+# PHASE 4 — TRUSTED CAPABILITY RESOLVER
+
+أكمل Capability Resolution الحقيقي.
+
+كل Action يجب أن تطلب Capability عامة.
+
+مثال:
+
+```text
+publish.create
+search.web
+notify.send
+schedule.create
+data.read
+data.write
+entity.create
+entity.update
+```
+
+لا تستخدم:
+
+```text
+sellCar
+hireAccountant
+advertiseRestaurant
+```
+
+---
+
+## 4.1 Capability metadata
+
+كل Capability يجب أن تعرف، حسب تصميم المشروع:
+
+```text
+id
+version
+input schema
+output schema
+risk
+sideEffectType
+requiredPermissions
+approvalPolicy
+providers
+idempotencyStrategy
+verificationStrategy
+timeout/retry
+```
+
+---
+
+# PHASE 5 — CAPABILITY AVAILABILITY
+
+فرق بين:
+
+```text
+Capability exists in registry
+```
+
+و:
+
+```text
+Trusted production provider is available
+```
+
+مثال:
+
+```text
+publish.create = known capability
+```
+
+لكن إذا لا يوجد Provider موثوق:
+
+```text
+execution = BLOCKED
+reason = CAPABILITY_PROVIDER_UNAVAILABLE
+```
+
+لا تعتبر Capability جاهزة فقط لأن Contract موجود.
+
+---
+
+# PHASE 6 — APPROVAL BINDING
+
+أي Action عالية المخاطر تحتاج Approval يجب ألا تعتمد على boolean بسيط مثل:
+
+```text
+approved = true
+```
+
+اربط الموافقة بـ:
+
+```text
+action fingerprint
+capability
+critical inputs
+target
+amount if applicable
+version
+```
+
+إذا تغيرت مدخلات حساسة بعد الموافقة:
+
+```text
+approval becomes invalid
+```
+
+---
+
+# PHASE 7 — EXECUTION RECEIPTS
+
+كل Side Effect حقيقي يجب أن ينتج Receipt.
+
+احتفظ مثلًا بـ:
+
+```text
+receiptId
+runId
+actionId
+capabilityId
+providerId
+inputFingerprint
+idempotencyKey
+startedAt
+completedAt
+providerReference
+status
+resultSummary
+errorCode
+verificationStatus
+```
+
+ممنوع حفظ Secrets.
+
+---
+
+# PHASE 8 — DURABLE DAG
+
+بعد تثبيت Capability + Approval + Receipt contracts:
+
+أكمل Durable DAG Runtime.
+
+يجب أن يدعم:
+
+```text
+dependencies
+parallel branches
+joins
+conditions
+input gates
+approval gates
+retry
+backoff
+scheduled nodes
+waiting nodes
+event resume
+failure propagation
+```
+
+---
+
+## 8.1 Persistence
+
+DAG truth يجب أن تكون في DB.
+
+لا تعتمد على:
+
+```text
+in-memory promise chain
+single HTTP request
+frontend state
+```
+
+---
+
+# PHASE 9 — WORKERS
+
+أضف Worker Runtime عامة.
+
+دعم:
+
+```text
+claim
+lease
+heartbeat
+release
+retry
+stuck detection
+```
+
+لا تسمح لاثنين من Workers بتنفيذ نفس Side Effect بدون Idempotency protection.
+
+---
+
+# PHASE 10 — RESTART EXECUTION TEST
+
+اختبار إلزامي:
+
+```text
+Create Run
+↓
+execute step A
+↓
+persist receipt
+↓
+start step B
+↓
+kill API/Worker
+↓
+restart
+↓
+resume
+```
+
+يجب ألا يعيد step A إذا تم تنفيذها فعليًا.
+
+---
+
+# PHASE 11 — INDEPENDENT VERIFIER
+
+هذه مرحلة إلزامية قبل وصف التنفيذ بأنه REAL.
+
+أنشئ Verifier مستقلًا عن Executor.
+
+ممنوع:
+
+```text
+Executor returned success
+→ completed
+```
+
+الصحيح:
+
+```text
+Executor result
+↓
+Receipt
+↓
+Independent Verification
+↓
+VERIFIED / FAILED / INCONCLUSIVE
+```
+
+---
+
+## 11.1 Verification strategies
+
+دعم ما يناسب النظام مثل:
+
+```text
+DATABASE_READBACK
+PROVIDER_LOOKUP
+STATE_ASSERTION
+SCHEMA_VALIDATION
+RECEIPT_VALIDATION
+COMPOSITE_VERIFICATION
+```
+
+---
+
+## 11.2 INCONCLUSIVE
+
+`INCONCLUSIVE` ليست Success.
+
+يجب أن تبقى الحالة صادقة.
+
+---
+
+# PHASE 12 — RUN STATE TRANSITIONS
+
+أكمل lifecycle مع التنفيذ الحقيقي.
+
+أمثلة حالات:
+
+```text
+created
+awaiting_input
+ready
+awaiting_approval
+scheduled
+running
+waiting
+verifying
+blocked
+completed
+failed
+cancelled
+```
+
+Transitions يجب أن تكون Validated server-side.
+
+---
+
+# PHASE 13 — LONG-RUNNING SCHEDULER
+
+بعد Durable DAG:
+
+أكمل:
+
+```text
+WAIT
+SCHEDULE
+MONITOR
+WATCH
+NOTIFY
+RESUME_ON_EVENT
+```
+
+دون إبقاء HTTP Request مفتوحًا.
+
+---
+
+# PHASE 14 — EVENT-DRIVEN RESUME
+
+Run يمكن أن تنتظر:
+
+```text
+time
+approval
+external event
+provider callback
+new data
+manual input
+```
+
+ثم تُستأنف من الحالة المحفوظة.
+
+---
+
+# PHASE 15 — CONVERSATIONAL DIRECT ACTION
+
+بعد اكتمال المسار الموثوق:
+
+اختبر:
+
+> بع هذا الهاتف بـ200.
+
+Expected:
+
+```text
+Output Router:
+DIRECT_ACTION / DURABLE_RUN
+
+Reference Resolution:
+phone entity resolved
+
+Execution:
+only through trusted capability
+
+If no trusted provider:
+BLOCKED
+```
+
+لا تنشئ Platform.
+
+---
+
+# PHASE 16 — CONVERSATIONAL UPDATE OF AN EXISTING RUN
+
+مثال:
+
+اليوم:
+
+> بع هذه السيارة بـ5000.
+
+غدًا:
+
+> السيارة التي نبيعها خفض سعرها إلى 4700.
+
+يجب أن:
+
+```text
+resolve existing Run/entity
+↓
+validate mutation
+↓
+update execution intent/state
+↓
+invalidate old approval if required
+↓
+version/audit
+```
+
+ولا تبدأ عملية بيع ثانية تلقائيًا.
+
+---
+
+# PHASE 17 — BUBBLE MUTATION
+
+بعد General Reference Resolution:
+
+اختبر:
+
+> متجري الذي فيه الآيفون خفض سعر الآيفون إلى 280.
+
+المسار:
+
+```text
+resolve Bubble
+↓
+resolve Entity
+↓
+classify mutation
+↓
+validate
+↓
+policy/approval
+↓
+execute
+↓
+verify
+↓
+version
+↓
+rerender
+```
+
+---
+
+# PHASE 18 — BUBBLE EVOLUTION
+
+دعم:
+
+```text
+DATA_MUTATION
+STRUCTURAL_MUTATION
+POLICY_MUTATION
+WORKFLOW_MUTATION
+VIEW_MUTATION
+PERMISSION_MUTATION
+COMMERCIAL_MUTATION
+```
+
+---
+
+# PHASE 19 — HUMAN-READABLE CHANGE PREVIEW
+
+قبل التغييرات المهمة، أعط المستخدم Preview مفهومًا.
+
+مثال:
+
+> سأجعل الطلبات التي تتجاوز 500 تحتاج موافقتك قبل التأكيد.
+
+وليس Migration raw أو JSON داخلي.
+
+---
+
+# PHASE 20 — VERSION + ROLLBACK
+
+للتغييرات البنيوية المهمة:
+
+```text
+ChangeSet
+↓
+Preview
+↓
+Validation
+↓
+Approval
+↓
+Apply
+↓
+Version
+↓
+Verify
+↓
+Rollback if safe
+```
+
+---
+
+# PHASE 21 — MULTI-USER AUTHORIZATION
+
+بعد ثبات التنفيذ:
+
+أكمل:
+
+```text
+owner
+member
+customer
+provider
+moderator
+custom roles
+```
+
+مع server-side authorization.
+
+---
+
+# PHASE 22 — CROSS-BUBBLE
+
+بعدها أضف:
+
+```text
+explicit grants
+controlled data sharing
+cross-bubble references
+cross-bubble workflows
+event subscriptions
+```
+
+مثال:
+
+> خذ المنتجات من فقاعة المخزون واعرضها في فقاعة المتجر.
+
+---
+
+# PHASE 23 — REAL PROVIDERS
+
+لا تربط عشرات Providers دفعة واحدة.
+
+ابدأ بعدد صغير يسمح بإثبات دورة التنفيذ كاملة.
+
+اختر قدرات عامة فقط.
+
+الهدف الأول:
+
+```text
+intent
+↓
+capability
+↓
+provider
+↓
+receipt
+↓
+verifier
+```
+
+وليس كثرة Integrations.
+
+---
+
+# PHASE 24 — EXTERNAL PROVIDER FAILURE
+
+اختبر:
+
+```text
+timeout
+rate limit
+provider rejection
+temporary failure
+permanent failure
+partial completion
+```
+
+واستخدم:
+
+```text
+retry
+replan
+compensation
+blocked
+```
+
+حسب الحالة.
+
+---
+
+# PHASE 25 — NO FAKE SUCCESS
+
+استمر في القاعدة الحالية:
+
+```text
+No provider executed
+→ no external success claim
+
+No verifier evidence
+→ no VERIFIED claim
+```
+
+---
+
+# PHASE 26 — SAME DOMAIN / DIFFERENT INTENT
+
+احتفظ بهذا الاختبار دائمًا:
+
+```text
+"كم سعر هذه السيارة؟"
+→ RESULT
+
+"بع هذه السيارة."
+→ DIRECT ACTION / RUN
+
+"راقب أسعارها."
+→ DURABLE RUN
+
+"أنشئ سوقًا للسيارات."
+→ PERSISTENT SMART BUBBLE
+```
+
+---
+
+# PHASE 27 — DIRECT SALES WITHOUT PLATFORM
+
+اختبر فعليًا:
+
+> أريد بيع الجهاز الذي عندي.
+
+لا تنشئ Marketplace.
+
+إذا Provider غير متوفر:
+
+```text
+Understanding = PASS
+Intent = DIRECT_ACTION / DURABLE_RUN
+Execution = BLOCKED
+```
+
+---
+
+# PHASE 28 — ADVERTISING WITHOUT PLATFORM
+
+> أعلن عن هذه الخدمة.
+
+لا تنشئ Ads Platform.
+
+---
+
+# PHASE 29 — HIRING WITHOUT PLATFORM
+
+> ابحث لي عن موظف استقبال.
+
+لا تنشئ Hiring Platform.
+
+---
+
+# PHASE 30 — PLATFORM WHEN THE GOAL IS ACTUALLY A PLATFORM
+
+> أريد نظامًا دائمًا أدير فيه خدماتي وموظفي والعملاء والأسعار.
+
+هنا:
+
+```text
+PERSISTENT_SMART_BUBBLE
++
+optional World Runtime
+```
+
+صحيح.
+
+---
+
+# PHASE 31 — SECURITY NEGATIVE TESTS
+
+اختبر على الأقل:
+
+```text
+IDOR
+foreign Run access
+foreign Bubble access
+cross-world mutation
+capability injection
+unknown capability IDs
+approval replay
+approval mutation after approval
+idempotency bypass
+receipt tampering
+mass assignment
+secret leakage
+malformed provider result
+```
+
+---
+
+# PHASE 32 — GENERALIZATION REGRESSION
+
+استمر في تشغيل الـ8 scenarios الحالية بعد كل مرحلة رئيسية.
+
+بعد اكتمال Model Provider الحقيقي والتنفيذ:
+
+وسع إلى:
+
+```text
+30+ unseen Arabic + English scenarios
+```
+
+---
+
+# PHASE 33 — TEST REALITY CLASSIFICATION
+
+لكل سيناريو استخدم:
+
+```text
+REASONING_REAL
+EXECUTION_REAL
+EXECUTION_BLOCKED_EXTERNAL
+PARTIAL
+FAILED
+```
+
+ولا تخلط فهم الهدف مع تنفيذ العالم الخارجي.
+
+---
+
+# PHASE 34 — WEB + MOBILE
+
+لا تجعل التنفيذ الجديد Web-only.
+
+كل Runtime Truth يجب أن تصل إلى:
+
+```text
+Web
+Mobile
+```
+
+من نفس API/contracts.
+
+---
+
+# PHASE 35 — EXPO GO
+
+لا تجعل Metro/Expo Go معيار النجاح.
+
+الهدف النهائي لاحقًا:
+
+```text
+Standalone iOS
+Standalone Android
+```
+
+فوق نفس Runtime.
+
+---
+
+# PHASE 36 — REGRESSION SUITE
+
+بعد كل دفعة رئيسية شغّل:
+
+```text
+schema validation
+OpenAPI generation
+API typecheck
+Web typecheck
+Mobile typecheck
+build
+conversation tests
+Run tests
+ownership tests
+idempotency tests
+restart tests
+router tests
+reference resolution tests
+DAG tests
+receipt tests
+verifier tests
+security tests
+```
+
+بحسب ما تم تنفيذه في تلك المرحلة.
+
+---
+
+# PHASE 37 — DO NOT CREATE DUPLICATE ARCHITECTURE
+
+استمر بقاعدة:
+
+```text
+KEEP
+→ CONNECT
+→ GENERALIZE
+→ REPLACE ONLY WHEN NECESSARY
+```
+
+إذا وجد abstraction موجودة بالفعل، وسعها بدل إنشاء نسخة موازية.
+
+---
+
+# PHASE 38 — DO NOT STOP AT INTENT-ONLY
+
+الحالة الحالية ممتازة كمرحلة أمان.
+
+لكنها ليست الهدف النهائي.
+
+يجب أن ننتقل تدريجيًا من:
+
+```text
+Intent-only
+```
+
+إلى:
+
+```text
+Trusted Executable Runtime
+```
+
+دون كسر الحدود الأمنية.
+
+---
+
+# FINAL ACCEPTANCE JOURNEY
+
+في النهاية اختبر هذه الرحلة:
+
+## 1
+
+المستخدم:
+
+> بع هذا الهاتف بـ200.
+
+Expected:
+
+```text
+DIRECT_ACTION / DURABLE_RUN
+```
+
+بدون Platform.
+
+## 2
+
+> الهاتف الذي نبيعه خفض سعره إلى 180.
+
+يجب Resolve نفس العملية/الكيان.
+
+## 3
+
+> إذا جاء عرض أقل من 150 ارفضه، وإذا كان أعلى اطلب موافقتي.
+
+يجب إضافة Policy + Approval.
+
+## 4
+
+أعد تشغيل Server/Worker.
+
+يجب أن تبقى العملية.
+
+## 5
+
+نفذ Provider موثوقًا إن كان متوفرًا.
+
+خزن Receipt.
+
+## 6
+
+Verifier مستقل يتحقق.
+
+## 7
+
+إذا Provider غير متوفر:
+
+```text
+BLOCKED
+```
+
+بصدق.
+
+---
+
+ثم اختبر Bubble:
+
+> أنشئ لي مساحة دائمة لإدارة منتجاتي.
+
+ثم:
+
+> أضف آيفون بسعر 300.
+
+ثم:
+
+> متجري الذي فيه الآيفون خفض سعره إلى 280.
+
+ثم:
+
+> أي طلب فوق 500 يحتاج موافقتي.
+
+ثم:
+
+> أضف أحمد بصلاحية إضافة المنتجات فقط.
+
+ثم:
+
+> أخف المنتج الجمعة وأعده السبت.
+
+ثم Restart.
+
+ثم افتح من Mobile.
+
+يجب أن تكون نفس:
+
+```text
+Conversation
+Bubble
+World
+Entities
+Policies
+Memberships
+Schedules
+Versions
+Events
+Receipts
+Verification
+```
+
+حاضرة وصحيحة.
+
+---
+
+# NEXT GATE
+
+لا تعلن:
+
+```text
+JASIM GENERAL RUNTIME GATE: PASSED
+```
+
+إلا بعد إثبات:
+
+```text
+Reference Resolution
+Trusted Capability Execution
+Durable DAG
+Worker Resume
+Receipts
+Independent Verification
+Bubble Mutation/Evolution
+Long-running Resume
+Security
+Generalization
+```
+
+---
+
+# FINAL DIRECTIVE
+
+الدفعة الحالية أثبتت أن جاسم يستطيع فهم وتخزين **نية التنفيذ** دون آثار جانبية غير موثوقة.
+
+الآن أكمل التحول إلى:
+
+> SAFE, DURABLE, VERIFIED EXECUTION
+
+مع الحفاظ على:
+
+> The model proposes.
+
+> The Runtime validates.
+
+> Policy and approval authorize.
+
+> Trusted capabilities execute.
+
+> Receipts record.
+
+> Independent verifier proves.
+
+> Events and persistence preserve truth.
+
+ابدأ المرحلة التالية داخل المهمة #14، ولا تنشئ مهمة مكررة، واستمر في التنفيذ والاختبار والإصلاح حتى إغلاق الفجوات التالية بالأدلة.

@@ -1,0 +1,614 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM SMART GENERATIVE EXPERIENCE
+
+# TASK 8B1.1 — MOBILE RUNTIME READINESS GATE
+
+# ENVIRONMENT / PROJECTION / FONT ACCESS ONLY
+
+MODE INTENT:
+Focused diagnosis and minimal readiness repair.
+
+DO NOT implement Task 8B2.
+
+Task 8A = CLOSED / PASS.
+Task 8B1 implementation = PASS.
+
+Do NOT rebuild:
+
+MobilePresentationRenderer
+MobileWorkspaceSurface
+Trusted Actions
+Presentation contracts
+Workspace projection architecture
+Living Object architecture
+
+Task 8B1 report:
+
+.local/tasks/smart-ui-task-8b1-report.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. WHY THIS GATE EXISTS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 8B1 automated implementation passed.
+
+However two runtime evidence blockers remain:
+
+A.
+
+MOBILE_VISUAL_SMOKE =
+BLOCKED_BY_EXISTING_FONT_GATE
+
+B.
+
+Local API logs report missing projection-related tables including:
+
+discovery_result_sets
+
+reference_bindings
+
+These issues must be resolved or precisely classified BEFORE Task 8B2.
+
+Do NOT hide or work around them with mocks.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. GOAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Determine whether the current Mobile/Web/API local environment can truthfully execute:
+
+Conversation
+→ workspaceProjection
+→ PresentationDefinition
+→ MobilePresentationRenderer
+
+and:
+
+activeLivingObjects
+→ Mobile semantic consumer
+
+using the REAL existing canonical database/runtime.
+
+Also make the existing Mobile app visually reachable past the font/startup gate with the smallest safe fix if the gate is genuinely defective.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. ABSOLUTE DATABASE RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DO NOT CREATE NEW MIGRATIONS.
+
+DO NOT CREATE NEW TABLES.
+
+DO NOT ALTER PRODUCTION SCHEMA.
+
+DO NOT REDEFINE:
+
+discovery_result_sets
+reference_bindings
+
+These belong to previous accepted JASIM architecture/migration history if they are still canonical.
+
+First determine why the CURRENT LOCAL API cannot find them.
+
+Possible categories to investigate:
+
+1. local DB has not applied existing migrations
+
+2. API is connected to wrong database/schema
+
+3. runtime points at stale test/dev DB
+
+4. migration runner did not execute
+
+5. table names/schema qualification differ
+
+6. runtime code is querying an obsolete table that is no longer canonical
+
+7. environment configuration mismatch
+
+Do not assume which one is true.
+
+Prove it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. MIGRATION HISTORY IS IMMUTABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Previous Blocks are CLOSED.
+
+Do not edit old migration files merely to make local environment pass.
+
+Do not rewrite migration history.
+
+Inspect existing migration history and schemas.
+
+If existing migration already creates the required table:
+
+use/fix the normal existing migration/application path for the LOCAL environment.
+
+If no accepted migration/schema owns that table:
+
+STOP.
+
+Report architectural inconsistency.
+
+Do NOT invent one during this task.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. DATABASE EVIDENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Produce evidence for:
+
+current API database target/environment
+
+current migration state
+
+whether discovery_result_sets exists
+
+whether reference_bindings exists
+
+which accepted migration/schema defines each table
+
+whether API code references the correct table/schema
+
+whether workspaceProjection can execute successfully
+
+whether activeLivingObjects can execute successfully
+
+Do not print database secrets.
+
+Redact credentials.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. LOCAL FIX ALLOWED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Allowed minimal fixes include:
+
+* run existing migrations against the intended local/dev database
+* fix local migration startup wiring
+* correct environment selection
+* correct schema qualification/import if implementation is demonstrably wrong
+* repair stale local DB initialization
+* use the accepted canonical table/model if runtime accidentally references an obsolete one
+
+Not allowed:
+
+* new schema design
+* new migration
+* destructive reset of real/production data
+* dropping production tables
+* rewriting Block 3.1 architecture
+
+If a destructive local test DB reset is considered:
+
+only do so if it is clearly an isolated disposable test/dev database.
+
+Never assume.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. WORKSPACE PROJECTION PROOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After database readiness is resolved, prove:
+
+runtime.workspaceProjection
+
+can execute without missing-table error.
+
+Use authenticated/test fixture context if available through existing test infrastructure.
+
+Do not invent fake production data.
+
+Required outcomes:
+
+valid owned context
+→ valid projection
+
+missing/non-owned context
+→ safe empty/authorized result
+
+No SQL/table error.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. LIVING OBJECT PROJECTION PROOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prove:
+
+runtime.activeLivingObjects
+
+can execute on the same correct local environment.
+
+It must not fail due missing projection storage/schema.
+
+No need to create a visual Rail.
+
+Task 8B2 has not started.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. FONT / STARTUP GATE DIAGNOSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Investigate only the existing Mobile startup/font gate preventing visual access.
+
+Determine exact cause.
+
+Possible categories:
+
+* font loading Promise never resolves
+* error path never releases splash/loading state
+* wrong asset reference
+* initialization dependency ordering
+* Expo font hook/error handling issue
+* another startup condition incorrectly grouped with fonts
+
+Do not redesign startup.
+
+Do not replace the font system.
+
+Do not change visual branding.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. MINIMAL FONT FIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If the font gate has a real code defect:
+
+apply the smallest safe fix necessary so that:
+
+font success
+→ app continues
+
+font failure
+→ safe fallback / app can still render if current product policy permits
+
+or equivalent existing intended behavior.
+
+Do not leave user permanently on loading gate because one optional font fails.
+
+However:
+
+if current application contract explicitly requires those fonts before render,
+preserve that requirement and fix the actual loader instead.
+
+Document actual existing intent.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. NO FAKE VISUAL PASS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After any minimal startup fix, launch Mobile.
+
+A real Mobile visual smoke should reach the actual application UI.
+
+Do not use:
+
+static screenshot page
+fake renderer route
+hardcoded fixture replacing runtime
+WebView
+temporary bypass left in production code
+
+If authentication prevents accessing rich Smart UI:
+
+report that separately.
+
+At minimum prove the actual Conversation screen can load.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. MOBILE SMART UI SMOKE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If an existing authenticated/test route/session is available safely:
+
+verify actual:
+
+Conversation
+
+MobileWorkspaceSurface
+
+one valid semantic presentation
+
+without mocks replacing runtime.
+
+If authenticated state remains unavailable:
+
+report:
+
+AUTHENTICATED_MOBILE_SMART_UI_SMOKE =
+BLOCKED_BY_TEST_SESSION
+
+This is acceptable.
+
+But the font gate itself should no longer prevent visual access if safely repairable.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. NO TASK 8B2
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DO NOT implement:
+
+visual Morphing animations
+
+Living Object strip
+
+Mobile Active Objects sheet
+
+cross-device visual continuity
+
+navigation redesign
+
+Those belong to Task 8B2.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. REGRESSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run focused checks only.
+
+Required:
+
+Task 8B1 focused tests
+
+Task 8A focused tests
+
+projection-related tests
+
+Mobile TypeScript
+
+Shared contracts TypeScript if touched
+
+Server TypeScript if touched
+
+Metro bundle
+
+git diff --check
+
+Database readiness smoke
+
+Mobile startup smoke
+
+Do not run unrestricted parallel PostgreSQL tests if the known temporary database collision still exists.
+
+Use the established safe sequential execution for affected DB suites.
+
+Do not modify test semantics merely to avoid collisions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. DATABASE SAFETY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Explicitly report:
+
+DATABASE_USED =
+LOCAL_TEST / LOCAL_DEV / OTHER
+
+PRODUCTION_DATABASE_TOUCHED =
+NO / YES
+
+PRODUCTION_DATA_MUTATED =
+NO / YES
+
+Expected:
+
+NO
+NO
+
+If environment identity cannot be proven:
+
+DO NOT perform destructive operations.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. EXPECTED CHANGE SIZE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expected:
+
+very small.
+
+Possible changes:
+
+startup/font gate fix
+
+local/dev migration wiring fix
+
+incorrect canonical schema reference fix
+
+focused tests
+
+No feature implementation.
+
+Required expected:
+
+NEW_DATABASE_TABLES = 0
+
+NEW_MIGRATIONS = 0
+
+NEW_EXTERNAL_SDKS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create exactly:
+
+.local/tasks/smart-ui-task-8b1-1-readiness-report.md
+
+Sections:
+
+ROOT_CAUSE_SUMMARY
+
+DATABASE_ENVIRONMENT
+
+MIGRATION_STATE
+
+DISCOVERY_RESULT_SETS_OWNERSHIP
+
+REFERENCE_BINDINGS_OWNERSHIP
+
+MISSING_TABLE_ROOT_CAUSE
+
+FIX_APPLIED
+
+WORKSPACE_PROJECTION_RUNTIME_PROOF
+
+LIVING_OBJECT_RUNTIME_PROOF
+
+FONT_GATE_ROOT_CAUSE
+
+FONT_GATE_FIX
+
+MOBILE_STARTUP_PROOF
+
+AUTHENTICATED_SMART_UI_EVIDENCE
+
+DATABASE_SAFETY
+
+FILES_CHANGED
+
+TESTS
+
+Final counters:
+
+SMART_UI_TASK_8B1_1 =
+PASS / PARTIAL / FAIL
+
+TASK_8B1_IMPLEMENTATION_REOPENED =
+NO / YES
+
+DISCOVERY_RESULT_SETS_TABLE_AVAILABLE =
+YES / NO / NOT_CANONICAL
+
+REFERENCE_BINDINGS_TABLE_AVAILABLE =
+YES / NO / NOT_CANONICAL
+
+EXISTING_MIGRATION_HISTORY_USED =
+YES / NO / NOT_APPLICABLE
+
+NEW_MIGRATION_REQUIRED =
+NO / YES
+
+NEW_MIGRATION_CREATED =
+0
+
+LOCAL_PROJECTION_DATABASE_READY =
+YES / NO
+
+WORKSPACE_PROJECTION_RUNTIME =
+PASS / FAIL
+
+ACTIVE_LIVING_OBJECTS_RUNTIME =
+PASS / FAIL
+
+FONT_GATE_ROOT_CAUSE_FOUND =
+YES / NO
+
+FONT_GATE_STATUS =
+FIXED / NOT_A_BUG / BLOCKED
+
+MOBILE_REAL_APP_UI_REACHED =
+YES / NO
+
+AUTHENTICATED_MOBILE_SMART_UI_SMOKE =
+PASS / BLOCKED_BY_TEST_SESSION / FAIL
+
+PRODUCTION_DATABASE_TOUCHED =
+NO / YES
+
+PRODUCTION_DATA_MUTATED =
+NO / YES
+
+NEW_DATABASE_TABLES =
+0
+
+NEW_MIGRATIONS =
+0
+
+NEW_EXTERNAL_SDKS =
+0
+
+TASK_8B1_REGRESSION =
+PASS / FAIL
+
+TASK_8A_REGRESSION =
+PASS / FAIL
+
+MOBILE_TYPESCRIPT =
+PASS / FAIL
+
+SERVER_TYPESCRIPT =
+PASS / FAIL / NOT_TOUCHED
+
+METRO_BUNDLE =
+PASS / FAIL
+
+READY_FOR_SMART_UI_TASK_8B2 =
+YES / NO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. PASS GATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+READY_FOR_SMART_UI_TASK_8B2 = YES only if:
+
+LOCAL_PROJECTION_DATABASE_READY = YES
+
+WORKSPACE_PROJECTION_RUNTIME = PASS
+
+ACTIVE_LIVING_OBJECTS_RUNTIME = PASS
+
+NEW_MIGRATION_CREATED = 0
+
+PRODUCTION_DATABASE_TOUCHED = NO
+
+PRODUCTION_DATA_MUTATED = NO
+
+and:
+
+MOBILE_REAL_APP_UI_REACHED = YES
+
+OR
+
+font gate is proven NOT to be an application defect and exact remaining external blocker is documented.
+
+Do not mark READY merely because unit tests pass.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After this readiness gate:
+
+STOP.
+
+DO NOT start Task 8B2.
+
+Return only:
+
+Task 8B1.1 verdict
+
+missing-table root cause
+
+whether existing migration/schema was used
+
+Workspace projection runtime status
+
+Living Objects runtime status
+
+font gate status
+
+real Mobile UI reached yes/no
+
+authenticated Smart UI smoke status
+
+new migration count
+
+production DB touched yes/no
+
+READY_FOR_SMART_UI_TASK_8B2
+
+BEGIN TASK 8B1.1.

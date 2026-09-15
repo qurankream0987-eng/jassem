@@ -1,0 +1,4136 @@
+نعم. بناءً على نتيجة الـMapping التي أرسلتها، وبمقارنتها مع دستور Block 2، **أوافق على بدء التنفيذ**. الاتجاه متطابق مع الهدف: لا Workflow Engine جديد، لا Event Bus ثانٍ، ولا Authorization System ثانٍ؛ بل تمديد الـDAG والأحداث وسلسلة الثقة الموجودة. وهذا بالضبط ما يشترطه الدستور: Block 2 يجب أن يضيف القوانين التشغيلية العامة لا تطبيقات خرائط/توصيل/حجز منفصلة. 
+
+كما أن ترتيب التنفيذ الذي خرج به الـMapping صحيح: السلطة/التفويض والزمن والأحداث والحجز أولًا، ثم الإشعارات والملاحظة والتتبع، ثم التنفيذ البعيد والتراكيب.  والحجز تحديدًا يجب أن يكون ضمانًا من قاعدة البيانات، لا قرارًا من النموذج، كما ينص الدستور. 
+
+أرسل إلى Replit الأمر التالي كاملًا:
+
+```text
+# =====================================================================
+# JASIM — BLOCK 2
+# FINAL EXECUTION ORDER
+#
+# AGENT-NATIVE REAL-WORLD EXECUTION
+# + COORDINATION FABRIC
+#
+# PHASE 4 + PHASE 5 + PHASE 6
+#
+# IMPLEMENT FROM THE ACCEPTED CANONICAL MAPPING
+# =====================================================================
+
+
+BEGIN JASIM BLOCK 2 NOW.
+
+
+Accepted foundations:
+
+BLOCK_0   = CLOSED / PASS
+BLOCK_1   = CLOSED / PASS
+BLOCK_1_1 = CLOSED / PASS
+
+Accepted planning artifact:
+
+.local/tasks/block2-canonical-mapping.md
+
+
+Treat the completed Block 2 Canonical Mapping as the
+repository-specific implementation authority.
+
+Do NOT redo the mapping.
+
+Do NOT reopen previous Blocks.
+
+Do NOT launch another architecture audit.
+
+Do NOT create another planning report before coding.
+
+Implement the smallest coherent delta identified by the mapping.
+
+
+# =====================================================================
+# 0. BLOCK 2 MISSION
+# =====================================================================
+
+Block 1 made JASIM capable of understanding and composing general
+semantic capabilities.
+
+Block 1.1 separated:
+
+SEMANTIC CAPABILITY
+!=
+CAPABILITY PROVIDER
+
+
+Block 2 must now make JASIM operational across:
+
+PEOPLE
+AGENTS
+AUTHORITY
+RESOURCES
+CAPACITY
+TIME
+EVENTS
+RESERVATIONS
+NOTIFICATIONS
+OBSERVATIONS
+LOCATION
+TRACKING
+REMOTE PROVIDERS
+MULTI-PARTY OPERATIONS
+
+
+The target is:
+
+
+USER GOAL
+    ↓
+SEMANTIC CAPABILITY GRAPH
+    ↓
+PROVIDER DISCOVERY / BINDING
+    ↓
+AUTHORITY / DELEGATION
+    ↓
+DURABLE OPERATIONAL GRAPH
+    ↓
+TIME / EVENT / RESOURCE GATES
+    ↓
+TRUSTED EXECUTOR
+    ↓
+REAL OR CONTROLLED PROVIDER
+    ↓
+RECEIPT / OBSERVATION
+    ↓
+VERIFIER / RECONCILIATION
+    ↓
+CANONICAL STATE
+    ↓
+WEB / MOBILE PROJECTION
+
+
+The product-level transformation is:
+
+
+BEFORE:
+
+"I found a resource."
+
+
+AFTER:
+
+"I verified that it fits,
+ reserved it,
+ assigned the operation,
+ scheduled the next step,
+ notified the right participant,
+ and can continue the same Run after restart."
+
+
+# =====================================================================
+# 1. ABSOLUTE ARCHITECTURAL INVARIANTS
+# =====================================================================
+
+
+ONE_JASIM = TRUE
+
+ONE_CENTRAL_INTELLIGENCE = TRUE
+
+ONE_CANONICAL_RUNTIME = TRUE
+
+ONE_CANONICAL_POSTGRESQL_TRUTH = TRUE
+
+ONE_CAPABILITY_SEMANTIC_SYSTEM = TRUE
+
+ONE_AUTHORIZATION_TRUTH = TRUE
+
+ONE_TRUSTED_EXECUTOR = TRUE
+
+ONE_EVENT_TRUTH = TRUE
+
+ONE_VERIFICATION_TRUTH = TRUE
+
+
+CAPABILITY != PROVIDER
+
+PROTOCOL != PROVIDER
+
+PROTOCOL != CANONICAL_TRUTH
+
+REMOTE_TASK != JASIM_RUN
+
+OBSERVATION != VERIFIED_TRUTH
+
+TRACK != MAP
+
+PROJECTION != CANONICAL_STATE
+
+
+AUTHORIZED != EXECUTED
+
+EXECUTED != VERIFIED
+
+RECEIPT != VERIFICATION
+
+
+NO_FAKE_SUCCESS = TRUE
+
+
+# =====================================================================
+# 2. ACCEPT THE CANONICAL MAPPING DECISIONS
+# =====================================================================
+
+The mapping established:
+
+NEW_WORKFLOW_ENGINE_REQUIRED = NO
+
+NEW_EVENT_BUS_REQUIRED = NO
+
+NEW_AUTHORIZATION_SYSTEM_REQUIRED = NO
+
+
+The implementation must therefore reuse:
+
+existing canonical Run/DAG
+
+existing durable job worker
+
+existing availableAt / lease / recovery mechanisms
+
+existing events
+
+existing approval / policy / fingerprint chain
+
+existing Block 1.1 ProviderBinding
+
+existing Trusted Executor
+
+existing Attempt Ledger
+
+existing Verifier
+
+existing Reconciliation
+
+
+Do NOT create competing equivalents.
+
+
+# =====================================================================
+# 3. DATABASE DISCIPLINE
+# =====================================================================
+
+The mapping estimated:
+
+MINIMUM_NEW_TABLES = 8
+MAXIMUM_JUSTIFIED_NEW_TABLES = 10
+
+
+Interpret this correctly:
+
+8 IS NOT A QUOTA.
+
+10 IS NOT PERMISSION FOR SCHEMA EXPANSION.
+
+
+Target:
+
+<= 8 new canonical tables
+
+if the mapped architecture can be expressed cleanly.
+
+
+Tables 9 or 10 are allowed ONLY if implementation/tests prove that
+collapsing the concept would corrupt:
+
+ownership
+durability
+concurrency
+auditability
+or lifecycle semantics.
+
+
+If table count exceeds 8:
+
+the final report must contain for EACH extra table:
+
+TABLE:
+WHY_REQUIRED:
+WHY_EXISTING_TABLE_CANNOT_EXPRESS_IT:
+WHY_JSONB/GENERIC_ENTITY_IS_INSUFFICIENT:
+WHAT CORRECTNESS PROPERTY IT PROTECTS:
+
+
+Hard maximum without stopping:
+
+10
+
+
+Do not create one table per noun.
+
+
+# =====================================================================
+# 4. MIGRATION DISCIPLINE
+# =====================================================================
+
+Use the canonical migration sequence after existing migrations.
+
+Every migration must support:
+
+fresh database installation
+
+existing database upgrade
+
+
+No destructive migration.
+
+No dropping accepted Block 0/1/1.1 state.
+
+No migration written only to satisfy tests.
+
+
+At final gate prove:
+
+FRESH_MIGRATION = PASS
+UPGRADE_MIGRATION = PASS
+
+
+# =====================================================================
+# 5. NEW GENERIC PRIMITIVE BUDGET
+# =====================================================================
+
+The mapping identified approximately:
+
+NEW_GENERIC_PRIMITIVES = 9
+
+
+Treat this as a maximum implementation target,
+not a goal to invent nine classes.
+
+
+Before creating each primitive:
+
+SEARCH CURRENT CANONICAL CONTRACTS.
+
+If existing semantics can express it safely:
+
+EXTEND / REUSE.
+
+
+Potential genuinely justified primitives include concepts equivalent to:
+
+DelegationGrant
+TemporalTrigger
+Reservation
+Observation / LocationObservation
+TrackSession
+Assignment
+RemoteExecution
+NotificationIntent
+explicit sharing/grant semantics
+
+
+Use the exact names from the accepted mapping/current code.
+
+Do NOT rename simply to match this order.
+
+
+# =====================================================================
+# ================================================================
+# PHASE 4
+# PARTICIPATION + AUTHORITY + DELEGATION
+# ================================================================
+# =====================================================================
+
+
+# =====================================================================
+# 6. PHASE 4 OBJECTIVE
+# =====================================================================
+
+Implement the ability to answer deterministically:
+
+WHO MAY ACT?
+
+ON WHOSE BEHALF?
+
+ON WHICH RESOURCE?
+
+FOR WHICH PURPOSE?
+
+WITH WHICH CAPABILITIES?
+
+UNDER WHICH LIMITS?
+
+UNTIL WHEN?
+
+
+Do not build another authentication or authorization system.
+
+
+# =====================================================================
+# 7. SHARED VISIBILITY
+# =====================================================================
+
+Complete deferred follow-up #35.
+
+
+SHARED must become explicit authorization.
+
+SHARED must NOT mean:
+
+"Anyone possessing the URL can access it."
+
+
+Reuse current visibility semantics:
+
+PRIVATE
+UNLISTED
+SHARED
+PUBLIC
+
+
+Add the minimum server-side grant/membership semantics required for:
+
+subject
+resource
+permissions/scope
+purpose where applicable
+expiry
+revocation
+
+
+Cross-owner access without a valid grant:
+
+DENY.
+
+
+# =====================================================================
+# 8. MEMBERSHIP / ROLE / PERMISSION / SCOPE
+# =====================================================================
+
+Reuse current identity/ownership infrastructure.
+
+Support generated World roles without creating Kernel domain roles.
+
+
+Allowed:
+
+role = "driver"
+role = "manager"
+role = "technician"
+
+
+But enforcement must remain generic:
+
+
+subject
+→ role/grant
+→ permission
+→ resource
+→ scope
+→ capability
+
+
+Forbidden:
+
+
+if (role === "driver") {
+   // domain-specific Kernel behavior
+}
+
+
+DOMAIN_SPECIFIC_AUTHORIZATION_RULES = 0
+
+
+# =====================================================================
+# 9. DELEGATION GRANT
+# =====================================================================
+
+Implement the mapped DelegationGrant primitive.
+
+It must be capable of binding:
+
+principal
+
+delegate
+
+purpose
+
+allowed capabilities
+
+explicitly denied capabilities where needed
+
+resource scope
+
+constraints
+
+optional monetary limit
+
+validFrom
+
+expiresAt
+
+revocation state
+
+delegation depth
+
+fingerprint/version
+
+
+Reuse existing:
+
+Approval
+Policy
+Fingerprint
+
+where mapped.
+
+
+Do not create another approval engine.
+
+
+# =====================================================================
+# 10. AUTHORITY MONOTONICITY
+# =====================================================================
+
+Permanent invariant:
+
+
+CHILD_DELEGATED_AUTHORITY
+⊆
+PARENT_AUTHORITY
+
+
+Example:
+
+
+USER authorizes JASIM:
+
+SEARCH
+COMPARE
+NEGOTIATE
+
+max negotiation value:
+5000 KWD
+
+ACCEPT:
+NO
+
+PAY:
+NO
+
+
+JASIM delegates Agent:
+
+SEARCH
+COMPARE
+
+
+PASS.
+
+
+JASIM delegates Agent:
+
+PAY
+
+
+FAIL.
+
+
+No descendant actor may increase:
+
+capabilities
+resource scope
+monetary scope
+purpose scope
+time scope
+delegation depth
+
+
+Implement deterministic subset validation.
+
+LLM must never approve authority expansion.
+
+
+# =====================================================================
+# 11. PURPOSE BINDING
+# =====================================================================
+
+Authorization to:
+
+SEND_EXTERNAL_MESSAGE
+
+for:
+
+supplier negotiation
+
+
+must not authorize:
+
+marketing campaign.
+
+
+Bind delegation to:
+
+purpose
+resource
+owner
+scope
+fingerprint/version
+
+
+Purpose mismatch:
+
+DENY.
+
+
+# =====================================================================
+# 12. EXPIRY + REVOCATION
+# =====================================================================
+
+Delegation must be revalidated at execution time.
+
+Not merely at creation time.
+
+
+Scheduled execution must verify:
+
+grant still active
+
+not expired
+
+not revoked
+
+scope still valid
+
+policy still permits
+
+
+Revocation affects future effects.
+
+It must NOT rewrite previous Attempt history.
+
+
+# =====================================================================
+# 13. PHASE 4 SECURITY TESTS
+# =====================================================================
+
+At minimum prove:
+
+cross-owner SHARED access blocked
+
+valid SHARED grant allowed
+
+expired grant blocked
+
+revoked grant blocked
+
+stale grant replay blocked
+
+purpose confusion blocked
+
+child authority expansion blocked
+
+resource-scope expansion blocked
+
+monetary-limit expansion blocked
+
+delegation-depth overflow blocked
+
+cross-owner delegation blocked
+
+fingerprint mismatch blocked
+
+
+Required:
+
+AUTHORITY_ESCALATION = 0
+CROSS_OWNER_LEAKS = 0
+
+
+# =====================================================================
+# ================================================================
+# PHASE 5
+# TIME + EVENTS + RESOURCES + RESERVATION
+# + NOTIFICATION + OBSERVATION + TRACKING
+# ================================================================
+# =====================================================================
+
+
+# =====================================================================
+# 14. PHASE 5 OBJECTIVE
+# =====================================================================
+
+Make JASIM able to maintain operational state through:
+
+TIME
+
+RESTARTS
+
+EVENTS
+
+SCARCE CAPACITY
+
+ASSIGNMENTS
+
+NOTIFICATIONS
+
+CHANGING OBSERVATIONS
+
+
+without creating a new runtime.
+
+
+# =====================================================================
+# 15. TEMPORAL TRIGGERS
+# =====================================================================
+
+The mapping found that the existing durable worker already has the
+correct wake-up foundation:
+
+availableAt
+leases
+recovery
+
+
+Build the smallest persisted TemporalTrigger layer above this.
+
+Do NOT build another scheduler engine.
+
+
+Support semantic trigger classes equivalent to:
+
+AT
+AFTER
+DEADLINE
+RECURRING
+CONDITION
+EVENT
+
+
+Persist deterministic time state.
+
+
+# =====================================================================
+# 16. DURABLE WAIT
+# =====================================================================
+
+A Run waiting for future time/event must not keep an active process.
+
+
+Required:
+
+
+Run/DAG node
+↓
+WAITING
+↓
+TemporalTrigger/event continuation persisted
+↓
+worker released
+↓
+server may stop
+↓
+server restarts
+↓
+existing worker finds due continuation
+↓
+lease/fence acquired
+↓
+SAME Run resumes
+
+
+Mandatory:
+
+RESTART_AFTER_WAIT = PASS
+
+
+No duplicate Run.
+
+No duplicate external effect.
+
+
+# =====================================================================
+# 17. WAKE-UP DEDUPLICATION
+# =====================================================================
+
+Two workers discovering the same due trigger concurrently must not both
+resume the same effect.
+
+
+Reuse:
+
+leases
+fencing
+atomic claims
+
+
+Required:
+
+DOUBLE_WAKE_EFFECT = 0
+
+
+# =====================================================================
+# 18. TIMEZONE
+# =====================================================================
+
+Persist UTC execution time plus explicit timezone semantics where
+recurrence/user-local meaning requires it.
+
+
+Examples:
+
+every weekday at 06:00 Asia/Kuwait
+
+daily 08:00 Europe/London
+
+
+Do not rely on:
+
+server timezone.
+
+
+Use existing date/time libraries where sufficient.
+
+Do not add a scheduling framework merely for timezone handling.
+
+
+# =====================================================================
+# 19. RECURRING RULE
+# =====================================================================
+
+Support deterministic lifecycle:
+
+ACTIVE
+PAUSED
+CANCELLED
+COMPLETED/EXPIRED
+
+
+After one firing:
+
+calculate/persist next occurrence safely.
+
+
+Do not let a model invent next run timestamps.
+
+
+# =====================================================================
+# 20. CONDITION WATCH
+# =====================================================================
+
+Support a generic ConditionWatch/condition trigger.
+
+
+Example:
+
+price <= 250
+
+availability becomes available
+
+provider changes state
+
+
+The condition may be evaluated from:
+
+canonical state
+provider observation
+scheduled polling
+event subscription
+
+
+Block 2 may trigger/wake.
+
+Block 3 owns payment.
+
+
+Condition true:
+
+!=
+permission to pay.
+
+
+# =====================================================================
+# 21. EVENTS — EXTEND, DO NOT REPLACE
+# =====================================================================
+
+Reuse the existing canonical:
+
+events
+eventSubscriptions
+
+
+Extend only what mapping proved necessary for:
+
+Run continuation
+
+expiry
+
+external/provider sources
+
+correlation
+
+idempotency
+
+version/staleness
+
+
+NEW_EVENT_BUS = 0
+
+
+# =====================================================================
+# 22. EVENT INGESTION
+# =====================================================================
+
+External event path:
+
+
+Provider callback/event
+↓
+authenticate source
+↓
+normalize
+↓
+bind provider
+↓
+bind owner
+↓
+bind Run/node
+↓
+deduplicate
+↓
+staleness/version validation
+↓
+canonical event
+↓
+wake/continue
+
+
+Never:
+
+arbitrary webhook
+→ state mutation.
+
+
+# =====================================================================
+# 23. EVENT REPLAY
+# =====================================================================
+
+Duplicate webhook/event must not cause:
+
+duplicate reservation
+
+duplicate assignment
+
+duplicate notification
+
+duplicate remote execution
+
+duplicate future Block-3 payment
+
+
+Required:
+
+EVENT_REPLAY_DOUBLE_EFFECTS = 0
+
+
+# =====================================================================
+# 24. RESOURCE / CAPACITY
+# =====================================================================
+
+Reuse Block 1 generic entity/economic quantity semantics.
+
+
+Do not build:
+
+WarehouseResource
+BusSeatResource
+TechnicianResource
+MachineResource
+
+
+Use general:
+
+resource reference
+
+capacity
+
+quantity
+
+unit
+
+time window
+
+availability
+
+
+# =====================================================================
+# 25. UNIT NORMALIZATION
+# =====================================================================
+
+Canonical quantity checks must be deterministic.
+
+
+Example:
+
+Need:
+10 tons
+
+
+Supply:
+6000 kg
++
+4 tons
+
+
+Normalize safely.
+
+
+LLM may interpret user language.
+
+LLM must not own canonical unit arithmetic.
+
+
+# =====================================================================
+# 26. RESERVATION — NEW CANONICAL PRIMITIVE
+# =====================================================================
+
+The mapping concluded:
+
+RESERVATION_REQUIRES_NEW_GENERIC_PRIMITIVE = YES
+
+
+Implement it as a true operational object.
+
+
+Reservation must bind at minimum:
+
+owner/requester
+
+resource
+
+quantity/unit where applicable
+
+time window
+
+status
+
+version
+
+expiry
+
+idempotency
+
+related Match/Need/Offering when relevant
+
+Run/operation references where relevant
+
+
+Do not overfit schema to known examples.
+
+
+# =====================================================================
+# 27. RESERVATION STATE
+# =====================================================================
+
+Use the minimum lifecycle required by mapping/tests,
+conceptually capable of representing:
+
+
+HELD
+CONFIRMED
+RELEASED
+EXPIRED
+CANCELLED
+FAILED
+
+
+Use actual mapped terminology.
+
+Do not create state explosion.
+
+
+# =====================================================================
+# 28. ATOMIC CAPACITY RESERVATION
+# =====================================================================
+
+This is a HARD correctness gate.
+
+
+Capacity:
+
+10
+
+
+Concurrent reservation A:
+
+7
+
+
+Concurrent reservation B:
+
+5
+
+
+Expected:
+
+only a valid capacity allocation may succeed.
+
+
+Use PostgreSQL transactional/conditional atomicity identified by mapping.
+
+Forbidden sole protection:
+
+
+SELECT capacity
+→ application calculation
+→ UPDATE
+
+
+without DB concurrency protection.
+
+
+Mandatory:
+
+DOUBLE_BOOKING = 0
+
+
+# =====================================================================
+# 29. RESERVATION IDEMPOTENCY
+# =====================================================================
+
+Repeated identical request with same idempotency identity:
+
+must not allocate capacity twice.
+
+
+Persist/reuse existing idempotency infrastructure.
+
+
+# =====================================================================
+# 30. RESERVATION EXPIRY
+# =====================================================================
+
+Temporary held capacity must return automatically after expiry where
+policy requires it.
+
+
+Use TemporalTrigger.
+
+
+Do not create a second reservation scheduler.
+
+
+# =====================================================================
+# 31. COMPOSITE RESERVATION
+# =====================================================================
+
+Known example:
+
+
+Need = 10 tons
+
+Provider A = 6
+Provider B = 4
+
+
+Block 1 can derive composite Match.
+
+Block 2 must operationalize allocation.
+
+
+Important:
+
+two independent providers do NOT share one database transaction.
+
+
+Therefore model truthfully:
+
+reserve A
+↓
+reserve B
+
+
+If B fails:
+
+use mapped policy such as:
+
+release A
+compensate
+replan
+or remain explicit PARTIAL/INCONCLUSIVE
+
+
+Never:
+
+A succeeded
+B failed
+→ COMPLETE
+
+
+# =====================================================================
+# 32. AVAILABILITY
+# =====================================================================
+
+Same semantics must support:
+
+seat
+
+warehouse
+
+machine
+
+technician time
+
+appointment
+
+vehicle
+
+room
+
+equipment
+
+
+DOMAIN_SPECIFIC_AVAILABILITY_ENGINES = 0
+
+
+# =====================================================================
+# 33. ASSIGNMENT
+# =====================================================================
+
+Implement Assignment at the mapped point near the end of Phase 5.
+
+
+Assignment must remain generic.
+
+
+Example lifecycle can distinguish:
+
+OFFERED
+
+ACCEPTED
+
+DECLINED
+
+EXPIRED
+
+ACTIVE
+
+COMPLETED
+
+CANCELLED
+
+
+Use the mapped minimum.
+
+
+Same primitive must support:
+
+technician
+
+driver
+
+courier
+
+worker
+
+service provider
+
+future unknown participant/resource
+
+
+No:
+
+DriverAssignment
+TechnicianAssignment
+
+
+# =====================================================================
+# 34. CRITICAL SECURITY REPAIR — NOTIFICATIONS
+# =====================================================================
+
+The canonical mapping found a real execution bypass:
+
+notifications/router.ts
+
+currently performs side effects outside the trusted execution chain.
+
+
+THIS MUST BE CLOSED IN BLOCK 2.
+
+
+No notification channel may directly perform external effects outside:
+
+NOTIFY
+↓
+Provider Resolution
+↓
+Proposal/Policy/Approval where required
+↓
+Trusted Executor
+↓
+Attempt
+↓
+provider adapter
+↓
+Receipt
+↓
+Verifier/Reconciliation as applicable
+
+
+This includes every currently effectful notification channel.
+
+
+Required final counter:
+
+DIRECT_NOTIFICATION_SIDE_EFFECT_BYPASSES = 0
+
+
+Do NOT preserve the bypass for backward compatibility.
+
+
+# =====================================================================
+# 35. NOTIFICATION INTENT
+# =====================================================================
+
+Create/reuse generic semantics for:
+
+recipient
+
+purpose
+
+content/reference
+
+privacy classification
+
+urgency
+
+allowed/preferred channels
+
+expiry
+
+related Run/entity
+
+
+Provider/channel is implementation.
+
+It is not semantic identity.
+
+
+# =====================================================================
+# 36. NOTIFICATION STATES
+# =====================================================================
+
+Preserve truthful evidence.
+
+
+Conceptually distinguish:
+
+QUEUED
+
+PROVIDER_ACCEPTED
+
+SENT
+
+DELIVERED
+
+READ
+
+FAILED
+
+INCONCLUSIVE
+
+
+Only use states supported by evidence.
+
+
+SENT != DELIVERED
+
+DELIVERED != READ
+
+
+# =====================================================================
+# 37. NOTIFICATION PROVIDERS
+# =====================================================================
+
+Do not connect multiple production notification companies.
+
+
+Existing/local in-app behavior may become a real canonical provider.
+
+External channels without configured providers must remain:
+
+BLOCKED_BY_PROVIDER
+
+or use a controlled local adapter in tests.
+
+
+Do not fake email/SMS/push delivery.
+
+
+# =====================================================================
+# 38. OBSERVATION
+# =====================================================================
+
+Implement/reuse generic observation semantics.
+
+
+An Observation should preserve:
+
+subject
+
+observation type
+
+observedAt
+
+source/provider
+
+provenance/evidence
+
+value/payload
+
+freshness/expiry where relevant
+
+
+Observation:
+
+!=
+eternal canonical fact.
+
+
+# =====================================================================
+# 39. LOCATION OBSERVATION
+# =====================================================================
+
+Represent location as an observation.
+
+Not merely mutable:
+
+currentLat/currentLng.
+
+
+Support where justified:
+
+coordinates
+
+accuracy
+
+semantic location
+
+source
+
+observedAt
+
+freshness/expiry
+
+
+# =====================================================================
+# 40. LOCATION PRIVACY
+# =====================================================================
+
+Location projection must be authorization-aware.
+
+
+Policy/grant may determine:
+
+who can see it
+
+which subject
+
+purpose
+
+time window
+
+precision
+
+
+Example:
+
+customer can see approximate live technician progress
+
+but cannot browse technician historical/private locations.
+
+
+Mandatory:
+
+LOCATION_PRIVACY_LEAKS = 0
+
+
+# =====================================================================
+# 41. TRACK SESSION
+# =====================================================================
+
+Implement TrackSession or mapped equivalent.
+
+
+Bind:
+
+subject
+
+purpose
+
+start/end
+
+allowed viewer scope
+
+observation sources
+
+current/latest observation reference
+
+state
+
+
+Same primitive:
+
+driver
+technician
+shipment
+bus
+equipment
+machine
+
+
+DOMAIN_SPECIFIC_TRACKING_ENGINES = 0
+
+
+# =====================================================================
+# 42. TRACK != MAP
+# =====================================================================
+
+Tracking may work with:
+
+semantic status
+
+provider status
+
+last known location
+
+coordinates
+
+
+Map appears only when real coordinate evidence exists.
+
+
+No real coordinates:
+
+NO MAP MARKER.
+
+
+# =====================================================================
+# 43. ROUTE / ETA
+# =====================================================================
+
+Do not fabricate:
+
+route
+
+GPS
+
+ETA
+
+
+If no provider:
+
+UNAVAILABLE / BLOCKED_BY_PROVIDER
+
+
+If provider yields estimate:
+
+preserve:
+
+source
+generatedAt
+freshness
+
+
+NO_FAKE_GPS = PASS
+NO_FAKE_ROUTE = PASS
+NO_FAKE_ETA = PASS
+
+
+# =====================================================================
+# 44. REALTIME
+# =====================================================================
+
+Reuse current Web/Mobile transport identified by mapping.
+
+
+Do not adopt AG-UI now because mapping classified its current value LOW.
+
+
+AG_UI_ADOPTED = NO
+
+
+Canonical state/event:
+
+→ existing live projection mechanism
+
+→ Web/Mobile
+
+
+Reconnect:
+
+fetch fresh authorized snapshot
+then resume updates.
+
+
+WebSocket/SSE/client state must not become canonical truth.
+
+
+# =====================================================================
+# ================================================================
+# PHASE 6
+# PROVIDER EXECUTION + REMOTE TASKS
+# + BOOKING / DISPATCH / DELIVERY
+# + MULTI-PARTY COORDINATION
+# ================================================================
+# =====================================================================
+
+
+# =====================================================================
+# 45. PHASE 6 OBJECTIVE
+# =====================================================================
+
+Turn Block 1.1 provider discovery into real operational execution while
+keeping the canonical JASIM Runtime in control.
+
+
+# =====================================================================
+# 46. PROVIDER HEALTH
+# =====================================================================
+
+Block 1.1 knows:
+
+provider exists.
+
+
+Block 2 must distinguish:
+
+provider can operate NOW.
+
+
+Operational states may include mapped equivalents of:
+
+AVAILABLE
+
+DEGRADED
+
+UNAVAILABLE
+
+UNKNOWN
+
+STALE
+
+
+Provider registration alone must not produce AVAILABLE.
+
+
+# =====================================================================
+# 47. PROVIDER SELECTION V2
+# =====================================================================
+
+EXTEND the Block 1.1 deterministic resolver.
+
+Do not replace it.
+
+
+It may now consider trusted evidence for:
+
+semantic compatibility
+
+contract compatibility
+
+trust
+
+freshness
+
+operational health
+
+cost class
+
+latency class
+
+privacy
+
+jurisdiction
+
+historical VERIFIED success
+
+
+No LLM trust score.
+
+
+# =====================================================================
+# 48. SAFE FALLBACK
+# =====================================================================
+
+Provider fallback allowed only when:
+
+semantic meaning equivalent
+
+policy allows substitution
+
+authorization remains valid
+
+user constraints remain valid
+
+purpose remains identical
+
+
+Never silently substitute:
+
+merchant
+
+bank
+
+identity provider
+
+recipient
+
+or other meaning-changing provider.
+
+
+# =====================================================================
+# 49. FOLLOW-UP #36 — PROVIDER EXTERNAL LINKS
+# =====================================================================
+
+Close the previously deferred external-link concern.
+
+
+Provider-originated links/resources must be:
+
+provider-bound
+
+purpose-bound
+
+validated
+
+HTTPS where required
+
+owner/Run-bound where sensitive
+
+short-lived where appropriate
+
+
+Reuse existing ExternalActionSession where mapped.
+
+
+Forbidden:
+
+LLM-supplied arbitrary URL
+→ browser/execution
+
+
+UNTRUSTED_EXTERNAL_URL_EXECUTION = 0
+
+
+# =====================================================================
+# 50. ONE REMOTE EXECUTION PRIMITIVE
+# =====================================================================
+
+The mapping concluded:
+
+MCP
+and
+A2A
+
+can share:
+
+remote_executions
+
+
+Implement ONE generic remote execution/reference model.
+
+
+Do NOT create:
+
+mcp_tasks
+a2a_tasks
+
+
+as separate canonical lifecycles.
+
+
+Conceptually bind:
+
+owner
+
+Run
+
+DAG node
+
+ProviderBinding
+
+protocol/provider kind
+
+remote reference
+
+state
+
+createdAt
+
+lastObservedAt
+
+version
+
+cancellation state
+
+provider evidence
+
+
+Use exact mapped fields only.
+
+
+# =====================================================================
+# 51. REMOTE EXECUTION IS BELOW JASIM RUN
+# =====================================================================
+
+Permanent:
+
+
+REMOTE EXECUTION
+!=
+JASIM RUN
+
+
+Correct:
+
+
+JASIM Run
+↓
+DAG Node
+↓
+ProviderBinding
+↓
+RemoteExecutionRef
+↓
+remote provider work
+
+
+JASIM Run remains canonical.
+
+
+# =====================================================================
+# 52. MCP ACTUAL EXECUTION PATH
+# =====================================================================
+
+Block 1.1 only normalized MCP metadata.
+
+Block 2 must prove the runtime execution seam.
+
+
+Implement minimal MCP transport needed for the mapped path.
+
+Do NOT install a large SDK unless actual implementation proves it
+materially removes code and mapping permits it.
+
+Current target:
+
+NEW_EXTERNAL_SDKS = 0
+
+
+Correct:
+
+
+RunNode
+↓
+ProviderBinding(MCP)
+↓
+MCP adapter
+↓
+Trusted Executor Attempt
+↓
+actual HTTP/protocol transport
+↓
+provider response
+↓
+Receipt
+↓
+Verifier
+↓
+canonical transition
+
+
+# =====================================================================
+# 53. MCP PROOF PROVIDER
+# =====================================================================
+
+Do not make Block 2 dependent on a paid or unstable public provider.
+
+
+Use ONE controlled local MCP-compatible server over REAL network
+transport:
+
+real HTTP/process boundary
+
+real serialization
+
+real ProviderBinding
+
+real Attempt
+
+real Receipt
+
+real Verifier
+
+
+Not:
+
+direct in-process fake function call.
+
+
+This counts as the mandatory real runtime path proof.
+
+
+Report separately:
+
+
+MCP_REAL_TRANSPORT_E2E = PASS
+
+
+PUBLIC_EXTERNAL_MCP_PROVIDER_E2E =
+NOT_REQUIRED / PASS / INCONCLUSIVE
+
+
+An unavailable public provider must NOT fail Block 2.
+
+
+# =====================================================================
+# 54. MCP REMOTE TASK
+# =====================================================================
+
+Prove a long-running remote-task lifecycle:
+
+
+JASIM Run node
+↓
+invoke provider
+↓
+remote task reference returned
+↓
+persist remote_executions
+↓
+node enters WAITING_REMOTE
+↓
+restart JASIM
+↓
+recover same remote reference
+↓
+poll/update
+↓
+provider completes
+↓
+Receipt
+↓
+Verifier
+↓
+same Run continues
+
+
+Mandatory:
+
+MCP_REMOTE_TASK_RESTART = PASS
+
+
+# =====================================================================
+# 55. MCP CANCELLATION
+# =====================================================================
+
+Distinguish:
+
+CANCEL_REQUESTED
+
+from:
+
+REMOTE_CANCEL_CONFIRMED
+
+
+if provider evidence does not prove cancellation.
+
+
+No false:
+
+CANCELLED.
+
+
+# =====================================================================
+# 56. A2A BOUNDED DELEGATION
+# =====================================================================
+
+Use the AgentCard/Skill normalization built in Block 1.1.
+
+
+Implement a bounded runtime delegation path through the SAME
+remote_executions primitive.
+
+
+Before delegation bind:
+
+task objective
+
+typed input
+
+minimal authorized context
+
+DelegationGrant
+
+allowed capability scope
+
+time limit
+
+expected output
+
+verification requirement
+
+
+# =====================================================================
+# 57. A2A MINIMUM DISCLOSURE
+# =====================================================================
+
+Remote agent must not receive automatically:
+
+full conversation
+
+full Memory
+
+full World
+
+all Bubble state
+
+unrelated personal/business data
+
+
+Send only:
+
+purpose-bound authorized task projection.
+
+
+Mandatory:
+
+A2A_MINIMUM_DISCLOSURE = PASS
+
+
+# =====================================================================
+# 58. A2A AUTHORITY
+# =====================================================================
+
+Remote Agent cannot:
+
+grant itself permissions
+
+change owner
+
+expand delegation
+
+invoke PAY when not delegated
+
+mark its output VERIFIED
+
+directly mutate canonical DB
+
+
+Required:
+
+A2A_AUTHORITY_ESCALATION = 0
+
+REMOTE_AGENT_CAN_FORGE_VERIFIED = NO
+
+
+# =====================================================================
+# 59. A2A CONTROLLED NETWORK PROOF
+# =====================================================================
+
+Use a controlled local protocol-compatible agent endpoint for execution
+proof if needed.
+
+Do not require a paid external Agent.
+
+
+Real transport boundary preferred:
+
+actual HTTP/network
+
+not direct mock invocation.
+
+
+PUBLIC_A2A_PROVIDER_REQUIRED = NO
+
+
+# =====================================================================
+# 60. BOOKING IS A COMPOSITION
+# =====================================================================
+
+Do NOT build a Booking domain engine.
+
+
+Required composition:
+
+
+Need
+↓
+Discover
+↓
+Match
+↓
+Availability
+↓
+Reservation
+↓
+Terms/confirmation
+↓
+Schedule
+↓
+Notify
+
+
+Payment is NOT required for Block 2.
+
+
+Same composition should work for:
+
+appointment
+
+machine slot
+
+equipment
+
+service
+
+room/resource
+
+
+DOMAIN_SPECIFIC_BOOKING_ENGINE = 0
+
+
+# =====================================================================
+# 61. DISPATCH IS A COMPOSITION
+# =====================================================================
+
+
+Need
+↓
+hard constraints
+↓
+available resource/participant
+↓
+Match
+↓
+Assignment
+↓
+Notify
+↓
+Track
+↓
+Completion evidence
+
+
+Same generic path:
+
+technician
+
+courier
+
+maintenance worker
+
+replacement worker
+
+future unknown service resource
+
+
+DOMAIN_SPECIFIC_DISPATCH_ENGINE = 0
+
+
+# =====================================================================
+# 62. DELIVERY IS A COMPOSITION
+# =====================================================================
+
+No Delivery Core by payload.
+
+
+Generic:
+
+
+TransferRequirement
+↓
+pickup
+↓
+destination
+↓
+time window
+↓
+payload constraints
+↓
+capacity requirement
+↓
+Discover
+↓
+Match
+↓
+Quote/terms
+↓
+Assignment
+↓
+Schedule
+↓
+Notify
+↓
+Track
+↓
+completion evidence
+
+
+No payment implementation.
+
+
+DOMAIN_SPECIFIC_DELIVERY_ENGINE = 0
+
+
+# =====================================================================
+# 63. DELIVERY VERIFICATION
+# =====================================================================
+
+Provider says:
+
+"delivered"
+
+
+does not automatically equal:
+
+VERIFIED_DELIVERY.
+
+
+Potential evidence:
+
+provider state
+
+recipient confirmation
+
+signed receipt
+
+artifact/photo
+
+location evidence
+
+
+Use existing verifier/policy.
+
+
+# =====================================================================
+# 64. NO REAL RESOURCE = BLOCKED_BY_RESOURCE
+# =====================================================================
+
+Do not fabricate:
+
+technician
+
+driver
+
+vehicle
+
+warehouse
+
+machine
+
+caregiver
+
+courier
+
+
+If actual operational resource is absent:
+
+BLOCKED_BY_RESOURCE
+
+
+# =====================================================================
+# 65. MULTI-PARTY COORDINATION
+# =====================================================================
+
+Support coordinated Run/DAGs involving more than two actors.
+
+
+Mandatory acceptance example:
+
+
+FARMER Offering
+↓
+RESTAURANT Need
+↓
+Match
+↓
+TransactionIntent
+
+
+if quantity requires logistics:
+
+TRANSPORT Need
++
+COLD_STORAGE Need
+
+
+↓
+Discover
+↓
+Reserve
+↓
+Schedule
+↓
+coordinate participants
+
+
+No:
+
+FarmRestaurantLogisticsEngine
+
+
+# =====================================================================
+# 66. PARTICIPANT OBLIGATION
+# =====================================================================
+
+Only introduce ParticipantObligation or mapped equivalent if the
+accepted mapping proved current Engagement/Proposal/Run relationships
+cannot cleanly represent:
+
+who must do what
+
+by when
+
+under what terms
+
+with what completion evidence.
+
+
+Do not add it merely because the Constitution mentioned it.
+
+
+# =====================================================================
+# 67. PARTIAL MULTI-PARTY FAILURE
+# =====================================================================
+
+Example:
+
+transport reservation succeeds
+
+cold storage fails
+
+
+Do not mark whole operation VERIFIED.
+
+
+Possible policy-driven actions:
+
+release transport
+
+replan storage
+
+try alternate provider
+
+ask owner
+
+remain PARTIAL/BLOCKED/INCONCLUSIVE
+
+
+Use explicit state.
+
+
+# =====================================================================
+# 68. COMPUTER USE
+# =====================================================================
+
+The mapping concluded:
+
+COMPUTER_USE_BLOCK_2_VALUE = LOW / DEFER
+
+
+Honor that.
+
+
+COMPUTER_USE_IMPLEMENTED = NO
+
+
+Do not install browser automation.
+
+Do not build credential vault changes.
+
+Do not build Computer Use merely for feature count.
+
+
+Keep the provider abstraction compatible with future implementation.
+
+
+# =====================================================================
+# 69. AG-UI
+# =====================================================================
+
+Mapping:
+
+AG_UI_VALUE = LOW
+
+
+Therefore:
+
+AG_UI_IMPLEMENTED = NO
+
+
+Use current live projection mechanisms.
+
+
+# =====================================================================
+# 70. OPENTELEMETRY
+# =====================================================================
+
+Mapping:
+
+OPENTELEMETRY_VALUE = LOW
+
+
+Do not introduce it now.
+
+
+Reuse current observability.
+
+Preserve future adapter possibility.
+
+
+OPENTELEMETRY_ADOPTED = NO
+
+
+# =====================================================================
+# 71. OBSERVABILITY MUST STILL COVER BLOCK 2
+# =====================================================================
+
+Even without OpenTelemetry, make existing telemetry capable of tracing:
+
+Run
+
+trigger/wakeup
+
+delegation
+
+reservation
+
+provider selection
+
+remote execution
+
+notification execution
+
+tracking observation
+
+
+Do not create a second execution ledger.
+
+
+# =====================================================================
+# 72. COST OBSERVABILITY
+# =====================================================================
+
+Where provider cost metadata exists, preserve enough evidence for future
+Block 3 to calculate:
+
+provider cost per Run
+
+remote-agent cost
+
+notification cost
+
+tracking/location provider cost
+
+
+Do not invent actual monetary costs.
+
+
+UNKNOWN is acceptable.
+
+
+# =====================================================================
+# ================================================================
+# PRODUCT / ECONOMIC ACCEPTANCE
+# ================================================================
+# =====================================================================
+
+
+# =====================================================================
+# 73. BLOCK 2 MUST CREATE REAL OPERATIONAL VALUE
+# =====================================================================
+
+Do not judge completion by table count.
+
+
+Block 2 should unlock:
+
+recurring businesses
+
+resource monetization
+
+B2B coordination
+
+booking
+
+services
+
+transport
+
+delivery coordination
+
+multi-party workflows
+
+delegated execution
+
+
+without collecting JASIM revenue yet.
+
+
+# =====================================================================
+# 74. "JASIM FIND ME A TECHNICIAN NOW"
+# =====================================================================
+
+Expected general composition:
+
+
+Need
+↓
+location/constraints
+↓
+availability
+↓
+Match
+↓
+Assignment
+↓
+Notify
+↓
+Track if provider exists
+
+
+No technician:
+
+BLOCKED_BY_RESOURCE
+
+
+No location provider:
+
+tracking/location portion BLOCKED_BY_PROVIDER
+
+
+No fake person.
+
+No fake GPS.
+
+
+# =====================================================================
+# 75. "WHERE IS THE TECHNICIAN?"
+# =====================================================================
+
+Expected:
+
+
+Reference Resolution
+↓
+active Assignment/Engagement
+↓
+TrackSession
+↓
+fresh observation?
+
+
+fresh coordinates:
+tracker/map projection allowed
+
+
+stale:
+LAST_KNOWN / STALE
+
+
+none:
+truthful unavailable
+
+
+# =====================================================================
+# 76. "RESERVE 10 TONS OF COLD STORAGE"
+# =====================================================================
+
+Must prove:
+
+typed quantity
+
+availability
+
+hard constraints
+
+reservation
+
+expiry/cancellation
+
+concurrency
+
+
+This is a core economic-value proof.
+
+
+# =====================================================================
+# 77. COMPOSITE CAPACITY 6 + 4
+# =====================================================================
+
+Need:
+
+10 tons
+
+
+Two compatible resources:
+
+6
++
+4
+
+
+Prove:
+
+composite matching
++
+operational reservation
++
+partial-failure handling
+
+
+No domain code.
+
+
+# =====================================================================
+# 78. "I NEED A BUS EVERY WEEKDAY AT SIX"
+# =====================================================================
+
+Must compose:
+
+Need
+
+schedule/timezone
+
+Discovery/Match
+
+reservation if needed
+
+recurrence
+
+notification
+
+
+It must NOT create a transport platform.
+
+
+# =====================================================================
+# 79. "RUN MY WORKER TRANSPORT BUSINESS"
+# =====================================================================
+
+Persistent business may compose:
+
+memberships
+
+roles
+
+vehicles/resources
+
+capacity
+
+availability
+
+recurring schedule
+
+reservations
+
+assignments
+
+notifications
+
+tracking
+
+
+Same primitives.
+
+No WorkerTransportRuntime.
+
+
+# =====================================================================
+# 80. "FIND SUPPLIERS AND NEGOTIATE, BUT DO NOT BUY"
+# =====================================================================
+
+Must prove:
+
+DelegationGrant
+
+search/compare/negotiation scope
+
+PAY denied
+
+ACCEPT denied if specified
+
+remote/provider delegation cannot expand authority
+
+
+# =====================================================================
+# 81. "IF THEY DO NOT ANSWER IN TWO HOURS, TRY ANOTHER"
+# =====================================================================
+
+Must prove:
+
+event/response state
+
+DurableWait
+
+deadline/temporal trigger
+
+restart
+
+same Run continuation
+
+replan/fallback
+
+
+# =====================================================================
+# 82. "LET THREE COMPANIES SHARE THIS MACHINE"
+# =====================================================================
+
+Must prove:
+
+SHARED grants
+
+participant authorization
+
+capacity
+
+availability
+
+reservation
+
+concurrency
+
+revocation
+
+
+# =====================================================================
+# 83. "BOOK THIS SLOT"
+# =====================================================================
+
+Must use the same Reservation primitive.
+
+No appointment-domain implementation.
+
+
+# =====================================================================
+# 84. "ARRANGE DELIVERY AFTER THE SALE"
+# =====================================================================
+
+Reference Resolution must resolve:
+
+the prior transaction/asset.
+
+
+Then compose generic Delivery.
+
+
+No sale-specific delivery implementation.
+
+
+# =====================================================================
+# 85. "APPLY FOR THIS JOB BUT ASK BEFORE SUBMITTING"
+# =====================================================================
+
+If structured provider is available:
+
+prepare action
+
+↓
+approval gate
+
+↓
+execute only after approval
+
+
+Computer Use not required in Block 2.
+
+
+If no provider exists:
+
+BLOCKED_BY_PROVIDER
+
+
+Do not fake submission.
+
+
+# =====================================================================
+# 86. IDLE RESOURCE MONETIZATION
+# =====================================================================
+
+Unseen examples should include resources such as:
+
+lab machine
+
+industrial oven
+
+vehicle capacity
+
+studio
+
+storage
+
+equipment
+
+
+Same:
+
+Resource
+→ Availability
+→ Offering
+→ Need
+→ Match
+→ Reservation
+
+
+This directly prepares user revenue without Block 3 payments.
+
+
+# =====================================================================
+# ================================================================
+# BLOCK 3 BOUNDARY
+# ================================================================
+# =====================================================================
+
+
+# =====================================================================
+# 87. ABSOLUTELY DO NOT IMPLEMENT BLOCK 3
+# =====================================================================
+
+No:
+
+real PaymentIntent execution
+
+payment credentials
+
+ACP
+
+AP2
+
+capture
+
+settlement
+
+payout
+
+refund
+
+escrow
+
+JASIM commission
+
+success fee collection
+
+commercial subscription billing
+
+entitlement billing
+
+usage billing
+
+revenue accounting
+
+
+Block 2 may create operational evidence such as:
+
+VERIFIED_BOOKING
+
+VERIFIED_DELIVERY
+
+VERIFIED_SERVICE_COMPLETION
+
+VERIFIED_RESERVATION_USE
+
+
+Block 3 later converts verified outcomes into economic accounting.
+
+
+# =====================================================================
+# ================================================================
+# TESTING STRATEGY
+# ================================================================
+# =====================================================================
+
+
+# =====================================================================
+# 88. ONE BLOCK 2 ACCEPTANCE HARNESS
+# =====================================================================
+
+Create/reuse ONE consolidated Block 2 acceptance suite.
+
+
+Do not create dozens of disconnected test projects.
+
+
+Recommended naming:
+
+test:jasim-block-2
+
+or repository-equivalent.
+
+
+# =====================================================================
+# 89. TEST REAL PRODUCTION PATHS
+# =====================================================================
+
+Tests must import and exercise production implementation.
+
+
+Controlled external providers are allowed.
+
+Self-contained fake implementations that duplicate production logic are
+not valid proof.
+
+
+A test server may simulate an external protocol.
+
+The JASIM side must use real production:
+
+resolver
+
+executor
+
+Attempt Ledger
+
+DB
+
+Run/DAG
+
+Verifier
+
+Reconciliation
+
+
+# =====================================================================
+# 90. DATABASE TESTS
+# =====================================================================
+
+Use REAL PostgreSQL test execution for:
+
+reservation race
+
+lease/wakeup
+
+idempotency
+
+restart
+
+cross-owner grant
+
+remote execution references
+
+stale version protection
+
+
+Do not replace concurrency proof with in-memory test doubles.
+
+
+# =====================================================================
+# 91. PHASE 4 TEST GROUP
+# =====================================================================
+
+Required:
+
+explicit SHARED grant
+
+revocation
+
+expiry
+
+purpose binding
+
+cross-owner blocking
+
+authority monotonicity
+
+resource-scope limitation
+
+delegation depth
+
+fingerprint staleness
+
+
+# =====================================================================
+# 92. PHASE 5 TIME/EVENT TEST GROUP
+# =====================================================================
+
+Required:
+
+AT
+
+AFTER
+
+DEADLINE
+
+RECURRING
+
+CONDITION
+
+EVENT-triggered wake
+
+pause
+
+resume
+
+cancel
+
+restart
+
+duplicate wake prevention
+
+event replay prevention
+
+stale event rejection
+
+
+# =====================================================================
+# 93. PHASE 5 RESERVATION TEST GROUP
+# =====================================================================
+
+Required:
+
+simple reservation
+
+same idempotency replay
+
+capacity decrement
+
+release
+
+expiry
+
+concurrent 7 + 5 over capacity 10
+
+composite 6 + 4
+
+composite second-leg failure
+
+compensation/release
+
+cross-owner resource attempt
+
+stale version
+
+
+# =====================================================================
+# 94. PHASE 5 NOTIFICATION TEST GROUP
+# =====================================================================
+
+Required:
+
+NOTIFY → ProviderResolver → TrustedExecutor
+
+in-app successful path
+
+external provider unavailable
+
+delivery-state truth
+
+duplicate notification attempt
+
+cross-owner recipient
+
+purpose/privacy restriction
+
+
+Mandatory:
+
+DIRECT_NOTIFICATION_SIDE_EFFECT_BYPASSES = 0
+
+
+# =====================================================================
+# 95. PHASE 5 TRACKING TEST GROUP
+# =====================================================================
+
+Required:
+
+fresh location
+
+stale location
+
+non-coordinate location/status
+
+privacy precision restriction
+
+TrackSession close
+
+cross-owner view denial
+
+no GPS provider
+
+no route provider
+
+no ETA provider
+
+
+NO_FAKE_LOCATION = PASS
+
+
+# =====================================================================
+# 96. PHASE 6 REMOTE EXECUTION TEST GROUP
+# =====================================================================
+
+Required:
+
+MCP real HTTP controlled-provider execution
+
+MCP receipt + verifier
+
+MCP long-running Task
+
+restart while WAITING_REMOTE
+
+same remote reference reused
+
+remote cancellation
+
+duplicate provider callback
+
+malicious provider result cannot forge VERIFIED
+
+cross-owner remote task reuse blocked
+
+
+A2A:
+
+bounded delegation
+
+minimum context
+
+authority subset
+
+typed result
+
+malicious self-authority blocked
+
+VERIFIED forgery blocked
+
+cancellation/remote reference where implemented
+
+
+# =====================================================================
+# 97. COMPOSITION TEST GROUP
+# =====================================================================
+
+Required:
+
+Booking
+
+Dispatch
+
+Delivery
+
+multi-party agriculture/logistics/storage
+
+recurring generated business operation
+
+resource sharing
+
+
+All through generic primitives.
+
+
+# =====================================================================
+# 98. KNOWN OPERATIONAL SCENARIOS
+# =====================================================================
+
+Run at least the mapped known scenarios including:
+
+1 technician dispatch
+
+2 technician tracking
+
+3 cold-storage reservation
+
+4 composite capacity
+
+5 recurring bus
+
+6 recurring notification
+
+7 delegated negotiation without purchase
+
+8 supplier timeout/fallback
+
+9 shared equipment
+
+10 booking
+
+11 post-sale delivery
+
+12 job application approval boundary
+
+13 farm→restaurant→transport→storage
+
+14 elderly medical transport
+
+15 unknown idle-resource example
+
+
+Truthful:
+
+REQUIRES_REGULATORY_REVIEW
+
+is valid where appropriate.
+
+
+# =====================================================================
+# 99. ARCHITECTURE FREEZE
+# =====================================================================
+
+After known operational tests pass:
+
+FREEZE THE GENERIC OPERATIONAL ARCHITECTURE.
+
+
+No new:
+
+Core primitive
+
+domain handler
+
+domain provider
+
+domain UI
+
+domain route
+
+
+may be added for unseen tests.
+
+
+# =====================================================================
+# 100. UNSEEN GENERALIZATION
+# =====================================================================
+
+After freeze run:
+
+>= 12 genuinely unseen operational goals.
+
+
+Include diversity:
+
+time
+
+resource capacity
+
+multi-party
+
+delegation
+
+tracking
+
+booking
+
+non-economic operation
+
+recurring operation
+
+unknown physical resource
+
+unknown service
+
+
+Allowed outcomes:
+
+COMPOSED
+
+BLOCKED_BY_PROVIDER
+
+BLOCKED_BY_RESOURCE
+
+MISSING_GENERIC_CAPABILITY
+
+REQUIRES_HUMAN
+
+REQUIRES_OWNER_DECISION
+
+REQUIRES_REGULATORY_REVIEW
+
+INSUFFICIENT_INFORMATION
+
+INCONCLUSIVE
+
+
+A truthful gap may PASS generalization.
+
+
+Required:
+
+DOMAIN_SPECIFIC_FIXES_DURING_UNSEEN = 0
+
+FAKE_SUCCESS = 0
+
+
+# =====================================================================
+# 101. ECONOMIC READINESS TESTS
+# =====================================================================
+
+Prove Block 2 operationally enables:
+
+RESOURCE_CAPACITY_MONETIZATION_READY
+
+RECURRING_BUSINESS_OPERATIONS_READY
+
+BOOKABLE_SERVICE_READY
+
+B2B_COORDINATION_READY
+
+MULTI_PARTY_VALUE_FLOW_READY
+
+
+But:
+
+PAYMENT_EXECUTED = NO
+
+JASIM_REVENUE_REALIZED = NO
+
+
+# =====================================================================
+# ================================================================
+# REGRESSION
+# ================================================================
+# =====================================================================
+
+
+# =====================================================================
+# 102. DO NOT RERUN EVERYTHING REPEATEDLY
+# =====================================================================
+
+During implementation run local affected tests.
+
+At final gate run ONCE:
+
+Block 2 suite
+
+affected Block 1.1 provider tests
+
+affected Block 1 fabric tests
+
+affected Block 0 trust/recovery tests
+
+canonical TypeScript
+
+Generative Runtime check
+
+Web production build
+
+Mobile typecheck
+
+migration fresh install
+
+migration upgrade
+
+
+Do not rerun:
+
+Phase 12 calibration
+
+all historic experimental suites
+
+production deployment
+
+app signing
+
+payment tests
+
+
+# =====================================================================
+# 103. BLOCK 0/1/1.1 MUST REMAIN CLOSED
+# =====================================================================
+
+No Block 2 fix may weaken:
+
+Attempt immutability
+
+approval fingerprinting
+
+owner isolation
+
+provider trust
+
+verifier truth
+
+reconciliation
+
+capability/provider separation
+
+dynamic provider discovery
+
+
+If a regression appears:
+
+fix the Block 2 integration.
+
+Do not redesign the accepted foundation.
+
+
+# =====================================================================
+# ================================================================
+# HARD FINAL GATE
+# ================================================================
+# =====================================================================
+
+
+# =====================================================================
+# 104. ARCHITECTURE
+# =====================================================================
+
+BLOCK_0_REMAINS_CLOSED = YES
+
+BLOCK_1_REMAINS_CLOSED = YES
+
+BLOCK_1_1_REMAINS_CLOSED = YES
+
+ONE_CANONICAL_RUNTIME = PASS
+
+NEW_PARALLEL_RUNTIME = 0
+
+NEW_WORKFLOW_ENGINE = 0
+
+NEW_EVENT_BUS = 0
+
+NEW_AUTHORIZATION_SYSTEM = 0
+
+DOMAIN_SPECIFIC_OPERATIONAL_ENGINES = 0
+
+
+# =====================================================================
+# 105. PARTICIPATION / AUTHORITY
+# =====================================================================
+
+MEMBERSHIP = PASS
+
+ROLE_PERMISSION_SCOPE = PASS
+
+SHARED_GRANTS = PASS
+
+INVITATION = PASS / SAFE_REUSE
+
+REVOCATION = PASS
+
+DELEGATION = PASS
+
+AUTHORITY_MONOTONICITY = PASS
+
+PURPOSE_BOUND_DELEGATION = PASS
+
+DELEGATION_EXPIRY = PASS
+
+DELEGATION_REVOCATION = PASS
+
+AUTHORITY_ESCALATION = 0
+
+CROSS_OWNER_LEAKS = 0
+
+
+# =====================================================================
+# 106. TIME
+# =====================================================================
+
+TEMPORAL_TRIGGER = PASS
+
+TIMEZONE = PASS
+
+DURABLE_WAIT = PASS
+
+RESTART_AFTER_WAIT = PASS
+
+DEADLINE = PASS
+
+RECURRING_SCHEDULE = PASS
+
+CONDITION_WATCH = PASS
+
+PAUSE_RESUME_CANCEL = PASS
+
+DOUBLE_WAKE_EFFECT = 0
+
+
+# =====================================================================
+# 107. EVENTS
+# =====================================================================
+
+CANONICAL_EVENTS_REUSED = YES
+
+EVENT_SUBSCRIPTION = PASS
+
+EXTERNAL_EVENT_IDEMPOTENCY = PASS
+
+EVENT_REPLAY_SAFETY = PASS
+
+STALE_EVENT_PROTECTION = PASS
+
+EVENT_REPLAY_DOUBLE_EFFECTS = 0
+
+
+# =====================================================================
+# 108. CAPACITY / RESERVATION
+# =====================================================================
+
+AVAILABILITY = PASS
+
+CAPACITY = PASS
+
+UNIT_NORMALIZATION = PASS
+
+RESERVATION = PASS
+
+ATOMIC_RESERVATION = PASS
+
+RESERVATION_CONFLICT = PASS
+
+RESERVATION_IDEMPOTENCY = PASS
+
+RESERVATION_EXPIRY = PASS
+
+COMPOSITE_RESERVATION = PASS
+
+PARTIAL_RESERVATION_RECOVERY = PASS
+
+DOUBLE_BOOKING = 0
+
+
+# =====================================================================
+# 109. NOTIFICATIONS
+# =====================================================================
+
+NOTIFICATION_INTENT = PASS
+
+PROVIDER_NEUTRAL_NOTIFICATION = PASS
+
+NOTIFICATION_STATE_TRUTH = PASS
+
+NOTIFY_USES_TRUSTED_EXECUTOR = PASS
+
+DIRECT_NOTIFICATION_SIDE_EFFECT_BYPASSES = 0
+
+NO_FAKE_NOTIFICATION_DELIVERY = PASS
+
+
+# =====================================================================
+# 110. LOCATION / TRACKING
+# =====================================================================
+
+OBSERVATION = PASS
+
+LOCATION_OBSERVATION = PASS
+
+LOCATION_PROVENANCE = PASS
+
+LOCATION_FRESHNESS = PASS
+
+LOCATION_PRIVACY = PASS
+
+TRACK_SESSION = PASS
+
+TRACK_NOT_MAP = PASS
+
+MAP_IS_PROJECTION = PASS
+
+NO_FAKE_GPS = PASS
+
+NO_FAKE_ROUTE = PASS
+
+NO_FAKE_ETA = PASS
+
+LOCATION_PRIVACY_LEAKS = 0
+
+
+# =====================================================================
+# 111. PROVIDERS
+# =====================================================================
+
+PROVIDER_HEALTH = PASS
+
+PROVIDER_OPERATIONAL_RESOLUTION = PASS
+
+SAFE_PROVIDER_FALLBACK = PASS
+
+SENSITIVE_PROVIDER_SUBSTITUTION_PROTECTION = PASS
+
+PROVIDER_EXTERNAL_LINK_TRUST = PASS
+
+UNTRUSTED_EXTERNAL_URL_EXECUTION = 0
+
+
+# =====================================================================
+# 112. REMOTE EXECUTION
+# =====================================================================
+
+ONE_REMOTE_EXECUTION_PRIMITIVE = PASS
+
+MCP_AND_A2A_SHARE_REMOTE_EXECUTION = PASS
+
+MCP_REAL_TRANSPORT_E2E = PASS
+
+MCP_REMOTE_TASK = PASS
+
+MCP_REMOTE_TASK_RESTART = PASS
+
+MCP_REMOTE_TASK_CANCELLATION = PASS
+
+A2A_BOUNDED_DELEGATION = PASS
+
+A2A_MINIMUM_DISCLOSURE = PASS
+
+A2A_AUTHORITY_ESCALATION = 0
+
+REMOTE_AGENT_CAN_FORGE_VERIFIED = NO
+
+CROSS_OWNER_REMOTE_TASK_REUSE = 0
+
+
+# =====================================================================
+# 113. COMPOSITIONS
+# =====================================================================
+
+ASSIGNMENT = PASS
+
+BOOKING_COMPOSITION = PASS
+
+DISPATCH_COMPOSITION = PASS
+
+DELIVERY_COMPOSITION = PASS
+
+MULTI_PARTY_COORDINATION = PASS
+
+PARTIAL_MULTI_PARTY_FAILURE = PASS
+
+
+DOMAIN_SPECIFIC_BOOKING_ENGINE = 0
+
+DOMAIN_SPECIFIC_DISPATCH_ENGINE = 0
+
+DOMAIN_SPECIFIC_DELIVERY_ENGINE = 0
+
+DOMAIN_SPECIFIC_TRACKING_ENGINE = 0
+
+DOMAIN_SPECIFIC_NOTIFICATION_ENGINE = 0
+
+
+# =====================================================================
+# 114. DEFERRED TECH
+# =====================================================================
+
+COMPUTER_USE_IMPLEMENTED = NO
+
+AG_UI_IMPLEMENTED = NO
+
+OPENTELEMETRY_ADOPTED = NO
+
+
+These are intentional decisions, not failures.
+
+
+# =====================================================================
+# 115. GENERALITY
+# =====================================================================
+
+KNOWN_OPERATIONAL_SCENARIOS = PASS
+
+UNSEEN_OPERATIONAL_GOALS_TESTED >= 12
+
+UNSEEN_GENERALIZATION = PASS
+
+DOMAIN_SPECIFIC_FIXES_DURING_UNSEEN = 0
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+DOMAIN_SPECIFIC_AGENTS = 0
+
+DOMAIN_SPECIFIC_UI_COMPONENTS = 0
+
+FAKE_SUCCESS = 0
+
+
+# =====================================================================
+# 116. ECONOMIC LEVERAGE
+# =====================================================================
+
+RESOURCE_CAPACITY_MONETIZATION_READY = PASS
+
+RECURRING_BUSINESS_OPERATIONS_READY = PASS
+
+BOOKABLE_SERVICE_READY = PASS
+
+B2B_COORDINATION_READY = PASS
+
+MULTI_PARTY_VALUE_FLOW_READY = PASS
+
+PAYMENT_EXECUTED = NO
+
+JASIM_REVENUE_REALIZED = NO
+
+
+# =====================================================================
+# 117. DEPENDENCIES / SCHEMA
+# =====================================================================
+
+NEW_EXTERNAL_AGENT_SDKS = 0
+
+NEW_SCHEDULER_FRAMEWORKS = 0
+
+NEW_EVENT_INFRASTRUCTURE = 0
+
+
+TARGET_NEW_TABLES <= 8
+
+ABSOLUTE_NEW_TABLE_MAX = 10
+
+
+If NEW_TABLES > 8:
+
+EXTRA_TABLE_JUSTIFICATIONS must be included.
+
+
+# =====================================================================
+# 118. REGRESSION
+# =====================================================================
+
+BLOCK_2_SUITE = PASS
+
+BLOCK_1_1_PROVIDER_REGRESSION = PASS
+
+BLOCK_1_FABRIC_REGRESSION = PASS
+
+BLOCK_0_TRUST_RECOVERY_REGRESSION = PASS
+
+CANONICAL_TYPECHECK = PASS
+
+GENERATIVE_RUNTIME_CHECK = PASS
+
+WEB_PRODUCTION_BUILD = PASS
+
+MOBILE_TYPECHECK = PASS
+
+FRESH_MIGRATION = PASS
+
+UPGRADE_MIGRATION = PASS
+
+
+# =====================================================================
+# 119. ONE FINAL REPORT ONLY
+# =====================================================================
+
+Create:
+
+.local/tasks/block2-report.md
+
+
+Do not create phase-by-phase prose reports unless needed temporarily
+during development.
+
+
+The final report must contain:
+
+
+# JASIM BLOCK 2 FINAL REPORT
+
+
+## A. EXECUTIVE VERDICT
+
+
+## B. ARCHITECTURE DELTA
+
+
+## C. DATABASE DELTA
+
+
+## D. PHASE 4 — PARTICIPATION / DELEGATION
+
+
+## E. PHASE 5 — TIME / EVENTS
+
+
+## F. PHASE 5 — CAPACITY / RESERVATION
+
+
+## G. PHASE 5 — NOTIFICATION SECURITY REWIRE
+
+
+## H. PHASE 5 — OBSERVATION / TRACKING
+
+
+## I. PHASE 6 — PROVIDER OPERATIONS
+
+
+## J. PHASE 6 — MCP / A2A REMOTE EXECUTION
+
+
+## K. PHASE 6 — BOOKING / DISPATCH / DELIVERY
+
+
+## L. MULTI-PARTY COORDINATION
+
+
+## M. SECURITY
+
+
+## N. GENERALIZATION
+
+
+## O. ECONOMIC LEVERAGE
+
+
+## P. WEB / MOBILE
+
+
+## Q. REGRESSION
+
+
+## R. DEFERRED ITEMS
+
+
+# =====================================================================
+# 120. REQUIRED FINAL COUNTERS
+# =====================================================================
+
+Finish with exactly:
+
+
+JASIM_BLOCK_2:
+PASS / PARTIAL / FAIL
+
+
+BLOCK_0_REMAINS_CLOSED:
+YES / NO
+
+
+BLOCK_1_REMAINS_CLOSED:
+YES / NO
+
+
+BLOCK_1_1_REMAINS_CLOSED:
+YES / NO
+
+
+ONE_CANONICAL_RUNTIME:
+PASS / FAIL
+
+
+NEW_WORKFLOW_ENGINE:
+<number>
+
+
+NEW_EVENT_BUS:
+<number>
+
+
+NEW_AUTHORIZATION_SYSTEM:
+<number>
+
+
+NEW_GENERIC_PRIMITIVES_ADDED:
+<number>
+
+
+NEW_DATABASE_TABLES:
+<number>
+
+
+NEW_MIGRATIONS:
+<number>
+
+
+NEW_EXTERNAL_SDKS:
+<number>
+
+
+DIRECT_NOTIFICATION_SIDE_EFFECT_BYPASSES:
+<number>
+
+
+AUTHORITY_ESCALATIONS:
+<number>
+
+
+DOUBLE_WAKE_EFFECTS:
+<number>
+
+
+EVENT_REPLAY_DOUBLE_EFFECTS:
+<number>
+
+
+DOUBLE_BOOKINGS:
+<number>
+
+
+CROSS_OWNER_LEAKS:
+<number>
+
+
+CROSS_OWNER_REMOTE_TASK_REUSE:
+<number>
+
+
+LOCATION_PRIVACY_LEAKS:
+<number>
+
+
+UNTRUSTED_EXTERNAL_URL_EXECUTIONS:
+<number>
+
+
+FAKE_SUCCESS:
+<number>
+
+
+DOMAIN_SPECIFIC_OPERATIONAL_ENGINES:
+<number>
+
+
+DOMAIN_SPECIFIC_CAPABILITIES_ADDED:
+<number>
+
+
+DOMAIN_SPECIFIC_PROVIDERS:
+<number>
+
+
+DOMAIN_SPECIFIC_AGENTS:
+<number>
+
+
+DOMAIN_SPECIFIC_ROUTES:
+<number>
+
+
+DOMAIN_SPECIFIC_UI_COMPONENTS:
+<number>
+
+
+KNOWN_OPERATIONAL_SCENARIOS_TESTED:
+<number>
+
+
+UNSEEN_OPERATIONAL_GOALS_TESTED:
+<number>
+
+
+DOMAIN_SPECIFIC_FIXES_DURING_UNSEEN:
+<number>
+
+
+MCP_REAL_TRANSPORT_E2E:
+PASS / FAIL
+
+
+PUBLIC_EXTERNAL_MCP_PROVIDER_E2E:
+PASS / NOT_REQUIRED / INCONCLUSIVE
+
+
+A2A_BOUNDED_DELEGATION:
+PASS / FAIL
+
+
+COMPUTER_USE:
+DEFERRED
+
+
+AG_UI:
+DEFERRED
+
+
+OPENTELEMETRY:
+DEFERRED
+
+
+RESOURCE_CAPACITY_MONETIZATION_READY:
+PASS / FAIL
+
+
+RECURRING_BUSINESS_OPERATIONS_READY:
+PASS / FAIL
+
+
+BOOKABLE_SERVICE_READY:
+PASS / FAIL
+
+
+B2B_COORDINATION_READY:
+PASS / FAIL
+
+
+MULTI_PARTY_VALUE_FLOW_READY:
+PASS / FAIL
+
+
+PAYMENT_EXECUTED:
+NO
+
+
+JASIM_REVENUE_REALIZED:
+NO
+
+
+BLOCK_2_SUITE:
+PASS / FAIL
+
+
+BLOCK_1_1_PROVIDER_REGRESSION:
+PASS / FAIL
+
+
+BLOCK_1_FABRIC_REGRESSION:
+PASS / FAIL
+
+
+BLOCK_0_TRUST_RECOVERY_REGRESSION:
+PASS / FAIL
+
+
+CANONICAL_TYPECHECK:
+PASS / FAIL
+
+
+WEB_PRODUCTION_BUILD:
+PASS / FAIL
+
+
+MOBILE_TYPECHECK:
+PASS / FAIL
+
+
+FRESH_MIGRATION:
+PASS / FAIL
+
+
+UPGRADE_MIGRATION:
+PASS / FAIL
+
+
+READY_FOR_BLOCK_3:
+YES / NO
+
+
+If READY_FOR_BLOCK_3 = NO:
+
+BLOCK_2_REMAINING_BLOCKERS:
+1.
+2.
+3.
+
+
+# =====================================================================
+# 121. IMPORTANT PASS RULE
+# =====================================================================
+
+Do NOT mark Block 2 PARTIAL merely because:
+
+Computer Use is deferred
+
+AG-UI is deferred
+
+OpenTelemetry is deferred
+
+no paid external MCP provider is available
+
+no production Maps provider is configured
+
+no production SMS provider is configured
+
+no payment provider exists
+
+
+Those are intentionally outside the Block 2 hard dependency path
+unless an actual accepted acceptance test requires them.
+
+
+Block 2 can PASS with truthful:
+
+BLOCKED_BY_PROVIDER
+
+where real external resources/providers are absent.
+
+
+# =====================================================================
+# 122. IMPORTANT FAIL RULE
+# =====================================================================
+
+Block 2 MUST NOT PASS if:
+
+notifications still bypass Trusted Executor
+
+reservation can double-book
+
+delegation can expand authority
+
+DurableWait cannot survive restart
+
+event replay can duplicate effects
+
+MCP/A2A create a second canonical runtime
+
+remote agents can forge VERIFIED
+
+location is fabricated
+
+provider links can escape trust boundaries
+
+unseen scenarios require domain Core patches
+
+fake success exists
+
+
+# =====================================================================
+# 123. STOP
+# =====================================================================
+
+After creating:
+
+.local/tasks/block2-report.md
+
+
+STOP.
+
+
+DO NOT START BLOCK 3.
+
+DO NOT IMPLEMENT PAYMENT.
+
+DO NOT IMPLEMENT ACP.
+
+DO NOT IMPLEMENT AP2.
+
+DO NOT CONNECT COMMERCIAL PAYMENT PROVIDERS.
+
+DO NOT IMPLEMENT JASIM COMMISSIONS.
+
+DO NOT IMPLEMENT COMMERCIAL SUBSCRIPTIONS.
+
+DO NOT RESUME PHASE 12.
+
+DO NOT DEPLOY PRODUCTION.
+
+
+Return the final Block 2 report and wait for owner review.
+
+
+BEGIN JASIM BLOCK 2 IMPLEMENTATION NOW.
+```
+
+### لماذا أوافق على هذه الخريطة؟
+
+لأنها أعطتنا تقريبًا أفضل إجابة ممكنة على الأسئلة الستة الحاسمة:
+
+```text
+لا Workflow Engine جديد.
+لا Event Bus جديد.
+لا Auth system جديد.
+
+الـDAG/worker الحاليان أساس الزمن والانتظار.
+الأحداث الحالية أساس الاشتراكات والاستيقاظ.
+Reservation هي Primitive عامة جديدة حقيقية.
+MCP وA2A يشتركان في Remote Execution واحدة.
+```
+
+وهذا يعني أننا لا نبني «JASIM 2» داخل جاسم.
+
+كما أن اكتشاف مسار الإشعارات المباشر مهم جدًا: الدستور نفسه ينص على أن Provider-specific code يجب أن يبقى خلف Provider Resolver وأن Block 2 لا يجوز له تجاوز فصل Capability عن Provider.  لذلك جعلت `DIRECT_NOTIFICATION_SIDE_EFFECT_BYPASSES = 0` **شرط PASS صريحًا**، وليس تحسينًا اختياريًا.
+
+والـ8 جداول لا تقلقني بحد ذاتها إذا كانت تمثل حقائق مستقلة مثل التفويض والحجز والوقت والتنفيذ البعيد. ما سأرفضه هو أن يصبح كل اسم في الوثيقة Table. لذلك ثبتُّ `<=8` كهدف، و`10` كسقف لا يجوز تجاوزه دون مبرر بنيوي صريح.
+
+والأهم: بعد نجاح هذا الأمر، سنقترب كثيرًا جدًا من تجربة:
+
+> **«جاسم ابحث لي، فاوض لي، احجز لي، تابع لي، ذكّرني، أرسل الفني، أين الفني، شغّل هذه الخدمة كل يوم، ودع موظفي يديرون جزءًا منها ضمن صلاحياتهم.»**
+
+أي أن Block 2 هو الذي يحول الذكاء العام الذي بنيناه إلى **تشغيل مستمر في الواقع**. وبعدها فقط يصبح Block 3 منطقيًا: المال، ACP/AP2، الدفع، التسويات، العمولات، الاشتراكات والربحية الفعلية.

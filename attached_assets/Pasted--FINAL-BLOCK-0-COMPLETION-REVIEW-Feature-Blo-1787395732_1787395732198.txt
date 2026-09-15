@@ -1,0 +1,625 @@
+ممتاز. انتقل الآن إلى FINAL BLOCK 0 COMPLETION REVIEW فقط.
+
+لا تنفذ أي Feature جديدة.
+لا تبدأ Block 1.
+لا تبدأ Universal Capability Fabric.
+لا تبدأ Economic Network.
+لا تبدأ Scheduler / Maps / Payments / Commercial Runtime.
+لا تشغّل Phase 12 calibration.
+
+الهدف الآن هو إصدار الحكم النهائي على BLOCK 0 بناءً على الأدلة الفعلية بعد الإصلاحات الأخيرة.
+
+مهم جداً:
+
+نجاح boot بعد restart ونجاح proofs الجديدة لا يكفي وحده لإعلان BLOCK 0 = PASS.
+
+أريد مراجعة نهائية تربط كل Hard Gate بدليل تنفيذ حقيقي.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. TYPESCRIPT / CANONICAL CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ذكرت أن full `typecheck` ليس script داخل الحزمة.
+
+لا تنشئ script شكلياً فقط من أجل PASS.
+
+افحص package scripts / workspace configuration وحدد:
+
+- ما هو canonical TypeScript validation الحقيقي لهذا المشروع؟
+- هل يوجد tsc command على مستوى workspace/root؟
+- هل `check:generative-runtime` يغطي بالفعل الملفات المعدلة؟
+- هل Web build يقوم بcompile المسارات المتأثرة؟
+
+إذا يوجد canonical compile/typecheck command فعلي:
+شغّله.
+
+إذا لا يوجد:
+صرّح:
+
+FULL_CANONICAL_TYPECHECK:
+NOT_AVAILABLE_AS_PROJECT_COMMAND
+
+ثم قدم الأدلة البديلة الفعلية، مثل:
+
+GENERATIVE_RUNTIME_CHECK
+WEB_BUILD
+relevant package compilation/checks
+
+ولا تحول NOT_AVAILABLE إلى PASS بلا دليل.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. RESTART PROOF — MUST BE SPECIFIC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+عبارة:
+
+"الخدمتان عادتا للعمل بعد restart"
+
+غير كافية وحدها.
+
+أريد إثباتاً واضحاً لـ:
+
+MULTI_NODE_DAG_BEFORE_RESTART
+
+node A state
+node B state
+node C state
+node D state
+
+ثم:
+
+PROCESS/WORKER RESTART
+
+ثم:
+
+MULTI_NODE_DAG_AFTER_RESTART
+
+وأثبت:
+
+- completed nodes لم تُنفذ ثانية
+- pending/recoverable node استؤنفت صحيحاً
+- dependency ordering بقي صحيحاً
+- attempts السابقة بقيت immutable
+- Run لم يُنشأ من جديد
+- PostgreSQL هو مصدر الاستعادة
+- completed node execution counter = 0
+
+Required:
+
+RUN_RESTART = PASS
+COMPLETED_NODE_REEXECUTION = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. LEASE / FENCING PROOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أريد الدليل التنفيذي على:
+
+Worker A claims task
+→ Worker A disappears / lease becomes invalid
+→ Worker B reclaims
+→ Worker A attempts stale commit
+→ stale commit rejected
+
+Report:
+
+LEASE_RECOVERY
+FENCE_REJECTION
+STALE_WORKER_COMMIT
+
+Also prove:
+
+DOUBLE_VALID_WORKER_CLAIM = 0
+
+لا يكفي فحص الكود فقط.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. EFFECTFUL RESTART SAFETY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أثبت أن recovery لا يقوم blind retry لعملية effectful ذات outcome غير معلوم.
+
+Expected:
+
+UNKNOWN EFFECT OUTCOME
+→ INCONCLUSIVE
+→ RECONCILIATION
+
+not:
+
+restart
+→ call provider again automatically
+
+Required:
+
+BLIND_EFFECT_RETRY_AFTER_RESTART = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. AUTH FINAL PROOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أريد الأدلة النهائية المنفذة على:
+
+VALID_SESSION = PASS
+
+INVALID_SESSION = BLOCKED
+
+EXPIRED_SESSION = BLOCKED
+
+MISSING_SESSION_PRIVATE_ACCESS = BLOCKED
+
+FORGED_OWNER = BLOCKED
+
+خصوصاً:
+
+User B authenticated normally
++
+request claims ownerId/userId = User A
+→ must remain B
+→ private A resource blocked
+
+Do not infer this only from middleware code.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. WEBSOCKET — CRITICAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أثبت بعد الإصلاح:
+
+- server establishes authenticated principal
+- payload userId/ownerId cannot replace it
+- B cannot subscribe to A Bubble
+- B cannot subscribe to A Run
+- forged A identity in socket payload is ignored/rejected
+- anonymous private subscription blocked
+- expired credential blocked
+
+Required:
+
+WEBSOCKET_AUTH = PASS
+CLIENT_CONTROLLED_WS_IDENTITY = 0
+CROSS_OWNER_PRIVATE_SUBSCRIPTIONS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. CROSS-OWNER GRAPH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أريد final two-user proof across the private canonical graph:
+
+Conversation
+Memory
+Bubble
+World
+Run
+Task
+Attempt
+Receipt
+Artifact
+Artifact Preview
+Artifact Lineage
+Research Result
+Source Reference
+Findings if addressable
+Mutation
+ChangeSet
+Generated Execution state
+
+Relevant operations:
+
+READ
+WRITE
+MUTATE
+EXECUTE
+SUBSCRIBE
+PREVIEW
+
+Required:
+
+CROSS_OWNER_PRIVATE_READS = 0
+CROSS_OWNER_PRIVATE_WRITES = 0
+CROSS_OWNER_PRIVATE_EXECUTIONS = 0
+CROSS_OWNER_PRIVATE_SUBSCRIPTIONS = 0
+IDOR_PRIVATE_ACCESS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. TRUSTED EXECUTOR / ADMIN BYPASS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task #24 found an admin bypass.
+
+Do not merely say it was fixed.
+
+Report:
+
+- exact classification of old bypass
+- how it was constrained/replaced
+- whether legitimate admin operation still works
+- proof admin cannot fabricate VERIFIED state
+- proof admin cannot overwrite Attempt history
+- proof stale approval cannot authorize changed effect
+- proof another user's approval cannot be replayed
+
+Required:
+
+TRUSTED_EXECUTOR = PASS
+ADMIN_EXECUTION_BYPASS = 0
+ADMIN_CAN_FORGE_VERIFIED_RESULT = NO
+ADMIN_CAN_OVERWRITE_ATTEMPT = NO
+CROSS_CONTEXT_APPROVAL_REPLAY = 0
+STALE_APPROVAL_EXECUTION = 0
+DIRECT_EFFECTFUL_PROVIDER_BYPASS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. GENERATED EXECUTION SECURITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Reconfirm after the actual changes:
+
+Generated DNA / generated workflow may describe:
+
+entities
+capabilities
+workflow
+views
+policies
+
+but cannot:
+
+- invoke provider directly
+- choose another owner's identity
+- set VERIFIED
+- forge Receipt
+- bypass Policy
+- bypass Approval
+- bypass Trusted Executor
+
+Required:
+
+GENERATED_EXECUTION_OWNER_SCOPE = PASS
+GENERATED_EXECUTION_PRIVILEGE = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. MIGRATIONS — REAL PROOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not report DATABASE_MIGRATIONS = PASS based only on current DB boot.
+
+Need both:
+
+A. FRESH DATABASE
+
+empty isolated PostgreSQL
+→ canonical migrations
+→ current schema
+→ app/runtime boot
+
+B. EXISTING DATABASE UPGRADE
+
+representative previous legitimate schema/migration state
+→ canonical migration command
+→ current schema
+→ preserved required data
+→ app/runtime boot
+
+Also prove:
+
+MIGRATION_LEDGER = PASS
+DIRECT_PRODUCTION_SCHEMA_HACKS = 0
+DESTRUCTIVE_UNSAFE_MIGRATIONS = 0
+
+If one was not executed:
+DATABASE_MIGRATIONS cannot be PASS.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. READINESS REPAIR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Include the readiness fix you mentioned.
+
+Prove difference between:
+
+LIVENESS
+and
+READINESS
+
+Readiness should at least demonstrate:
+
+DB reachable
+schema compatible
+canonical runtime initialized
+worker initialized/recovery-safe
+
+Optional provider outage must not necessarily mark whole JASIM dead.
+
+But a required dependency for the requested operation must fail truthfully.
+
+Report exact readiness checks now implemented.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. RESTORE PROOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You mentioned a runnable restore proof.
+
+Include it in the review, but do not fake production backup readiness.
+
+Report separately:
+
+BACKUP
+RESTORE_PROCEDURE
+RESTORE_PROOF
+
+If restore was actually executed against isolated production-compatible data:
+
+show:
+
+backup/source
+→ new isolated target
+→ restore
+→ boot
+→ representative canonical records verified
+
+If it is merely a runnable script that has not been executed:
+
+RESTORE_PROOF = MISSING
+
+Do not call script existence proof of restoration.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. REGRESSIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After fixes, confirm only relevant regression evidence:
+
+PHASE_7_GENERALIZATION
+TASK_22
+TASK_26
+TRUSTED_EXECUTOR
+ATTEMPT_LEDGER
+VERIFIER
+RECONCILIATION
+GENERATIVE_RUNTIME_CHECK
+WEB_PRODUCTION_BUILD
+MOBILE_TYPECHECK
+
+Do not make unnecessary paid provider calls.
+
+Do not rerun Phase 12 calibration.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. FINAL BLOCK 0 VERDICT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Return exactly:
+
+JASIM_BLOCK_0:
+PASS / PARTIAL / FAIL
+
+PHASE_A_IDENTITY_ISOLATION:
+PASS / PARTIAL / FAIL
+
+PHASE_B_TRUSTED_EXECUTION:
+PASS / PARTIAL / FAIL
+
+PHASE_C_RECOVERY_MIGRATIONS:
+PASS / PARTIAL / FAIL
+
+
+AUTH:
+PASS / FAIL
+
+VALID_SESSION:
+PASS / FAIL
+
+INVALID_SESSION:
+BLOCKED / FAIL
+
+EXPIRED_SESSION:
+BLOCKED / FAIL
+
+PRIVATE_ANONYMOUS_ACCESS:
+<number>
+
+FORGED_OWNER:
+BLOCKED / FAIL
+
+WEBSOCKET_AUTH:
+PASS / FAIL
+
+CLIENT_CONTROLLED_WS_IDENTITY:
+<number>
+
+
+CROSS_OWNER_ISOLATION:
+PASS / FAIL
+
+GENERATED_EXECUTION_OWNER_SCOPE:
+PASS / FAIL
+
+CROSS_OWNER_PRIVATE_READS:
+<number>
+
+CROSS_OWNER_PRIVATE_WRITES:
+<number>
+
+CROSS_OWNER_PRIVATE_EXECUTIONS:
+<number>
+
+CROSS_OWNER_PRIVATE_SUBSCRIPTIONS:
+<number>
+
+IDOR_PRIVATE_ACCESS:
+<number>
+
+
+TRUSTED_EXECUTOR:
+PASS / FAIL
+
+ADMIN_BYPASS_CLASSIFICATION:
+<exact>
+
+ADMIN_EXECUTION_BYPASS:
+<number>
+
+ADMIN_CAN_FORGE_VERIFIED_RESULT:
+YES / NO
+
+ADMIN_CAN_OVERWRITE_ATTEMPT:
+YES / NO
+
+DIRECT_EFFECTFUL_PROVIDER_BYPASS:
+<number>
+
+GENERATED_EXECUTION_PRIVILEGE:
+<number>
+
+CLIENT_DIRECT_EFFECT:
+<number>
+
+CROSS_CONTEXT_APPROVAL_REPLAY:
+<number>
+
+STALE_APPROVAL_EXECUTION:
+<number>
+
+
+ATTEMPT_LEDGER:
+PASS / FAIL
+
+INDEPENDENT_VERIFIER:
+PASS / FAIL
+
+RECONCILIATION:
+PASS / FAIL
+
+FAKE_SUCCESS:
+<number>
+
+
+RUN_RESTART:
+PASS / FAIL
+
+MULTI_NODE_DAG:
+PASS / FAIL
+
+LEASE_RECOVERY:
+PASS / FAIL
+
+FENCE_REJECTION:
+PASS / FAIL
+
+STALE_WORKER_COMMIT:
+<number>
+
+COMPLETED_NODE_REEXECUTION:
+<number>
+
+DOUBLE_VALID_WORKER_CLAIM:
+<number>
+
+BLIND_EFFECT_RETRY_AFTER_RESTART:
+<number>
+
+FALSE_RUN_SUCCESS:
+<number>
+
+STARTUP_RECOVERY:
+PASS / FAIL
+
+GRACEFUL_SHUTDOWN:
+PASS / PARTIAL / FAIL
+
+
+DATABASE_MIGRATIONS:
+PASS / FAIL
+
+FRESH_DATABASE_MIGRATION:
+PASS / FAIL
+
+EXISTING_DATABASE_UPGRADE:
+PASS / FAIL
+
+MIGRATION_LEDGER:
+PASS / FAIL
+
+MIGRATION_FAILURE_DETECTION:
+PASS / PARTIAL / FAIL
+
+DIRECT_PRODUCTION_SCHEMA_HACKS:
+<number>
+
+DESTRUCTIVE_UNSAFE_MIGRATIONS:
+<number>
+
+
+LIVENESS:
+PASS / FAIL
+
+READINESS:
+PASS / PARTIAL / FAIL
+
+
+BACKUP:
+PASS / PARTIAL / MISSING
+
+RESTORE_PROCEDURE:
+PASS / PARTIAL / MISSING
+
+RESTORE_PROOF:
+PASS / MISSING / FAIL
+
+
+FULL_CANONICAL_TYPECHECK:
+PASS / FAIL / NOT_AVAILABLE_AS_PROJECT_COMMAND
+
+GENERATIVE_RUNTIME_CHECK:
+PASS / FAIL
+
+WEB_PRODUCTION_BUILD:
+PASS / FAIL
+
+MOBILE_TYPECHECK:
+PASS / FAIL
+
+
+PHASE_7_GENERALIZATION:
+PASS / FAIL
+
+TASK_22:
+PASS / FAIL
+
+TASK_26:
+PASS / FAIL
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS:
+<number>
+
+DOMAIN_SPECIFIC_HANDLER_REQUIRED:
+<number>
+
+
+MODEL_POLICY_ECONOMIC_CALIBRATION:
+PARTIAL
+(unchanged; do not run)
+
+
+READY_FOR_UNIVERSAL_CAPABILITY_FABRIC:
+YES / NO
+
+
+If NO:
+
+REMAINING_BLOCK_0_BLOCKERS:
+1.
+2.
+3.
+
+
+OWNER_ACTION_REQUIRED_NOW:
+NONE
+or exact unavoidable action
+
+
+STOP.
+
+Do not start Block 1 automatically.

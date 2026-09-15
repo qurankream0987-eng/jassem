@@ -1,0 +1,873 @@
+# JASIM — FINAL GAP REVIEW + OWNER ACTIONS CHECKLIST
+# DO NOT IMPLEMENT YET — AUDIT CURRENT STATE FIRST
+
+قبل أن نكمل أي مرحلة جديدة، أريد منك الآن إجراء مراجعة تقنية فعلية للحالة الحالية لجاسم بالكامل، بناءً على الكود الحالي وليس على الخطط أو التقارير السابقة فقط.
+
+الهدف من هذه المراجعة هو الإجابة بدقة عن سؤالين:
+
+1. ماذا تبقى تقنيًا حتى نصل إلى JASIM النهائي الذي اتفقنا عليه؟
+2. ما الأشياء التي سأكون أنا، صاحب المشروع، ملزمًا بتنفيذها أو توفيرها ولا تستطيع أنت إكمالها وحدك؟
+
+لا تبدأ Feature جديدة أثناء هذه المراجعة.
+لا تعِد بناء أي جزء.
+لا تنشئ خطة عامة مبنية على التخمين.
+
+افحص الكود، المسارات النشطة، الاختبارات، الـDB، Web، Mobile، Runtime، Config، Secrets requirements، وBuild/Release requirements.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. VERIFY THE REAL CURRENT BASELINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ابدأ بتحديد الحالة الفعلية لكل subsystem الآن:
+
+Canonical Runtime
+Conversation
+Messages
+Output Router
+Smart Bubble
+Generic Bubble Renderer
+Bubble lifecycle
+Bubble discovery
+Bubble ↔ Tasks
+Bubble ↔ Runs
+World
+Task
+Run
+Reference Resolution
+Natural-language Bubble mutation
+ChangeSet
+Versioning
+Proposal
+Approval
+Fingerprint
+DAG
+Lease / heartbeat / fencing
+Retry / cancellation / restart recovery
+Context continuity
+Memory
+Events
+Trusted Executor
+Receipts
+Verifier
+Reconciliation
+Providers
+Commercial Runtime
+Multi-user
+Web
+Mobile
+Auth
+Production builds
+
+لكل واحد استخدم فقط:
+
+COMPLETE
+PARTIAL
+MISSING
+BLOCKED
+DEFERRED
+
+ولا تستخدم كلمة COMPLETE إلا مع دليل فعلي.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. VERIFY TASK #14 AGAINST ITS EXIT GATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+راجع Task #14 بندًا بندًا.
+
+تحقق فعليًا من:
+
+GENERIC BUBBLE RENDERER
+NATURAL-LANGUAGE EXISTING-BUBBLE MUTATION
+ENTITY-IN-BUBBLE RESOLUTION
+CHANGESET
+HUMAN-READABLE PREVIEW
+CONTENT VERSIONING
+PRESENTATION VERSIONING
+BUBBLE WITHOUT WORLD
+PERSISTENT BUBBLE WITH WORLD
+TASK WITHOUT WORLD
+RUN WITHOUT BUBBLE
+MULTIPLE RUNS SAME BUBBLE
+BUBBLE SURVIVES RUN
+CONVERSATION CONTEXT
+CONVERSATION SUMMARY
+MEMORY
+EVENT LIST/GET
+APPROVAL RESUME
+APPROVAL AFTER RESTART
+WEB/MOBILE SAME BUBBLE
+SOAP GLASS
+RTL
+POSTGRESQL PROOFS
+FULL CANONICAL REGRESSION
+
+أريد أن أعرف:
+
+ما الذي أغلق فعلًا؟
+وما الذي ما زال مفتوحًا؟
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. DO NOT CONFUSE FOUNDATION WITH FINAL PRODUCT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+افصل في التقرير بين:
+
+RUNTIME FOUNDATION COMPLETE
+
+و:
+
+FINAL PRODUCT COMPLETE
+
+مثال:
+
+وجود Bubble في DB لا يعني أن Smart Bubble Product مكتملة.
+
+وجود Run لا يعني أن External Execution مكتمل.
+
+وجود Approval لا يعني أن approval→execution→verification مكتمل.
+
+وجود Expo preview لا يعني Mobile Production مكتمل.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. GENERATIVE RUNTIME FINAL GAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+حدد هل الحلقة التالية تعمل الآن كاملة أم لا:
+
+User Intent
+↓
+Conversation Context
+↓
+Semantic Output Selection
+↓
+Reference Resolution
+↓
+Text / Run / Bubble / Workflow creation or reuse
+↓
+Mutation / Planning
+↓
+Proposal
+↓
+Policy / Approval
+↓
+Durable DAG
+↓
+Trusted Execution
+↓
+Receipt
+↓
+Independent Verification
+↓
+State / Version Update
+↓
+Bubble Projection Refresh
+↓
+Web/Mobile Re-render
+↓
+Continue naturally
+
+لكل خطوة اكتب:
+
+REAL
+PARTIAL
+MISSING
+
+هذه أهم نتيجة في المراجعة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. VERIFY BUBBLE-FIRST INVARIANTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أثبت أن المعمارية الحالية ما زالت تحقق:
+
+Bubble may exist without World.
+
+Persistent Bubble may use optional World.
+
+Run may exist without Bubble.
+
+Task may exist without World.
+
+Persistent Bubble may have multiple Runs.
+
+Bubble survives Run completion.
+
+Direct Action does not require platform/Bubble.
+
+Same domain can result in different Output Forms.
+
+World is not exposed as a separate primary product surface.
+
+Central JASIM intelligence controls Bubble behavior.
+
+إذا أي واحدة مكسورة:
+ضعها في قائمة Critical Remaining Work.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. VERIFY THE DIRECT-RUN MODEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+راجع السيناريوهات التالية:
+
+"بع سيارتي"
+→ DIRECT_ACTION / DURABLE_RUN
+
+"راقب سعرها"
+→ DURABLE_RUN
+
+"ابحث لي عن محاسب"
+→ WORKFLOW / RUN
+
+"أنشئ سوق سيارات"
+→ PERSISTENT_SMART_BUBBLE
+
+حدد هل هذه semantics موجودة فعليًا الآن أم فقط داخل tests/router classification.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. VERIFY EXISTING-BUBBLE CONTROL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+اختبر أو افحص المسار:
+
+"متجري الذي فيه الآيفون خفض سعره"
+
+هل يستطيع النظام الآن فعل:
+
+resolve existing Bubble
+resolve entity
+understand mutation
+create ChangeSet
+preview change
+approval if necessary
+apply safe internal change
+create version
+refresh projection
+
+أم ما زال جزء من هذا غير مكتمل؟
+
+أعطني gap exact.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. TRUSTED EXECUTION GAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+راجع هل لدينا الآن أم لا:
+
+Trusted Executor
+Execution Receipt
+Independent Verifier
+Reconciliation
+
+ولا تعتبر:
+
+DAG node completed
+
+دليلًا على تنفيذ خارجي موثوق.
+
+إذا هذه الطبقة غير موجودة، حدد ترتيب بنائها بالضبط.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. EXTERNAL PROVIDERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+اعمل inventory للقدرات التي تحتاج Provider خارجي.
+
+مثل:
+
+Web search
+Email
+Notifications
+Publishing
+Payments
+Maps
+Files/storage
+Calendar
+Messaging
+External commerce APIs
+Other connectors موجودة في JASIM
+
+لكل Provider أو Capability حدد:
+
+CODE READY
+ADAPTER EXISTS
+CREDENTIAL REQUIRED
+ACCOUNT REQUIRED
+NOT IMPLEMENTED
+
+لا تضف Provider جديدًا الآن.
+
+فقط أخبرني ماذا سيتطلب مني.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. OWNER-REQUIRED ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هذه نقطة مهمة جدًا.
+
+أنشئ قائمة منفصلة بعنوان:
+
+OWNER ACTION REQUIRED
+
+ولا تضع فيها أي شيء يستطيع Replit تنفيذه بنفسه.
+
+ضع فقط الأشياء التي تتطلب مني أنا فعليًا:
+
+- إنشاء حساب خارجي
+- شراء خدمة
+- الحصول على API key
+- إنشاء OAuth credentials
+- إثبات ملكية Domain
+- Apple Developer action
+- Google Play Console action
+- signing certificates
+- App Store Connect configuration
+- bundle/package registration
+- privacy/legal text approval
+- payment merchant account
+- production secret
+- external provider approval
+- DNS change
+- business verification
+- branding/content decision لا يمكن استنتاجه
+
+لكل عنصر اكتب:
+
+ACTION
+WHY REQUIRED
+WHEN REQUIRED
+BLOCKS WHAT
+EXACT VALUE / CREDENTIAL NEEDED
+WHERE I GET IT
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. DISTINGUISH NOW VS LATER OWNER ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+قسّمها إلى:
+
+OWNER ACTION — REQUIRED NOW
+
+OWNER ACTION — REQUIRED BEFORE FIRST REAL PROVIDER
+
+OWNER ACTION — REQUIRED BEFORE IOS RELEASE
+
+OWNER ACTION — REQUIRED BEFORE ANDROID RELEASE
+
+OWNER ACTION — REQUIRED BEFORE COMMERCIAL LAUNCH
+
+لا ترمِ عليّ كل الحسابات من الآن إذا لم نحتجها بعد.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. MOBILE REVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+حدد الحقيقة الحالية لـMobile:
+
+Expo Go development preview
+Development build
+Standalone iOS
+Standalone Android
+Production API configuration
+Production Auth
+Secure session storage
+Background behavior
+Push notification readiness
+Deep links
+App lifecycle restore
+Bubble parity
+Run parity
+
+لكل واحدة:
+
+REAL
+PARTIAL
+MISSING
+DEFERRED
+
+ولا تستخدم Expo Go كدليل على Production Mobile completion.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. MOBILE AUTH OWNER REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+حدد هل Production Mobile Auth الحالية تحتاج مني أي:
+
+Apple configuration
+Google configuration
+OAuth client
+redirect URI
+associated domain
+certificate
+secret
+
+إذا canonical username/password/session path لا يحتاج هذا:
+لا تطلبه مني.
+
+لا تفترض Social Login.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. IOS RELEASE OWNER ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+حدد بالتحديد ما سأحتاج فعله لاحقًا لإخراج نسخة iOS:
+
+Apple Developer membership
+Team ID
+Bundle ID
+App Store Connect app
+signing
+certificates/profiles if applicable
+privacy details
+app icons/screenshots/content
+TestFlight
+review metadata
+
+لكن صنف كل بند:
+
+NEEDED NOW
+NEEDED LATER
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. ANDROID RELEASE OWNER ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+نفس الشيء لـAndroid:
+
+Google Play Console
+package/application ID
+signing key
+Play App Signing
+privacy details
+store listing
+AAB upload
+testing tracks
+production release
+
+صنف:
+
+NEEDED NOW
+NEEDED LATER
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. INFRASTRUCTURE / PRODUCTION REVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+راجع:
+
+Production database
+Migrations
+Backups
+Secrets
+Object storage
+API host
+HTTPS
+Domain
+Logging
+Monitoring
+Rate limiting
+Error tracking
+Queue/scheduler requirements
+Worker runtime
+Deployment topology
+
+حدد فقط gaps الحقيقية.
+
+إذا شيء موجود:
+لا تطلب إعادة بنائه.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. SECURITY RELEASE GAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+راجع قبل الإنتاج:
+
+owner isolation
+IDOR
+mass assignment
+approval replay
+fingerprint mismatch
+stale worker writes
+secret leakage
+token logging
+cross-user Bubble access
+cross-user Run access
+event access
+provider response trust
+client-side authorization
+
+صنف أي gap:
+
+CRITICAL
+HIGH
+MEDIUM
+LOW
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. TESTING GAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+حدد ما تبقى من اختبارات فعلية فقط.
+
+افصل:
+
+Unit
+PostgreSQL integration
+Restart/recovery
+Security negative
+Web E2E
+Mobile E2E
+Cross-device
+Provider E2E
+Standalone iOS
+Standalone Android
+
+ولا تكرر tests موجودة بالفعل.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. GENERALIZATION GAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+حدد هل تم الوصول بعد إلى General Generative Runtime أم ما زلنا بحاجة لـ:
+
+unseen intent tests
+cross-domain tests
+compound intent tests
+existing-Bubble mutation tests
+direct-run tests
+persistent-Bubble tests
+
+أريد معرفة عدد الاختبارات العامة المتبقية للوصول إلى confidence مناسب.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. COMMERCIAL RUNTIME GAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+راجع هل هذه موجودة أم لا:
+
+transaction lifecycle
+pricing
+commission
+subscription
+authorize
+commit
+receipt
+verify
+reconcile
+refund/compensation
+
+إذا مؤجلة:
+اذكرها كمراحل لاحقة فقط.
+
+لا تبدأها الآن.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. MULTI-USER GAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+حدد إن كان المنتج النهائي يحتاج لاحقًا:
+
+Bubble owner
+members
+provider
+customer
+moderator
+permissions
+invitations
+public/private/shared
+cross-Bubble grants
+
+وما الموجود الآن منها.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. CAPABILITY LAB GAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+راجع مرحلة Capability Lab المستقبلية:
+
+candidate capability
+sandbox
+tests
+security review
+generalization review
+canary
+signed registration
+rollback
+
+صنفها DEFERRED إذا لم نصل لها.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. CHECK FOR OLD IMPLEMENTATION VALUE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بما أن لديك Early Replit JASIM implementation:
+
+افحص بسرعة هل ما تبقى من gaps له implementation مفيدة هناك.
+
+لكل gap متبقٍ:
+
+REUSABLE_OLD_COMPONENT
+أو
+NO_USEFUL_OLD_COMPONENT
+
+لا تعِد تحليل النسخة القديمة كاملة.
+
+هدفنا اختصار الوقت فقط.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. DO NOT COUNT UI MOCKS AS COMPLETION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أي Feature تظهر بصريًا لكن:
+
+local state
+fake data
+fake success
+stub handler
+mock provider
+
+صنفها:
+
+PARTIAL / MOCKED
+
+ولا تعتبرها Complete.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. BUILD A FINAL DEPENDENCY ORDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بعد المراجعة، أعطني الترتيب التقني الأقصر للوصول إلى JASIM النهائي.
+
+لا أريد عشرين Phase إذا بعضها يمكن دمجه.
+
+أنشئ:
+
+NEXT 3 CRITICAL TRANCHES
+
+ثم:
+
+LATER TRANCHES
+
+مثال مفهومي فقط:
+
+TRANCHE A
+finish Smart Bubble generative loop
+
+TRANCHE B
+trusted execution + verification
+
+TRANCHE C
+scheduler/providers/recovery
+
+ثم later:
+multi-user/commercial/mobile release
+
+لكن استخدم الحالة الحقيقية للكود وليس المثال.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. IDENTIFY THE CRITICAL PATH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+حدد:
+
+ما أقل مجموعة أعمال إذا انتهت تجعل جاسم فعليًا:
+
+GENERAL GENERATIVE RUNTIME
+
+حتى لو لم يكن commercial/release-ready بعد؟
+
+ثم حدد ما يفرق بين:
+
+GENERATIVE RUNTIME READY
+
+و:
+
+PRODUCTION READY
+
+و:
+
+COMMERCIAL READY
+
+و:
+
+APP STORE / PLAY STORE READY
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. ESTIMATE BY WORK UNITS — NOT TIME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تعطيني تقدير ساعات أو أيام.
+
+استخدم:
+
+SMALL
+MEDIUM
+LARGE
+
+لكل Gap.
+
+وأعطني Dependency:
+
+BLOCKS
+BLOCKED_BY
+
+حتى أعرف الأولوية.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. OWNER ACTIONS MUST BE PRECISE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تقل:
+
+"ستحتاج إعداد Apple."
+
+قل مثلًا:
+
+OWNER ACTION:
+Create/confirm Apple Developer Team
+
+NEEDED:
+Team ID + ability to create Bundle ID
+
+BLOCKS:
+Standalone iOS signing / TestFlight
+
+WHEN:
+Before iOS release tranche
+
+ولا تطلب مني تنفيذ شيء تستطيع أنت تنفيذه داخل الكود.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. DO NOT IMPLEMENT DURING THIS AUDIT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هذه مراجعة فقط.
+
+لا تغيّر Architecture.
+لا تبدأ Providers.
+لا تبدأ Auth.
+لا تبدأ Commercial Runtime.
+لا تبدأ cleanup كبير.
+
+إذا وجدت bug صغيرًا:
+سجله فقط.
+
+نريد أولًا صورة Truth نهائية.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. REQUIRED FINAL OUTPUT FORMAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أعطني التقرير النهائي بهذا الشكل فقط:
+
+# A. CURRENT JASIM STATUS
+
+GENERATIVE RUNTIME:
+<percent-like qualitative status, not fake precision>
+
+SMART BUBBLE PRODUCT:
+<status>
+
+TRUSTED EXECUTION:
+<status>
+
+WEB:
+<status>
+
+MOBILE:
+<status>
+
+PRODUCTION:
+<status>
+
+COMMERCIAL:
+<status>
+
+# B. WHAT IS COMPLETE
+
+<short list>
+
+# C. WHAT IS STILL MISSING
+
+| Priority | Gap | Status | Size | Blocks | Reusable old component? |
+
+# D. NEXT 3 CRITICAL TRANCHES
+
+1.
+2.
+3.
+
+# E. OWNER ACTION REQUIRED NOW
+
+| Action | Exact requirement | Blocks |
+
+إذا لا يوجد:
+NONE
+
+# F. OWNER ACTION REQUIRED LATER
+
+分 إلى:
+- Providers
+- iOS
+- Android
+- Production infrastructure
+- Commercial launch
+
+# G. WHAT REPLIT CAN COMPLETE WITHOUT ME
+
+قائمة واضحة بكل ما تستطيع تنفيذه دون أي تدخل مني.
+
+# H. HARD BLOCKERS REQUIRING ME
+
+فقط الأشياء التي لا يمكن تجاوزها تقنيًا بدون حساب/مفتاح/قرار مني.
+
+# I. FINAL PATH TO JASIM
+
+CURRENT STATE
+↓
+...
+↓
+GENERAL GENERATIVE RUNTIME READY
+↓
+...
+↓
+PRODUCTION READY
+↓
+...
+↓
+COMMERCIAL READY
+↓
+...
+↓
+IOS / ANDROID RELEASE READY
+
+# J. NEXT ACTION
+
+اكتب لي في النهاية أمرًا واحدًا فقط:
+
+NEXT RECOMMENDED TASK:
+<exact task>
+
+OWNER ACTION NEEDED BEFORE STARTING IT:
+YES / NO
+
+إذا YES:
+<exact action>
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أريد Truth Audit، وليس تقريرًا متفائلًا.
+
+لا تخبرني أن شيئًا Complete لأن:
+- الكود موجود فقط
+- typecheck نجح فقط
+- UI ظهرت فقط
+- Expo Go فتح فقط
+- test mocked نجح فقط
+
+Complete تعني أن المسار الحقيقي المطلوب يعمل وتم إثباته بما يناسبه.
+
+راجع المشروع الحالي الآن وأعطني ما تبقى بالضبط،
+وما تستطيع أنت إكماله،
+وما سأكون أنا ملزمًا بتوفيره أو تنفيذه.

@@ -1,0 +1,5116 @@
+"""
+=======================================================================
+JASIM — POST BLOCK-1 MASTER ARCHITECTURAL CONSTITUTION
+=======================================================================
+
+BLOCK 1.1
+AGENT-NATIVE ACCELERATION + OPEN INTEROPERABILITY
+
+BLOCK 2
+REAL-WORLD EXECUTION + COORDINATION FABRIC
+
+BLOCK 3
+AGENTIC COMMERCE + ECONOMIC OPERATING SYSTEM + FINAL PRODUCTION
+
+VERSION:
+2026 POST-BLOCK-1 ARCHITECTURAL TEACHING SPECIFICATION
+
+PURPOSE:
+This document is an architectural constitution and teaching document.
+
+It explains what JASIM must become after Block 1.
+
+It is NOT permission to blindly rewrite the repository.
+
+It is NOT permission to start all three blocks simultaneously.
+
+It is NOT a request to implement every technology named below.
+
+Before implementation, absorb the architecture, inspect the actual
+canonical code, inspect the actual example/acceptance folders, map the
+current implementation to this target, and then implement only the
+smallest justified delta in dependency order.
+
+=======================================================================
+0. THE CENTRAL THESIS
+=======================================================================
+
+JASIM must become:
+
+    ONE CENTRAL INTELLIGENCE
+    +
+    ONE SEMANTIC CAPABILITY SYSTEM
+    +
+    ONE TRUSTED RUNTIME
+    +
+    ONE ECONOMIC VALUE NETWORK
+    +
+    OPEN PROVIDER INTEROPERABILITY
+    +
+    REAL-WORLD COORDINATION
+    +
+    AGENTIC COMMERCE
+    +
+    GENERATIVE INTERACTION
+    +
+    VERIFIED ECONOMIC TRUTH
+
+
+JASIM must NOT become:
+
+    a marketplace collection
+
+    a collection of domain agents
+
+    an app-builder only
+
+    an agent-framework wrapper
+
+    an MCP client with a chat UI
+
+    an A2A orchestrator
+
+    an OpenAI-specific product
+
+    a Stripe-specific product
+
+    an AP2-specific wallet
+
+    a giant multi-agent swarm
+
+    or a set of hard-coded examples.
+
+
+The governing idea remains:
+
+    "THE TECHNOLOGY COMES TO THE USER."
+
+
+The user expresses a goal.
+
+JASIM determines:
+
+    what the goal means,
+    what state is required,
+    what capabilities are required,
+    what resources are required,
+    what providers may satisfy the capabilities,
+    what permissions are required,
+    what economic relationships exist,
+    what real-world effects are required,
+    what can be executed now,
+    what needs approval,
+    what requires another human,
+    what requires another agent,
+    what requires an external provider,
+    what must wait,
+    what can generate revenue,
+    what creates value for the user,
+    and what must be reported as unavailable.
+
+=======================================================================
+1. ABSOLUTE ARCHITECTURAL INVARIANTS
+=======================================================================
+
+These invariants override convenient shortcuts.
+
+
+INVARIANT_001 = "ONE_JASIM"
+
+INVARIANT_002 = "ONE_CENTRAL_INTELLIGENCE"
+
+INVARIANT_003 = "ONE_CANONICAL_RUNTIME"
+
+INVARIANT_004 = "ONE_CANONICAL_POSTGRESQL_TRUTH"
+
+INVARIANT_005 = "ONE_CAPABILITY_SEMANTIC_SYSTEM"
+
+INVARIANT_006 = "ONE_AUTHORIZATION_TRUTH"
+
+INVARIANT_007 = "ONE_EVENT_AND_STATE_TRUTH"
+
+INVARIANT_008 = "ONE_TRUSTED_EXECUTION_CHAIN"
+
+INVARIANT_009 = "WEB_IOS_ANDROID_SHARE_SERVER_TRUTH"
+
+INVARIANT_010 = "BUBBLE_FIRST_WHEN_INTERACTION_IS_NEEDED"
+
+INVARIANT_011 = "WORLD_OPTIONAL"
+
+INVARIANT_012 = "RUN_CAN_EXIST_WITHOUT_WORLD"
+
+INVARIANT_013 = "RUN_CAN_EXIST_WITHOUT_BUBBLE"
+
+INVARIANT_014 = "LLM_IS_UNTRUSTED_INTELLIGENCE"
+
+INVARIANT_015 = "REMOTE_AGENT_IS_UNTRUSTED_PROVIDER"
+
+INVARIANT_016 = "REMOTE_TOOL_IS_UNTRUSTED_PROVIDER"
+
+INVARIANT_017 = "CLIENT_IS_NOT_EXECUTION_AUTHORITY"
+
+INVARIANT_018 = "PROTOCOL_IS_NOT_PROVIDER"
+
+INVARIANT_019 = "PROTOCOL_IS_NOT_CANONICAL_TRUTH"
+
+INVARIANT_020 = "UI_IS_NOT_CANONICAL_TRUTH"
+
+INVARIANT_021 = "AUTHORIZED_DOES_NOT_MEAN_EXECUTED"
+
+INVARIANT_022 = "EXECUTED_DOES_NOT_MEAN_VERIFIED"
+
+INVARIANT_023 = "RECEIPT_DOES_NOT_MEAN_VERIFICATION"
+
+INVARIANT_024 = "CHECKOUT_CREATED_DOES_NOT_MEAN_PAID"
+
+INVARIANT_025 = "PROPOSAL_ACCEPTED_DOES_NOT_MEAN_SETTLED"
+
+INVARIANT_026 = "UNKNOWN_DOES_NOT_MEAN_SUCCESS"
+
+INVARIANT_027 = "UNKNOWN_DOES_NOT_MEAN_FAILURE"
+
+INVARIANT_028 = "NO_FAKE_SUCCESS"
+
+INVARIANT_029 = "NO_DOMAIN_CORE_PATCH_FOR_ACCEPTANCE_EXAMPLE"
+
+INVARIANT_030 = "BUILD_JASIM_UNIQUE_TRUTH_BORROW_STANDARDIZED_PLUMBING"
+
+
+=======================================================================
+2. REQUIRED READING BEFORE ANY POST-BLOCK-1 IMPLEMENTATION
+=======================================================================
+
+Before writing code for Block 1.1, Block 2, or Block 3:
+
+READ THE ACTUAL REPOSITORY.
+
+Do not rely only on this document.
+
+Do not rely only on old planning documents.
+
+Do not rely only on memory.
+
+
+FIRST locate the canonical current implementation.
+
+THEN locate all example / scenario / acceptance material.
+
+
+Search the repository for directories/files conceptually matching:
+
+    examples/
+    scenarios/
+    acceptance/
+    evals/
+    docs/
+    tasks/
+
+and filenames/content containing concepts such as:
+
+    JASIM
+    example
+    examples
+    scenario
+    scenarios
+    acceptance
+    generalization
+    unseen
+    real-world
+    smart-bubble
+    commerce
+    economics
+    transport
+    delivery
+    hiring
+    wholesale
+
+and Arabic equivalents:
+
+    مثال
+    أمثلة
+    سيناريو
+    سيناريوهات
+    اختبار
+    اختبارات
+    قبول
+    جاسم
+    ربح
+    عمولة
+    اشتراك
+    توصيل
+    توظيف
+    جملة
+
+
+Use focused repository discovery.
+
+For example, adapt commands equivalent to:
+
+    find . -type f | grep -Ei \
+      'jasim|example|scenario|acceptance|eval|bubble|commerce|economic'
+
+and:
+
+    rg -n \
+      'مثال|سيناريو|عمولة|اشتراك|ربح|commission|subscription|success.?fee|delivery' \
+      docs .local 2>/dev/null
+
+
+DO NOT blindly scan huge generated/vendor folders.
+
+Exclude where appropriate:
+
+    node_modules
+    dist
+    build
+    .git
+    caches
+    coverage
+    generated vendor artifacts
+
+
+=======================================================================
+3. HOW TO READ THE EXAMPLE FILES
+=======================================================================
+
+THE EXAMPLES ARE NOT A FEATURE BACKLOG.
+
+They are:
+
+    requirement probes,
+    economic probes,
+    generalization tests,
+    composition tests,
+    product-value tests.
+
+
+Examples such as:
+
+    sell a car,
+    buy an iPhone,
+    find a job,
+    hire restaurant workers,
+    sell furniture,
+    emergency plumbing,
+    wholesale 500 phones,
+    buy investment property,
+    create a painting-company platform,
+    create food delivery,
+    create Quran teaching platform,
+    buy 1000 chairs internationally,
+    worker transport,
+    industrial equipment rental,
+    skill exchange,
+    delivery,
+    tracking
+
+must NOT produce:
+
+    CarAgent
+    PhoneAgent
+    JobAgent
+    RestaurantAgent
+    PlumberAgent
+    WholesaleAgent
+    RealEstateAgent
+    QuranPlatformAgent
+    WorkerTransportAgent
+
+
+The correct question for each example is:
+
+    "Which GENERAL semantic primitives make this possible?"
+
+
+Examples are evidence that JASIM must support primitives such as:
+
+    OFFER
+    NEED
+    DISCOVER
+    MATCH
+    VERIFY
+    NEGOTIATE
+    PROPOSE
+    ACCEPT
+    TRANSACT
+    RESERVE
+    SCHEDULE
+    NOTIFY
+    TRACK
+    DELEGATE
+    PAY
+    SETTLE
+    REFUND
+    PUBLISH
+    MONETIZE
+
+
+=======================================================================
+4. CORRECT THE OLD DOCUMENTS WITHOUT DISCARDING THEIR VALUE
+=======================================================================
+
+Some historical JASIM documents contain temporary simplifications such
+as domain workflows or domain agents.
+
+Do NOT preserve those temporary shortcuts as the final Core.
+
+Example:
+
+    FurnitureSellingWorkflow
+
+should become a composition such as:
+
+    STRUCTURE_RESOURCE
+        →
+    CREATE_OFFERING
+        →
+    PUBLISH
+        →
+    DISCOVER_NEED
+        →
+    MATCH
+        →
+    ENGAGE
+        →
+    NEGOTIATE
+        →
+    TRANSACTION_INTENT
+
+
+Example:
+
+    JobSearchWorkflow
+
+should become:
+
+    STRUCTURE_PROFILE
+        →
+    CREATE_NEED
+        →
+    DISCOVER_OFFERINGS
+        →
+    MATCH
+        →
+    ENGAGE
+        →
+    APPLY / PROPOSE
+
+
+Preserve the USER VALUE and ECONOMIC LOGIC from old examples.
+
+Replace the DOMAIN IMPLEMENTATION with GENERAL PRIMITIVES.
+
+
+=======================================================================
+5. PRODUCT PRIORITY IS NOT THE SAME AS TECHNICAL PRIORITY
+=======================================================================
+
+JASIM must be developed using TWO simultaneous priority axes.
+
+
+AXIS A:
+UNIVERSALITY / TECHNICAL LEVERAGE
+
+Ask:
+
+    Does this primitive unlock many unrelated use cases?
+
+
+AXIS B:
+ECONOMIC LEVERAGE
+
+Ask:
+
+    Does this primitive allow users to create or capture meaningful
+    economic value?
+
+    Can JASIM generate justified recurring or transaction revenue from
+    this value?
+
+    Does this increase retention, liquidity, frequency, GMV, or LTV?
+
+
+A technically elegant capability with almost no user/economic leverage
+must not outrank a general primitive that unlocks:
+
+    commerce,
+    hiring,
+    services,
+    recurring businesses,
+    B2B,
+    delivery,
+    payments.
+
+
+=======================================================================
+6. PRODUCT PRIORITY FUNCTION
+=======================================================================
+
+Use a conceptual priority model.
+
+Do NOT hard-code these exact weights without product evidence.
+
+Conceptually:
+
+    priority =
+        universality_leverage
+        * user_value
+        * economic_value
+        * reuse_factor
+        * network_effect
+        * readiness
+        / (
+            implementation_cost
+            * operational_cost
+            * regulatory_risk
+            * complexity
+        )
+
+
+Example Python-like conceptual type:
+
+
+from dataclasses import dataclass
+
+
+@dataclass
+class CapabilityPriority:
+    universality_leverage: float
+    user_value: float
+    jasim_revenue_potential: float
+    user_revenue_potential: float
+    recurrence: float
+    network_effect: float
+    reuse_factor: float
+    strategic_readiness: float
+
+    implementation_cost: float
+    runtime_cost: float
+    regulatory_risk: float
+    operational_complexity: float
+
+
+Never optimize:
+
+    JASIM_REVENUE
+
+alone.
+
+
+The better long-term objective is:
+
+    USER_VALUE_CREATED
+        +
+    USER_ECONOMIC_SUCCESS
+        +
+    JASIM_VERIFIED_REVENUE
+        -
+    PROVIDER_COST
+        -
+    AI_COST
+        -
+    OPERATIONAL_RISK
+
+
+=======================================================================
+7. ECONOMIC PHILOSOPHY
+=======================================================================
+
+JASIM must NOT maximize revenue by extracting the maximum possible fee.
+
+JASIM should maximize:
+
+    recurring verified value creation.
+
+
+The durable economic flywheel is:
+
+    USER RECEIVES REAL VALUE
+            ↓
+    USER RETURNS
+            ↓
+    MORE OFFERINGS / NEEDS / BUSINESSES
+            ↓
+    BETTER DISCOVERY LIQUIDITY
+            ↓
+    MORE MATCHES
+            ↓
+    MORE VERIFIED TRANSACTIONS
+            ↓
+    MORE JASIM REVENUE
+            ↓
+    BETTER CAPABILITIES
+            ↓
+    MORE USER VALUE
+
+
+This is stronger than:
+
+    charge everything immediately.
+
+
+=======================================================================
+8. REVENUE PATTERNS EXTRACTED FROM THE EXAMPLE PHILOSOPHY
+=======================================================================
+
+The historical examples demonstrate useful ECONOMIC PATTERNS.
+
+They must become generic revenue policies, not hard-coded prices.
+
+
+Potential models include:
+
+    TRANSACTION_FEE
+
+    SUCCESS_FEE
+
+    SUBSCRIPTION
+
+    USAGE_FEE
+
+    SERVICE_FEE
+
+    LISTING_FEE
+
+    PROMOTION_FEE
+
+    VERIFICATION_FEE
+
+    DELIVERY_MARGIN
+
+    PLATFORM_SUBSCRIPTION
+
+    B2B_CONTRACT_FEE
+
+    API_USAGE
+
+    CPA
+
+    CPC
+
+    FEATURED_PLACEMENT
+
+    HYBRID_PRICING
+
+
+The numbers contained in historical example documents are SCENARIO
+ASSUMPTIONS.
+
+They are NOT production pricing truth.
+
+
+Never hard-code:
+
+    car commission = X
+
+    job fee = Y
+
+    SaaS price = Z
+
+
+Instead implement:
+
+    FeeRule
+
+    PricingPolicy
+
+    RevenueEvent
+
+    Entitlement
+
+    SubscriptionPlan
+
+    CommercialConfiguration
+
+
+=======================================================================
+9. ECONOMIC PRIORITY ORDER
+=======================================================================
+
+Prioritize initially from highest COMPOUNDING value to lower-value
+optional monetization.
+
+PRIORITY TIER A — PLATFORM-LEVEL ECONOMIC LEVERAGE
+
+    generated businesses / Smart Bubbles
+    recurring subscriptions
+    B2B supply/demand
+    wholesale
+    high-value matching
+    hiring
+    service marketplaces generated dynamically
+    transaction execution
+    payment
+    business automation
+
+
+PRIORITY TIER B — FREQUENT TRANSACTION VALUE
+
+    C2C selling
+    services
+    delivery
+    booking
+    rentals
+    negotiation
+    verified discovery
+
+
+PRIORITY TIER C — RETENTION AND ADD-ON VALUE
+
+    emergency service discovery
+    verification add-ons
+    document enhancement
+    promotion
+    media generation
+    convenience features
+
+
+PRIORITY TIER D — OPTIONAL FUTURE MONETIZATION
+
+    ads
+    CPC
+    sponsored placement
+    advanced analytics packages
+    API marketplace
+    white-label
+    enterprise customizations
+
+
+Do NOT sacrifice general architecture to optimize Tier D prematurely.
+
+
+=======================================================================
+10. USER PROFITABILITY IS A FIRST-CLASS OBJECTIVE
+=======================================================================
+
+JASIM is not merely a fee collection engine.
+
+For a business owner, JASIM should be capable of asking:
+
+    What does this generated business sell?
+
+    Who pays?
+
+    What unit creates value?
+
+    What recurring value exists?
+
+    What are fixed costs?
+
+    What are variable costs?
+
+    What provider costs exist?
+
+    What capacity limits exist?
+
+    What customer acquisition model exists?
+
+    What pricing model fits?
+
+    What gross margin might exist?
+
+    What utilization is required?
+
+    What cancellation/no-show risk exists?
+
+
+Then assist the founder with:
+
+    pricing model
+    subscription structure
+    usage-based model
+    transaction commission
+    driver/provider compensation
+    capacity economics
+    route economics
+    marketplace liquidity
+    free trial
+    freemium
+    B2B contracts
+    enterprise plans
+
+
+BUT:
+
+    JASIM MUST NOT INVENT FINAL PRICES WITHOUT EVIDENCE.
+
+
+=======================================================================
+11. COMMERCIAL ASSISTANCE MUST BE WORLD-AWARE
+=======================================================================
+
+If a user asks:
+
+    "How do I make money from this platform?"
+
+JASIM must NOT answer with a generic blog post.
+
+It should inspect the generated World's actual semantic structure.
+
+For example:
+
+    resources
+    participants
+    transactions
+    schedules
+    supply
+    demand
+    capacity
+    frequency
+    providers
+    operational cost drivers
+    payment flow
+
+
+Then generate possible economic models based on that structure.
+
+Example:
+
+    recurring worker transport platform
+
+may justify:
+
+    worker subscription
+    employer-paid contract
+    per-trip charge
+    hybrid subscription + overage
+    route sponsorship
+    service commission
+
+
+But these are MODEL OPTIONS.
+
+Not hard-coded truth.
+
+
+=======================================================================
+12. ECONOMIC METRICS THAT MATTER
+=======================================================================
+
+Track or make architecturally possible:
+
+    VERIFIED_GMV
+
+    VERIFIED_TRANSACTION_COUNT
+
+    USER_VALUE_CREATED
+
+    USER_TIME_SAVED
+
+    SUCCESS_RATE
+
+    CONVERSION_RATE
+
+    MATCH_TO_ENGAGEMENT_RATE
+
+    ENGAGEMENT_TO_TRANSACTION_RATE
+
+    REPEAT_USAGE
+
+    RETENTION
+
+    ACTIVE_OFFERINGS
+
+    ACTIVE_NEEDS
+
+    MARKET_LIQUIDITY
+
+    TAKE_RATE
+
+    PROVIDER_COST
+
+    PAYMENT_PROCESSING_COST
+
+    AI_COST_PER_SUCCESSFUL_OUTCOME
+
+    CONTRIBUTION_MARGIN
+
+    RECURRING_REVENUE
+
+    REVENUE_PER_ACTIVE_USER
+
+    REVENUE_PER_ACTIVE_BUSINESS
+
+    REFUND_RATE
+
+    DISPUTE_RATE
+
+    FAILED_EXECUTION_RATE
+
+
+Do NOT optimize vanity metrics such as:
+
+    number_of_agents
+    number_of_capabilities
+    number_of_bubbles
+    lines_of_code
+
+
+=======================================================================
+=======================================================================
+BLOCK 1.1
+AGENT-NATIVE ACCELERATION + OPEN INTEROPERABILITY
+=======================================================================
+=======================================================================
+
+13. BLOCK 1.1 PURPOSE
+=======================================================================
+
+Block 1 built semantic generality.
+
+Block 1.1 must make that generality:
+
+    OPEN
+    DISCOVERABLE
+    PROVIDER-INDEPENDENT
+    AGENT-NATIVE
+    TOKEN-EFFICIENT
+    FUTURE-PROOF
+
+
+It must answer:
+
+    "Can JASIM acquire or delegate capabilities dynamically
+     without making those external systems part of JASIM's truth?"
+
+
+=======================================================================
+14. CAPABILITY != PROVIDER
+=======================================================================
+
+This is the most important Block 1.1 abstraction.
+
+
+Example:
+
+    TRACK
+
+is a semantic capability.
+
+
+It may be implemented by:
+
+    Native JASIM implementation
+
+    MCP tool
+
+    A2A agent
+
+    provider API
+
+    specialist AI agent
+
+    computer-use agent
+
+    human operator
+
+
+Conceptually:
+
+
+from enum import Enum
+
+
+class ProviderKind(str, Enum):
+    NATIVE = "NATIVE"
+    MCP = "MCP"
+    A2A = "A2A"
+    AGENT_HARNESS = "AGENT_HARNESS"
+    COMPUTER_USE = "COMPUTER_USE"
+    HUMAN = "HUMAN"
+
+
+@dataclass
+class CapabilityProvider:
+    provider_id: str
+    provider_kind: ProviderKind
+    capability_refs: list[str]
+
+    trust_class: str
+    cost_class: str
+    latency_class: str
+    availability_state: str
+
+    auth_requirements: dict
+    resource_requirements: dict
+
+    schema_version: str
+    provenance: dict
+
+
+The semantic capability definition remains JASIM-owned.
+
+
+=======================================================================
+15. PROVIDER SELECTION PRINCIPLE
+=======================================================================
+
+The default preference should conceptually be:
+
+    EXISTING SAFE LOCAL PRIMITIVE
+        ↓
+    TRUSTED NATIVE PROVIDER
+        ↓
+    TRUSTED OPEN-PROTOCOL PROVIDER
+        ↓
+    BOUNDED REMOTE AGENT
+        ↓
+    CONTROLLED COMPUTER USE
+        ↓
+    HUMAN
+        ↓
+    TRUTHFUL GAP
+
+
+This is NOT an absolute fixed ranking.
+
+Cost, privacy, latency, geography, regulation, user preference and
+provider reliability may change the choice.
+
+
+=======================================================================
+16. MCP ROLE
+=======================================================================
+
+MCP should be treated as:
+
+    an interoperability boundary for tools/data/tasks/apps.
+
+
+MCP must NOT become:
+
+    JASIM Capability semantics
+
+    JASIM authorization truth
+
+    JASIM canonical task state
+
+    JASIM payment truth
+
+
+Target compatibility with the current MCP family through an adapter.
+
+Keep protocol-version-specific logic isolated.
+
+
+Conceptual path:
+
+    CapabilityRequirement
+        ↓
+    CapabilityDiscovery
+        ↓
+    MCP Tool Candidate
+        ↓
+    normalize schema
+        ↓
+    semantic mapping
+        ↓
+    trust classification
+        ↓
+    JASIM policy
+        ↓
+    ProviderBinding
+
+
+=======================================================================
+17. MCP CATALOG DISCOVERY
+=======================================================================
+
+JASIM should exploit dynamic tool discovery.
+
+Do NOT place all tool definitions in every model context.
+
+
+Bad:
+
+    model_context = 800 tools
+
+
+Better:
+
+    semantic_requirement
+        ↓
+    capability_catalog_search
+        ↓
+    3-10 candidate providers
+        ↓
+    fetch relevant contracts
+        ↓
+    composer
+
+
+Track:
+
+    catalog size
+    candidate count
+    contracts loaded
+    cache hit
+    catalog freshness
+
+
+=======================================================================
+18. MCP CACHE
+=======================================================================
+
+Use remote catalog caching when safe.
+
+Conceptual record:
+
+
+@dataclass
+class ProviderCatalogEntry:
+    provider_id: str
+    protocol: str
+    external_capability_id: str
+
+    semantic_summary: str
+
+    input_schema_hash: str
+    output_schema_hash: str
+
+    protocol_version: str
+    trust_class: str
+
+    discovered_at: str
+    refreshed_at: str
+    expires_at: str | None
+
+
+A cached catalog entry indicates:
+
+    discovery knowledge.
+
+
+It does NOT indicate:
+
+    current provider execution success.
+
+
+=======================================================================
+19. MCP TASKS
+=======================================================================
+
+Remote long-running work may use MCP Tasks.
+
+But:
+
+    MCP TASK
+    !=
+    JASIM RUN
+
+
+Correct:
+
+    JASIM RunNode
+        ↓
+    provider invocation
+        ↓
+    MCP Task
+        ↓
+    task handle
+        ↓
+    remote completion
+        ↓
+    JASIM ingestion
+        ↓
+    verification/reconciliation
+        ↓
+    canonical transition
+
+
+=======================================================================
+20. MCP APPS
+=======================================================================
+
+MCP Apps may be supported as OPTIONAL external presentation surfaces.
+
+They must never:
+
+    receive all Bubble state automatically,
+
+    obtain private World state implicitly,
+
+    directly mutate JASIM canonical state,
+
+    become execution authority.
+
+
+Any MCP App action:
+
+    external_surface_action
+        ↓
+    JASIM ActionIntent
+        ↓
+    authorization
+        ↓
+    policy
+        ↓
+    execution
+
+
+=======================================================================
+21. A2A ROLE
+=======================================================================
+
+A2A should allow JASIM to discover and delegate to remote agents.
+
+A2A agent = CAPABILITY PROVIDER.
+
+A2A agent != JASIM brain.
+
+A2A agent != JASIM authority.
+
+
+Use Agent Cards / Skills as discovery metadata.
+
+Normalize them before use.
+
+
+Conceptual path:
+
+    CapabilityRequirement
+        ↓
+    AgentSkillDiscovery
+        ↓
+    AgentCard
+        ↓
+    normalize
+        ↓
+    semantic fit
+        ↓
+    security requirements
+        ↓
+    bounded delegation
+        ↓
+    typed result
+        ↓
+    JASIM validation
+
+
+=======================================================================
+22. NO DOMAIN AGENT ARCHITECTURE
+=======================================================================
+
+Do NOT create persistent:
+
+    CarAgent
+    JobAgent
+    FoodAgent
+    WarehouseAgent
+    PropertyAgent
+
+
+Allow ephemeral task roles such as:
+
+    ResearchSpecialist
+    SecurityReviewer
+    NegotiationSpecialist
+    LogisticsResearchSpecialist
+    CodeSpecialist
+
+
+ONLY when the subproblem is:
+
+    independently describable,
+    bounded,
+    contractable,
+    useful enough to justify the extra model calls.
+
+
+=======================================================================
+23. CENTRAL INTELLIGENCE REMAINS CENTRAL
+=======================================================================
+
+Preferred architecture:
+
+    JASIM CENTRAL INTELLIGENCE
+        ↓
+    Semantic Goal
+        ↓
+    Capability Compiler
+        ↓
+    optional specialist delegation
+        ↓
+    Kernel validation
+        ↓
+    canonical execution
+
+
+Not:
+
+    swarm decides reality.
+
+
+=======================================================================
+24. AGENT HARNESS
+=======================================================================
+
+JASIM may reuse an existing Agent SDK/harness for:
+
+    agent loop
+    sandbox interaction
+    specialist delegation
+    model tool calls
+    session handling
+    tracing
+
+
+ONLY when this removes custom plumbing.
+
+
+Create a provider-neutral boundary:
+
+    AgentHarness
+
+
+Never:
+
+    JASIM == one vendor's SDK.
+
+
+JASIM must still boot without the optional harness adapter.
+
+
+=======================================================================
+25. A2UI COMPATIBILITY
+=======================================================================
+
+JASIM already owns Presentation Semantics.
+
+Preserve them.
+
+
+Correct:
+
+    Canonical State
+        ↓
+    JASIM Presentation IR
+        ↓
+    optional A2UI Adapter
+        ↓
+    renderer
+
+
+Do not store protocol payloads as business state.
+
+
+A2UI is useful for:
+
+    declarative surfaces
+    streaming UI
+    generic components
+    data binding
+    protocol interoperability
+
+
+But because protocol versions continue evolving:
+
+    isolate them behind adapters.
+
+
+=======================================================================
+26. AG-UI COMPATIBILITY
+=======================================================================
+
+AG-UI may be used for agent/runtime ↔ client event compatibility.
+
+Potential projection mapping:
+
+    JASIM Run Started
+        → RUN_STARTED
+
+    JASIM Step Started
+        → STEP_STARTED
+
+    Capability invocation
+        → TOOL_CALL_* projection
+
+    Presentation state baseline
+        → STATE_SNAPSHOT
+
+    Presentation delta
+        → STATE_DELTA
+
+
+But:
+
+    AG_UI_STATE
+    !=
+    DATABASE_STATE
+
+
+Never accept client state delta as protected canonical mutation.
+
+
+=======================================================================
+27. CAPABILITY EVOLUTION: SEARCH BEFORE BUILD
+=======================================================================
+
+When Block 1 reports:
+
+    MISSING_GENERIC_CAPABILITY
+
+
+the new development logic becomes:
+
+    SEARCH NATIVE
+        ↓
+    SEARCH COMPOSITION ALTERNATIVES
+        ↓
+    SEARCH MCP
+        ↓
+    SEARCH A2A
+        ↓
+    SEARCH SAFE EXISTING PROVIDERS
+        ↓
+    STILL MISSING?
+        ↓
+    CAPABILITY_GAP_CANDIDATE
+
+
+This prevents JASIM from rebuilding existing ecosystem capability.
+
+
+=======================================================================
+28. CAPABILITY GAP CANDIDATE
+=======================================================================
+
+Conceptually:
+
+
+@dataclass
+class CapabilityGapCandidate:
+    semantic_purpose: str
+
+    required_inputs: dict
+    expected_outputs: dict
+
+    effect_class: str
+    risk_class: str
+
+    provider_classes_searched: list[str]
+    alternatives_attempted: list[str]
+
+    why_existing_composition_failed: str
+
+    candidate_generic_primitive: str | None
+
+
+This object is DEVELOPMENT evidence.
+
+It must NOT auto-register production code.
+
+
+=======================================================================
+29. SELF-EVOLUTION BOUNDARY
+=======================================================================
+
+Future:
+
+    gap
+        ↓
+    research agents
+        ↓
+    candidate design
+        ↓
+    sandbox implementation
+        ↓
+    tests
+        ↓
+    security
+        ↓
+    generalization
+        ↓
+    canary
+        ↓
+    signed release
+
+
+Block 1.1 may prepare the boundary.
+
+It must NOT enable autonomous production self-modification.
+
+
+=======================================================================
+30. BLOCK 1.1 ECONOMIC VALUE
+=======================================================================
+
+Block 1.1 itself should reduce:
+
+    connector development cost
+    integration time
+    agent-context cost
+    duplicated implementations
+    provider lock-in
+
+
+This is economically important.
+
+Do not judge Block 1.1 only by feature count.
+
+
+Track:
+
+    provider integrations avoided
+    catalog discovery cost
+    average candidate tools loaded
+    model context reduction
+    provider substitution rate
+    reusable capability coverage
+
+
+=======================================================================
+=======================================================================
+BLOCK 2
+AGENT-NATIVE REAL-WORLD EXECUTION + COORDINATION FABRIC
+=======================================================================
+=======================================================================
+
+31. BLOCK 2 PURPOSE
+=======================================================================
+
+Block 1 answers:
+
+    WHAT DOES THE USER WANT?
+
+Block 1.1 answers:
+
+    WHERE CAN THE REQUIRED CAPABILITY COME FROM?
+
+Block 2 answers:
+
+    HOW DOES THE GOAL CONTINUE THROUGH TIME,
+    PEOPLE,
+    RESOURCES,
+    EVENTS,
+    LOCATIONS,
+    PROVIDERS,
+    AND REAL-WORLD OPERATIONS?
+
+
+Block 2 transforms JASIM from:
+
+    intelligent economic understanding
+
+into:
+
+    persistent real-world coordination.
+
+
+=======================================================================
+32. BLOCK 2 PRIORITY ORDER
+=======================================================================
+
+Implement in this dependency order:
+
+
+P0:
+
+    Delegation / authority scope
+
+    temporal triggers
+
+    durable wait
+
+    events
+
+    availability
+
+    reservation/capacity concurrency
+
+
+P1:
+
+    notifications
+
+    location observations
+
+    tracking sessions
+
+    provider resolution
+
+    remote task execution
+
+
+P2:
+
+    booking composition
+
+    delivery composition
+
+    dispatch composition
+
+    multi-party workflows
+
+
+P3:
+
+    computer-use fallback
+
+    richer realtime presence
+
+    optional optimization systems
+
+
+Reason:
+
+P0 unlocks almost every recurring real-world workflow.
+
+P1 turns workflows into live useful services.
+
+P2 unlocks monetizable operations.
+
+P3 handles the long tail.
+
+
+=======================================================================
+33. UNIVERSAL PARTICIPATION MODEL
+=======================================================================
+
+Block 2 must support:
+
+    humans
+
+    organizations
+
+    generated businesses
+
+    agents
+
+    external service providers
+
+    resources
+
+
+without domain-specific participant types.
+
+
+Conceptually:
+
+    Participant
+    Membership
+    Role
+    Permission
+    Scope
+    Invitation
+    Delegation
+    Revocation
+    TrustEvidence
+
+
+=======================================================================
+34. ROLE != DOMAIN
+=======================================================================
+
+Roles can be generated inside a World:
+
+    driver
+    passenger
+    employer
+    candidate
+    seller
+    buyer
+    operator
+    reviewer
+
+
+But Kernel authorization must use generic semantics:
+
+    role
+    permission
+    scope
+    resource
+    capability
+
+
+No:
+
+    if user.isDriver:
+        special_driver_authorization()
+
+
+=======================================================================
+35. DELEGATION GRANT
+=======================================================================
+
+Agentic systems require explicit delegated authority.
+
+
+Conceptually:
+
+
+@dataclass
+class DelegationGrant:
+    principal_ref: str
+    delegate_ref: str
+
+    allowed_capabilities: list[str]
+    denied_capabilities: list[str]
+
+    resource_scope: list[str]
+    monetary_limit: dict | None
+
+    constraints: dict
+
+    valid_from: str
+    expires_at: str
+
+    revocable: bool
+    delegation_depth_remaining: int
+
+    fingerprint: str
+
+
+Critical rule:
+
+    CHILD_AUTHORITY <= PARENT_AUTHORITY
+
+
+A delegate must never expand authority.
+
+
+=======================================================================
+36. DELEGATION EXAMPLE
+=======================================================================
+
+User:
+
+    "Find suppliers and negotiate,
+     but do not agree above 5,000 KWD
+     and do not pay."
+
+
+Grant:
+
+    DISCOVER = allowed
+
+    VERIFY = allowed
+
+    NEGOTIATE = allowed
+
+    PROPOSE = allowed
+
+    ACCEPT = constrained / forbidden
+
+    PAY = forbidden
+
+    budget <= 5,000 KWD
+
+
+If JASIM delegates to A2A specialist:
+
+    specialist authority
+    <=
+    JASIM grant.
+
+
+=======================================================================
+37. TEMPORAL ENGINE
+=======================================================================
+
+Do not solve time using LLM memory.
+
+Create/reuse deterministic temporal semantics.
+
+
+Conceptually:
+
+
+class TemporalTriggerType(str, Enum):
+    AT = "AT"
+    AFTER = "AFTER"
+    RECURRING = "RECURRING"
+    DEADLINE = "DEADLINE"
+    CONDITION = "CONDITION"
+    EVENT = "EVENT"
+
+
+@dataclass
+class TemporalTrigger:
+    trigger_id: str
+    type: TemporalTriggerType
+
+    timezone: str
+
+    schedule: dict | None
+    condition_ref: str | None
+    event_ref: str | None
+
+    target_run_ref: str
+
+    state: str
+
+
+Examples:
+
+    tomorrow at 8
+
+    every Monday
+
+    after 2 hours
+
+    if supplier does not reply within 30 minutes
+
+    when delivery arrives
+
+    when price falls below threshold
+
+
+=======================================================================
+38. DURABLE WAIT
+=======================================================================
+
+Workers must NOT remain open while waiting.
+
+Correct:
+
+    RunNode
+        ↓
+    WAITING
+        ↓
+    persisted trigger
+        ↓
+    worker releases execution
+        ↓
+    trigger occurs
+        ↓
+    lease acquired
+        ↓
+    same Run resumes
+
+
+Prove restart durability.
+
+
+=======================================================================
+39. EVENT SUBSCRIPTIONS
+=======================================================================
+
+General event sources may include:
+
+    canonical internal event
+
+    webhook
+
+    MCP task update
+
+    A2A task update
+
+    payment callback
+
+    reservation change
+
+    location update
+
+    notification receipt
+
+    schedule trigger
+
+    condition evaluator
+
+
+Represent through generic subscription semantics.
+
+
+=======================================================================
+40. REALTIME IS A PROJECTION OF EVENTS
+=======================================================================
+
+Do not build a separate realtime truth.
+
+Correct:
+
+    Canonical state/event
+        ↓
+    projection event
+        ↓
+    AG-UI/WebSocket/SSE/etc.
+        ↓
+    client
+
+
+Client reconnect:
+
+    fetch canonical snapshot
+        +
+    continue deltas.
+
+
+=======================================================================
+41. LOCATION MUST BE AN OBSERVATION
+=======================================================================
+
+Do not treat:
+
+    latitude/longitude
+
+as eternal truth.
+
+
+Conceptually:
+
+
+@dataclass
+class LocationObservation:
+    subject_ref: str
+
+    observed_at: str
+
+    source_provider_ref: str
+    source_type: str
+
+    latitude: float | None
+    longitude: float | None
+    accuracy_meters: float | None
+
+    semantic_location: str | None
+
+    provenance: dict
+
+    expires_at: str | None
+
+
+Examples of source_type:
+
+    DEVICE_GPS
+
+    DELIVERY_PROVIDER
+
+    HUMAN_REPORTED
+
+    MCP_PROVIDER
+
+    A2A_AGENT
+
+    SENSOR
+
+
+=======================================================================
+42. TRACK SESSION
+=======================================================================
+
+Tracking is generic.
+
+
+@dataclass
+class TrackSession:
+    session_id: str
+    subject_ref: str
+    purpose: str
+
+    started_at: str
+    ended_at: str | None
+
+    source_provider_refs: list[str]
+
+    current_observation_ref: str | None
+
+    state: str
+
+
+Same primitive should support:
+
+    driver
+    shipment
+    technician
+    bus
+    boat
+    equipment
+    field worker
+
+
+No:
+
+    DriverTrackingEngine.
+
+
+=======================================================================
+43. ETA / ROUTE
+=======================================================================
+
+Route and ETA are observations/estimates.
+
+They require:
+
+    provider
+    generated_at
+    evidence
+    expiry/freshness
+
+
+Never fabricate them.
+
+
+=======================================================================
+44. AVAILABILITY MODEL
+=======================================================================
+
+Block 1 represented availability semantically.
+
+Block 2 must make it operational.
+
+
+Conceptually:
+
+    ResourceCapacity
+
+    AvailabilityWindow
+
+    Reservation
+
+    Allocation
+
+    Release
+
+
+Example:
+
+    warehouse capacity = 10 tons
+
+    reservation A = 7 tons
+
+Concurrent reservation B asking 5 tons must not succeed.
+
+
+This requires deterministic transactional concurrency.
+
+Not LLM judgment.
+
+
+=======================================================================
+45. GENERIC RESERVATION
+=======================================================================
+
+Reservation must work for:
+
+    seats
+    warehouse capacity
+    room
+    technician time
+    equipment time
+    appointment
+    rental inventory
+    production capacity
+
+
+Conceptually:
+
+
+@dataclass
+class Reservation:
+    reservation_id: str
+
+    resource_ref: str
+    requester_ref: str
+
+    quantity: dict | None
+    period: dict
+
+    state: str
+
+    idempotency_key: str
+    version: int
+
+
+=======================================================================
+46. NOTIFICATION ROUTER
+=======================================================================
+
+NOTIFY is a semantic capability.
+
+Possible provider channels:
+
+    IN_APP
+
+    PUSH
+
+    EMAIL
+
+    SMS
+
+    MCP_PROVIDER
+
+    future channels
+
+
+Provider selection should consider:
+
+    urgency
+    cost
+    privacy
+    user preference
+    provider availability
+    delivery guarantees
+
+
+=======================================================================
+47. NOTIFICATION TRUTH
+=======================================================================
+
+Do not collapse:
+
+    sent
+
+    delivered
+
+    read
+
+
+Possible states:
+
+    QUEUED
+    ACCEPTED_BY_PROVIDER
+    SENT
+    DELIVERED
+    READ
+    FAILED
+    UNKNOWN
+
+
+Only claim what provider evidence supports.
+
+
+=======================================================================
+48. PROVIDER RESOLVER
+=======================================================================
+
+Block 1.1 discovered capability providers.
+
+Block 2 operationalizes provider selection.
+
+
+Conceptually:
+
+
+@dataclass
+class ProviderSelectionContext:
+    capability_ref: str
+
+    user_ref: str
+    run_ref: str
+
+    jurisdiction: str | None
+
+    privacy_class: str
+    risk_class: str
+
+    maximum_cost: float | None
+    maximum_latency_ms: int | None
+
+    required_verification: str
+
+
+Provider scoring may consider:
+
+    semantic compatibility
+
+    trust tier
+
+    historical verified success
+
+    availability
+
+    cost
+
+    latency
+
+    jurisdiction
+
+    privacy
+
+    user preference
+
+    data residency
+
+    interaction burden
+
+
+Do NOT let LLM free-form opinion determine provider trust.
+
+
+=======================================================================
+49. COMPUTER USE PROVIDER
+=======================================================================
+
+Computer use should solve long-tail external systems that lack:
+
+    trusted API
+
+    MCP
+
+    A2A
+
+or an appropriate direct integration.
+
+
+It is a FALLBACK provider.
+
+
+Use:
+
+    isolated browser/container
+    restricted origin
+    scoped credentials
+    no secret leakage to model
+    navigation policy
+    download/upload policy
+    approval gates
+    audit trail
+
+
+=======================================================================
+50. COMPUTER USE CONSEQUENCE GATE
+=======================================================================
+
+Safe operations may continue automatically where policy permits.
+
+Consequential actions should pause.
+
+Examples:
+
+    submit binding application
+    purchase
+    cancel reservation
+    send legal communication
+    delete account
+
+
+Correct:
+
+    browser fills form
+        ↓
+    PREPARED
+        ↓
+    user/policy approval
+        ↓
+    SUBMIT
+
+
+Never infer:
+
+    webpage showed success
+        =
+    canonical verified outcome.
+
+
+=======================================================================
+51. BOOKING IS A COMPOSITION
+=======================================================================
+
+Do not create:
+
+    RestaurantBookingCore
+
+    DoctorBookingCore
+
+    TutorBookingCore
+
+
+General booking composition:
+
+    Need
+        ↓
+    Discover
+        ↓
+    Match
+        ↓
+    Availability
+        ↓
+    Reservation
+        ↓
+    Proposal / terms
+        ↓
+    confirmation
+        ↓
+    Schedule
+        ↓
+    Notification
+
+
+Payment optional.
+
+
+=======================================================================
+52. DELIVERY IS A COMPOSITION
+=======================================================================
+
+Do not create a monolithic Delivery domain Core.
+
+
+Generic delivery:
+
+    Transaction / Resource Transfer Need
+        ↓
+    transport requirement
+        ↓
+    discover capacity
+        ↓
+    availability
+        ↓
+    match
+        ↓
+    quote / proposal
+        ↓
+    select
+        ↓
+    assign
+        ↓
+    schedule
+        ↓
+    notify
+        ↓
+    track
+        ↓
+    proof of completion
+
+
+No driver:
+
+    BLOCKED_BY_RESOURCE
+
+
+No tracking provider:
+
+    BLOCKED_BY_PROVIDER
+
+
+No payment capability:
+
+    delivery may still be represented,
+    but paid execution may remain blocked.
+
+
+=======================================================================
+53. DISPATCH IS A COMPOSITION
+=======================================================================
+
+Emergency plumber.
+
+Field technician.
+
+Courier.
+
+Replacement employee.
+
+Medical mobile clinic.
+
+All can use:
+
+    Need
+        ↓
+    Discover
+        ↓
+    hard constraints
+        ↓
+    Match
+        ↓
+    Availability
+        ↓
+    Assign
+        ↓
+    Notify
+        ↓
+    Track
+        ↓
+    Complete
+
+
+Domain-specific policy may be generated inside the World.
+
+Core composition remains general.
+
+
+=======================================================================
+54. MULTI-PARTY EXECUTION
+=======================================================================
+
+Block 2 must support more than two participants.
+
+Example:
+
+    farmer
+    restaurant
+    delivery provider
+    cold storage provider
+
+
+or:
+
+    employer
+    employee
+    transport provider
+    platform owner
+
+
+Use:
+
+    Engagement
+    Membership
+    Role
+    Obligation
+    Delegation
+    Run
+
+
+Do not create a special transaction engine for each topology.
+
+
+=======================================================================
+55. TRUST EVIDENCE
+=======================================================================
+
+A claim must preserve provenance.
+
+Examples:
+
+    identity verified by provider
+
+    license self-asserted
+
+    certificate uploaded
+
+    government API verified
+
+    user rating
+
+    transaction history
+
+
+Conceptual:
+
+    ASSERTED
+    OBSERVED
+    PROVIDER_VERIFIED
+    PLATFORM_VERIFIED
+    EXPIRED
+    REVOKED
+    UNKNOWN
+
+
+Matching may use evidence.
+
+LLM must not manufacture trust.
+
+
+=======================================================================
+56. OBSERVABILITY
+=======================================================================
+
+Do NOT invent a completely separate tracing ecosystem if an open
+standard already serves the observability purpose.
+
+Use OpenTelemetry-compatible instrumentation where appropriate.
+
+
+Observe:
+
+    model call latency
+
+    token use
+
+    capability discovery
+
+    provider resolution
+
+    agent delegation
+
+    tool calls
+
+    MCP calls
+
+    A2A calls
+
+    scheduler wakeups
+
+    run duration
+
+    provider latency
+
+    payment provider latency
+
+    errors
+
+
+BUT:
+
+    OpenTelemetry trace
+    !=
+    Attempt Ledger
+
+    telemetry
+    !=
+    transaction truth
+
+
+=======================================================================
+57. COST OBSERVABILITY
+=======================================================================
+
+Track enough to calculate:
+
+    AI cost / run
+
+    AI cost / successful outcome
+
+    provider cost / execution
+
+    external agent cost
+
+    notification cost
+
+    payment processing cost
+
+    storage cost
+
+    cost / generated business
+
+    cost / active user
+
+
+This is required for commercial intelligence later.
+
+
+=======================================================================
+58. BLOCK 2 ECONOMIC PRIORITIES
+=======================================================================
+
+Block 2 should favor operational capabilities that unlock monetization.
+
+
+Very high leverage:
+
+    reservation
+    scheduler
+    notification
+    provider resolution
+    multi-party coordination
+
+
+High leverage:
+
+    tracking
+    delivery
+    booking
+    dispatch
+
+
+Why?
+
+Because these transform:
+
+    discovery
+
+into:
+
+    fulfilled real-world outcomes.
+
+
+Revenue follows real outcomes more reliably than chat interaction.
+
+
+=======================================================================
+=======================================================================
+BLOCK 3
+AGENTIC COMMERCE + ECONOMIC OPERATING SYSTEM + FINAL PRODUCTION
+=======================================================================
+=======================================================================
+
+59. BLOCK 3 PURPOSE
+=======================================================================
+
+Block 3 answers:
+
+    HOW DOES VALUE BECOME VERIFIED COMMERCE?
+
+    HOW DOES MONEY MOVE SAFELY?
+
+    HOW DOES JASIM EARN?
+
+    HOW DOES THE GENERATED BUSINESS OWNER EARN?
+
+    HOW DO FEES, SUBSCRIPTIONS AND ENTITLEMENTS WORK?
+
+    HOW DO WE PROVE THE SYSTEM IS READY FOR REAL COMMERCIAL USE?
+
+
+=======================================================================
+60. ECONOMIC LAYERS MUST REMAIN SEPARATE
+=======================================================================
+
+Do NOT merge these concepts:
+
+
+ECONOMIC RELATIONSHIP
+
+    Offering
+    Need
+    Match
+    Engagement
+    Proposal
+    TransactionIntent
+
+
+COMMERCE
+
+    Cart
+    Checkout
+    Order
+    Merchant interaction
+
+
+PAYMENT
+
+    PaymentIntent
+    Authorization
+    Capture
+    Settlement
+    Refund
+    Payout
+
+
+JASIM ECONOMICS
+
+    RevenueEvent
+    FeeRule
+    Commission
+    Subscription
+    UsageFee
+
+
+BILLING / ENTITLEMENT
+
+    Plan
+    Invoice
+    Entitlement
+    Quota
+
+
+These layers interact.
+
+They are not the same thing.
+
+
+=======================================================================
+61. TRANSACTION INTENT REMAINS ABOVE PAYMENT
+=======================================================================
+
+Example:
+
+    logo design
+        ↔
+    Spanish lessons
+
+
+TransactionIntent exists.
+
+Payment does not.
+
+
+Therefore:
+
+    TransactionIntent
+    !=
+    PaymentIntent
+
+
+=======================================================================
+62. PAYMENT CANONICAL MODEL
+=======================================================================
+
+Reuse before create.
+
+Conceptually the canonical payment truth must support:
+
+
+@dataclass
+class PaymentIntent:
+    payment_intent_id: str
+
+    payer_ref: str
+    payee_ref: str
+
+    amount: dict
+    currency: str
+
+    purpose: str
+
+    transaction_intent_ref: str | None
+
+    state: str
+
+    provider_binding_ref: str | None
+
+    idempotency_key: str
+
+    version: int
+
+
+Other canonical concepts may include:
+
+    PaymentAttempt
+
+    PaymentMethodReference
+
+    CredentialReference
+
+    PaymentAuthorization
+
+    Capture
+
+    Settlement
+
+    PaymentReceipt
+
+    PaymentVerification
+
+    Refund
+
+    Payout
+
+    Reconciliation
+
+
+Do not duplicate existing canonical models unnecessarily.
+
+
+=======================================================================
+63. PAYMENT STATE TRUTH
+=======================================================================
+
+Permanent rules:
+
+
+    PAYMENT_INTENT_CREATED
+    !=
+    AUTHORIZED
+
+
+    AUTHORIZED
+    !=
+    CAPTURED
+
+
+    CAPTURED
+    !=
+    SETTLED
+
+
+    CHECKOUT_CREATED
+    !=
+    PAID
+
+
+    REDIRECT_SUCCESS
+    !=
+    PAYMENT_VERIFIED
+
+
+    PROVIDER_RESPONSE
+    !=
+    INDEPENDENT_VERIFICATION
+
+
+=======================================================================
+64. COMMERCE INTEROPERABILITY LAYER
+=======================================================================
+
+Do NOT invent every agent-commerce wire protocol yourself.
+
+Create a JASIM-owned commerce semantic layer with optional adapters.
+
+
+Conceptual:
+
+
+    JASIM TransactionIntent
+            ↓
+    Commerce Compiler
+            ↓
+    Provider/Protocol Negotiation
+            ↓
+    Native Commerce
+        /   ACP
+        /   future protocol
+            ↓
+    Merchant / Commerce Provider
+
+
+ACP may be one adapter.
+
+It must not define JASIM's database ontology.
+
+
+=======================================================================
+65. ACP POSITION
+=======================================================================
+
+ACP is useful for:
+
+    buyer-agent ↔ merchant commerce interaction
+
+    catalog/cart/checkout
+
+    orders
+
+    capability negotiation
+
+    payment handler interaction
+
+
+Treat it as an interoperability protocol.
+
+Because the protocol is still evolving:
+
+    isolate version-specific implementation.
+
+JASIM must remain functional without ACP.
+
+
+=======================================================================
+66. AGENT PAYMENT AUTHORIZATION
+=======================================================================
+
+Do not let an agent infer payment authority from a conversation summary.
+
+Authorization must become deterministic structured state.
+
+
+Conceptually:
+
+
+@dataclass
+class AgenticMandate:
+    mandate_id: str
+
+    principal_ref: str
+    agent_ref: str
+
+    allowed_purpose: str
+
+    resource_constraints: dict
+    merchant_constraints: dict
+
+    maximum_amount: dict | None
+
+    allowed_payment_methods: list[str]
+
+    valid_from: str
+    expires_at: str
+
+    single_use: bool
+
+    delegation_depth: int
+
+    fingerprint: str
+
+    state: str
+
+
+Reuse existing JASIM approval/fingerprint structures where possible.
+
+Do NOT create parallel authorization truth unnecessarily.
+
+
+=======================================================================
+67. AP2 POSITION
+=======================================================================
+
+AP2-style Mandates are useful as an interoperability representation for:
+
+    agent payment authorization
+
+    checkout authorization
+
+    human-present approval
+
+    human-not-present constrained authorization
+
+
+Correct architecture:
+
+    JASIM Approval / Delegation
+        ↓
+    JASIM AgenticMandate semantics
+        ↓
+    optional AP2 adapter
+
+
+Not:
+
+    JASIM authorization database
+        =
+    AP2 schema
+
+
+=======================================================================
+68. HUMAN-PRESENT PAYMENTS FIRST
+=======================================================================
+
+Commercial autonomy must increase gradually.
+
+
+PAYMENT_AUTONOMY_LEVEL_0:
+
+    recommendation only
+
+
+PAYMENT_AUTONOMY_LEVEL_1:
+
+    user explicitly approves every payment
+
+
+PAYMENT_AUTONOMY_LEVEL_2:
+
+    user grants narrow pre-authorization / mandate
+
+
+PAYMENT_AUTONOMY_LEVEL_3:
+
+    bounded autonomous payment inside signed/verified mandate
+
+
+Launch production payment at the lowest level that is useful and safe.
+
+Do not enable Level 3 simply because protocol support exists.
+
+
+=======================================================================
+69. EXAMPLE OF BOUNDED AGENTIC PURCHASE
+=======================================================================
+
+User:
+
+    "Buy me a printer tonight if you find one
+     from an approved merchant under 80 KWD."
+
+
+Mandate may encode:
+
+    category = printer
+
+    total <= 80 KWD
+
+    merchant_trust >= configured threshold
+
+    one purchase
+
+    expires tonight
+
+    no subscription
+
+    no recurring payment
+
+
+Agent discovers candidate.
+
+Before execution deterministic code validates:
+
+    product constraint
+    merchant constraint
+    amount
+    expiry
+    mandate fingerprint
+    payment method authority
+
+
+Then Trusted Executor may proceed.
+
+
+The LLM does NOT decide whether the mandate is valid.
+
+
+=======================================================================
+70. PAYMENT CREDENTIAL SECURITY
+=======================================================================
+
+Prefer:
+
+    PaymentMethodReference
+
+    Shared/Scoped Credential Reference
+
+    provider token
+
+    network token
+
+
+Avoid storing:
+
+    raw PAN
+    CVV
+    unrestricted credentials
+
+
+JASIM should minimize payment-data custody.
+
+
+=======================================================================
+71. REFUND
+=======================================================================
+
+Refund is a separate effectful action.
+
+It needs:
+
+    original payment reference
+    refundable amount
+    reason
+    authorization
+    idempotency
+    provider execution
+    receipt
+    verification
+
+
+Never silently mutate payment state to refunded.
+
+
+=======================================================================
+72. PAYOUT
+=======================================================================
+
+Payout to:
+
+    seller
+    worker
+    driver
+    platform operator
+    service provider
+
+
+must remain distinct from customer payment.
+
+
+A transaction can involve:
+
+    customer payment
+        ↓
+    platform fees
+        ↓
+    provider payable
+        ↓
+    payout
+
+
+Do not treat them as one number.
+
+
+=======================================================================
+73. ESCROW
+=======================================================================
+
+Do not claim:
+
+    escrow
+
+unless the legal/provider arrangement truly supports escrow or an
+equivalent regulated holding mechanism.
+
+
+If unavailable:
+
+    ESCROW_UNAVAILABLE
+
+
+Do not fake escrow using:
+
+    "payment pending"
+
+or an internal DB flag.
+
+
+=======================================================================
+74. ECONOMICS ENGINE
+=======================================================================
+
+Build one general economics layer.
+
+
+Conceptually:
+
+
+class RevenueTrigger(str, Enum):
+    VERIFIED_TRANSACTION = "VERIFIED_TRANSACTION"
+    VERIFIED_HIRE = "VERIFIED_HIRE"
+    VERIFIED_BOOKING = "VERIFIED_BOOKING"
+    VERIFIED_DELIVERY = "VERIFIED_DELIVERY"
+    SUBSCRIPTION_RENEWAL = "SUBSCRIPTION_RENEWAL"
+    VERIFIED_USAGE = "VERIFIED_USAGE"
+
+
+@dataclass
+class FeeRule:
+    rule_id: str
+
+    trigger: RevenueTrigger
+
+    payer_ref_type: str
+    beneficiary_ref: str
+
+    calculation_type: str
+
+    fixed_amount: dict | None
+    percentage: float | None
+
+    basis: str
+
+    minimum: dict | None
+    maximum: dict | None
+
+    conditions: dict
+
+    effective_from: str
+    effective_to: str | None
+
+    version: int
+
+
+No:
+
+    CarCommissionEngine
+
+    JobFeeEngine
+
+    DeliveryProfitEngine
+
+
+=======================================================================
+75. REVENUE EVENT
+=======================================================================
+
+Revenue must be created from evidence.
+
+
+@dataclass
+class RevenueEvent:
+    revenue_event_id: str
+
+    source_event_ref: str
+
+    verified_outcome_ref: str
+
+    fee_rule_ref: str
+
+    amount: dict
+
+    beneficiary_ref: str
+
+    state: str
+
+    created_at: str
+
+
+Rule:
+
+    REALIZED_REVENUE
+    requires
+    VERIFIED_OUTCOME
+
+
+=======================================================================
+76. HIGH-VALUE REVENUE MODES
+=======================================================================
+
+Based on JASIM's product philosophy, the most strategically important
+modes are likely:
+
+
+A. RECURRING GENERATED BUSINESS REVENUE
+
+    Smart Bubble subscription
+    platform subscription
+    usage fee
+    business contract
+
+
+B. VERIFIED SUCCESS REVENUE
+
+    hire success fee
+    completed service fee
+    successful transaction commission
+
+
+C. TRANSACTION REVENUE
+
+    percentage
+    fixed transaction fee
+
+
+D. OPERATIONAL REVENUE
+
+    delivery margin
+    booking fee
+    coordination fee
+
+
+E. VALUE-ADD REVENUE
+
+    verification
+    promotion
+    enhanced research
+    content generation
+    premium negotiation
+
+
+F. ECOSYSTEM REVENUE
+
+    API usage
+    developer access
+    generated business marketplace
+    premium provider integrations
+
+
+=======================================================================
+77. WHY RECURRING GENERATED BUSINESSES ARE STRATEGIC
+=======================================================================
+
+A one-time C2C transaction may generate one fee.
+
+A generated Smart Bubble business may generate:
+
+    monthly subscription
+    transaction commission
+    usage fees
+    delivery margin
+    verification fees
+    provider fees
+    API usage
+
+
+while its OWNER also earns revenue.
+
+
+This produces aligned economics:
+
+    JASIM succeeds
+    because
+    THE USER'S BUSINESS succeeds.
+
+
+This is strategically stronger than extracting maximum fees from
+one-time consumers.
+
+
+=======================================================================
+78. JASIM SHOULD HELP USERS CREATE PROFITABLE BUSINESSES
+=======================================================================
+
+For a generated business JASIM should be able to derive a unit-economic
+model from actual World structure.
+
+
+Example concepts:
+
+    RevenueUnit
+
+    CostDriver
+
+    CapacityUnit
+
+    Utilization
+
+    GrossMargin
+
+    ContributionMargin
+
+    Recurrence
+
+    ChurnRisk
+
+    ProviderCost
+
+    PlatformFee
+
+    CustomerAcquisitionCost
+
+
+Do not require a financial model for every tiny Bubble.
+
+Use it when a persistent economic World justifies it.
+
+
+=======================================================================
+79. ECONOMIC MODEL ASSISTANT
+=======================================================================
+
+Conceptually:
+
+
+@dataclass
+class BusinessEconomicsModel:
+    world_ref: str
+
+    value_unit: str
+
+    revenue_models: list[str]
+
+    fixed_cost_drivers: list[str]
+    variable_cost_drivers: list[str]
+
+    provider_costs: list[dict]
+
+    capacity_constraints: list[dict]
+
+    pricing_unknowns: list[str]
+
+    owner_decisions_required: list[str]
+
+    evidence_refs: list[str]
+
+
+JASIM can propose business models.
+
+It must not fabricate market evidence.
+
+
+=======================================================================
+80. MARKETPLACE LIQUIDITY OVER RAW USER COUNT
+=======================================================================
+
+For economic networks:
+
+    100,000 inactive users
+
+can be less useful than:
+
+    2,000 active compatible Offers/Needs.
+
+
+Track:
+
+    fill rate
+    time-to-match
+    match quality
+    repeat provider use
+    supply-demand balance
+    response rate
+
+
+JASIM's Economic Network should optimize useful liquidity.
+
+
+=======================================================================
+81. PROMOTION / SPONSORED PLACEMENT
+=======================================================================
+
+Future monetization may allow promotion.
+
+But preserve:
+
+    organic relevance score
+
+separately from:
+
+    sponsored placement.
+
+
+Never silently convert payment into match quality.
+
+
+If sponsored:
+
+    disclose it.
+
+Do not corrupt general matching.
+
+
+=======================================================================
+82. CPC / CPA
+=======================================================================
+
+CPC/CPA may become valid future revenue mechanisms.
+
+But do not prioritize them before:
+
+    transactions
+    recurring businesses
+    real outcomes
+
+
+because outcome-aligned revenue is strategically stronger.
+
+
+=======================================================================
+83. SUBSCRIPTIONS
+=======================================================================
+
+Generic subscription primitives may include:
+
+
+@dataclass
+class SubscriptionPlan:
+    plan_id: str
+
+    owner_ref: str
+
+    billing_period: str
+
+    base_price: dict
+
+    included_entitlements: list[str]
+
+    included_usage: dict
+
+    overage_rules: dict
+
+    state: str
+
+    version: int
+
+
+Do not build domain subscriptions.
+
+
+Same primitive should support:
+
+    job seeker plan
+    business platform
+    transport route
+    SaaS Bubble
+    seller account
+    API package
+
+
+=======================================================================
+84. ENTITLEMENTS
+=======================================================================
+
+Billing and permission are distinct.
+
+Payment may produce:
+
+    entitlement.
+
+
+Example:
+
+    premium plan paid
+        ↓
+    subscription active
+        ↓
+    entitlement granted
+
+
+Entitlement examples:
+
+    higher listing limit
+
+    advanced search
+
+    premium agent capability
+
+    more automation
+
+    API access
+
+    generated business limits
+
+
+Do not check:
+
+    "did the user pay?"
+
+directly inside random UI components.
+
+
+Use canonical entitlement state.
+
+
+=======================================================================
+85. QUOTAS
+=======================================================================
+
+Track usage deterministically where needed:
+
+    AI calls
+
+    generated businesses
+
+    active Offerings
+
+    API calls
+
+    premium executions
+
+    storage
+
+    automation runs
+
+
+Do not invent arbitrary quotas without product decision.
+
+
+=======================================================================
+86. AI ECONOMICS
+=======================================================================
+
+The platform must know whether AI-driven features are economically
+sustainable.
+
+
+Track:
+
+    input tokens
+
+    output tokens
+
+    model class
+
+    cache usage
+
+    tool calls
+
+    agent delegations
+
+    deep-reasoning calls
+
+    cost estimate
+
+    revenue context
+
+
+Important metric:
+
+    AI_COST_PER_VERIFIED_SUCCESS
+
+
+A feature earning:
+
+    0.1 KWD
+
+cannot repeatedly consume:
+
+    1 KWD
+
+of AI/provider cost.
+
+
+=======================================================================
+87. INTELLIGENCE SHOULD SCALE WITH ECONOMIC VALUE/RISK
+=======================================================================
+
+Do NOT simply use the strongest model for high-value transactions.
+
+Risk and reasoning complexity are different.
+
+
+But the economics engine may allow more reasoning budget when:
+
+    expected user value is high
+
+    ambiguity is meaningful
+
+    decisions are reversible
+
+    additional reasoning has measurable benefit
+
+
+Still respect ModelPolicy.
+
+Do not resume full model calibration until final production gate.
+
+
+=======================================================================
+88. DISPUTES
+=======================================================================
+
+Commercial JASIM eventually requires a generic dispute model.
+
+Do not let LLM unilaterally adjudicate money.
+
+
+Conceptually:
+
+    dispute opened
+        ↓
+    evidence collected
+        ↓
+    applicable policy
+        ↓
+    provider evidence
+        ↓
+    human/regulatory review when necessary
+        ↓
+    resolution
+        ↓
+    refund/payout effect
+
+
+AI may assist.
+
+AI is not final authority unless policy explicitly allows low-risk
+automated resolution.
+
+
+=======================================================================
+89. FRAUD / TRUST
+=======================================================================
+
+Fraud signals may use:
+
+    identity evidence
+
+    transaction anomalies
+
+    device/session patterns
+
+    chargeback history
+
+    suspicious repetition
+
+    external provider evidence
+
+
+But:
+
+    fraud score
+    !=
+    guilt.
+
+
+Use risk gates, verification, restrictions, manual review.
+
+
+=======================================================================
+90. REGULATORY BOUNDARY
+=======================================================================
+
+JASIM operates across potentially regulated domains.
+
+Examples:
+
+    payment
+    investment
+    medicine
+    employment
+    identity
+    transport
+    insurance
+
+
+Use:
+
+    REQUIRES_REGULATORY_REVIEW
+
+where appropriate.
+
+Do not let generality become regulatory hallucination.
+
+
+=======================================================================
+91. MULTI-CURRENCY
+=======================================================================
+
+Money must always preserve:
+
+    amount
+    currency
+
+
+Do not store universal monetary values as:
+
+    float
+
+
+Use appropriate fixed-precision decimal semantics.
+
+
+Exchange-rate conversion must preserve:
+
+    rate
+    source
+    observed_at
+
+
+It is an observation, not immutable truth.
+
+
+=======================================================================
+92. GENERATED BUSINESS COMMERCIALIZATION
+=======================================================================
+
+Block 1 created/published generated businesses.
+
+Block 3 commercializes them.
+
+
+Possible path:
+
+    Private Smart Bubble
+        ↓
+    owner configures business
+        ↓
+    Public Offering
+        ↓
+    discovery
+        ↓
+    customers
+        ↓
+    transactions
+        ↓
+    subscription / commission / usage fee
+        ↓
+    RevenueEvents
+
+
+The same Bubble remains the business.
+
+Do not create a second commercial app.
+
+
+=======================================================================
+93. GENERATED BUSINESS MAY EVENTUALLY EXPOSE CAPABILITIES
+=======================================================================
+
+Future architecture should allow an owner-authorized generated business
+to expose capabilities through standards such as:
+
+    MCP
+    A2A
+
+
+Example:
+
+generated transport business could eventually expose semantic actions:
+
+    search_routes
+    request_transport
+    check_status
+
+
+But this is not required for initial Block 3 PASS.
+
+Do not overbuild it.
+
+
+=======================================================================
+94. FINAL PRODUCTION PRIORITIES
+=======================================================================
+
+Only after functional/economic architecture is proven, complete:
+
+    production provider credentials
+
+    real payment provider E2E
+
+    real notification provider E2E
+
+    real maps/tracking where chosen
+
+    backup
+
+    restore proof
+
+    disaster recovery
+
+    deployment
+
+    mobile signing
+
+    production security headers
+
+    monitoring/alerts
+
+    final economic calibration
+
+    provider cost monitoring
+
+
+=======================================================================
+95. FINAL UNIVERSAL ACCEPTANCE TEST
+=======================================================================
+
+At final proof, architecture must be frozen.
+
+Then test:
+
+    known examples
+
+    and
+
+    unseen examples.
+
+
+Required diversity:
+
+    C2C sale
+
+    B2B wholesale
+
+    hiring
+
+    service
+
+    booking
+
+    recurring business
+
+    generated business
+
+    transport
+
+    tracking
+
+    international sourcing
+
+    non-monetary exchange
+
+    payment
+
+    external provider action
+
+    multi-party coordination
+
+    unfamiliar physical resource
+
+    unfamiliar digital business
+
+
+Do not add domain code between tests.
+
+
+=======================================================================
+96. PROFITABILITY ACCEPTANCE TESTS
+=======================================================================
+
+The final product should also answer:
+
+    Can JASIM identify where value is created?
+
+    Can it distinguish user revenue from JASIM revenue?
+
+    Can it calculate provider cost?
+
+    Can it represent commission?
+
+    Can it represent subscription?
+
+    Can it represent success fee?
+
+    Can it represent free transactions?
+
+    Can it represent barter?
+
+    Can it calculate contribution margin?
+
+    Can it recommend a business model using actual World structure?
+
+    Can it avoid inventing prices?
+
+    Can a generated business owner configure monetization?
+
+    Can monetization evolve without domain code?
+
+
+=======================================================================
+97. EXAMPLE → GENERAL PRIMITIVE → ECONOMIC VALUE MATRIX
+=======================================================================
+
+Do not implement this table literally.
+
+Use it as a reasoning guide.
+
+
+SELL CAR:
+
+    primitives:
+        Entity
+        Offering
+        Publish
+        Discover
+        Match
+        Negotiate
+        TransactionIntent
+        Payment
+        Delivery
+
+    possible user value:
+        faster sale
+        reduced fraud
+        negotiation
+        convenience
+
+    possible JASIM revenue:
+        transaction fee
+        verification
+        promotion
+        delivery margin
+
+
+FIND JOB:
+
+    primitives:
+        Profile
+        Need
+        Discovery
+        Match
+        Application
+        Engagement
+        Proposal
+        Verification
+
+    possible user value:
+        employment outcome
+        time saved
+        improved application
+
+    possible JASIM revenue:
+        subscription
+        success fee
+        premium optimization
+
+
+B2B WHOLESALE:
+
+    primitives:
+        Offering
+        Need
+        Quantity
+        Units
+        Match
+        SupplierVerification
+        Negotiation
+        Logistics
+        TransactionIntent
+        Payment
+
+    user value:
+        large transaction
+        supplier discovery
+        negotiation
+        faster sourcing/selling
+
+    JASIM revenue:
+        B2B subscription
+        transaction fee
+        logistics margin
+        verification
+
+
+EMERGENCY SERVICE:
+
+    primitives:
+        Need
+        Location
+        Discover
+        Availability
+        Match
+        Dispatch
+        Track
+
+    user value:
+        high immediacy
+
+    JASIM revenue:
+        relatively low direct fee
+        high retention/network value
+
+
+GENERATED BUSINESS:
+
+    primitives:
+        SmartBubble
+        World
+        Schema
+        Workflow
+        Offering
+        Publication
+        Discovery
+        Subscription
+        Transactions
+
+    user value:
+        creates an income-producing business
+
+    JASIM revenue:
+        recurring subscription
+        usage
+        commission
+        premium capabilities
+
+
+WORKER TRANSPORT:
+
+    primitives:
+        Participants
+        Roles
+        Vehicles
+        Capacity
+        Availability
+        Reservation
+        Scheduler
+        Subscription
+        Notification
+        Tracking
+        Payment
+
+    owner value:
+        recurring transport business
+
+    JASIM revenue:
+        subscription
+        transaction/usage
+        payment/service fee
+
+
+SKILL EXCHANGE:
+
+    primitives:
+        Offering
+        Need
+        Match
+        Engagement
+        Proposal
+        TransactionIntent
+
+    payment:
+        NONE
+
+    proof:
+        JASIM economics must not require money for all transactions.
+
+
+=======================================================================
+98. NETWORK EFFECT PRIORITY
+=======================================================================
+
+Features should be evaluated by whether they strengthen the network.
+
+High network-effect primitives:
+
+    public Offering
+
+    public Need
+
+    discovery
+
+    matching
+
+    trust
+
+    engagement
+
+    reusable generated business
+
+    provider capacity
+
+    transaction history
+
+
+Each new participant can increase value for others.
+
+This is strategically more important than isolated AI features.
+
+
+=======================================================================
+99. COMMERCIAL FLYWHEEL
+=======================================================================
+
+Target:
+
+    User expresses unmet Need
+        ↓
+    JASIM discovers or creates supply
+        ↓
+    Match
+        ↓
+    Engagement
+        ↓
+    Verified outcome
+        ↓
+    Trust grows
+        ↓
+    Supply becomes more attractive
+        ↓
+    More users
+        ↓
+    More economic activity
+        ↓
+    JASIM revenue
+        ↓
+    better capabilities
+
+
+Generated businesses add a second flywheel:
+
+    User idea
+        ↓
+    generated Bubble
+        ↓
+    business becomes public
+        ↓
+    customers discover it
+        ↓
+    owner earns
+        ↓
+    JASIM earns recurring revenue
+        ↓
+    more founders build through JASIM
+
+
+=======================================================================
+100. BUILD VS BUY VS DISCOVER RULE
+=======================================================================
+
+Before implementing ANY new:
+
+    tool
+    provider
+    protocol
+    connector
+    agent
+    UI transport
+    payment integration
+
+
+execute this reasoning order:
+
+    CAN EXISTING JASIM PRIMITIVES COMPOSE IT?
+        ↓ no
+    DOES EXISTING JASIM CODE ALREADY IMPLEMENT IT?
+        ↓ no
+    DOES AN OPEN STANDARD SOLVE THE INTEROPERABILITY LAYER?
+        ↓ no
+    DOES A TRUSTED PROVIDER ALREADY EXIST?
+        ↓ no
+    CAN A BOUNDED AGENT PROVIDE IT?
+        ↓ no
+    CAN CONTROLLED COMPUTER USE PROVIDE IT?
+        ↓ no
+    DOES IT REQUIRE HUMAN OR OWNER ACTION?
+        ↓ no
+    GENUINELY MISSING GENERIC PRIMITIVE
+
+
+Only then:
+
+    BUILD.
+
+
+=======================================================================
+101. TECHNOLOGY ADOPTION POLICY
+=======================================================================
+
+MCP:
+
+    strong interoperability target
+
+    use at provider boundary
+
+    do not make Kernel dependent
+
+
+A2A:
+
+    production-capable agent interoperability target
+
+    use for remote specialist delegation
+
+    remote agent remains untrusted provider
+
+
+A2UI:
+
+    compatibility target
+
+    isolate versions
+
+    do not make canonical Presentation semantics depend on protocol
+
+
+AG-UI:
+
+    event/client interoperability target
+
+    do not make client state canonical
+
+
+ACP:
+
+    commerce interoperability adapter
+
+    currently evolving/beta
+
+    never canonical transaction truth
+
+
+AP2:
+
+    agent-payment authorization adapter/concept source
+
+    currently evolving
+
+    deterministic mandate verification required
+
+    never canonical payment truth
+
+
+OpenTelemetry:
+
+    observability interoperability
+
+    not execution truth
+
+
+=======================================================================
+102. DO NOT CREATE FRAMEWORK FRANKENSTEIN
+=======================================================================
+
+Do NOT install:
+
+    MCP SDK
+    A2A SDK
+    A2UI SDK
+    AG-UI SDK
+    multiple Agent SDKs
+    multiple workflow frameworks
+    multiple databases
+
+simply because this document mentions them.
+
+
+For every dependency, prove:
+
+    current capability gap
+
+    code removed/avoided
+
+    interoperability gained
+
+    maintenance cost acceptable
+
+    no canonical lock-in
+
+
+If adapter semantics can be implemented cleanly using existing
+dependencies:
+
+prefer minimal integration.
+
+
+=======================================================================
+103. INFRASTRUCTURE RESTRAINT
+=======================================================================
+
+Do not introduce prematurely:
+
+    Kafka
+    Kubernetes
+    ClickHouse
+    Elasticsearch
+    dedicated vector database
+    distributed service mesh
+    multiple workflow engines
+
+
+unless measured scale creates need.
+
+
+Prefer currently proven:
+
+    PostgreSQL
+
+    existing runtime
+
+    existing worker
+
+    existing event infrastructure
+
+    existing object storage
+
+    existing deployment architecture
+
+
+=======================================================================
+104. MODEL INTELLIGENCE POLICY
+=======================================================================
+
+Use AI where semantic intelligence creates value.
+
+Use deterministic systems where correctness is structural.
+
+
+AI should be strong at:
+
+    understanding
+
+    planning proposals
+
+    semantic mapping
+
+    research
+
+    negotiation drafting
+
+    comparison explanation
+
+    schema generation
+
+    business-model reasoning
+
+    capability-gap reasoning
+
+
+Deterministic systems should own:
+
+    authorization
+
+    schema validation
+
+    unit conversion
+
+    hard constraints
+
+    budget limits
+
+    mandate validation
+
+    idempotency
+
+    payment state
+
+    reservation concurrency
+
+    visibility
+
+    ownership
+
+    versioning
+
+    revenue calculation
+
+    fee calculation
+
+
+=======================================================================
+105. INTELLIGENCE SHOULD BE ADAPTIVE, NOT WASTEFUL
+=======================================================================
+
+Do not use multiple agents because it appears advanced.
+
+Decision:
+
+    simple deterministic?
+        → deterministic
+
+    one model call sufficient?
+        → one model
+
+    local capability sufficient?
+        → local
+
+    specialist materially improves quality?
+        → bounded specialist
+
+    parallel independent subtasks?
+        → bounded parallelism
+
+
+Record agent delegation value.
+
+Multi-agent overhead must justify itself.
+
+
+=======================================================================
+106. TOKEN ECONOMICS
+=======================================================================
+
+Preserve and extend existing cost discipline:
+
+    T0 deterministic
+
+    T1 inexpensive reasoning
+
+    T2 advanced reasoning
+
+    T3 deep generative reasoning
+
+
+Do not tie financial risk directly to model tier.
+
+Risk belongs to policy.
+
+Complexity belongs to model routing.
+
+
+Dynamic capability discovery should reduce:
+
+    tool schema context
+
+    prompt length
+
+    model confusion
+
+
+=======================================================================
+107. PRIVACY
+=======================================================================
+
+Remote capabilities must receive the minimum required projection.
+
+Never:
+
+    send entire World
+
+    send entire Memory
+
+    send unrelated conversation
+
+    send private business metrics
+
+to remote tools/agents without necessity and authorization.
+
+
+Use purpose-bound data projection.
+
+
+=======================================================================
+108. DATA MINIMIZATION FOR AGENTS
+=======================================================================
+
+Before delegation:
+
+    task objective
+    +
+    minimal entities
+    +
+    minimum relevant state
+    +
+    explicit authority
+    +
+    expected output
+
+
+not:
+
+    entire user history.
+
+
+=======================================================================
+109. AUTHORITY MINIMIZATION
+=======================================================================
+
+Before executing:
+
+    use minimum capability authority
+
+    minimum monetary authority
+
+    minimum resource scope
+
+    minimum time window
+
+    minimum provider permissions
+
+
+This applies to:
+
+    MCP
+
+    A2A
+
+    agent harness
+
+    computer use
+
+    commerce
+
+    payment.
+
+
+=======================================================================
+110. TRUTHFUL BLOCKED STATES
+=======================================================================
+
+Do not hide inability.
+
+Use states equivalent to:
+
+    MISSING_GENERIC_CAPABILITY
+
+    BLOCKED_BY_PROVIDER
+
+    BLOCKED_BY_RESOURCE
+
+    REQUIRES_HUMAN
+
+    REQUIRES_OWNER_DECISION
+
+    REQUIRES_REGULATORY_REVIEW
+
+    INSUFFICIENT_INFORMATION
+
+    INSUFFICIENT_TRUST
+
+    PAYMENT_PROVIDER_UNAVAILABLE
+
+    ESCROW_UNAVAILABLE
+
+    LOCATION_UNAVAILABLE
+
+    VERIFICATION_INCONCLUSIVE
+
+
+Truthful limitations preserve JASIM trust.
+
+
+=======================================================================
+111. ACCEPTANCE PHILOSOPHY
+=======================================================================
+
+A scenario PASSES if JASIM:
+
+    understands it,
+
+    models it,
+
+    composes existing general primitives,
+
+    executes what is actually available,
+
+    and truthfully identifies unavailable dependencies.
+
+
+A scenario FAILS if JASIM:
+
+    adds a domain service,
+
+    invents provider evidence,
+
+    creates fake success,
+
+    creates fake GPS,
+
+    creates fake payment,
+
+    creates fake KYC,
+
+    creates fake escrow,
+
+    creates fake transaction,
+
+    creates a new handler only for the test.
+
+
+=======================================================================
+112. BUSINESS ACCEPTANCE PHILOSOPHY
+=======================================================================
+
+A monetization scenario PASSES if JASIM:
+
+    understands how economic value flows,
+
+    identifies possible revenue models,
+
+    separates user revenue from JASIM revenue,
+
+    separates provider costs,
+
+    applies generic FeeRules,
+
+    uses verified outcomes,
+
+    and avoids invented final pricing.
+
+
+It FAILS if:
+
+    every domain has separate fee code,
+
+    revenue exists before verified outcome,
+
+    sponsored ranking silently changes relevance,
+
+    payment provider fees are confused with JASIM revenue,
+
+    owner revenue is confused with platform revenue.
+
+
+=======================================================================
+113. BLOCK 1.1 HARD GATE
+=======================================================================
+
+Require equivalent evidence:
+
+
+BLOCK_1_REUSED = PASS
+
+CAPABILITY_PROVIDER_SEPARATION = PASS
+
+DYNAMIC_CAPABILITY_DISCOVERY = PASS
+
+ON_DEMAND_CAPABILITY_LOADING = PASS
+
+CATALOG_CACHE = PASS
+
+MCP_ADAPTER = PASS
+
+A2A_ADAPTER = PASS
+
+REMOTE_PROVIDER_AUTO_TRUST = 0
+
+AGENT_HARNESS_LOCK_IN = 0
+
+DOMAIN_PERSISTENT_AGENTS = 0
+
+A2UI_CORE_DEPENDENCY = 0
+
+AG_UI_CANONICAL_DEPENDENCY = 0
+
+CAPABILITY_SEARCH_BEFORE_BUILD = PASS
+
+AUTO_REGISTER_GENERATED_CAPABILITY = 0
+
+CLIENT_DIRECT_EFFECT = 0
+
+REMOTE_AGENT_CAN_FORGE_VERIFIED = NO
+
+JASIM_BOOT_WITH_EXTERNAL_PROTOCOLS_OFFLINE = PASS
+
+FAKE_SUCCESS = 0
+
+
+=======================================================================
+114. BLOCK 2 HARD GATE
+=======================================================================
+
+Require equivalent evidence:
+
+
+DELEGATION = PASS
+
+AUTHORITY_MONOTONICITY = PASS
+
+ROLE_PERMISSION_SCOPE = PASS
+
+TEMPORAL_TRIGGER = PASS
+
+DURABLE_WAIT = PASS
+
+RESTART_AFTER_WAIT = PASS
+
+EVENT_SUBSCRIPTION = PASS
+
+REALTIME_PROJECTION = PASS
+
+AVAILABILITY = PASS
+
+CAPACITY = PASS
+
+ATOMIC_RESERVATION = PASS
+
+NOTIFICATION_ROUTER = PASS
+
+LOCATION_OBSERVATION = PASS
+
+TRACK_SESSION = PASS
+
+NO_FAKE_LOCATION = PASS
+
+NO_FAKE_ETA = PASS
+
+PROVIDER_RESOLUTION = PASS
+
+MCP_REMOTE_TASK = PASS
+
+A2A_REMOTE_TASK = PASS
+
+COMPUTER_USE_BOUNDARY = PASS
+
+BOOKING_COMPOSITION = PASS
+
+DELIVERY_COMPOSITION = PASS
+
+MULTI_PARTY_COMPOSITION = PASS
+
+CROSS_OWNER_LEAKS = 0
+
+CLIENT_DIRECT_EFFECT = 0
+
+FAKE_SUCCESS = 0
+
+
+=======================================================================
+115. BLOCK 3 HARD GATE
+=======================================================================
+
+Require equivalent evidence:
+
+
+TRANSACTION_INTENT = PASS
+
+TRANSACTION_WITHOUT_PAYMENT = PASS
+
+COMMERCE_INTEROPERABILITY = PASS
+
+ACP_ADAPTER = PASS_OR_SAFE_PARTIAL
+
+AGENTIC_MANDATE = PASS
+
+AP2_ADAPTER = PASS_OR_SAFE_PARTIAL
+
+PAYMENT_INTENT = PASS
+
+PAYMENT_ATTEMPT = PASS
+
+PAYMENT_AUTHORIZATION = PASS
+
+CAPTURE = PASS
+
+SETTLEMENT = PASS
+
+PAYMENT_VERIFICATION = PASS
+
+REFUND = PASS
+
+PAYOUT = PASS
+
+RECONCILIATION = PASS
+
+NO_DOUBLE_CHARGE = PASS
+
+NO_DOUBLE_REFUND = PASS
+
+REVENUE_EVENT = PASS
+
+GENERIC_FEE_RULE = PASS
+
+SUCCESS_FEE = PASS
+
+TRANSACTION_FEE = PASS
+
+SUBSCRIPTION = PASS
+
+ENTITLEMENTS = PASS
+
+USAGE_METERING = PASS
+
+PROVIDER_COST_SEPARATION = PASS
+
+JASIM_REVENUE_SEPARATION = PASS
+
+OWNER_REVENUE_SEPARATION = PASS
+
+USER_PROFITABILITY_ASSISTANCE = PASS
+
+NO_INVENTED_PRICING = PASS
+
+VERIFIED_OUTCOME_BEFORE_REALIZED_REVENUE = PASS
+
+FAKE_SUCCESS = 0
+
+
+=======================================================================
+116. GENERAL PROFITABILITY COUNTERS
+=======================================================================
+
+Final reports should include metrics conceptually like:
+
+
+USER_VALUE_SCENARIOS_TESTED
+
+USER_REVENUE_SCENARIOS_TESTED
+
+JASIM_REVENUE_MODELS_TESTED
+
+RECURRING_REVENUE_MODELS_TESTED
+
+TRANSACTION_REVENUE_MODELS_TESTED
+
+NON_MONETARY_TRANSACTION_TESTS
+
+B2B_HIGH_VALUE_TESTS
+
+GENERATED_BUSINESS_REVENUE_TESTS
+
+PROVIDER_COST_CALCULATED
+
+AI_COST_CALCULATED
+
+CONTRIBUTION_MARGIN_CALCULATED
+
+INVENTED_PRICES = 0
+
+DOMAIN_SPECIFIC_MONETIZATION_ENGINES = 0
+
+
+=======================================================================
+117. PRIORITY SCORECARD FOR REPLIT
+=======================================================================
+
+When a task competes for implementation priority, score it conceptually.
+
+
+TOP PRIORITY:
+
+    general primitives
+    +
+    high reuse
+    +
+    unlock real transaction/value
+    +
+    unlock recurring business
+    +
+    unlock many examples
+
+
+SECOND:
+
+    general primitives
+    +
+    improve retention/reliability
+
+
+THIRD:
+
+    presentation improvements
+
+
+FOURTH:
+
+    niche integrations
+
+
+LAST:
+
+    cosmetic technology experimentation
+    speculative infrastructure
+    impressive-but-low-value agent swarms
+
+
+=======================================================================
+118. DO NOT CONFUSE PROFIT WITH PAYMENT
+=======================================================================
+
+JASIM can create user profit before it moves money.
+
+Examples:
+
+    better supplier negotiated
+
+    job found
+
+    business created
+
+    cost reduced
+
+    capacity monetized
+
+    idle equipment rented
+
+    transport seats filled
+
+
+Economic intelligence begins before Payment Runtime.
+
+Block 3 monetizes verified outcomes.
+
+
+=======================================================================
+119. THE REAL STRATEGIC MOAT
+=======================================================================
+
+JASIM's moat must NOT be:
+
+    having GPT access
+
+    having MCP access
+
+    having A2A support
+
+    having a Bubble renderer
+
+
+Others can acquire those.
+
+
+The moat should become:
+
+    cross-domain economic memory
+
+    trusted execution history
+
+    reusable semantic capabilities
+
+    generated living businesses
+
+    economic graph liquidity
+
+    multi-party coordination
+
+    provider performance evidence
+
+    outcome verification
+
+    owner/user economic intelligence
+
+    generalized transaction infrastructure
+
+
+=======================================================================
+120. FINAL ARCHITECTURAL PICTURE
+=======================================================================
+
+
+                         USER
+                           │
+                           ▼
+                  JASIM CONVERSATION
+                           │
+                           ▼
+                 CENTRAL INTELLIGENCE
+                           │
+                           ▼
+                  SEMANTIC COMPILER
+                           │
+                           ▼
+              CAPABILITY REQUIREMENT GRAPH
+                           │
+                           ▼
+                CAPABILITY DISCOVERY
+                           │
+         ┌─────────────────┼─────────────────┐
+         │                 │                 │
+       Native             MCP               A2A
+         │                 │                 │
+         │               Tools             Agents
+         │               Tasks              │
+         │                 │                 │
+         └─────────────────┼─────────────────┘
+                           │
+                    optional bounded
+                   specialist agents
+                           │
+                           ▼
+                  CAPABILITY COMPOSER
+                           │
+                           ▼
+                       POLICY
+                           │
+                           ▼
+                    DELEGATION /
+                      APPROVAL
+                           │
+                           ▼
+                  TRUSTED EXECUTOR
+                           │
+                           ▼
+                 PROVIDER EXECUTION
+                           │
+                           ▼
+                       ATTEMPT
+                           │
+                           ▼
+                       RECEIPT
+                           │
+                           ▼
+                      VERIFIER
+                           │
+                           ▼
+                   RECONCILIATION
+                           │
+                           ▼
+                   CANONICAL STATE
+                           │
+          ┌────────────────┼──────────────────┐
+          │                │                  │
+          ▼                ▼                  ▼
+       RUN/DAG       ECONOMIC NETWORK       WORLD
+                           │                  │
+                  Offering / Need             │
+                  Match / Engagement          │
+                  Proposal                    │
+                  TransactionIntent           │
+                           │                  │
+                           └──────────┬────────┘
+                                      │
+                                      ▼
+                             SMART BUBBLE
+                                      │
+                         Presentation Semantics
+                                      │
+                        ┌─────────────┴────────────┐
+                        │                          │
+                   A2UI Adapter              AG-UI Adapter
+                        │                          │
+                        └─────────────┬────────────┘
+                                      │
+                                 WEB / MOBILE
+
+
+Then real-world time:
+
+                    Temporal Engine
+                         │
+               Scheduler / Events
+                         │
+              Availability / Wait
+                         │
+               Location / Tracking
+                         │
+               Notification / Dispatch
+
+
+Then commerce:
+
+                  TransactionIntent
+                         │
+                   Commerce Layer
+                         │
+                ACP / Native / Future
+                         │
+                 Agentic Mandate
+                         │
+                AP2 / Native / Future
+                         │
+                  Payment Provider
+                         │
+                 Verified Settlement
+                         │
+                  Economics Engine
+                         │
+           Fee / Revenue / Subscription
+                         │
+                    Entitlements
+
+
+=======================================================================
+121. THE FINAL DEVELOPMENT PRINCIPLE
+=======================================================================
+
+Before building something new, ask:
+
+    Is this uniquely JASIM?
+
+If YES:
+
+    BUILD IT WELL.
+
+
+If NO, ask:
+
+    Is there a mature open semantic/protocol we can adapt?
+
+If YES:
+
+    ADAPT IT.
+
+
+If neither, ask:
+
+    Can a trusted provider supply it?
+
+If YES:
+
+    INTEGRATE IT.
+
+
+If neither, ask:
+
+    Can a bounded agent perform it?
+
+If YES:
+
+    DELEGATE IT.
+
+
+If neither, ask:
+
+    Can controlled computer-use do it safely?
+
+If YES:
+
+    EXECUTE WITH BOUNDARIES.
+
+
+If neither:
+
+    REPORT THE REAL GAP.
+
+
+=======================================================================
+122. FINAL PRODUCT DEFINITION
+=======================================================================
+
+When Blocks 1.1, 2 and 3 are complete, JASIM should be describable as:
+
+    A universal intelligent economic and operational runtime
+    that understands open-ended human goals,
+    composes general semantic capabilities,
+    dynamically discovers trusted providers and specialist agents,
+    creates living interaction surfaces and businesses,
+    coordinates people/resources/time/location,
+    executes real-world effects through auditable trust boundaries,
+    enables agentic commerce and verified payments,
+    helps users create and improve economic value,
+    earns through general outcome-aligned economic policies,
+    and remains independent of any single model,
+    protocol,
+    provider,
+    domain,
+    or interface.
+
+
+The final test is NOT:
+
+    "Can JASIM perform the examples we wrote?"
+
+
+The final test is:
+
+    "Can a person arrive with a useful economic or operational problem
+     that JASIM has never seen,
+     and can JASIM understand it,
+     compose what already exists,
+     discover what exists externally,
+     generate the necessary persistent structure only when justified,
+     execute what is real,
+     truthfully identify what is unavailable,
+     and create enough verified value that both the user and JASIM
+     have a rational economic reason to continue using the system?"
+
+
+If YES:
+
+    JASIM has achieved the intended architecture.
+
+
+=======================================================================
+123. REPLIT STOP RULE
+=======================================================================
+
+This document is a teaching and architectural constitution.
+
+Do NOT immediately implement Blocks 1.1 + 2 + 3 together.
+
+Correct order:
+
+    FIRST:
+        inspect Block 1 final result.
+
+    THEN:
+        execute Block 1.1.
+
+    HARD GATE.
+
+    THEN:
+        execute Block 2.
+
+    HARD GATE.
+
+    THEN:
+        execute Block 3.
+
+    FINAL UNIVERSAL + ECONOMIC + PRODUCTION GATE.
+
+
+Never start the next Block automatically.
+
+Never hide a failed Gate by implementing future functionality.
+
+Never use future Block functionality to fake completion of an earlier
+Block.
+
+END OF DOCUMENT.
+=======================================================================
+"""

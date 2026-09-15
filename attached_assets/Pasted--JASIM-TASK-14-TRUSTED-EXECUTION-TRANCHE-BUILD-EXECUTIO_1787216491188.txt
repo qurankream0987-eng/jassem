@@ -1,0 +1,1391 @@
+# JASIM — TASK #14
+
+## TRUSTED EXECUTION TRANCHE
+
+### BUILD EXECUTION PROPOSALS + FINGERPRINTED APPROVALS BEFORE ANY PROVIDER EXECUTION
+
+اعتمد أن المرحلة السابقة اكتملت وثبتت:
+
+```text
+General Reference Resolution = REAL
+Reference Resolution Tests = PASS
+Semantic Output Router = BASELINE
+Durable Runs = BASELINE
+Intent-only execution = BASELINE
+No external side effects = VERIFIED
+```
+
+لا تعِد بناء هذه الطبقات.
+
+الآن انتقل إلى Build داخل نفس المهمة #14.
+
+---
+
+# 1. الهدف من هذه tranche
+
+نريد الفصل الصريح بين:
+
+```text
+USER INTENT
+```
+
+و:
+
+```text
+EXECUTION PROPOSAL
+```
+
+و:
+
+```text
+AUTHORIZED EXECUTION
+```
+
+هذه ليست نفس الأشياء.
+
+المسار المطلوب:
+
+```text
+User Turn
+↓
+Semantic Intent
+↓
+Reference Resolution
+↓
+Execution Proposal
+↓
+Capability Validation
+↓
+Policy Evaluation
+↓
+Approval Requirement
+↓
+Fingerprint
+↓
+Authorized / Blocked / Awaiting Approval
+```
+
+وتتوقف هذه tranche هنا.
+
+لا Provider execution بعد.
+
+---
+
+# 2. Execution Proposal يجب أن يصبح Aggregate/Contract واضحًا
+
+أنشئ representation واضحة لاقتراح التنفيذ.
+
+يجب أن يحتوي حسب تصميم المشروع على مفاهيم مثل:
+
+```text
+proposalId
+ownerId
+conversationId?
+runId?
+bubbleId?
+worldId?
+sourceMessageId?
+intentType
+targetReferences
+capabilityId
+capabilityVersion?
+normalizedInputs
+riskLevel
+sideEffectType
+policyContext
+approvalRequirement
+fingerprint
+status
+createdAt
+updatedAt
+```
+
+استخدم أسماء المشروع الحالية إذا كانت أفضل.
+
+لا تعتبر هذا Schema حرفيًا إلزاميًا.
+
+---
+
+# 3. Execution Proposal ليست Execution
+
+إنشاء Proposal لا يعني:
+
+```text
+provider called
+external side effect happened
+action succeeded
+```
+
+يجب أن تسجل بوضوح:
+
+```text
+effects = none
+```
+
+حتى يتم الانتقال لاحقًا إلى Executor موثوق.
+
+---
+
+# 4. Proposal يجب أن تكون Immutable في جوهرها
+
+بعد إنشاء Proposal وفingerprint:
+
+لا تعدل المدخلات الحرجة في نفس Proposal بصمت.
+
+إذا تغير:
+
+```text
+capability
+target
+critical inputs
+policy-relevant values
+amount
+destination
+scope
+```
+
+أنشئ Proposal/Revision جديدة أو أعد fingerprint حسب تصميم المشروع.
+
+المهم:
+
+> Approval القديمة لا تبقى صالحة لتكوين مختلف.
+
+---
+
+# 5. Capability ID يجب أن يكون Canonical
+
+Proposal يجب أن تشير إلى Capability مسجلة في Registry.
+
+مثال:
+
+```text
+publish.create
+notification.send
+schedule.create
+entity.update
+```
+
+وليس:
+
+```text
+sell_car
+hire_teacher
+advertise_shop
+```
+
+---
+
+# 6. Unknown Capability
+
+إذا اقترح النموذج Capability غير مسجلة:
+
+```text
+proposal = BLOCKED
+reason = UNKNOWN_CAPABILITY
+```
+
+ولا تحاول تنفيذها.
+
+---
+
+# 7. Capability Schema Validation
+
+قبل إنشاء Proposal قابلة للموافقة:
+
+تحقق من inputs عبر Schema الرسمية للCapability.
+
+إذا المدخلات ناقصة:
+
+```text
+status = AWAITING_INPUT
+```
+
+إذا غير صالحة:
+
+```text
+status = INVALID
+```
+
+أو الحالة Canonical المناسبة.
+
+---
+
+# 8. Normalize inputs before fingerprinting
+
+هذه نقطة مهمة جدًا.
+
+لا تبنِ fingerprint على JSON خام غير canonical.
+
+نفذ Canonical Normalization بحيث:
+
+```text
+{"price":200,"currency":"KWD"}
+```
+
+و:
+
+```text
+{"currency":"KWD","price":200}
+```
+
+ينتجان نفس fingerprint.
+
+---
+
+# 9. Fingerprint definition
+
+الفingerprint يجب أن يربط على الأقل:
+
+```text
+capability identity
+capability version if relevant
+normalized critical inputs
+resolved target references
+owner/scope where relevant
+policy-relevant execution context
+```
+
+---
+
+# 10. لا تضع بيانات غير مستقرة في fingerprint بلا سبب
+
+مثل:
+
+```text
+createdAt
+UI label
+display text
+random ordering
+```
+
+إذا لم تكن تؤثر على معنى التنفيذ.
+
+نريد fingerprint دلالية مستقرة.
+
+---
+
+# 11. Cryptographic fingerprint
+
+استخدم Hash cryptographic مناسبًا للمشروع مثل SHA-256 أو ما يعادله.
+
+مثال مفهومي:
+
+```text
+fingerprint =
+HASH(
+ capability
+ + normalizedInputs
+ + targetReferences
+ + policyContext
+)
+```
+
+لكن طبّق canonical serialization صحيحة.
+
+---
+
+# 12. Approval يجب أن ترتبط بالفingerprint
+
+لا أريد:
+
+```text
+approved = true
+```
+
+على Run أو Task بشكل عام.
+
+الصحيح:
+
+```text
+Approval
+↓
+proposalId
+↓
+executionFingerprint
+```
+
+---
+
+# 13. Approval validity rule
+
+الموافقة صالحة فقط إذا:
+
+```text
+currentExecutionFingerprint
+==
+approvedExecutionFingerprint
+```
+
+إذا اختلفا:
+
+```text
+approval = INVALIDATED
+```
+
+ويجب طلب Approval جديدة إذا كانت مطلوبة.
+
+---
+
+# 14. مثال إلزامي
+
+المستخدم:
+
+> انشر المنتج بسعر 200.
+
+Proposal:
+
+```text
+capability = publish.create
+price = 200
+fingerprint = ABC
+```
+
+المستخدم يوافق.
+
+ثم يقول:
+
+> اجعل السعر 250.
+
+يجب أن يصبح:
+
+```text
+new fingerprint = XYZ
+old approval = INVALID
+new approval required
+```
+
+ممنوع استخدام موافقة السعر 200 لتنفيذ السعر 250.
+
+---
+
+# 15. مثال مبلغ
+
+إذا كانت العملية:
+
+```text
+payment.capture
+amount = 50
+```
+
+ثم تغيرت إلى:
+
+```text
+amount = 500
+```
+
+يجب حتمًا أن تتغير fingerprint.
+
+---
+
+# 16. Approval replay protection
+
+اختبر أن Approval لProposal A لا يمكن استخدامها لـProposal B.
+
+حتى لو نفس المستخدم.
+
+---
+
+# 17. Cross-user approval attack
+
+User A لا يستطيع إرسال approvalId تخص User B.
+
+يجب:
+
+```text
+404 / unauthorized-safe response
+```
+
+حسب نمط المشروع.
+
+---
+
+# 18. Approval ownership
+
+تحقق server-side من:
+
+```text
+approval.ownerId
+proposal.ownerId
+run.ownerId
+conversation ownership
+bubble/world permissions
+```
+
+---
+
+# 19. Approval status lifecycle
+
+دعم حالات واضحة مثل:
+
+```text
+pending
+approved
+rejected
+invalidated
+expired
+consumed
+```
+
+إذا كان المشروع لديه canonical lifecycle فاستخدمه.
+
+---
+
+# 20. Approval consumption
+
+حدد من الآن هل Approval:
+
+```text
+single-use
+```
+
+أو:
+
+```text
+reusable under exact fingerprint
+```
+
+حسب نوع Capability/Policy.
+
+لكن لا تجعل default غامضًا.
+
+للSide Effects الحساسة، الأفضل أن يكون السلوك شديد الوضوح ومحميًا من replay.
+
+---
+
+# 21. Policy evaluation يجب أن تسبق approval
+
+المسار:
+
+```text
+Proposal
+↓
+Policy Evaluation
+↓
+Approval Requirement
+```
+
+ولا:
+
+```text
+Ask approval first
+↓
+discover later that policy forbids action
+```
+
+---
+
+# 22. Policy result
+
+سجل نتيجة واضحة:
+
+```text
+ALLOW
+DENY
+REQUIRE_APPROVAL
+REQUIRE_INPUT
+```
+
+أو canonical equivalents.
+
+---
+
+# 23. Policy ليست Model output
+
+النموذج لا يقرر:
+
+```text
+approval not required
+```
+
+كمصدر حقيقة.
+
+النموذج يمكن أن يقترح.
+
+لكن Policy Runtime هي التي تقرر.
+
+---
+
+# 24. High-risk capability defaults
+
+إذا Capability ذات risk مرتفع ولم توجد Policy واضحة:
+
+اختر default آمنًا مثل:
+
+```text
+BLOCK
+```
+
+أو:
+
+```text
+REQUIRE_APPROVAL
+```
+
+حسب تصميم الثقة.
+
+لا تختَر auto-execute.
+
+---
+
+# 25. No provider calls
+
+خلال هذه tranche:
+
+ممنوع تنفيذ:
+
+```text
+HTTP provider call
+email send
+publish
+payment
+booking
+external write
+```
+
+---
+
+# 26. No receipts yet
+
+لا تنشئ Execution Receipt حقيقية.
+
+يمكنك إنشاء:
+
+```text
+proposal audit record
+approval record
+policy decision
+```
+
+لكن لا تسمها Receipt إذا لم يحدث execution.
+
+---
+
+# 27. No fake execution status
+
+لا تستخدم:
+
+```text
+completed
+success
+executed
+```
+
+لـProposal فقط.
+
+استخدم حالات مثل:
+
+```text
+PROPOSED
+AWAITING_INPUT
+AWAITING_APPROVAL
+AUTHORIZED
+BLOCKED
+REJECTED
+```
+
+---
+
+# 28. Authorized لا تعني Executed
+
+هذه قاعدة مهمة:
+
+```text
+AUTHORIZED
+!=
+EXECUTED
+```
+
+---
+
+# 29. Integrate with Run
+
+إذا Output Router اختار:
+
+```text
+DIRECT_ACTION
+WORKFLOW
+DURABLE_RUN
+```
+
+يجب أن تستطيع Run احتواء/الإشارة إلى Execution Proposals.
+
+مثال:
+
+```text
+Run
+├── Proposal A
+├── Proposal B
+└── Proposal C
+```
+
+لكن لا تنفذها بعد.
+
+---
+
+# 30. Multiple proposals
+
+Workflow واحدة قد تحتوي عدة Proposals.
+
+مثال:
+
+> حضّر الإعلان، انشره، ثم أرسل لي إشعارًا.
+
+يمكن أن ينتج:
+
+```text
+Proposal 1: content.prepare
+Proposal 2: publish.create
+Proposal 3: notification.send
+```
+
+حتى لو التنفيذ الفعلي سيأتي لاحقًا.
+
+---
+
+# 31. Dependencies can be represented
+
+إذا توجد علاقات:
+
+```text
+Proposal B depends on A
+```
+
+سجلها بطريقة قابلة للتحويل لاحقًا إلى DAG.
+
+لا تحتاج بناء Worker كامل الآن.
+
+---
+
+# 32. Prepare for DAG, don't implement execution worker yet
+
+اجعل Execution Proposal قابلة لأن تصبح DAG Node لاحقًا.
+
+مثلاً عبر:
+
+```text
+dependencies[]
+executionOrder metadata
+blocking conditions
+```
+
+إذا كان ذلك مناسبًا.
+
+---
+
+# 33. General Reference Resolution integration
+
+Reference Resolution أصبحت REAL.
+
+استخدم نتائجها داخل fingerprint.
+
+مثال:
+
+> المنتج الذي أضفته أمس خفض سعره.
+
+لا تبنِ fingerprint على النص:
+
+```text
+"المنتج الذي أضفته أمس"
+```
+
+بل على المرجع المحلول:
+
+```text
+entityId = ...
+```
+
+---
+
+# 34. Reference changed = fingerprint changed
+
+إذا تغير target entity:
+
+تتغير fingerprint.
+
+---
+
+# 35. Bubble mutation proposals
+
+مثال:
+
+> متجري خفض سعر الآيفون إلى 280.
+
+يمكن إنشاء Proposal داخلية مثل:
+
+```text
+capability = entity.update
+target = product entity
+change = price 280
+```
+
+ثم policy/approval/fingerprint.
+
+---
+
+# 36. Internal vs External Side Effects
+
+صنف Proposal إلى:
+
+```text
+INTERNAL_STATE_CHANGE
+EXTERNAL_SIDE_EFFECT
+READ_ONLY
+```
+
+أو taxonomy عامة مناسبة.
+
+هذا سيساعد لاحقًا Executor وVerifier.
+
+---
+
+# 37. Internal changes لا تعني bypass trust
+
+حتى `entity.update` داخل World يجب أن تمر:
+
+```text
+authorization
+policy
+validation
+idempotency
+```
+
+---
+
+# 38. Read-only proposals
+
+Read-only operations قد لا تحتاج Approval.
+
+مثال:
+
+```text
+search.web
+data.read
+```
+
+لكن policy يجب أن تقرر.
+
+---
+
+# 39. Idempotency relationship
+
+Proposal يجب أن تكون قابلة لربط idempotency لاحقًا بالتنفيذ.
+
+لا تستخدم fingerprint وحدها كبديل كامل لـidempotency إلا إذا أثبت التصميم ذلك.
+
+---
+
+# 40. Fingerprint vs Idempotency Key
+
+ثبت الفرق في docs:
+
+```text
+fingerprint
+= what exact execution was authorized
+```
+
+```text
+idempotencyKey
+= prevent duplicate execution
+```
+
+ليستا نفس الشيء.
+
+---
+
+# 41. Audit events
+
+أضف Events مثل:
+
+```text
+EXECUTION_PROPOSAL_CREATED
+EXECUTION_PROPOSAL_BLOCKED
+EXECUTION_PROPOSAL_UPDATED
+APPROVAL_REQUESTED
+APPROVAL_GRANTED
+APPROVAL_REJECTED
+APPROVAL_INVALIDATED
+POLICY_EVALUATED
+```
+
+بحسب Event model الحالي.
+
+---
+
+# 42. Event ownership/correlation
+
+كل Event يجب أن ترتبط حسب الحاجة بـ:
+
+```text
+ownerId
+conversationId
+runId
+proposalId
+bubbleId?
+worldId?
+```
+
+---
+
+# 43. Concurrency
+
+اختبر Approval concurrently.
+
+مثل:
+
+```text
+Approve same proposal twice
+```
+
+يجب ألا تنتج حالتين متعارضتين.
+
+---
+
+# 44. Proposal mutation race
+
+اختبر:
+
+```text
+User approves proposal
+at same time
+proposal inputs change
+```
+
+يجب ألا ينتج Authorized Proposal للfingerprint القديمة والجديدة بشكل غير آمن.
+
+استخدم transaction / optimistic concurrency / versioning حسب التصميم.
+
+---
+
+# 45. Proposal version
+
+إذا كان مفيدًا أضف:
+
+```text
+version
+```
+
+أو optimistic concurrency token.
+
+حتى لا تحدث lost updates.
+
+---
+
+# 46. Authorization test
+
+User A لا يستطيع:
+
+```text
+read proposal B
+approve proposal B
+reject proposal B
+modify proposal B
+```
+
+إذا كانت تخص User B.
+
+---
+
+# 47. Bubble permission integration
+
+إذا Proposal تستهدف Bubble:
+
+تحقق من:
+
+```text
+bubble ownership/membership
+target entity permissions
+requested mutation permission
+```
+
+لا يكفي أن Conversation تخص المستخدم.
+
+---
+
+# 48. Run ownership isn't enough
+
+Run قد تكون ملك المستخدم لكن target Bubble ليست له.
+
+يجب أن تفشل.
+
+---
+
+# 49. No raw client-controlled ownerId
+
+لا تسمح Client بتحديد:
+
+```text
+ownerId
+```
+
+كمصدر حقيقة.
+
+استخرجه من Auth Context.
+
+---
+
+# 50. No raw client fingerprint trust
+
+Client لا يرسل fingerprint موثوقًا ويطلب من الخادم استخدامه.
+
+الخادم يعيد حساب fingerprint.
+
+---
+
+# 51. No client capability override
+
+Client لا يستطيع تغيير:
+
+```text
+capabilityId
+```
+
+بعد اعتماد Proposal دون إعادة Validation/fingerprint.
+
+---
+
+# 52. Approval API
+
+أنشئ API واضحة مثل:
+
+```text
+request approval
+approve
+reject
+read approval state
+```
+
+بحسب أسلوب الـAPI الحالي.
+
+---
+
+# 53. Web UI
+
+حدّث Web Main Chat ليعرض:
+
+```text
+Intent understood
+Execution proposal
+Missing inputs
+Approval required
+Blocked reason
+Authorized but not executed
+```
+
+---
+
+# 54. Mobile UI
+
+نفس الحالات على Mobile من نفس Runtime Contract.
+
+لا Business Logic محلية.
+
+---
+
+# 55. Arabic user-facing language
+
+لا تعرض للمستخدم:
+
+```text
+fingerprint mismatch
+proposal hash invalid
+```
+
+بالصيغة التقنية الخام.
+
+مثلاً:
+
+> تغيّرت تفاصيل العملية بعد موافقتك السابقة، لذلك نحتاج موافقتك مرة أخرى.
+
+---
+
+# 56. Developer/debug evidence
+
+في logs/tests يمكن عرض:
+
+```text
+proposalId
+fingerprint
+approvalId
+policyDecision
+```
+
+دون Secrets.
+
+---
+
+# 57. Acceptance test — price change
+
+رحلة إلزامية:
+
+```text
+User:
+"بع هذا الهاتف بسعر 200"
+```
+
+Expected:
+
+```text
+Run created
+Execution Proposal created
+Capability resolved
+No provider call
+Approval required if policy says so
+Fingerprint A
+```
+
+ثم:
+
+```text
+Approve
+```
+
+Expected:
+
+```text
+Approval tied to Fingerprint A
+```
+
+ثم:
+
+```text
+"اجعل السعر 250"
+```
+
+Expected:
+
+```text
+Proposal revised/new
+Fingerprint B
+Approval A invalid
+No execution
+```
+
+---
+
+# 58. Acceptance test — same inputs
+
+إذا أعيد إنشاء Proposal بنفس:
+
+```text
+capability
+inputs
+references
+policy context
+```
+
+يجب أن تنتج نفس semantic fingerprint.
+
+---
+
+# 59. Acceptance test — JSON ordering
+
+اختبر اختلاف ترتيب مفاتيح JSON.
+
+Fingerprint يجب أن تبقى نفسها.
+
+---
+
+# 60. Acceptance test — target entity change
+
+نفس capability ونفس السعر لكن Entity مختلفة:
+
+Fingerprint يجب أن تختلف.
+
+---
+
+# 61. Acceptance test — policy change
+
+إذا Policy context تؤثر على authorization وتغيرت:
+
+Fingerprint/authorization يجب أن تعاد تقييمها.
+
+---
+
+# 62. Acceptance test — approval replay
+
+Approval لProposal A:
+
+لا تعمل على Proposal B.
+
+---
+
+# 63. Acceptance test — foreign approval
+
+User B يحاول Approve Proposal User A:
+
+FAIL safely.
+
+---
+
+# 64. Acceptance test — unknown capability
+
+Model proposes:
+
+```text
+system.executeShell
+```
+
+Expected:
+
+```text
+BLOCKED
+UNKNOWN_CAPABILITY
+effects = none
+```
+
+---
+
+# 65. Acceptance test — capability injection
+
+اختبر IDs غريبة مثل:
+
+```text
+__proto__
+constructor
+../../...
+```
+
+يجب رفضها.
+
+---
+
+# 66. Acceptance test — no effects
+
+بعد كل tests لهذه tranche تحقق من:
+
+```text
+external side effects count = 0
+receipts count for execution = 0
+```
+
+---
+
+# 67. Restart durability
+
+أنشئ:
+
+```text
+Proposal
+Approval
+Policy decision
+```
+
+أعد تشغيل API.
+
+يجب أن تبقى الحالة صحيحة.
+
+---
+
+# 68. Regression
+
+أعد تشغيل Baseline:
+
+```text
+Conversation persistence
+Message ordering
+Owner isolation
+Bubble isolation
+World isolation
+Run persistence
+Run idempotency
+Run restart durability
+Semantic Router
+Reference Resolution
+No automatic Task creation
+```
+
+---
+
+# 69. New tranche proof
+
+أضف Tests لـ:
+
+```text
+Execution Proposal persistence
+Canonical fingerprint
+Fingerprint stability
+Fingerprint mutation
+Approval binding
+Approval invalidation
+Approval replay protection
+Policy decision
+Unknown capability block
+Cross-owner isolation
+No provider execution
+No receipts
+```
+
+---
+
+# 70. بعد نجاح هذه tranche
+
+لا تقف.
+
+انتقل تلقائيًا إلى:
+
+```text
+Durable DAG Nodes
+↓
+Worker claim/lease/heartbeat
+↓
+Trusted Capability Executor
+↓
+Execution Receipts
+↓
+Independent Verifier
+↓
+Retry/Recovery
+↓
+Scheduler/Event Resume
+```
+
+---
+
+# 71. لا تفعل Provider قبل Executor
+
+حتى إذا API key موجود:
+
+لا تستخدمه في هذه tranche.
+
+---
+
+# 72. لا تجعل approval UI هي الأمن
+
+الـUI مجرد Surface.
+
+التحقق الحقيقي Server-side.
+
+---
+
+# 73. لا تسمح bypass عبر API مباشر
+
+اختبر أن المستخدم لا يستطيع تخطي Approval باستدعاء endpoint داخلية مباشرة.
+
+---
+
+# 74. No domain logic
+
+لا تضف:
+
+```text
+CarApprovalPolicy
+JobApprovalPolicy
+StoreExecutionProposal
+```
+
+استخدم:
+
+```text
+Capability
+Policy
+Proposal
+Reference
+Input
+Risk
+```
+
+عامة.
+
+---
+
+# 75. Documentation
+
+حدّث تقرير المهمة #14 بقسم:
+
+```text
+TRUSTED EXECUTION PREPARATION
+```
+
+ويحتوي:
+
+```text
+EXECUTION PROPOSAL: REAL/PARTIAL
+CANONICAL FINGERPRINT: PASS/FAIL
+POLICY EVALUATION: REAL/PARTIAL
+APPROVAL BINDING: PASS/FAIL
+APPROVAL INVALIDATION: PASS/FAIL
+APPROVAL REPLAY PROTECTION: PASS/FAIL
+UNKNOWN CAPABILITY BLOCKING: PASS/FAIL
+PROVIDER EXECUTION: NOT ENABLED
+EXECUTION RECEIPTS: NOT ENABLED
+EXTERNAL EFFECTS: ZERO
+```
+
+---
+
+# 76. Do not call this Trusted Execution complete yet
+
+هذه tranche هي:
+
+```text
+TRUSTED EXECUTION PREPARATION
+```
+
+وليست:
+
+```text
+TRUSTED EXECUTION COMPLETE
+```
+
+الإكمال الحقيقي يتطلب:
+
+```text
+Executor
+Receipts
+Verifier
+Recovery
+```
+
+---
+
+# FINAL ARCHITECTURAL CONTRACT
+
+ثبت هذا العقد:
+
+```text
+INTENT
+!=
+PROPOSAL
+!=
+APPROVAL
+!=
+EXECUTION
+!=
+VERIFICATION
+```
+
+والمسار النهائي لجاسم يجب أن يكون:
+
+```text
+Intent
+↓
+Reference Resolution
+↓
+Execution Proposal
+↓
+Capability Validation
+↓
+Policy
+↓
+Approval
+↓
+Fingerprint Validation
+↓
+Trusted Executor
+↓
+Receipt
+↓
+Independent Verifier
+↓
+Runtime State Transition
+```
+
+في هذه tranche توقف عمدًا قبل:
+
+```text
+Trusted Executor
+```
+
+وابنِ كل ما قبله بصورة صحيحة ومختبرة.
+
+ابدأ Build الآن داخل المهمة #14، أصلح أي Regression، شغّل الأدلة الحقيقية، ثم انتقل تلقائيًا للمرحلة التالية بعد نجاح هذه tranche.

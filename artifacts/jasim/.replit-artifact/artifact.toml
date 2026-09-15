@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "JASIM"
+description = "واجهة تشغيل جاسم العامة لتحويل الأهداف الطبيعية إلى محادثات وSmart Bubbles وحالات تنفيذ موثوقة."
+version = "1.0.0"
+id = "artifacts/jasim"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23033
+
+[services.development]
+run = "pnpm --dir ../../canonical/جاسم/app run dev"
+
+[services.production]
+build = [ "pnpm", "--dir", "../../canonical/جاسم/app", "run", "build" ]
+serve = "static"
+publicDir = "canonical/جاسم/app/dist"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23033"
+BASE_PATH = "/"

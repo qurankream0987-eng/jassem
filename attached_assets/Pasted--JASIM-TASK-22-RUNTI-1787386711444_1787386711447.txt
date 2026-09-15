@@ -1,0 +1,1410 @@
+# =====================================================================
+# JASIM — TASK #22
+# RUNTIME ARTIFACT → EXISTING SMART BUBBLE
+#
+# COMPLETE THE GENERATED-IMAGE PRODUCT LOOP
+#
+# IMPORTANT:
+# PHASE 12 REMAINS PARTIAL DUE ONLY TO EXTERNAL PROVIDER CALIBRATION CAPACITY.
+# DO NOT MODIFY MODEL POLICY OR MODEL MAPPINGS.
+# DO NOT RESUME MODEL CALIBRATION DURING THIS TASK.
+# =====================================================================
+
+
+Task #22 is now authorized for implementation.
+
+The objective is NOT to build image generation again.
+
+Image generation is already REAL.
+
+The objective is to make an EXISTING durable RuntimeArtifact
+usable inside an EXISTING Smart Bubble through JASIM's canonical
+reference-resolution and mutation architecture.
+
+
+=====================================================================
+0. CURRENT TRUTH — PRESERVE IT
+=====================================================================
+
+Already REAL:
+
+- image generation
+- real provider execution
+- immutable execution attempts
+- receipts
+- Independent Verifier
+- durable RuntimeArtifact
+- App Storage persistence
+- SHA-256
+- artifact metadata
+- owner-protected preview
+- Web image rendering
+- Mobile image rendering
+- Reference Resolution infrastructure
+- Smart Bubble persistence
+- natural-language Bubble mutation
+- MutationIntent
+- ChangeSet
+- contentVersion
+- presentationVersion
+- atomic mutation
+- Web/Mobile projections
+- restart durability
+- cross-owner isolation
+
+
+Missing specifically:
+
+RuntimeArtifact
+→ Existing Smart Bubble
+→ generic mutation
+→ durable artifact reference
+→ correct version change
+→ projection refresh
+→ Web/Mobile persistence
+
+
+DO NOT rebuild any existing system.
+
+
+=====================================================================
+1. CORE PRODUCT BEHAVIOR
+=====================================================================
+
+JASIM must support requests such as:
+
+"استخدم الصورة الأخيرة كغلاف لمنصتي."
+
+"ضع الصورة الثانية في الفقاعة السابقة."
+
+"استخدم الصورة التي أنشأناها كشعار."
+
+"أضف هذه الصورة إلى معرض المنصة."
+
+"اجعل الصورة الأخيرة خلفية للواجهة."
+
+
+Expected canonical path:
+
+Conversation
+↓
+Reference Resolution
+↓
+RuntimeArtifact Resolution
+↓
+Existing Smart Bubble Resolution
+↓
+Mutation Intent
+↓
+Generic ChangeSet
+↓
+Authorization / Policy
+↓
+Atomic Apply
+↓
+Version Update
+↓
+Projection Refresh
+↓
+Same Smart Bubble
+↓
+Web + Mobile
+
+
+NO NEW BUBBLE merely because an image exists.
+
+
+=====================================================================
+2. ABSOLUTE RULE — NO AUTOMATIC BUBBLE CREATION
+=====================================================================
+
+A generated image is an Artifact.
+
+It is NOT automatically a Bubble.
+
+It is NOT automatically a World.
+
+It is NOT automatically a platform.
+
+
+If user says:
+
+"أنشئ لي صورة مسجد."
+
+Expected:
+
+RuntimeArtifact only.
+
+
+If user says:
+
+"استخدم هذه الصورة في منصتي."
+
+Expected:
+
+resolve existing Bubble
+→ mutate existing Bubble.
+
+
+If no Bubble exists:
+
+DO NOT silently create one.
+
+
+Return the canonical equivalent of:
+
+TARGET_BUBBLE_REQUIRED
+
+
+If multiple plausible Bubbles exist:
+
+DO NOT guess destructively.
+
+Use Reference Resolution / clarification flow.
+
+
+Permanent rule:
+
+CHOOSE THE SMALLEST SUFFICIENT OUTPUT FORM.
+
+
+=====================================================================
+3. FIRST — INSPECT EXISTING GENERIC PRIMITIVES
+=====================================================================
+
+Before creating any schema/type:
+
+inspect the active canonical implementation for existing concepts similar to:
+
+ArtifactReference
+AssetReference
+MediaReference
+Attachment
+ResourceReference
+RuntimeArtifact
+Bubble resource
+Bubble asset
+projection asset
+
+
+If an adequate generic primitive exists:
+
+REUSE IT.
+
+
+Do NOT create competing concepts such as:
+
+BubbleImage
+GeneratedImageForBubble
+ProductImage
+CoverImageTable
+BubbleMediaV2
+
+
+The new primitive, if genuinely required, must be:
+
+GENERIC ARTIFACT → RUNTIME STATE REFERENCE.
+
+
+=====================================================================
+4. GENERIC ARTIFACT REFERENCE
+=====================================================================
+
+If no sufficient primitive exists, introduce the smallest generic reference.
+
+Conceptually only:
+
+ArtifactReference {
+  artifactId
+  role?
+  targetPath?
+  metadata?
+}
+
+
+The exact schema must follow current canonical conventions.
+
+
+Important:
+
+artifactId points to the canonical RuntimeArtifact.
+
+Do NOT:
+
+copy binary image into Bubble JSON
+
+copy base64 into Bubble state
+
+copy temporary provider URL into Bubble state
+
+
+Bubble stores a durable canonical reference.
+
+Artifact storage remains the source of artifact bytes.
+
+
+=====================================================================
+5. ROLE / TARGET MUST BE GENERIC
+=====================================================================
+
+The system may need semantic placement such as:
+
+cover
+logo
+background
+gallery
+illustration
+attachment
+
+
+Do NOT implement these with business-domain handlers.
+
+
+Allowed conceptually:
+
+artifact reference
++
+generic role/slot/targetPath
+
+
+Forbidden:
+
+RestaurantCover
+CarListingImage
+TeacherProfileImage
+FarmEquipmentPhoto
+
+
+Presentation semantics are generic.
+
+Business domains remain outside Core.
+
+
+=====================================================================
+6. IMPORTANT VERSIONING CORRECTION
+=====================================================================
+
+JASIM already separates:
+
+contentVersion
+
+from:
+
+presentationVersion
+
+
+DO NOT increment contentVersion blindly for every artifact attachment.
+
+
+Determine mutation semantics correctly.
+
+
+Examples:
+
+"اجعل الصورة غلاف الفقاعة"
+
+This is primarily:
+
+VIEW / PRESENTATION MUTATION
+
+Expected:
+
+presentationVersion +1
+
+contentVersion unchanged
+
+unless canonical state semantics require otherwise.
+
+
+"أضف هذه الصورة كعنصر/مورد داخل بيانات المشروع"
+
+may be:
+
+CONTENT / DATA MUTATION
+
+Expected:
+
+contentVersion +1
+
+
+A mutation affecting both semantic content and presentation may increment both
+only when genuinely justified.
+
+
+Required invariant:
+
+VERSION_CHANGED_FOR_CORRECT_REASON = PASS
+
+
+Do NOT preserve the older simplistic assumption:
+
+every artifact attachment
+→ contentVersion +1.
+
+
+=====================================================================
+7. REFERENCE RESOLUTION — ARTIFACT
+=====================================================================
+
+Extend/reuse canonical Reference Resolution so user phrases can resolve:
+
+"الصورة الأخيرة"
+
+"الصورة السابقة"
+
+"الصورة الثانية"
+
+"هذه الصورة"
+
+"الصورة التي أنشأناها"
+
+explicit artifact reference
+
+
+Resolution must be:
+
+owner-scoped
+conversation-aware
+persistent
+server-authoritative
+
+
+Do NOT rely solely on:
+
+client-side array index.
+
+
+Conceptually:
+
+natural reference
+→ canonical RuntimeArtifact ID
+
+
+Cross-owner artifact references must never resolve.
+
+
+=====================================================================
+8. REFERENCE RESOLUTION — BUBBLE
+=====================================================================
+
+Support existing semantics such as:
+
+"منصتي"
+
+"الفقاعة السابقة"
+
+"المشروع الذي أنشأناه"
+
+explicit Bubble reference
+
+
+Resolve through canonical Bubble identity.
+
+
+If one unambiguous target exists:
+
+continue.
+
+
+If ambiguous:
+
+request/produce target selection through existing clarification semantics.
+
+
+Do NOT select the most recent Bubble blindly
+when several plausible targets exist.
+
+
+=====================================================================
+9. AUTHORIZATION
+=====================================================================
+
+Before mutation verify server-side:
+
+authenticated owner can access artifact
+
+AND
+
+authenticated owner can mutate target Bubble
+
+
+Required:
+
+Artifact ownership/access policy
+
+Bubble ownership/membership policy
+
+
+Do not trust IDs supplied by client.
+
+
+The authorization must bind:
+
+USER
++
+ARTIFACT
++
+TARGET BUBBLE
++
+REQUESTED MUTATION
+
+
+=====================================================================
+10. CROSS-OWNER SECURITY
+=====================================================================
+
+Mandatory tests:
+
+USER_A_ARTIFACT
++
+USER_B_BUBBLE
+→ BLOCKED
+
+
+USER_B attempts to reference USER_A_ARTIFACT
+→ BLOCKED
+
+
+USER_B guesses USER_A_ARTIFACT_ID
+→ BLOCKED
+
+
+USER_B guesses USER_A_BUBBLE_ID
+→ BLOCKED
+
+
+USER_A artifact cannot be attached to USER_B Bubble
+unless a future explicit sharing policy authorizes it.
+
+
+Do NOT invent sharing behavior in Task #22.
+
+
+=====================================================================
+11. CANONICAL MUTATION PIPELINE
+=====================================================================
+
+Do NOT directly update Bubble JSON from a UI procedure.
+
+
+Required:
+
+Reference Resolution
+↓
+MutationIntent
+↓
+ChangeSet
+↓
+Validation
+↓
+Policy/Authorization
+↓
+Atomic Apply
+↓
+Event
+↓
+Version
+↓
+Projection
+
+
+Use the SAME generic mutation infrastructure already used for
+natural-language Bubble evolution.
+
+
+No image-specific mutation engine.
+
+
+=====================================================================
+12. CHANGESET
+=====================================================================
+
+Artifact attachment must become a normal canonical ChangeSet operation.
+
+
+Conceptually:
+
+ADD_REFERENCE
+SET_REFERENCE
+REMOVE_REFERENCE
+REPLACE_REFERENCE
+
+
+or current equivalent.
+
+
+Do not create a second mutation language if existing ChangeSet operations
+can represent this safely.
+
+
+ChangeSet should identify:
+
+target Bubble
+target path/slot
+artifact reference
+mutation class
+expected current version
+resulting version semantics
+
+
+=====================================================================
+13. OPTIMISTIC / VERSION SAFETY
+=====================================================================
+
+Use existing version/fencing semantics.
+
+If Bubble changed between proposal and apply:
+
+do not blindly overwrite.
+
+
+Use canonical conflict handling.
+
+
+Expected:
+
+STALE_CHANGESET
+→ reject/replan/refresh
+
+not:
+
+last-write-wins silently.
+
+
+=====================================================================
+14. ARTIFACT IMMUTABILITY
+=====================================================================
+
+Attaching an artifact to a Bubble does NOT mutate artifact bytes.
+
+
+RuntimeArtifact remains independently durable.
+
+
+Bubble only references it.
+
+
+If later user replaces the cover:
+
+Bubble reference changes.
+
+Original Artifact remains in historical runtime state
+according to existing retention policy.
+
+
+Do not overwrite artifact binary.
+
+
+=====================================================================
+15. ARTIFACT DELETION / RETENTION SAFETY
+=====================================================================
+
+Do not implement full deletion policy in Task #22.
+
+But prevent obvious dangling references.
+
+
+If current system supports artifact deletion:
+
+check references before permanent deletion
+or preserve canonical tombstone semantics.
+
+
+Do not silently make Bubble projections reference nonexistent bytes.
+
+
+If deletion lifecycle is not implemented yet:
+
+record as future lifecycle requirement.
+
+Do NOT expand scope into full data-retention system.
+
+
+=====================================================================
+16. PROJECTION
+=====================================================================
+
+Bubble projection must be able to resolve:
+
+ArtifactReference
+→ protected preview/display endpoint
+
+
+Do NOT put:
+
+provider temporary URL
+
+directly into durable Bubble state.
+
+
+Projection should receive:
+
+canonical artifact reference
+
+and derive authorized access path.
+
+
+=====================================================================
+17. WEB UI
+=====================================================================
+
+Extend existing image result UI minimally.
+
+
+Add a generic action conceptually equivalent to:
+
+"استخدم في فقاعة"
+
+
+Do NOT build a separate image-management application.
+
+
+Flow:
+
+generated image result
+→ use in Bubble
+→ resolve/select target Bubble
+→ choose/infer placement when clear
+→ MutationIntent / ChangeSet
+→ existing confirmation/preview semantics if required
+→ apply
+→ show updated Bubble
+
+
+If natural-language command already gives target + role clearly:
+
+do not force extra unnecessary dialogs.
+
+
+Example:
+
+"اجعل الصورة الأخيرة غلاف منصتي"
+
+should not require:
+
+select artifact
+select Bubble
+select role
+
+again if all three are already resolved confidently.
+
+
+=====================================================================
+18. MOBILE UI
+=====================================================================
+
+Use the SAME server contracts.
+
+
+Mobile is a renderer/client.
+
+Do NOT create mobile-only attachment state.
+
+
+Mobile should support:
+
+artifact result
+→ use in Bubble
+→ target selection when necessary
+→ same canonical mutation
+
+
+After mutation:
+
+Web and Mobile must show identical Bubble state.
+
+
+=====================================================================
+19. CROSS-DEVICE TEST
+=====================================================================
+
+Scenario:
+
+Web:
+generate/locate existing artifact
+→ attach to existing Bubble
+
+
+Mobile:
+open same Bubble
+
+
+Expected:
+
+same artifact reference
+same version
+same projection
+
+
+Then reverse:
+
+Mobile:
+replace artifact reference
+
+
+Web:
+reload
+
+
+Expected:
+
+same canonical state.
+
+
+No client-local truth.
+
+
+=====================================================================
+20. RESTART DURABILITY
+=====================================================================
+
+Test:
+
+existing artifact
+→ attach to Bubble
+→ verify projection
+→ server restart
+
+
+After restart prove:
+
+artifact still exists
+
+artifact reference still exists
+
+Bubble ID unchanged
+
+correct contentVersion/presentationVersion preserved
+
+projection still resolves
+
+owner security remains
+
+Web renders
+
+Mobile renders
+
+
+No regeneration.
+
+No reconstruction from conversation text.
+
+
+=====================================================================
+21. NATURAL LANGUAGE PROOF
+=====================================================================
+
+The final product path should be proven with natural language when provider
+capacity allows.
+
+
+Example:
+
+"استخدم الصورة الأخيرة كغلاف للمنصة التي أنشأناها."
+
+
+Expected full path:
+
+Conversation
+→ semantic routing
+→ reference resolution
+→ artifact resolution
+→ Bubble resolution
+→ MutationIntent
+→ ChangeSet
+→ apply
+→ projection
+
+
+HOWEVER:
+
+Phase 12 provider quota is currently constrained.
+
+
+Therefore:
+
+DO NOT block all Task #22 engineering on external LLM quota.
+
+
+Prove the deterministic/canonical runtime path using existing persisted
+real Artifact and Bubble state first.
+
+
+If the natural-language model call receives HTTP 429:
+
+classify:
+
+NATURAL_LANGUAGE_E2E =
+INCONCLUSIVE_PROVIDER_CAPACITY
+
+
+NOT:
+
+PASS
+
+NOT:
+
+FAIL
+
+
+Do not fake it.
+
+
+=====================================================================
+22. USE EXISTING REAL ARTIFACT
+=====================================================================
+
+Do NOT call image generation provider merely to create another test image
+if a previously verified real RuntimeArtifact already exists.
+
+
+Reuse a real persisted Phase 11 artifact belonging to the development proof user.
+
+
+This saves provider calls and proves durability.
+
+
+Required:
+
+NEW_IMAGE_PROVIDER_CALLS_FOR_TASK22_PROOF = 0
+
+unless no suitable real artifact exists.
+
+
+=====================================================================
+23. USE EXISTING REAL BUBBLE
+=====================================================================
+
+Likewise reuse a canonical persisted Smart Bubble where safe.
+
+
+Do NOT create domain-specific Bubble fixtures merely for the test.
+
+
+If a new generic test Bubble is absolutely required:
+
+create through canonical Bubble runtime.
+
+No hardcoded business domain.
+
+
+=====================================================================
+24. NO MODEL CALIBRATION CHANGES
+=====================================================================
+
+Phase 12 remains:
+
+PARTIAL
+
+
+Current provisional mappings remain untouched:
+
+T1 = gpt-5.6-terra
+T2 = o4-mini
+T3 = gpt-5.6-sol
+
+
+Do NOT:
+
+change ModelPolicy
+change tiers
+resume calibrate:jasim-models
+repeat model availability probes
+consume calibration rows
+
+
+Task #22 is independent.
+
+
+=====================================================================
+25. CALIBRATION HYGIENE NOTE — RECORD ONLY
+=====================================================================
+
+Do not modify calibration during this task.
+
+But record for the next Phase 12 resume:
+
+The remaining incomplete calibration rows currently include:
+
+HTTP_429 = 35
+EMPTY_COMPLETION = 25
+
+
+EMPTY_COMPLETION must remain a DISTINCT failure category
+unless provider evidence explicitly proves it is quota-related.
+
+
+Do not automatically classify every empty completion as:
+
+INCONCLUSIVE_PROVIDER_CAPACITY
+
+
+Potential causes may include:
+
+provider response anomaly
+model behavior
+adapter parsing
+finish reason
+safety stop
+transport truncation
+quota/capacity
+
+
+The next calibration run must preserve this distinction.
+
+
+No work on it now.
+
+
+=====================================================================
+26. TEST — BASIC ARTIFACT ATTACHMENT
+=====================================================================
+
+Add/reuse:
+
+test:jasim-artifact-bubble
+
+
+Use:
+
+real persisted RuntimeArtifact
++
+existing Smart Bubble
+
+
+Perform:
+
+artifact reference
+→ generic ChangeSet
+→ apply
+
+
+Require:
+
+ARTIFACT_RESOLVED = PASS
+
+BUBBLE_RESOLVED = PASS
+
+AUTHORIZATION = PASS
+
+CHANGESET_CREATED = PASS
+
+ATOMIC_APPLY = PASS
+
+SAME_BUBBLE = PASS
+
+ARTIFACT_REFERENCE_PERSISTED = PASS
+
+CORRECT_VERSION_INCREMENT = PASS
+
+PROJECTION_REFRESH = PASS
+
+
+=====================================================================
+27. TEST — PRESENTATION VERSION
+=====================================================================
+
+Attach artifact as:
+
+cover/background or equivalent view role.
+
+
+Require:
+
+MUTATION_CLASS = VIEW/PRESENTATION equivalent
+
+PRESENTATION_VERSION_INCREMENT = PASS
+
+CONTENT_VERSION_UNCHANGED = PASS
+
+unless current canonical model gives a justified equivalent result.
+
+
+This test is important.
+
+
+=====================================================================
+28. TEST — CONTENT VERSION
+=====================================================================
+
+Add artifact as a semantic content/resource reference where supported.
+
+
+Require:
+
+CONTENT_MUTATION_CLASS = PASS
+
+CONTENT_VERSION_INCREMENT = PASS
+
+
+Do not invent fake semantic state solely to satisfy the test.
+
+If generic content-resource attachment is not a supported product concept,
+report NOT_APPLICABLE.
+
+Do not force it.
+
+
+=====================================================================
+29. TEST — REPLACE
+=====================================================================
+
+If at least two existing real artifacts are available:
+
+set artifact A as target role
+
+then replace with artifact B.
+
+
+Require:
+
+SAME_BUBBLE = PASS
+
+OLD_REFERENCE_REPLACED = PASS
+
+NEW_REFERENCE_ACTIVE = PASS
+
+VERSION_INCREMENT_EXACTLY_ONCE = PASS
+
+
+No duplicate attachment.
+
+
+=====================================================================
+30. TEST — IDEMPOTENCY
+=====================================================================
+
+Replay the SAME canonical mutation request due to infrastructure duplication.
+
+
+Expected:
+
+no duplicate reference
+
+no duplicate version increments
+
+no duplicate event effect
+
+
+Then issue a NEW intentional user mutation with the same artifact.
+
+Expected:
+
+canonical policy decides correctly based on state.
+
+
+Infrastructure retry
+!=
+new user intent.
+
+
+=====================================================================
+31. TEST — CROSS OWNER
+=====================================================================
+
+Add:
+
+test:jasim-artifact-bubble-security
+
+
+Require:
+
+CROSS_OWNER_ARTIFACT_READ = BLOCKED
+
+CROSS_OWNER_ARTIFACT_ATTACH = BLOCKED
+
+CROSS_OWNER_BUBBLE_MUTATION = BLOCKED
+
+FORGED_ARTIFACT_ID = BLOCKED
+
+FORGED_BUBBLE_ID = BLOCKED
+
+
+No information leakage in errors.
+
+
+=====================================================================
+32. TEST — RESTART
+=====================================================================
+
+Add:
+
+test:jasim-artifact-bubble-restart
+
+
+Require after real server/runtime restart:
+
+ARTIFACT_REFERENCE_SURVIVES_RESTART = PASS
+
+BUBBLE_SURVIVES_RESTART = PASS
+
+VERSION_SURVIVES_RESTART = PASS
+
+PROJECTION_SURVIVES_RESTART = PASS
+
+AUTHORIZED_PREVIEW_SURVIVES_RESTART = PASS
+
+
+=====================================================================
+33. TEST — WEB / MOBILE
+=====================================================================
+
+Verify:
+
+WEB_ARTIFACT_ATTACH_UI = PASS
+
+MOBILE_ARTIFACT_ATTACH_UI = PASS
+
+WEB_UPDATED_BUBBLE = PASS
+
+MOBILE_UPDATED_BUBBLE = PASS
+
+CROSS_DEVICE_STATE = PASS
+
+
+If native UI automation is unavailable:
+
+prove shared mobile data/render contract + TypeScript path
+and report exact limitation.
+
+Do not fake visual mobile proof.
+
+
+=====================================================================
+34. REGRESSIONS
+=====================================================================
+
+After Task #22:
+
+rerun relevant:
+
+Bubble mutation proof
+
+Reference Resolution proof
+
+cross-owner security
+
+Attempt Ledger if mutation execution uses Runs
+
+Verifier if applicable
+
+Conversation Summary only if touched
+
+Phase 11 artifact/security proof
+
+server/runtime typecheck
+
+mobile typecheck
+
+web production build
+
+
+Do NOT rerun model calibration.
+
+Do NOT consume provider capacity unnecessarily.
+
+
+=====================================================================
+35. DOMAIN GENERALITY SCAN
+=====================================================================
+
+Inspect changed Core files.
+
+
+Expected:
+
+Image-specific provider handling remains at Artifact/image capability edge.
+
+Generic Bubble mutation must NOT introduce:
+
+ProductImage
+CarImage
+StoreImage
+RestaurantCover
+FarmPhoto
+etc.
+
+
+Required:
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+
+=====================================================================
+36. DEFINITION OF DONE
+=====================================================================
+
+Task #22 is REAL only if:
+
+Existing durable RuntimeArtifact
+↓
+server-authoritative reference resolution
+↓
+Existing Smart Bubble
+↓
+generic ChangeSet
+↓
+authorization
+↓
+atomic mutation
+↓
+correct semantic version
+↓
+durable canonical reference
+↓
+projection
+↓
+Web/Mobile
+↓
+restart
+↓
+same state
+
+
+It is NOT complete merely because:
+
+UI stores artifactId
+
+or:
+
+Bubble component displays a URL
+
+or:
+
+database field was added.
+
+
+=====================================================================
+37. REQUIRED FINAL REPORT
+=====================================================================
+
+Return:
+
+TASK_22:
+PASS / PARTIAL / FAIL
+
+
+RUNTIME_ARTIFACT_REUSED:
+YES / NO
+
+NEW_IMAGE_PROVIDER_CALLS_FOR_PROOF:
+<number>
+
+
+ARTIFACT_REFERENCE_PRIMITIVE:
+REUSED / EXTENDED / NEW_GENERIC
+
+SECOND_ARTIFACT_SYSTEM_CREATED:
+NO expected
+
+
+ARTIFACT_REFERENCE_RESOLUTION:
+PASS / FAIL
+
+BUBBLE_REFERENCE_RESOLUTION:
+PASS / FAIL
+
+
+GENERIC_MUTATION_INTENT:
+PASS / FAIL
+
+GENERIC_CHANGESET:
+PASS / FAIL
+
+ATOMIC_APPLY:
+PASS / FAIL
+
+
+SAME_BUBBLE_PRESERVED:
+PASS / FAIL
+
+
+PRESENTATION_MUTATION:
+PASS / FAIL
+
+PRESENTATION_VERSION_INCREMENT:
+PASS / FAIL
+
+CONTENT_VERSION_UNCHANGED_FOR_PRESENTATION:
+PASS / FAIL
+
+
+CONTENT_ARTIFACT_MUTATION:
+PASS / FAIL / NOT_APPLICABLE
+
+
+ARTIFACT_REFERENCE_PERSISTENCE:
+PASS / FAIL
+
+RESTART_DURABILITY:
+PASS / FAIL
+
+
+WEB_UI:
+PASS / FAIL
+
+MOBILE_UI:
+PASS / PARTIAL / FAIL
+
+CROSS_DEVICE_STATE:
+PASS / FAIL
+
+
+CROSS_OWNER_ARTIFACT_ATTACH:
+BLOCKED / FAIL
+
+CROSS_OWNER_BUBBLE_MUTATION:
+BLOCKED / FAIL
+
+
+IDEMPOTENCY:
+PASS / FAIL
+
+
+NATURAL_LANGUAGE_E2E:
+PASS / INCONCLUSIVE_PROVIDER_CAPACITY / FAIL
+
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS:
+0 expected
+
+FAKE_SUCCESS:
+0 expected
+
+
+PHASE_12_STATUS:
+PARTIAL
+(do not change)
+
+
+CALIBRATION_HTTP_429_REMAINING:
+35
+
+CALIBRATION_EMPTY_COMPLETION_REMAINING:
+25
+
+MODEL_CALIBRATION_TOUCHED:
+NO expected
+
+
+READY_FOR_TASK_23:
+YES / NO
+
+
+=====================================================================
+38. STOP
+=====================================================================
+
+After Task #22 report:
+
+STOP.
+
+DO NOT implement Task #23 automatically.
+
+DO NOT start Task #24.
+
+DO NOT resume model calibration.
+
+DO NOT change model mappings.
+
+BEGIN TASK #22 NOW.

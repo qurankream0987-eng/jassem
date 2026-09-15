@@ -1,0 +1,1676 @@
+# =====================================================================
+# JASIM — PHASE 12 FINAL CLOSURE PATCH
+# TASK #25 — CLOSE, CALIBRATE, AND PROVE
+#
+# DO NOT START #22
+# DO NOT START #23
+# DO NOT START #24
+#
+# OBJECTIVES:
+# 1. Close the Trusted Executor regression GENERICALLY.
+# 2. Measure the REAL quality/cost economics of T1/T2/T3.
+# 3. Calibrate the default models from evidence.
+# 4. Close Phase 12 only if all hard gates actually pass.
+# =====================================================================
+
+
+The previous Task #25 implementation is architecturally accepted as the
+current candidate implementation.
+
+DO NOT rewrite ModelPolicy.
+
+DO NOT create another model gateway.
+
+DO NOT redesign T0/T1/T2/T3.
+
+DO NOT repeat the Phase 12 repository-wide audit.
+
+DO NOT start Tasks #22, #23, or #24.
+
+This is a TARGETED PHASE 12 CLOSURE PATCH only.
+
+
+=====================================================================
+0. CURRENT VERIFIED STATE
+=====================================================================
+
+Preserve the following proven results:
+
+MODEL_POLICY = PASS
+
+MODEL_GATEWAY_REUSED = YES
+
+SECOND_MODEL_RUNTIME_CREATED = NO
+
+T0 = PASS
+T0_MODEL_CALLS = 0
+
+T1 = PASS
+
+T2 = PASS
+
+T3 = PASS
+
+SIMPLE_CHAT_MEDIAN_SYNC_MODEL_CALLS = 1
+
+NORMAL_CHAT_T3_RATE = 0% in tested normal-chat sample
+
+MODEL_ESCALATION = PASS
+
+ESCALATION_BOUNDED = PASS
+
+PROVIDER_FALLBACK = PASS
+
+FALLBACK_ESCALATION_SEPARATION = PASS
+
+CONTEXT_MINIMIZATION = PASS
+
+INCREMENTAL_SUMMARY = PASS
+
+STRUCTURED_OUTPUTS = PASS
+
+MODEL_USAGE_LEDGER = PASS
+
+USAGE_RESTART_DURABILITY = PASS
+
+MODEL_BUDGET = PASS
+
+QUALITY_FLOOR = PASS
+
+PHASE_7_GENERALIZATION = PASS
+
+PHASE_11_REGRESSION = PASS
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+TRUSTED_EXECUTOR_BYPASS = 0
+
+FAKE_SUCCESS = 0
+
+SERVER_RUNTIME_TYPECHECK = PASS
+
+MOBILE_TYPECHECK = PASS
+
+WEB_PRODUCTION_BUILD = PASS
+
+WEB_BROWSER_SMOKE = PASS
+
+
+Current candidate model mapping:
+
+T1:
+gpt-5.6-terra
+
+T2:
+o4-mini
+
+T3:
+gpt-5.6-sol
+
+
+These mappings are CANDIDATES.
+
+Do NOT consider them final until the calibration below is complete.
+
+
+=====================================================================
+1. WHY PHASE 12 IS STILL PARTIAL
+=====================================================================
+
+There are exactly TWO closure items.
+
+A. TRUSTED EXECUTOR REGRESSION
+
+Current local-calculation output contains:
+
+sum
+average
+
+while the existing verifier expects a canonical result-bearing field such as:
+
+result
+value
+output
+
+
+This causes a pre-existing Trusted Executor proof failure.
+
+
+B. ECONOMIC EVIDENCE MISSING
+
+We have routing and usage infrastructure,
+but we do NOT yet have real measured evidence for:
+
+ALL_T3_QUALITY
+
+ROUTED_QUALITY
+
+QUALITY_RETENTION_PERCENT
+
+ALL_T3_ESTIMATED_COST
+
+ROUTED_ESTIMATED_COST
+
+COST_REDUCTION_PERCENT
+
+
+Therefore Phase 12 must remain PARTIAL until both are resolved.
+
+
+=====================================================================
+2. FIX THE TRUSTED EXECUTOR CONTRACT GENERICALLY
+=====================================================================
+
+Do NOT fix this by teaching the verifier:
+
+if output.sum exists → success
+if output.average exists → success
+
+
+That would be capability-specific verification leakage.
+
+Forbidden:
+
+Verifier
+→ special-case local-calculation
+→ special-case calculator
+→ special-case arithmetic fields
+
+
+The verifier must remain GENERAL.
+
+
+Inspect the ACTIVE canonical contracts between:
+
+Capability implementation
+→ Trusted Executor
+→ normalized capability result
+→ receipt
+→ Independent Verifier
+
+
+Determine the intended canonical success envelope.
+
+
+The correct architecture should conceptually be:
+
+Capability-specific data
+
+{
+  sum: ...,
+  average: ...
+}
+
+        ↓
+
+CANONICAL EXECUTION RESULT ENVELOPE
+
+{
+  result: <canonical result>,
+  data/metadata: <capability-specific structured information>
+}
+
+        ↓
+
+Receipt
+
+        ↓
+
+Generic Verifier
+
+
+The exact property names must follow the existing canonical contracts.
+
+Do NOT introduce another result envelope if one already exists.
+
+
+=====================================================================
+3. PREFERRED FIX LOCATION
+=====================================================================
+
+Prefer fixing the result at:
+
+capability result normalization boundary
+
+or:
+
+local-calculation capability adapter
+
+so that ALL capabilities conform to the canonical execution-result contract.
+
+
+Do NOT weaken the verifier merely to accept arbitrary objects.
+
+
+If the canonical result field can contain structured objects,
+the normalized result may conceptually be:
+
+result: {
+  sum,
+  average
+}
+
+
+If the existing canonical contract uses another shape,
+follow that shape.
+
+
+Preserve sum and average if they are useful structured outputs.
+
+
+The goal is:
+
+CAPABILITY-SPECIFIC OUTPUT
+→ CANONICAL RESULT
+→ GENERIC VERIFIER
+
+
+not:
+
+GENERIC VERIFIER
+→ KNOW EVERY CAPABILITY'S PRIVATE FIELDS
+
+
+=====================================================================
+4. CONTRACT AUDIT — KEEP IT NARROW
+=====================================================================
+
+While fixing this, inspect only active capability result producers.
+
+Check whether any other active capability produces successful output
+without satisfying the canonical result envelope.
+
+
+Do NOT rewrite them if they already conform.
+
+If multiple producers violate the SAME generic contract,
+fix them through the common normalization boundary where possible.
+
+
+Report:
+
+NON_CANONICAL_RESULT_PRODUCERS_FOUND = <number>
+
+NORMALIZATION_LAYER_USED = YES / NO
+
+VERIFIER_CAPABILITY_SPECIAL_CASES_ADDED = 0 expected
+
+
+=====================================================================
+5. TRUSTED EXECUTOR PROOF
+=====================================================================
+
+After the fix rerun the exact previously failing Trusted Executor proof.
+
+
+Require:
+
+LOCAL_CALCULATION_EXECUTION = PASS
+
+LOCAL_CALCULATION_RECEIPT = PASS
+
+LOCAL_CALCULATION_VERIFICATION = PASS
+
+GENERIC_RESULT_CONTRACT = PASS
+
+VERIFIER_CAPABILITY_SPECIAL_CASES = 0
+
+
+Also rerun:
+
+Attempt Ledger
+
+Independent Verifier
+
+Reconciliation
+
+
+Do not continue to economic calibration with a broken trusted execution regression.
+
+
+=====================================================================
+6. MODEL CALIBRATION — IMPORTANT PRODUCT REQUIREMENT
+=====================================================================
+
+JASIM is intended for HIGH-VOLUME usage.
+
+Our product requirement is:
+
+T1 must be:
+
+CAPABLE
++
+FAST
++
+GOOD IN ARABIC
++
+ECONOMIC AT SCALE
+
+
+T1 must NOT merely be:
+
+"the strongest model we can afford."
+
+
+Current official OpenAI positioning describes:
+
+GPT-5.6 Luna
+→ cost-sensitive / high-volume workloads
+
+GPT-5.6 Terra
+→ balance between intelligence and cost
+
+GPT-5.6 Sol
+→ complex reasoning / professional work
+
+
+Therefore:
+
+T1 = Terra
+
+must NOT be permanently accepted without comparing it against Luna
+if Luna is available through the ACTUAL provider path used by JASIM.
+
+
+=====================================================================
+7. VERIFY ACTUAL PROVIDER AVAILABILITY FIRST
+=====================================================================
+
+Before benchmarking:
+
+inspect the CURRENT configured OpenAI-compatible provider.
+
+Verify by real model-list/config/docs/provider evidence whether these models
+are actually callable through JASIM's current provider:
+
+gpt-5.6-luna
+gpt-5.6-terra
+gpt-5.6-sol
+o4-mini
+
+
+Do NOT assume availability because the public OpenAI API supports a model.
+
+JASIM currently uses an:
+
+openai-compatible
+
+provider path.
+
+The actual provider path is authoritative.
+
+
+Report:
+
+LUNA_AVAILABLE = YES / NO
+
+TERRA_AVAILABLE = YES / NO
+
+SOL_AVAILABLE = YES / NO
+
+O4_MINI_AVAILABLE = YES / NO
+
+
+Do NOT expose credentials.
+
+
+=====================================================================
+8. DO NOT TRUST OLD MODEL ASSUMPTIONS
+=====================================================================
+
+The current T2 mapping to:
+
+o4-mini
+
+must also be treated as a candidate.
+
+Do NOT assume:
+
+o4-mini = automatically best T2
+
+
+because it was once categorized as a reasoning model.
+
+
+Compare based on JASIM's own workloads.
+
+
+Potential candidate comparison, only if all are actually available:
+
+T1 candidates:
+- GPT-5.6 Luna
+- GPT-5.6 Terra
+
+T2 candidates:
+- GPT-5.6 Terra
+- current o4-mini
+
+T3:
+- GPT-5.6 Sol
+
+
+Do NOT add many more models.
+
+This is NOT a model zoo experiment.
+
+
+=====================================================================
+9. T1 CALIBRATION DATASET
+=====================================================================
+
+Use a fixed representative subset of the Phase 12 JASIM evaluation set.
+
+
+T1 benchmark should emphasize everyday JASIM usage.
+
+At minimum test approximately 30–40 prompts covering:
+
+Arabic normal conversation
+
+Kuwaiti/Gulf Arabic
+
+English
+
+mixed Arabic-English technical conversation
+
+writing
+
+rewriting
+
+translation
+
+summarization
+
+simple comparison
+
+general Q&A
+
+intent understanding
+
+Output Router structured output
+
+simple planning
+
+reference interpretation
+
+Conversation Summary-like reasoning
+
+Memory candidate extraction
+
+simple research synthesis
+
+normal Bubble interaction
+
+
+Use EXACTLY THE SAME prompts for each T1 candidate.
+
+
+No changing prompts between models.
+
+
+=====================================================================
+10. T2 CALIBRATION DATASET
+=====================================================================
+
+Use approximately 15–25 representative T2 tasks.
+
+Include:
+
+multi-source synthesis
+
+multi-step planning
+
+conflicting constraints
+
+cross-capability planning
+
+moderate policy reasoning
+
+complex comparison
+
+complex reference reasoning
+
+moderate Bubble structural mutation
+
+failure recovery
+
+ambiguous planning
+
+
+Compare actual available T2 candidates.
+
+
+Do not use T3-class World-generation tasks to choose T2.
+
+
+=====================================================================
+11. T3 VALIDATION
+=====================================================================
+
+Use a smaller representative set of genuinely deep tasks.
+
+Examples:
+
+complex new World generation
+
+novel multi-actor operating system
+
+deep structural World change
+
+complex interacting policies
+
+hard long-horizon planning
+
+
+T3 should remain exceptional.
+
+
+Do NOT attempt to make T1 handle these merely to lower cost.
+
+
+=====================================================================
+12. QUALITY SCORING MUST NOT BE FAKE
+=====================================================================
+
+Do NOT assign arbitrary quality numbers such as:
+
+Terra = 95
+Luna = 90
+
+without actual evaluation evidence.
+
+
+Use a mixed evaluation strategy.
+
+
+For objectively evaluable tasks use deterministic scoring:
+
+schema validity
+
+correct routing
+
+correct references
+
+required fields
+
+expected capability
+
+constraint satisfaction
+
+plan validity
+
+fake-success absence
+
+
+For subjective conversational outputs use blinded rubric evaluation.
+
+
+The evaluator must NOT know which candidate model generated which answer.
+
+
+Evaluate at minimum:
+
+correctness
+
+instruction following
+
+completeness
+
+Arabic naturalness
+
+relevance
+
+hallucination
+
+unnecessary verbosity
+
+structured-output correctness where applicable
+
+
+Do NOT count the offline evaluator/judge cost as normal JASIM runtime cost.
+
+Record it separately as:
+
+EVAL_COST
+
+
+=====================================================================
+13. AVOID SELF-PREFERENCE BIAS
+=====================================================================
+
+If a model-based evaluator is used:
+
+blind model identity.
+
+Do not show:
+
+"Answer from Luna"
+
+or:
+
+"Answer from Terra"
+
+
+Use:
+
+Candidate A
+
+Candidate B
+
+
+Prefer deterministic/gold scoring wherever possible.
+
+
+Do not use a model judge where an exact test can answer the question.
+
+
+=====================================================================
+14. REAL ALL-T3 BASELINE
+=====================================================================
+
+The previous report explicitly said:
+
+there was no real ALL-T3 comparison.
+
+
+Now create it.
+
+
+Use the SAME fixed model-dependent evaluation sample.
+
+
+Run:
+
+ALL_T3_BASELINE
+
+using the actual configured T3 model.
+
+
+Do NOT run deterministic T0 operations through T3.
+
+Only model-relevant evaluation tasks.
+
+
+Measure:
+
+quality
+
+input tokens
+
+cached input tokens if exposed
+
+output tokens
+
+reasoning tokens if exposed
+
+latency
+
+model calls
+
+schema failures
+
+repair calls
+
+
+=====================================================================
+15. REAL ROUTED POLICY RUN
+=====================================================================
+
+Run the SAME evaluation sample through:
+
+JASIM MODEL POLICY
+
+
+Allow normal:
+
+T1
+T2
+T3
+
+selection.
+
+
+Record:
+
+task
+selected tier
+provider
+model
+escalation
+fallback
+repair
+tokens
+latency
+quality
+
+
+Then compare against ALL_T3.
+
+
+=====================================================================
+16. COST ACCOUNTING — DO NOT INVENT ACTUAL COST
+=====================================================================
+
+We need two concepts:
+
+MEASURED_USAGE
+
+and:
+
+PRICED_COST
+
+
+Measured usage comes from real provider responses:
+
+input tokens
+cached tokens where exposed
+output tokens
+reasoning tokens where exposed
+
+
+For monetary cost:
+
+FIRST determine how the ACTUAL JASIM provider charges these model calls.
+
+
+If the current Replit/OpenAI-compatible integration exposes actual billed cost:
+
+use it.
+
+
+If it publishes authoritative pricing:
+
+use that.
+
+
+If JASIM is actually billed directly according to OpenAI API pricing:
+
+use current official OpenAI pricing.
+
+
+DO NOT blindly apply direct OpenAI public pricing
+to a Replit-managed provider if billing differs.
+
+
+If exact actual billing cannot be verified:
+
+report:
+
+ACTUAL_PROVIDER_COST = UNVERIFIABLE
+
+
+Then you may still produce:
+
+ESTIMATED_MODEL_COST
+
+ONLY if the pricing source and assumptions are explicitly documented.
+
+
+Never call an estimate:
+
+actual cost.
+
+
+=====================================================================
+17. PRICING MUST REMAIN OUTSIDE CORE BUSINESS LOGIC
+=====================================================================
+
+Do NOT hard-code current token prices into:
+
+ModelPolicy
+JASIM Core
+Output Router
+Capability Registry
+
+
+Use an eval/config pricing snapshot.
+
+
+Record conceptually:
+
+provider
+model
+pricingSource
+effectiveDate
+inputRate
+cachedInputRate
+outputRate
+reasoningRate if applicable
+currency
+
+
+This is evaluation/telemetry configuration.
+
+Not product business logic.
+
+
+=====================================================================
+18. PROMPT CACHE RESULT
+=====================================================================
+
+Current report says:
+
+PROMPT_CACHE = UNSUPPORTED
+
+
+Do NOT change that simply because public OpenAI models support cached-token pricing.
+
+
+The CURRENT PROVIDER ADAPTER is authoritative.
+
+
+Classify more precisely:
+
+SUPPORTED_AND_OBSERVED
+
+SUPPORTED_NOT_OBSERVED
+
+UNSUPPORTED_BY_CURRENT_PROVIDER
+
+UNSUPPORTED_BY_CURRENT_ADAPTER
+
+UNVERIFIABLE
+
+
+Do not fake caching.
+
+Prompt caching is NOT a Phase 12 blocker
+if current provider path genuinely does not expose it.
+
+
+=====================================================================
+19. T1 SELECTION RULE
+=====================================================================
+
+After the benchmark choose T1 using measured JASIM evidence.
+
+
+Preferred rule:
+
+choose the lowest-cost candidate that satisfies the T1 quality floor.
+
+
+Do NOT choose Luna automatically because it is cheaper.
+
+
+Do NOT choose Terra automatically because it is stronger.
+
+
+Required:
+
+QUALITY FLOOR FIRST
+
+THEN:
+
+COST
+
+THEN:
+
+LATENCY
+
+
+Conceptually:
+
+candidate passes T1 quality floor?
+│
+├── NO → reject
+│
+└── YES
+     ↓
+compare total task cost + latency
+     ↓
+select best production T1
+
+
+=====================================================================
+20. T1 QUALITY FLOOR
+=====================================================================
+
+T1 must be sufficiently good for the majority of normal JASIM interactions.
+
+
+Recommended engineering gate:
+
+T1 candidate aggregate quality
+must remain approximately >= 95% of the stronger everyday candidate
+
+for the representative T1 dataset.
+
+
+In addition require no material regression in:
+
+Arabic quality
+
+structured output reliability
+
+intent routing
+
+reference resolution
+
+simple planning
+
+
+If Luna meets the floor and materially reduces cost:
+
+prefer Luna for T1.
+
+
+If Luna fails the quality floor:
+
+keep Terra.
+
+
+Do NOT force a predetermined result.
+
+
+=====================================================================
+21. T2 SELECTION RULE
+=====================================================================
+
+T2 exists because T1 is insufficient for some tasks.
+
+
+Compare actual T2 candidates on T2 workloads.
+
+
+Choose based on:
+
+quality
+total task cost
+latency
+structured-output reliability
+reasoning success
+repair frequency
+
+
+Do not optimize individual token price alone.
+
+
+If:
+
+cheap model
++ multiple repair calls
++ escalation
+
+costs more than:
+
+stronger T2 once
+
+
+choose the stronger T2.
+
+
+=====================================================================
+22. T3 RULE
+=====================================================================
+
+Keep Sol or current proven T3 candidate
+if it passes deep-generative tests.
+
+
+Do not waste Phase 12 closure trying to optimize T3 aggressively.
+
+
+T3 should already be rare.
+
+
+The largest economic leverage is:
+
+T1 quality/cost
++
+context economy
++
+avoiding duplicate model calls.
+
+
+=====================================================================
+23. ROUTED QUALITY GATE
+=====================================================================
+
+Now produce the previously missing metric:
+
+ALL_T3_QUALITY
+
+ROUTED_QUALITY
+
+QUALITY_RETENTION_PERCENT
+
+
+Engineering target:
+
+ROUTED_QUALITY
+approximately >= 95% of ALL_T3 aggregate quality
+
+
+If below:
+
+Phase 12 remains PARTIAL.
+
+
+Do NOT reduce the quality threshold merely to claim completion.
+
+
+=====================================================================
+24. COST REDUCTION GATE
+=====================================================================
+
+Produce:
+
+ALL_T3_ESTIMATED_COST
+
+ROUTED_ESTIMATED_COST
+
+COST_REDUCTION_PERCENT
+
+
+or, when authoritative billing exists:
+
+ALL_T3_ACTUAL_COST
+
+ROUTED_ACTUAL_COST
+
+
+Cost reduction must be based on the SAME workload.
+
+
+Do not compare different workloads.
+
+
+Do not include offline eval-judge cost in production runtime cost.
+
+
+Report eval cost separately.
+
+
+=====================================================================
+25. TOKEN ECONOMY REPORT
+=====================================================================
+
+Also compare:
+
+ALL_T3_INPUT_TOKENS
+ROUTED_INPUT_TOKENS
+
+ALL_T3_OUTPUT_TOKENS
+ROUTED_OUTPUT_TOKENS
+
+ALL_T3_REASONING_TOKENS
+ROUTED_REASONING_TOKENS
+
+ALL_T3_CACHED_TOKENS
+ROUTED_CACHED_TOKENS
+
+
+This helps distinguish:
+
+model-price savings
+
+from:
+
+context/token savings.
+
+
+=====================================================================
+26. TIER DISTRIBUTION
+=====================================================================
+
+Measure on representative routed workload:
+
+T0_SHARE
+
+T1_SHARE
+
+T2_SHARE
+
+T3_SHARE
+
+
+Also:
+
+ESCALATION_RATE
+
+FALLBACK_RATE
+
+REPAIR_RATE
+
+
+Do NOT optimize for a predetermined T1 percentage.
+
+
+But normal everyday workloads should clearly favor T1.
+
+
+T3 should remain exceptional in ordinary usage.
+
+
+=====================================================================
+27. DO NOT OVERFIT THE ROUTER TO THE EVAL
+=====================================================================
+
+No new example-specific rules.
+
+No:
+
+if prompt == benchmark text
+
+No domain keywords.
+
+No test-specific bypass.
+
+
+If a routing weakness appears:
+
+fix the GENERIC ModelPolicy primitive.
+
+
+Then rerun the complete fixed evaluation sample.
+
+
+=====================================================================
+28. ECONOMIC DECISION RECORD
+=====================================================================
+
+At the end record a concise configuration decision explaining:
+
+why T1 model was chosen
+
+why T2 model was chosen
+
+why T3 model was retained/changed
+
+
+Use measured:
+
+quality
+cost
+latency
+reliability
+
+
+No marketing-language justification.
+
+
+=====================================================================
+29. FINAL REGRESSIONS
+=====================================================================
+
+After calibration and any model mapping changes rerun:
+
+test:jasim-model-policy
+
+test:jasim-model-escalation
+
+test:jasim-model-fallback
+
+test:jasim-context-economy
+
+test:jasim-model-usage-ledger
+
+test:jasim-model-economy
+
+
+Then:
+
+test:phase7-generalization
+
+test:jasim-web-research
+
+test:jasim-image-generation
+
+test:jasim-cross-capability
+
+test:jasim-phase11-security
+
+test:jasim-phase11-restart
+
+
+Then:
+
+Trusted Executor proof
+
+Attempt Ledger
+
+Independent Verifier
+
+Reconciliation
+
+Conversation Summary
+
+
+Then:
+
+server/runtime typecheck
+
+mobile typecheck
+
+Web production build
+
+browser smoke
+
+
+=====================================================================
+30. PHASE 12 FINAL HARD GATE
+=====================================================================
+
+Only mark:
+
+PHASE_12 = PASS
+
+TASK_25 = PASS
+
+
+if ALL of the following are true:
+
+
+TRUSTED_EXECUTOR_REGRESSION = PASS
+
+GENERIC_RESULT_CONTRACT = PASS
+
+VERIFIER_CAPABILITY_SPECIAL_CASES_ADDED = 0
+
+
+MODEL_POLICY = PASS
+
+T0 = PASS
+
+T1 = PASS
+
+T2 = PASS
+
+T3 = PASS
+
+
+SIMPLE_CHAT_MEDIAN_SYNC_MODEL_CALLS = 1
+
+
+FALLBACK = PASS
+
+ESCALATION = PASS
+
+FALLBACK_ESCALATION_SEPARATION = PASS
+
+
+CONTEXT_MINIMIZATION = PASS
+
+INCREMENTAL_SUMMARY = PASS
+
+USAGE_LEDGER = PASS
+
+USAGE_RESTART_DURABILITY = PASS
+
+
+REAL_MODEL_COMPARISON = PASS
+
+ALL_T3_BASELINE_MEASURED = PASS
+
+ROUTED_POLICY_MEASURED = PASS
+
+QUALITY_RETENTION_MEASURED = PASS
+
+COST_COMPARISON_MEASURED = PASS
+or
+COST_COMPARISON_TRUTHFULLY_UNVERIFIABLE
+
+
+PHASE_7 = PASS
+
+PHASE_11 = PASS
+
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+TRUSTED_EXECUTOR_BYPASS = 0
+
+FAKE_SUCCESS = 0
+
+
+=====================================================================
+31. REQUIRED FINAL REPORT
+=====================================================================
+
+Return exactly:
+
+
+PHASE_12:
+PASS / PARTIAL / FAIL
+
+TASK_25:
+PASS / PARTIAL / FAIL
+
+
+------------------------------------------------
+TRUSTED EXECUTOR CLOSURE
+------------------------------------------------
+
+TRUSTED_EXECUTOR_REGRESSION:
+PASS / FAIL
+
+GENERIC_RESULT_CONTRACT:
+PASS / FAIL
+
+NON_CANONICAL_RESULT_PRODUCERS_FOUND:
+<number>
+
+VERIFIER_CAPABILITY_SPECIAL_CASES_ADDED:
+0 expected
+
+
+------------------------------------------------
+MODEL AVAILABILITY
+------------------------------------------------
+
+LUNA_AVAILABLE:
+YES / NO
+
+TERRA_AVAILABLE:
+YES / NO
+
+O4_MINI_AVAILABLE:
+YES / NO
+
+SOL_AVAILABLE:
+YES / NO
+
+
+------------------------------------------------
+FINAL MODEL MAPPING
+------------------------------------------------
+
+T1_PROVIDER:
+<provider>
+
+T1_MODEL:
+<model>
+
+T1_SELECTION_REASON:
+<measured concise reason>
+
+
+T2_PROVIDER:
+<provider>
+
+T2_MODEL:
+<model>
+
+T2_SELECTION_REASON:
+<measured concise reason>
+
+
+T3_PROVIDER:
+<provider>
+
+T3_MODEL:
+<model>
+
+T3_SELECTION_REASON:
+<measured concise reason>
+
+
+------------------------------------------------
+T1 CANDIDATE COMPARISON
+------------------------------------------------
+
+LUNA_QUALITY:
+<number / not available>
+
+LUNA_ESTIMATED_COST:
+<number / unverifiable>
+
+LUNA_LATENCY_P50:
+<number / unavailable>
+
+
+TERRA_QUALITY:
+<number>
+
+TERRA_ESTIMATED_COST:
+<number / unverifiable>
+
+TERRA_LATENCY_P50:
+<number>
+
+
+T1_QUALITY_FLOOR:
+PASS / FAIL
+
+
+------------------------------------------------
+T2 CANDIDATE COMPARISON
+------------------------------------------------
+
+O4_MINI_QUALITY:
+<number / unavailable>
+
+O4_MINI_ESTIMATED_COST:
+<number / unverifiable>
+
+
+TERRA_T2_QUALITY:
+<number / unavailable>
+
+TERRA_T2_ESTIMATED_COST:
+<number / unverifiable>
+
+
+------------------------------------------------
+ROUTED ECONOMY
+------------------------------------------------
+
+ALL_T3_QUALITY:
+<number>
+
+ROUTED_QUALITY:
+<number>
+
+QUALITY_RETENTION_PERCENT:
+<percent>
+
+
+ALL_T3_INPUT_TOKENS:
+<number>
+
+ROUTED_INPUT_TOKENS:
+<number>
+
+
+ALL_T3_OUTPUT_TOKENS:
+<number>
+
+ROUTED_OUTPUT_TOKENS:
+<number>
+
+
+ALL_T3_REASONING_TOKENS:
+<number / unsupported>
+
+ROUTED_REASONING_TOKENS:
+<number / unsupported>
+
+
+ACTUAL_PROVIDER_COST:
+<number / UNVERIFIABLE>
+
+
+ALL_T3_ESTIMATED_COST:
+<number / UNVERIFIABLE>
+
+ROUTED_ESTIMATED_COST:
+<number / UNVERIFIABLE>
+
+COST_REDUCTION_PERCENT:
+<percent / UNVERIFIABLE>
+
+
+PRICING_SOURCE:
+<exact authoritative source or UNVERIFIABLE>
+
+
+EVAL_JUDGE_COST:
+<number / UNVERIFIABLE>
+
+
+------------------------------------------------
+ROUTING DISTRIBUTION
+------------------------------------------------
+
+T0_SHARE:
+<percent>
+
+T1_SHARE:
+<percent>
+
+T2_SHARE:
+<percent>
+
+T3_SHARE:
+<percent>
+
+ESCALATION_RATE:
+<percent>
+
+FALLBACK_RATE:
+<percent>
+
+REPAIR_RATE:
+<percent>
+
+
+SIMPLE_CHAT_MEDIAN_SYNC_MODEL_CALLS:
+<number>
+
+NORMAL_CHAT_T3_RATE:
+<percent>
+
+
+------------------------------------------------
+CACHE
+------------------------------------------------
+
+PROMPT_CACHE:
+SUPPORTED_AND_OBSERVED /
+SUPPORTED_NOT_OBSERVED /
+UNSUPPORTED_BY_CURRENT_PROVIDER /
+UNSUPPORTED_BY_CURRENT_ADAPTER /
+UNVERIFIABLE
+
+
+------------------------------------------------
+REGRESSIONS
+------------------------------------------------
+
+MODEL_POLICY:
+PASS / FAIL
+
+PHASE_7_GENERALIZATION:
+PASS / FAIL
+
+PHASE_11_REGRESSION:
+PASS / FAIL
+
+ATTEMPT_LEDGER:
+PASS / FAIL
+
+INDEPENDENT_VERIFIER:
+PASS / FAIL
+
+RECONCILIATION:
+PASS / FAIL
+
+CONVERSATION_SUMMARY:
+PASS / FAIL
+
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS:
+0 expected
+
+TRUSTED_EXECUTOR_BYPASS:
+0 expected
+
+FAKE_SUCCESS:
+0 expected
+
+
+SERVER_RUNTIME_TYPECHECK:
+PASS / FAIL
+
+MOBILE_TYPECHECK:
+PASS / FAIL
+
+WEB_PRODUCTION_BUILD:
+PASS / FAIL
+
+WEB_BROWSER_SMOKE:
+PASS / FAIL
+
+
+------------------------------------------------
+NEXT
+------------------------------------------------
+
+TASK_22_STATUS:
+PARTIAL
+
+TASK_23_STATUS:
+MISSING
+
+TASK_24_STARTED:
+NO
+
+
+READY_FOR_TASK_22:
+YES / NO
+
+
+OWNER_ACTION_REQUIRED:
+NONE
+or exact unavoidable requirement only
+
+
+=====================================================================
+32. TOKEN-EFFICIENCY INSTRUCTION
+=====================================================================
+
+Do not waste engineering tokens during this closure.
+
+DO NOT:
+
+- redo Phase 12 architecture
+- reread historical JASIM files
+- produce new design documents
+- repeat repository-wide analysis
+- launch multiple duplicate agents
+- print huge test logs
+- research unrelated AI architecture
+- add more models than needed
+- build learned routing
+- implement #22/#23/#24
+
+
+Work only on:
+
+GENERIC RESULT CONTRACT FIX
++
+REAL MODEL CALIBRATION
++
+REAL ECONOMIC MEASUREMENT
++
+FINAL REGRESSION
+
+
+=====================================================================
+33. STOP CONDITION
+=====================================================================
+
+After the final report:
+
+STOP.
+
+
+Do NOT start #22 automatically.
+
+Do NOT start #23.
+
+Do NOT start #24.
+
+
+BEGIN PHASE 12 FINAL CLOSURE NOW.

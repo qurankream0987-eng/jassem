@@ -1,0 +1,359 @@
+JASIM — FINAL PROOF PATCH + PHASE 7 GENERALIZATION
+
+The Post-Audit Closure work is accepted provisionally.
+
+Before declaring Phases 1-10 fully closed, add two small proofs:
+
+1. EXECUTION ATTEMPT LEDGER PROOF
+
+Create one Run / DAG node.
+
+Attempt 1:
+→ execute
+→ fail
+
+Attempt 2:
+→ retry safely
+→ succeed
+
+Expected:
+
+execution_attempts contains TWO immutable rows.
+
+Attempt 1 remains unchanged.
+Attempt 2 has a new attemptId.
+attemptNumber increments.
+Both remain linked to the same runId/nodeId.
+
+Prove:
+
+ATTEMPT_1_PRESERVED = PASS
+ATTEMPT_2_CREATED = PASS
+IMMUTABLE_HISTORY = PASS
+NO_OVERWRITE = PASS
+FINGERPRINT_LINKAGE = PASS
+IDEMPOTENCY_LINKAGE = PASS
+
+2. CONVERSATION SUMMARY PROOF
+
+Create a long canonical conversation exceeding the configured summarization threshold.
+
+Use at least 30 turns.
+
+Include an early durable fact/reference.
+
+After summary creation:
+
+restart the server.
+
+Then ask a new question that depends on the early context.
+
+Expected:
+
+summary persisted
+summary reloaded
+summary injected into routing context
+correct old reference resolved
+recent-message window alone is insufficient to pass the test
+
+Prove:
+
+SUMMARY_CREATED = PASS
+SUMMARY_PERSISTED = PASS
+SUMMARY_SURVIVES_RESTART = PASS
+SUMMARY_INJECTED_IN_CONTEXT = PASS
+OLD_CONTEXT_REFERENCE_RESOLVED = PASS
+
+Do not add new architecture for these proofs.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+THEN START PHASE 7
+GENERATIVE GENERALIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is NOT the existing 10/10 security adversarial suite.
+
+We now test whether JASIM can solve unseen problems without domain-specific code.
+
+Rules:
+
+NO CORE MODIFICATION BETWEEN TEST PROMPTS.
+
+NO DOMAIN HANDLERS.
+
+NO DOMAIN-SPECIFIC ROUTERS.
+
+NO DOMAIN-SPECIFIC DATABASE TABLES.
+
+NO EXAMPLE-SPECIFIC RENDERERS.
+
+If a test fails:
+classify the generic missing primitive.
+
+Do not patch the example itself.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TEST SET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run at least 10 unseen prompts.
+
+Use different industries and problem structures.
+
+Examples:
+
+1.
+"الشاحنات ترجع فارغة بعد التوصيل وأريد الاستفادة من المساحة الفارغة."
+
+2.
+"المزارعون يشترون معدات غالية ويستخدمونها أيامًا قليلة فقط، كيف يمكن تنظيم مشاركتها بينهم؟"
+
+3.
+"أريد نظامًا ينظم طلبات صيانة العمارات ويوزعها على الفنيين حسب المنطقة والتخصص."
+
+4.
+"المطاعم لديها فائض طعام صالح وأريد طريقة منظمة لربطه بالجهات التي تستطيع استلامه."
+
+5.
+"أريد نظامًا لحجز مساحات التخزين المبرد حسب السعة والمدة ودرجة الحرارة."
+
+6.
+"الشركات تحتاج موظفين مؤقتين عند غياب أحد العاملين فجأة."
+
+7.
+"أريد تنظيم نقل كبار السن إلى مواعيد المستشفيات مع مرافق عند الحاجة."
+
+8.
+"المتاجر الصغيرة تدفع أكثر لأنها تشتري كميات قليلة. أريد تجميع طلباتها للشراء بالجملة."
+
+9.
+"أريد نظامًا لأصحاب المشاريع الصغيرة لحجز أكشاك مؤقتة في الفعاليات."
+
+10.
+"ورش السيارات تضيع وقتًا في البحث عن قطع الغيار المتوفرة في المنطقة."
+
+Then generate 5 additional unseen prompts dynamically.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FOR EACH TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Evaluate:
+
+PROBLEM_UNDERSTANDING
+
+OUTPUT_FORM_SELECTION
+
+RUN_VS_BUBBLE_DECISION
+
+WORLD_JUSTIFICATION
+
+GENERIC_ENTITY_MODEL
+
+RELATIONSHIPS
+
+WORKFLOWS
+
+POLICIES
+
+VIEWS
+
+CAPABILITY_COMPOSITION
+
+REAL_WORLD_RESOURCE_DETECTION
+
+PROVIDER_GAP_DETECTION
+
+OWNER_DECISION_DETECTION
+
+REGULATORY_GAP_DETECTION
+
+FAKE_SUCCESS
+
+DOMAIN_SPECIFIC_CORE_ADDITION
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OUTPUT FORM DISTINCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Also test same-domain intent distinctions.
+
+Example:
+
+"أحتاج مدرس رياضيات"
+→ text / direct_action / search / run
+
+"أريد العمل كمدرس رياضيات"
+→ workflow / interactive bubble / profile flow
+
+"أريد تشغيل خدمة مدرسين خصوصيين"
+→ business setup workflow / durable run
+
+"صمم لي منصة كاملة تربط المدرسين بالطلاب"
+→ persistent_smart_bubble + optional World
+
+If all become persistent_smart_bubble:
+FAIL.
+
+If all become text:
+FAIL.
+
+Use the principle:
+
+CHOOSE THE SMALLEST SUFFICIENT OUTPUT FORM.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LIVING BUBBLE EVOLUTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For at least 3 generated persistent Smart Bubbles,
+apply follow-up natural-language changes.
+
+Examples:
+
+"أضف تقييمات."
+
+"أضف اشتراكًا أسبوعيًا."
+
+"أي طلب فوق 500 يحتاج موافقتي."
+
+"أضف موظفًا لا يستطيع تغيير الأسعار."
+
+"أوقف الخدمة يوم الجمعة."
+
+"اعرض البيانات كجدول."
+
+Expected:
+
+same Bubble
+same World where applicable
+generic mutation
+ChangeSet
+version
+projection refresh
+
+NO REGENERATION FROM SCRATCH.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RESTART TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For at least one generated platform:
+
+create Bubble
+create World
+apply multiple mutations
+create Run
+restart server
+
+Expected:
+
+same Bubble
+same World
+same content version
+same policies
+same Run
+same references
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GENERALIZATION METRICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Report:
+
+TOTAL_TESTS:
+<number>
+
+CORRECT_OUTPUT_FORM:
+x/y
+
+GENERIC_ENTITY_MODEL:
+x/y
+
+GENERIC_WORKFLOW_COMPOSITION:
+x/y
+
+GENERIC_CAPABILITY_COMPOSITION:
+x/y
+
+WORLD_JUSTIFIED:
+x/y
+
+UNNECESSARY_WORLD_CREATED:
+x/y
+
+NATURAL_LANGUAGE_EVOLUTION:
+x/y
+
+RESOURCE_GAP_DETECTION:
+x/y
+
+PROVIDER_GAP_DETECTION:
+x/y
+
+RESTART_PERSISTENCE:
+x/y
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS:
+<number>
+
+FAKE_SUCCESS:
+<number>
+
+INCONCLUSIVE_MODEL_CALLS:
+<number>
+
+Do not count API rate limits as PASS or FAIL.
+
+Mark them:
+INCONCLUSIVE.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HARD PASS GATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Phase 7 PASS requires:
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+FAKE_SUCCESS = 0
+
+no example-specific handler added
+
+same Bubble evolves through generic mutations
+
+Run without Bubble still works
+
+Persistent Bubble created only when justified
+
+at least 80% of evaluated unseen prompts have justified output selection
+
+restart persistence passes
+
+real-world/provider gaps are reported truthfully
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AFTER PHASE 7
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If Phase 7 passes:
+
+do NOT immediately add many new capabilities.
+
+First produce a new status matrix:
+
+GENERAL GENERATIVE RUNTIME
+VERIFIED EXECUTION
+CONVERSATION INTELLIGENCE
+GENERALIZATION
+PRODUCTION OPERATIONS
+WEB
+MOBILE
+MULTI-USER
+COMMERCIAL
+
+Then recommend the next highest-value tranche.
+
+Do not choose based on task number.
+
+Choose based on product dependency and remaining risk.

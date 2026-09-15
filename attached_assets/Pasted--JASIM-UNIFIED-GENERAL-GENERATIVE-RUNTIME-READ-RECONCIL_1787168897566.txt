@@ -1,0 +1,1292 @@
+# JASIM — UNIFIED GENERAL GENERATIVE RUNTIME
+
+## READ, RECONCILE, IMPLEMENT — DO NOT HARDCODE THE EXAMPLES
+
+اقرأ أولًا جميع الملفات والمستندات التي أرسلتها لك عن جاسم، بما فيها الملفان الأخيران، واقرأ الكود الحالي داخل `jasim-unified` قبل إجراء أي تعديل.
+
+هذه الملفات ليست أوامر منفصلة لبناء أنظمة مختلفة، بل هي **مصادر معرفة معمارية متراكمة لنفس جاسم**.
+
+المطلوب منك هو استخراج أفضل الأفكار منها، مقارنة ذلك بالكود الفعلي، ثم دمج ما هو صحيح ومفيد داخل النظام الحالي.
+
+لا تنشئ JASIM جديدًا.
+لا تنشئ مشروعًا موازيًا.
+لا تعمل Fork للمعمارية.
+لا تعيد بناء النظام من الصفر دون ضرورة.
+
+`jasim-unified` هو الـCanonical Production Codebase.
+
+---
+
+# 1. الرؤية النهائية التي يجب تثبيتها
+
+جاسم ليس:
+
+* Marketplace ثابتًا.
+* SaaS Builder ثابتًا.
+* مجموعة تطبيقات جاهزة.
+* مجموعة صفحات Domain-specific.
+* مجموعة قوالب سيارات/مطاعم/وظائف/عقارات.
+* Chatbot يجيب بالنص فقط.
+* Bubble Renderer يعرض JSON جميلًا.
+* مجموعة Agents منفصلة لكل مجال.
+
+جاسم يجب أن يصبح:
+
+> ONE CHAT + GENERAL INTELLIGENCE + UNIVERSAL CAPABILITIES + GENERATIVE COMMERCIAL RUNTIME
+
+أي أن المستخدم يدخل من **واجهة محادثة رئيسية واحدة فقط**.
+
+ومن هذه المحادثة يستطيع جاسم فهم الطلب، تخطيطه، تنفيذ ما يحتاجه، إنشاء البيانات والحالة والعمليات المطلوبة، ثم توليد الواجهة المناسبة ديناميكيًا.
+
+---
+
+# 2. الواجهة المعتمدة
+
+الواجهة التي أعطيتك إياها هي الواجهة الأساسية المعتمدة لجاسم.
+
+لا نريد تحويل جاسم إلى مجموعة صفحات تقليدية.
+
+الصفحة الرئيسية هي:
+
+> JASIM MAIN CHAT
+
+ومنها تبدأ كل التجارب.
+
+يجب الحفاظ على تصميم الواجهة المعتمدة وتطويرها تقنيًا دون تغيير فلسفتها أو تحويلها إلى Dashboard تقليدي.
+
+يجب أن تدعم:
+
+* محادثة جديدة.
+* المحادثات السابقة.
+* استعادة المحادثة.
+* Streaming.
+* الملفات والصور والمدخلات المختلفة.
+* ظهور النتائج التوليدية داخل المحادثة.
+* الانتقال إلى Bubble/World تم إنشاؤه.
+* العودة للمحادثة.
+* استمرار حالة العالم بعد العودة.
+* تعدد العوالم التي أنشأها المستخدم.
+
+لكن لا تبنِ صفحات ثابتة لكل نوع عالم.
+
+---
+
+# 3. أهم مبدأ: العوالم والمنصات داخل Generative Bubbles
+
+أي:
+
+* متجر.
+* منصة.
+* Marketplace.
+* نظام توظيف.
+* خدمة.
+* مشروع SaaS.
+* عملية بيع.
+* عملية شراء.
+* نظام حجوزات.
+* إدارة طلبات.
+* توصيل.
+* عقار.
+* سيارات.
+* مزادات.
+* مستقلون.
+* تعليم.
+* خدمات مهنية.
+* أو فكرة جديدة لم نذكرها.
+
+لا يجب أن تتحول إلى صفحة ثابتة مصممة مسبقًا.
+
+بل يجب أن يستطيع جاسم إنشاء:
+
+> Generative Runtime Bubble / World
+
+تظهر من داخل المحادثة.
+
+---
+
+# 4. Bubble ليست Component جامدة
+
+ممنوع بناء:
+
+```text
+CarBubble
+RestaurantBubble
+JobsBubble
+RealEstateBubble
+DeliveryBubble
+StoreBubble
+TravelBubble
+RepairBubble
+```
+
+ثم الادعاء أن النظام Generative.
+
+هذا Hard-coding مقنّع.
+
+بدلًا من ذلك نريد primitives عامة يستطيع Runtime تركيبها.
+
+مثلًا:
+
+```text
+Entity
+Collection
+Field
+Relationship
+Action
+Form
+View
+Workflow
+State
+Event
+Permission
+Policy
+Transaction
+Payment
+Search
+Filter
+Sort
+Media
+Notification
+Schedule
+Location
+Conversation
+Approval
+Automation
+```
+
+هذه مجرد أمثلة للـprimitives.
+
+لا تعتبر القائمة مغلقة.
+
+إذا اكتشف النظام أن Primitive عامة جديدة مطلوبة، صممها بطريقة قابلة لإعادة الاستخدام بدل إضافة Domain Component.
+
+---
+
+# 5. Generative Bubble يجب أن تكون كائن Runtime حقيقي
+
+Bubble ليست مجرد UI.
+
+يجب أن يكون لها Identity وحالة وحياة.
+
+مثل:
+
+```text
+bubbleId
+worldId
+conversationId
+owner
+schema
+entities
+relationships
+capabilities
+actions
+workflows
+state
+permissions
+policies
+events
+data bindings
+transactions
+memory
+version
+status
+```
+
+بحيث يمكن:
+
+```text
+CREATE
+OPEN
+RENDER
+INTERACT
+UPDATE
+SAVE
+RESUME
+SHARE
+EXECUTE
+CLOSE
+RESTORE
+EVOLVE
+```
+
+بحسب الصلاحيات وطبيعة العالم.
+
+---
+
+# 6. افصل العقل عن البيئة
+
+من أهم الأفكار التي يجب تثبيتها:
+
+## Intelligence
+
+يفهم ماذا يريد المستخدم.
+
+## Planner
+
+يحدد كيف يمكن تحقيقه.
+
+## Capabilities
+
+تعطي النظام اللبنات التنفيذية العامة.
+
+## Runtime Kernel
+
+يوفر البيئة التي يعيش فيها الناتج.
+
+## Generative UI Runtime
+
+يحدد كيف يتم تمثيل الحالة للمستخدم.
+
+لا تجعل الـAgent نفسه هو التطبيق.
+
+ولا تجعل Renderer هو النظام.
+
+ولا تجعل Bubble مجرد Response من LLM.
+
+---
+
+# 7. Application Runtime Kernel
+
+راجع تطبيق الـKernel الموجود حاليًا فعليًا.
+
+يجب أن يصبح مسؤولًا عن دورة حياة العوالم والكيانات الناتجة.
+
+على الأقل يجب أن يغطي مفاهيم:
+
+```text
+World lifecycle
+Runtime identity
+State
+Persistence
+Events
+Permissions
+Policies
+Actions
+Workflows
+Transactions
+Versioning
+Recovery
+Isolation
+Audit
+```
+
+لكن لا تنشئ Kernel نظريًا فقط.
+
+يجب أن يدخل في Runtime الحقيقي.
+
+---
+
+# 8. المسار العام المطلوب
+
+يجب أن يصبح المسار المنطقي قريبًا من:
+
+```text
+USER
+↓
+MAIN CHAT
+↓
+INTENT ENGINE
+↓
+CONTEXT / MEMORY
+↓
+WORLD BUILDER
+↓
+CAPABILITY REGISTRY
+↓
+PLANNER
+↓
+TASK DNA / EXECUTION GRAPH
+↓
+RUNTIME KERNEL
+↓
+WORKFLOW ENGINE
+↓
+ACTION EXECUTOR
+↓
+CONNECTORS / TOOLS / DATA / TRANSACTIONS
+↓
+OBSERVATION
+↓
+VERIFIER
+↓
+REPAIR / REPLAN WHEN REQUIRED
+↓
+GENERATIVE UI RUNTIME
+↓
+LIVE BUBBLE / WORLD
+↓
+USER INTERACTION
+↓
+EVENTS
+↓
+RUNTIME
+↓
+PERSISTENCE
+```
+
+لا يلزم الالتزام بالأسماء إذا كان المشروع الحالي لديه أسماء أفضل.
+
+المهم هو وجود الوظائف فعليًا وربطها.
+
+---
+
+# 9. Task DNA / DNA Compiler
+
+لا تجعل DNA مجرد Metadata.
+
+يجب أن يمثل المهمة بطريقة عامة تسمح لجاسم ببناء شيء لم يره سابقًا.
+
+فكر في DNA باعتباره وصفًا قابلًا للتنفيذ يتضمن عند الحاجة:
+
+```text
+intent
+goal
+constraints
+entities
+inputs
+outputs
+required capabilities
+dependencies
+workflow
+actions
+policies
+permissions
+verification
+UI requirements
+state requirements
+recovery requirements
+```
+
+ثم يحوله Planner/Compiler إلى Execution Graph قابل للتنفيذ.
+
+---
+
+# 10. Capability Registry
+
+هذه من أهم الطبقات.
+
+لا نريد مئات الأدوات المخصصة للدومينات.
+
+نريد قدرات عامة قابلة للتركيب.
+
+مثل:
+
+```text
+SEARCH
+EXTRACT
+ANALYZE
+COMPARE
+VERIFY
+GENERATE
+STORE
+RETRIEVE
+MATCH
+RANK
+CALCULATE
+SCHEDULE
+NOTIFY
+REQUEST
+APPROVE
+TRANSACT
+EXECUTE
+MONITOR
+```
+
+لكن مرة أخرى:
+
+لا تعتبر هذه القائمة ثابتة أو نهائية.
+
+المطلوب تصميم Capability Model يسمح بتوسعة القدرات مستقبلًا دون تعديل العقل المركزي.
+
+---
+
+# 11. Generality أهم من الأمثلة
+
+جميع الأمثلة التي أعطيتك إياها سابقًا هي:
+
+> ACCEPTANCE TESTS
+
+وليست Architecture.
+
+إذا قلت:
+
+"أريد بيع سيارتي"
+
+يجب ألا يوجد:
+
+```ts
+if (intent === "sell_car")
+```
+
+يبني Car App.
+
+يجب أن يستنتج النظام مثلًا:
+
+```text
+create listing
+collect attributes
+attach media
+set pricing
+publish
+make searchable
+enable matching
+enable contact/transaction
+```
+
+ثم يبني التجربة المناسبة.
+
+وبنفس القدرات يستطيع مستخدم آخر أن يقول:
+
+"أريد بيع معدات مطعمي"
+
+أو:
+
+"أريد عرض ماكينة صناعية للإيجار"
+
+بدون إضافة كود Domain جديد.
+
+---
+
+# 12. مثال آخر لاختبار العمومية
+
+إذا قال المستخدم:
+
+> أريد منصة تجمع أصحاب المنازل مع شركات الصيانة، وتأخذ مني عمولة عند اكتمال العمل.
+
+لا تنشئ:
+
+```text
+MaintenancePlatformTemplate
+```
+
+بل يجب أن يحلل النظام الحاجة إلى:
+
+```text
+multiple actor types
+profiles
+service listings
+requests
+matching
+quotes
+selection
+workflow
+job status
+messaging
+payment
+commission
+rating
+notifications
+permissions
+```
+
+ثم يبني World من هذه القدرات.
+
+---
+
+# 13. الاختبار الحقيقي للعمومية
+
+بعد تنفيذ النظام لا تختبره فقط بالأمثلة التي أعطيناك إياها.
+
+أنشئ مجموعة:
+
+> UNSEEN GENERALIZATION TESTS
+
+اطلب من Agents توليد سيناريوهات لم تكن موجودة في المستندات.
+
+مثل طلبات تجمع قدرات متعددة بطريقة جديدة.
+
+يجب أن نثبت أن النظام يستطيع تركيبها من primitives/capabilities العامة.
+
+إذا احتاج كل سيناريو جديد إلى إضافة:
+
+```text
+new domain router
+new domain bubble
+new template
+new hard-coded branch
+```
+
+فالنظام فشل في اختبار العمومية.
+
+---
+
+# 14. Generative UI Runtime
+
+الـUI يجب أن يولد من:
+
+```text
+Runtime state
++
+Entity schema
++
+Available actions
++
+User role
++
+Workflow state
++
+Permissions
++
+Context
+```
+
+وليس من اسم المجال.
+
+أي:
+
+```text
+UI = f(runtime state, schema, capabilities, context)
+```
+
+وليس:
+
+```text
+UI = f(domainName)
+```
+
+هذه قاعدة معمارية مهمة جدًا.
+
+---
+
+# 15. Bubble Intelligence
+
+الفقاعة الناتجة يجب ألا تصبح ميتة بعد إنشائها.
+
+أي Action داخلها يجب أن يعود إلى Runtime.
+
+مثال:
+
+```text
+User Action
+↓
+Runtime Event
+↓
+Policy Check
+↓
+State Transition
+↓
+Capability / Workflow Execution
+↓
+Persistence
+↓
+Verifier
+↓
+Updated Runtime State
+↓
+UI Re-render
+```
+
+وهكذا تصبح الفقاعة واجهة لنظام حي، وليست Card كبيرة.
+
+---
+
+# 16. المحادثة والعالم يجب أن يبقيا متصلين
+
+إذا أنشأ المستخدم عالمًا ثم عاد إلى المحادثة وقال:
+
+> أضف إمكانية تقييم مقدمي الخدمة.
+
+يجب أن يعرف جاسم العالم المقصود من Context.
+
+ثم:
+
+```text
+inspect current world
+understand requested change
+generate change plan
+check compatibility
+apply schema/runtime migration
+update workflows
+update UI projection
+persist new version
+verify
+```
+
+دون إعادة بناء كل شيء من الصفر.
+
+---
+
+# 17. Evolution وليس Regeneration فقط
+
+العالم المولد يجب أن يكون قابلًا للتطور.
+
+نحتاج مفهومًا واضحًا مثل:
+
+```text
+World Version
+Change Set
+Migration
+Validation
+Rollback
+```
+
+حتى يستطيع جاسم تعديل عالم موجود بأمان.
+
+---
+
+# 18. لا تعديل مباشر خطير للنواة الحية
+
+أي تطوير ذاتي أو تعديل في Core/Kernel يجب ألا يدخل Production مباشرة.
+
+استخدم مسارًا شبيهًا بـ:
+
+```text
+Proposal
+↓
+Sandbox
+↓
+Tests
+↓
+Security Checks
+↓
+Regression Tests
+↓
+Generalization Tests
+↓
+Canary
+↓
+Verification
+↓
+Signed Release
+↓
+Promotion
+```
+
+مع:
+
+```text
+automatic rollback
+```
+
+عند الفشل.
+
+---
+
+# 19. Agent Sandbox
+
+إذا كانت بعض المهام تحتاج:
+
+* كتابة كود.
+* تنفيذ Code.
+* تشغيل Script.
+* تحليل ملفات.
+* بناء Artifact.
+* اختبار Connector.
+* تجربة Capability جديدة.
+
+يجب تنفيذ ذلك داخل بيئة معزولة ومحدودة الصلاحيات.
+
+لا تعطِ Agent وصولًا غير محدود للنظام.
+
+---
+
+# 20. Trust / Policy / Approval
+
+ليس كل Action يجب تنفيذه تلقائيًا.
+
+صمم Policy Layer عامة.
+
+مثل:
+
+```text
+READ
+LOW-RISK WRITE
+EXTERNAL WRITE
+FINANCIAL ACTION
+DESTRUCTIVE ACTION
+SENSITIVE ACTION
+```
+
+والـRuntime يحدد متى يحتاج:
+
+```text
+allow
+deny
+ask approval
+sandbox
+additional verification
+```
+
+---
+
+# 21. Persistence حقيقية
+
+كل World مهم يجب أن يكون Persistent.
+
+اختبر:
+
+```text
+Create world
+→ interact
+→ change data
+→ restart server
+→ login again
+→ reopen conversation
+→ reopen world
+```
+
+ويجب أن ترجع الحالة الصحيحة.
+
+لا تقبل In-memory demo كتنفيذ نهائي.
+
+---
+
+# 22. ممنوع النجاح المزيف
+
+لا تستخدم Mock ثم تعرض:
+
+```text
+SUCCESS
+```
+
+وكأن التنفيذ حقيقي.
+
+صنف النتائج بوضوح داخليًا، مثل:
+
+```text
+REAL
+SIMULATED
+UNAVAILABLE
+FAILED
+REQUIRES_APPROVAL
+```
+
+Production UX لا يجوز أن يدعي نجاح Action خارجي لم يحدث.
+
+---
+
+# 23. Verifier إلزامي
+
+بعد التنفيذ لا تعتمد على كلام Agent الذي نفذ المهمة.
+
+يجب أن يكون هناك Verification مستقل قدر الإمكان.
+
+تحقق من:
+
+```text
+expected state
+actual state
+database state
+external side effect
+runtime events
+UI state
+permissions
+workflow completion
+```
+
+ثم قرر:
+
+```text
+PASS
+REPAIR
+REPLAN
+FAIL
+```
+
+---
+
+# 24. لا تجعل LLM هو مصدر الحقيقة
+
+LLM يفهم ويخطط ويولد.
+
+لكن:
+
+* حالة العالم من Runtime.
+* البيانات من Data Layer.
+* الصلاحيات من Policy.
+* نتائج الأدوات من Execution Layer.
+* الحقيقة التنفيذية من Verifier.
+
+لا تخزن الحقيقة فقط داخل Conversation Prompt.
+
+---
+
+# 25. Memory
+
+راجع نظام الذاكرة الحالي.
+
+افصل عند الحاجة بين:
+
+```text
+Conversation context
+User memory
+World memory
+Task memory
+Runtime state
+Event history
+```
+
+حتى لا تتحول كل المعلومات إلى Prompt ضخم وغير موثوق.
+
+---
+
+# 26. World Builder
+
+نحتاج طبقة تستطيع أخذ Goal عالي المستوى وتحويله إلى تعريف World عام.
+
+مثل:
+
+```text
+actors
+entities
+relationships
+capabilities
+workflows
+states
+events
+actions
+policies
+views
+transactions
+```
+
+ثم يمر هذا التعريف على Validator قبل إنشائه.
+
+---
+
+# 27. لا تبنِ World Builder بقوالب Domains
+
+ممنوع أن يصبح:
+
+```text
+switch(domain) {
+ car:
+ restaurant:
+ jobs:
+ realEstate:
+}
+```
+
+World Builder يجب أن يعمل من:
+
+```text
+requirements → primitives → relationships → capabilities → workflows
+```
+
+---
+
+# 28. Architecture Reconciliation قبل التنفيذ
+
+قبل كتابة الكود:
+
+افحص الموجود فعليًا داخل `jasim-unified`.
+
+ابحث عن:
+
+```text
+Intent Engine
+Planner
+Capability Registry
+Task Runtime
+Kernel
+DNA
+Workflow Engine
+Bubble Runtime
+Renderer
+Memory
+Events
+Verifier
+Connectors
+Policy
+Persistence
+Agent infrastructure
+```
+
+ثم أنشئ:
+
+```text
+CURRENT_ARCHITECTURE_MAP.md
+```
+
+يوضح:
+
+```text
+EXISTS_AND_WORKS
+EXISTS_BUT_INCOMPLETE
+DUPLICATED
+DEAD_CODE
+MOCKED
+DISCONNECTED
+MISSING
+```
+
+---
+
+# 29. لا تنخدع بأسماء الملفات
+
+وجود ملف اسمه:
+
+```text
+kernel.ts
+verifier.ts
+planner.ts
+dna.ts
+runtime.ts
+```
+
+لا يعني أن الميزة موجودة.
+
+تتبع Runtime Call Graph الحقيقي.
+
+أثبت من يستدعي ماذا.
+
+---
+
+# 30. نفذ على مراحل
+
+بعد Inspection أنشئ خطة تنفيذ تعتمد على Dependencies.
+
+لا تبدأ بإعادة كتابة الواجهة قبل إصلاح Runtime.
+
+الأولوية:
+
+```text
+P0 — Architecture truth
+P1 — Runtime/Kernel
+P2 — General capability model
+P3 — DNA/Planner/Execution graph
+P4 — Persistence/Event model
+P5 — World Builder
+P6 — Generative UI Runtime
+P7 — Bubble lifecycle
+P8 — Chat ↔ World continuity
+P9 — Trust/Policy/Verifier
+P10 — Generalization & E2E
+```
+
+عدل الترتيب فقط إذا أثبت فحص الكود أن Dependency مختلفة.
+
+---
+
+# 31. استخدم Agents بذكاء
+
+استخدم Agents متخصصة للفحص والتنفيذ والاختبار.
+
+مثل:
+
+```text
+Architecture Inspector
+Runtime Inspector
+Database Inspector
+Security Inspector
+UI Runtime Inspector
+Execution Inspector
+Generalization Tester
+Regression Tester
+Verifier
+```
+
+لكن لا تجعل Agents تعمل عشوائيًا على نفس الملفات.
+
+وزع الملكية والنطاق.
+
+ثم اجمع النتائج في خطة موحدة.
+
+---
+
+# 32. الاختبار المطلوب ليس TypeScript فقط
+
+ممنوع إعلان الاكتمال بسبب:
+
+```text
+tsc PASS
+build PASS
+unit tests PASS
+```
+
+هذه شروط ضرورية لكنها غير كافية.
+
+يجب تشغيل المسار الحقيقي:
+
+```text
+INSPECT
+→ PLAN
+→ IMPLEMENT
+→ TYPECHECK
+→ BUILD
+→ UNIT TEST
+→ INTEGRATION TEST
+→ START REAL SYSTEM
+→ E2E
+→ DATABASE VERIFY
+→ RESTART TEST
+→ GENERALIZATION TEST
+→ SECURITY TEST
+→ FIX
+→ RETEST
+```
+
+---
+
+# 33. اختبار الواجهة
+
+اختبر فعليًا:
+
+```text
+New chat
+Send request
+Streaming
+Generate world
+Open bubble
+Interact
+Submit form
+Trigger action
+Change runtime state
+Persist
+Close
+Return to chat
+Modify world through chat
+Reopen
+Refresh
+Restart
+Restore
+```
+
+---
+
+# 34. اختبارات غير متوقعة
+
+اطلب من Generalization Agent توليد ما لا يقل عن 20 طلبًا جديدًا لم تظهر حرفيًا في ملفات المشروع.
+
+يجب أن تشمل:
+
+* single capability.
+* multiple capabilities.
+* multi-actor workflows.
+* long-running workflows.
+* approvals.
+* transactions.
+* unknown entity types.
+* modification of an existing world.
+* cross-world operation.
+
+لا تضف كودًا خاصًا لإنجاح هذه الاختبارات.
+
+---
+
+# 35. قاعدة فشل العمومية
+
+اعتبر الاختبار FAIL إذا احتجنا إلى كتابة Domain-specific code فقط لأن السيناريو جديد.
+
+إذا فشل السيناريو:
+
+لا تضف:
+
+```text
+NewScenarioBubble
+NewScenarioRouter
+```
+
+بل اسأل:
+
+> ما الـprimitive أو capability العامة المفقودة؟
+
+ثم أصلح الطبقة العامة.
+
+---
+
+# 36. الحفاظ على الموجود
+
+لا تكسر الميزات العاملة.
+
+قبل التعديل شغّل Baseline Tests.
+
+بعد كل مرحلة شغّل Regression.
+
+أي تغيير معماري يجب أن يحافظ على Backward Compatibility بقدر معقول أو ينفذ Migration واضحة.
+
+---
+
+# 37. لا تكرر الأنظمة
+
+إذا وجدت:
+
+```text
+old planner
+new planner
+task planner
+agent planner
+```
+
+لا تضف Planner خامسًا.
+
+حدد النظام Canonical.
+
+ادمج ما يلزم.
+
+ثم أزل/اعزل Legacy بأمان بعد إثبات عدم الحاجة إليه.
+
+طبق نفس القاعدة على:
+
+```text
+Runtime
+Memory
+Renderer
+Bubble
+Events
+Capabilities
+```
+
+---
+
+# 38. الواجهة ليست المرحلة الوحيدة
+
+التصميم الذي أعطيتك إياه معتمد.
+
+لكن لا تجعل نجاح المشروع مساويًا لمطابقة Screenshot.
+
+الهدف:
+
+> نفس الواجهة + Runtime عام حقيقي خلفها.
+
+---
+
+# 39. المطلوب في النهاية
+
+أريد أن أستطيع فتح جاسم ورؤية واجهة رئيسية واحدة.
+
+أكتب له طلبًا طبيعيًا.
+
+يفهمه.
+
+إذا احتاج معلومات إضافية يسأل عنها.
+
+إذا كانت لديه معلومات كافية يخطط.
+
+يركب القدرات المطلوبة.
+
+ينفذ ما يمكن تنفيذه فعليًا.
+
+وينشئ عند الحاجة Bubble/World توليدية.
+
+أفتحها وأتعامل معها.
+
+تتغير حالتها.
+
+تحفظ البيانات.
+
+أعود للمحادثة وأطلب تعديلها.
+
+يفهم أي World أقصد.
+
+يعدلها بأمان.
+
+ثم أعود إليها وأجد التغيير موجودًا.
+
+وكل ذلك دون وجود تطبيق مبرمج مسبقًا لهذا المجال.
+
+---
+
+# 40. Definition of Done
+
+لا تقل:
+
+> JASIM COMPLETE
+
+إلا إذا كان لديك دليل على:
+
+1. Main Chat واحدة تعمل فعليًا.
+2. Runtime/Kernel موحد.
+3. World persistence حقيقية.
+4. Capability composition عامة.
+5. Planner يعمل على Runtime الحقيقي.
+6. DNA/Execution Graph قابل للتنفيذ.
+7. Generative Bubble Runtime حقيقي.
+8. Bubble actions تغير الحالة الحقيقية.
+9. Chat يستطيع تعديل World موجود.
+10. Restart recovery يعمل.
+11. Policy/permissions تعمل.
+12. Verification بعد التنفيذ يعمل.
+13. لا يوجد Fake Success.
+14. لا يعتمد النظام على Domain-specific bubbles.
+15. اختبارات Generalization الجديدة تمر.
+16. Regression Tests تمر.
+17. Production Build يمر.
+18. E2E حقيقي يمر.
+
+---
+
+# 41. التقرير النهائي
+
+عند الانتهاء أنشئ:
+
+```text
+JASIM_FINAL_IMPLEMENTATION_REPORT.md
+```
+
+ويجب أن يحتوي على:
+
+```text
+1. Architecture before
+2. Architecture after
+3. Files changed
+4. Database changes
+5. Runtime call graph
+6. Kernel implementation
+7. World model
+8. Capability model
+9. DNA/Planner implementation
+10. Generative UI implementation
+11. Bubble lifecycle
+12. Persistence proof
+13. Restart proof
+14. E2E results
+15. Generalization tests
+16. Security tests
+17. Regression results
+18. Remaining limitations
+19. REAL vs MOCKED capability matrix
+20. Evidence/logs/screenshots where appropriate
+```
+
+لا تخفِ أي نقص.
+
+إذا بقي شيء غير مكتمل اكتب:
+
+```text
+NOT COMPLETE
+```
+
+وحدد السبب.
+
+---
+
+# 42. قاعدة التطوير من الآن
+
+أي تفاصيل جديدة سأرسلها لاحقًا عن:
+
+* شكل الفقاعات.
+* طريقة فتح العوالم.
+* التنقل.
+* المحادثات.
+* المنصات.
+* الذكاء داخل الفقاعات.
+* البيع.
+* الشراء.
+* التوظيف.
+* الخدمات.
+* الدفع.
+* الإعلانات.
+* التسعير.
+* العمولات.
+* أو غيرها.
+
+تعامل معها على أنها:
+
+> Requirements فوق نفس Universal Runtime
+
+ولا تحول كل Requirement إلى نظام مستقل.
+
+الهدف النهائي ليس بناء جميع الأمثلة التي أعطيتها لك.
+
+الهدف هو:
+
+> بناء جاسم بطريقة تجعل الأمثلة التي لم أعطها لك ممكنة أيضًا.
+
+ابدأ الآن بمرحلة:
+
+**INSPECT + ARCHITECTURE RECONCILIATION**
+
+ثم نفذ الإصلاحات الفعلية حسب Dependency Order.
+
+لا تعلن النجاح قبل تشغيل النظام الحقيقي وإثباته.

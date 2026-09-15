@@ -1,0 +1,1148 @@
+# JASIM — FINAL VISION CORRECTION
+
+## BUBBLE-FIRST ARCHITECTURE MUST BE LOCKED BEFORE IMPLEMENTATION AUTHORIZATION
+
+راجعت:
+
+```text
+docs/JASIM_FINAL_VISION_GAP_ANALYSIS.md
+```
+
+وأوافق على معظم الفجوات التي اكتشفتها.
+
+لكن:
+
+```text
+FINAL VISION GATE: NOT PASSED
+```
+
+يبقى القرار الصحيح حاليًا، لأن هناك تصحيحًا معماريًا أساسيًا يجب إدخاله قبل منح:
+
+```text
+IMPLEMENTATION AUTHORIZATION
+```
+
+---
+
+# 1. التصحيح الأساسي
+
+لا تعتمد:
+
+```text
+WORLD-FIRST PRODUCT
+```
+
+كرؤية المنتج.
+
+الرؤية النهائية هي:
+
+> BUBBLE-FIRST GENERATIVE RUNTIME
+
+العالم ليس منتجًا منفصلًا عن الفقاعة.
+
+الصحيح:
+
+```text
+World Runtime
+=
+durable runtime life behind/inside a Smart Generative Bubble
+```
+
+و:
+
+```text
+Smart Generative Bubble
+=
+primary intelligent user-facing embodiment of that World Runtime
+```
+
+---
+
+# 2. العلاقة النهائية
+
+اعتمد هذه العلاقة كمرجع أعلى:
+
+```text
+USER
+↓
+JASIM MAIN CONVERSATION
+↓
+SMART GENERATIVE BUBBLES
+↓
+OPTIONAL DURABLE WORLD RUNTIME INSIDE / BEHIND EACH BUBBLE
+↓
+TASKS / RUNS OPERATE ON THE BUBBLE
+↓
+CAPABILITIES EXECUTE
+↓
+EVENTS + VERIFICATION MUTATE STATE
+↓
+THE SAME BUBBLE EVOLVES AND RE-RENDERS
+```
+
+---
+
+# 3. World مستقل عن Task — نعم
+
+احتفظ بالقرار الصحيح الحالي:
+
+```text
+World != Task
+```
+
+لأن Task قد تنتهي والعالم يستمر.
+
+لكن لا تستنتج منه:
+
+```text
+World != Bubble experience
+```
+
+الأفضل مفاهيميًا:
+
+```text
+Task = temporary unit of work
+
+World Runtime = durable state/life
+
+Smart Bubble = durable/intelligent user-facing surface of that runtime
+```
+
+---
+
+# 4. لا تجعل `/world/:worldId` قلب المنتج
+
+إذا كان Route تقني مطلوبًا، يمكن استخدام:
+
+```text
+/bubble/:bubbleId
+```
+
+أو Route موسعة مناسبة.
+
+لكن أي Full-screen view هي:
+
+> Expanded Bubble Surface
+
+وليست تطبيق World مستقلًا عن تجربة جاسم.
+
+---
+
+# 5. أصلح Gap رقم 3 و4
+
+بدل:
+
+```text
+Generative Bubbles
++
+World-first Product
+```
+
+اعتبرها Architecture واحدة:
+
+```text
+SMART BUBBLE RUNTIME
++
+DURABLE WORLD BACKING MODEL
++
+SCHEMA-DRIVEN BUBBLE RENDERER
+```
+
+---
+
+# 6. الفقاعة ليست Card
+
+لا تختزل Bubble في:
+
+```text
+preview
+card
+link to world
+```
+
+Bubble قد تكون:
+
+```text
+ephemeral result
+interactive result
+entity surface
+workflow surface
+persistent system
+commercial space
+full generative platform
+```
+
+بحسب حاجة المستخدم.
+
+---
+
+# 7. ليست كل Bubble تحتاج World كاملًا
+
+وهذه نقطة مهمة.
+
+يجب أن يستطيع Output Router اختيار:
+
+```text
+TEXT
+STRUCTURED_RESPONSE
+EPHEMERAL_BUBBLE
+INTERACTIVE_BUBBLE
+ACTION
+WORKFLOW
+TASK
+PERSISTENT_SMART_BUBBLE
+```
+
+وإذا كانت Bubble تحتاج حياة دائمة مع state/workflows/entities:
+
+يرتبط بها World Runtime.
+
+لا تنشئ World لكل جواب بسيط.
+
+---
+
+# 8. Output Router
+
+هذه طبقة أساسية يجب تثبيتها قبل التنفيذ.
+
+المسار:
+
+```text
+User Goal
+↓
+Understanding
+↓
+Output Intent Decision
+↓
+TEXT / BUBBLE / ACTION / TASK / WORKFLOW / PERSISTENT BUBBLE
+```
+
+ولا تستخدم قاعدة:
+
+```text
+Every goal → Task + World
+```
+
+---
+
+# 9. Bubble Aggregate
+
+أضف عقدًا واضحًا لـ:
+
+```text
+SmartBubble
+```
+
+مثال مفاهيمي:
+
+```text
+bubbleId
+ownerId
+conversationId
+
+mode
+status
+
+title
+semanticDescription
+
+runtimeWorldId?
+
+activeView
+presentationState
+
+permissions
+references
+
+createdAt
+updatedAt
+```
+
+لكن استخدم التصميم الأنسب للكود الحالي.
+
+---
+
+# 10. Bubble Runtime Context
+
+كل Bubble persistent يجب أن تستطيع تزويد Jasim Intelligence بسياق منظم عنها.
+
+مثل:
+
+```text
+identity
+purpose
+current state
+entity schema
+entities relevant to request
+workflows
+policies
+available actions
+history summary
+permissions
+current version
+```
+
+دون إرسال قاعدة البيانات كاملة للنموذج.
+
+---
+
+# 11. Bubble Reference Resolution — GAP إلزامية جديدة
+
+أضف إلى Vision Gap Analysis طبقة مستقلة باسم:
+
+```text
+BUBBLE REFERENCE RESOLUTION
+```
+
+هذه ليست UX feature صغيرة.
+
+إنها من قلب فلسفة جاسم.
+
+يجب أن يفهم تعبيرات مثل:
+
+```text
+منصتي
+متجري
+فقاعتي
+المشروع الذي عملناه
+الفقاعة التي فيها الآيفون
+المنصة التي أنشأناها أمس
+خدمة التصميم عندي
+```
+
+ويحلها إلى:
+
+```text
+bubbleId
+```
+
+ثم عند الحاجة:
+
+```text
+entityId
+workflowId
+policyId
+viewId
+```
+
+---
+
+# 12. Reference Resolution Inputs
+
+استخدم:
+
+```text
+conversation history
+explicit bubble references
+recently active bubble
+bubble semantic description
+entity mentions
+ownership
+recent mutations
+temporal references
+```
+
+---
+
+# 13. لا تخمن في الغموض الحقيقي
+
+إذا كان لدى المستخدم فقاعتان فيهما نفس المنتج مثلًا:
+
+اسأل.
+
+أما إذا كان المرجع واضحًا:
+
+لا تجبر المستخدم على اختيار ID أو الدخول إلى شاشة إدارية.
+
+---
+
+# 14. Conversational Bubble Control
+
+هذه Capability معمارية أساسية.
+
+اختبر:
+
+> أضف آيفون 16 إلى متجري بسعر 300.
+
+ثم:
+
+> خفض سعره إلى 280.
+
+ثم:
+
+> اخفه مؤقتًا.
+
+ثم:
+
+> أعد عرضه الجمعة.
+
+كل هذا يجب أن يعمل على نفس Bubble.
+
+---
+
+# 15. Bubble Mutation Pipeline
+
+اعتمد:
+
+```text
+Natural-language request
+↓
+Resolve Bubble
+↓
+Resolve target inside Bubble
+↓
+Classify mutation
+↓
+Plan
+↓
+Permission / Policy
+↓
+Approval if needed
+↓
+Capability execution
+↓
+Verification
+↓
+Version/state update
+↓
+Bubble rerender
+```
+
+---
+
+# 16. Mutation Types
+
+النظام يجب أن يفرق بين:
+
+```text
+DATA_MUTATION
+STRUCTURAL_MUTATION
+POLICY_MUTATION
+WORKFLOW_MUTATION
+VIEW_MUTATION
+PERMISSION_MUTATION
+COMMERCIAL_MUTATION
+```
+
+دون ربطها بمجال محدد.
+
+---
+
+# 17. مثال — Data Mutation
+
+> أضف منتجًا جديدًا اسمه X.
+
+---
+
+# 18. مثال — Structural Mutation
+
+> أضف تقييمات للمستخدمين.
+
+قد يتطلب:
+
+```text
+new entity/fields
+relationships
+actions
+views
+```
+
+---
+
+# 19. مثال — Policy Mutation
+
+> أي طلب فوق 100 دينار يحتاج موافقتي.
+
+---
+
+# 20. مثال — Workflow Mutation
+
+> بعد إكمال الطلب أرسل للعميل طلب تقييم.
+
+---
+
+# 21. مثال — Commercial Mutation
+
+> اجعل عمولتي 5% فقط عند نجاح الصفقة.
+
+---
+
+# 22. مثال — Advertising
+
+المستخدم:
+
+> أعلن عن فقاعتي التي فيها خدمة تنظيف السيارات.
+
+يجب أن يفهم جاسم:
+
+```text
+target bubble
+target entity/service
+campaign goal
+budget
+audience
+channel
+duration
+```
+
+ثم يستخدم Capabilities متاحة.
+
+إذا Capability الإعلان غير موجودة:
+
+```text
+BLOCKED
+```
+
+ولا يفسد Bubble نفسها.
+
+---
+
+# 23. Bubble Intelligence
+
+الفقاعات "ذكية بذكاء جاسم"، لكن لا تنشئ عقلًا مستقلاً لكل Bubble.
+
+اعتمد:
+
+```text
+Central Jasim Intelligence
++
+Bubble-scoped Runtime Context
++
+Conversation Context
+```
+
+---
+
+# 24. Same Intelligence Everywhere
+
+يمكن للمستخدم إعطاء الأمر من:
+
+```text
+Main Conversation
+```
+
+أو:
+
+```text
+Expanded Bubble
+```
+
+أو مستقبلاً:
+
+```text
+Bubble-native command input
+```
+
+لكنها جميعًا تمر عبر نفس:
+
+```text
+Jasim Intelligence
+Runtime
+Capability Layer
+Policy
+Verifier
+```
+
+---
+
+# 25. Smart Bubble Renderer
+
+استبدل مفهوم:
+
+```text
+World Renderer
+```
+
+في Product Architecture بمفهوم أوسع:
+
+```text
+Smart Bubble Renderer
+```
+
+وهو يستطيع عرض Bubble:
+
+```text
+compact
+expanded
+full-screen
+public-facing
+owner-facing
+member-facing
+```
+
+من نفس Runtime Schema.
+
+---
+
+# 26. Renderer Formula
+
+المعادلة:
+
+```text
+Bubble UI =
+projection(
+  bubble identity,
+  world schema if present,
+  runtime state,
+  active view,
+  role,
+  permissions,
+  available capabilities,
+  workflows,
+  context
+)
+```
+
+وليس:
+
+```text
+domain → component
+```
+
+---
+
+# 27. Multi-user Smart Bubbles
+
+صحح Gap:
+
+```text
+Multi-user Worlds
+```
+
+لتصبح على مستوى المنتج:
+
+```text
+Multi-user Smart Bubbles backed by World Runtime
+```
+
+وتدعم:
+
+```text
+owner
+members
+customers
+providers
+moderators
+custom roles
+```
+
+---
+
+# 28. Public Smart Bubbles
+
+بعض Bubbles يمكن أن تصبح:
+
+```text
+PRIVATE
+SHARED
+INVITE_ONLY
+PUBLIC
+COMMERCIAL
+```
+
+ولا يعني هذا إنشاء App جديد لكل واحدة.
+
+---
+
+# 29. Bubble Discovery
+
+المستخدم يمكن أن يجد Bubbles من:
+
+```text
+conversation
+history
+search
+My Bubbles surface
+semantic request to Jasim
+```
+
+لكن Main Chat تبقى المركز.
+
+---
+
+# 30. Cross-Bubble Intelligence
+
+يجب ألا تمنع Architecture مستقبلًا أوامر مثل:
+
+> خذ المنتجات من فقاعة المخزون واعرضها في فقاعة المتجر.
+
+أو:
+
+> اربط طلبات المتجر بفقاعة التوصيل.
+
+نحتاج مكانًا معماريًا لـ:
+
+```text
+bubble references
+event subscriptions
+controlled data sharing
+cross-bubble workflows
+```
+
+مع Permissions قوية.
+
+---
+
+# 31. Bubble Composition
+
+مستقبلًا:
+
+> اجمع مبيعات الفقاعتين في لوحة واحدة.
+
+يجب أن يكون قابلًا للتركيب دون Domain خاص.
+
+---
+
+# 32. Conversation Aggregate
+
+ما زال Gap صحيحًا.
+
+نفذ لاحقًا:
+
+```text
+Conversation
+├── Messages
+├── Tasks
+├── Runs
+└── Bubbles
+```
+
+ولا تجعل:
+
+```text
+Conversation → Worlds
+```
+
+هي العلاقة الرئيسية في Product Model.
+
+World Runtime يمكن أن يبقى علاقة داخلية للBubble.
+
+---
+
+# 33. Task/Bubble relation
+
+اعتمد:
+
+```text
+Bubble
+├── Task: create it
+├── Task: add product
+├── Task: change pricing
+├── Task: advertise
+├── Task: modify workflow
+└── Task: analyze performance
+```
+
+---
+
+# 34. World/Bubble relation
+
+اعتمد:
+
+```text
+Smart Bubble
+1 → 0..1 primary durable World Runtime
+```
+
+في البداية إذا كان هذا الأنسب.
+
+لكن لا تغلق Architecture بطريقة تمنع Composition أكثر تعقيدًا مستقبلًا.
+
+---
+
+# 35. Evolution
+
+استبدل:
+
+```text
+World Evolution
+```
+
+في مستوى UX بفكرة:
+
+```text
+Smart Bubble Evolution
+```
+
+بينما التنفيذ الداخلي يمكن أن يستمر باستخدام:
+
+```text
+WorldChangeSet
+WorldVersion
+Migration
+```
+
+---
+
+# 36. Change Preview
+
+المستخدم لا يحتاج رؤية Database Migration.
+
+يجب أن تعرض له Bubble/Jasim Preview مفهومة مثل:
+
+```text
+سأضيف:
+- تقييمًا من 1 إلى 5
+- تعليقًا اختياريًا
+- طلب تقييم بعد اكتمال الخدمة
+```
+
+ثم Runtime ينفذ التغيير التقني.
+
+---
+
+# 37. Architecture layers بعد التصحيح
+
+اعتمد الخريطة النهائية:
+
+```text
+CLIENTS
+↓
+JASIM MAIN CONVERSATION
+↓
+CONVERSATION RUNTIME
+↓
+CONTEXT + MEMORY + REFERENCE RESOLUTION
+↓
+MODEL GATEWAY
+↓
+INTENT / UNDERSTANDING
+↓
+OUTPUT ROUTER
+↓
+TASK DNA / WORLD INTENT / BUBBLE INTENT
+↓
+PLANNER
+↓
+SMART BUBBLE MANAGER
+↓
+OPTIONAL WORLD RUNTIME
+↓
+EXECUTION DAG
+↓
+CAPABILITY REGISTRY / RESOLVER
+↓
+POLICY / APPROVAL
+↓
+EXECUTION
+↓
+VERIFIER
+↓
+EVENTS / DURABLE STATE
+↓
+SMART BUBBLE PROJECTION
+↓
+WEB / MOBILE
+```
+
+---
+
+# 38. Long-running Bubble behavior
+
+Bubble يجب أن تستطيع البقاء حية بينما توجد:
+
+```text
+scheduled jobs
+monitors
+pending approvals
+external events
+automations
+```
+
+ولا تعتمد على فتح المستخدم للBubble.
+
+---
+
+# 39. Transaction Gap يبقى صحيحًا
+
+لكن Transactions يجب أن تعمل داخل/عبر Smart Bubbles بشكل عام.
+
+---
+
+# 40. Monetization
+
+لا تبنِ Monetization لكل Domain.
+
+World/Bubble policies قد تحدد:
+
+```text
+commission
+subscription
+success fee
+transaction fee
+CPC
+CPA
+listing fee
+featured placement
+hybrid
+```
+
+---
+
+# 41. Capability Lab Gap يبقى صحيحًا
+
+لكن لا تجعل Capability Lab جزءًا من Bubble Runtime الحية.
+
+هي Development/Evolution pipeline منفصلة وآمنة.
+
+---
+
+# 42. Generalization Tests يجب أن تختبر Bubble-first behavior
+
+لا يكفي أن ينجح Task DNA.
+
+كل Scenario يجب قياس:
+
+```text
+Did Jasim choose the correct output form?
+Did it create a Bubble only when appropriate?
+Did it avoid unnecessary World creation?
+Could it mutate the Bubble conversationally?
+Could it resolve Bubble references?
+Could the Bubble persist?
+Could its World Runtime evolve?
+Did Renderer remain domain-agnostic?
+```
+
+---
+
+# 43. مثال قبول رئيسي
+
+المستخدم:
+
+> أنشئ لي منصة أقدم فيها خدمات تصميم.
+
+النظام ينشئ:
+
+```text
+Persistent Smart Bubble
+```
+
+بداخلها World Runtime.
+
+ثم:
+
+> أضف خدمة تصميم شعار بـ20 دينار.
+
+تتغير نفس Bubble.
+
+ثم:
+
+> أضف تصميم هوية كاملة بـ100.
+
+ثم:
+
+> الخدمة الأولى اجعلها 15.
+
+ثم:
+
+> أي عميل يطلب أكثر من خدمة أعطه خصم 10%.
+
+ثم:
+
+> أضف خدمة جديدة اسمها تصميم مواقع.
+
+ثم:
+
+> أعلن عن الفقاعة التي فيها تصميم المواقع.
+
+كل الأوامر تعمل من Main Chat دون إلزام المستخدم بفتح لوحة إدارة.
+
+---
+
+# 44. مثال قبول ثانٍ
+
+المستخدم:
+
+> أريد أرخص 3 أجهزة لابتوب مناسبة للجامعة.
+
+لا تنشئ Persistent World بلا داعٍ.
+
+قد يكون الناتج:
+
+```text
+Collection of interactive result bubbles
+```
+
+وهذا يثبت Output Router.
+
+---
+
+# 45. مثال قبول ثالث
+
+المستخدم:
+
+> ذكرني بعد ساعتين أن أتصل بمحمد.
+
+هذا:
+
+```text
+Action / scheduled run
+```
+
+وليس منصة ولا World.
+
+---
+
+# 46. مثال قبول رابع
+
+المستخدم:
+
+> أريد مساحة أدير منها ممتلكاتي المؤجرة.
+
+هنا Persistent Smart Bubble/World منطقية.
+
+---
+
+# 47. أهم اختبار
+
+أعطِ جاسم مجموعة Requests مختلفة.
+
+اختبر ألا يصبح:
+
+```text
+EVERYTHING → WORLD
+```
+
+وألا يصبح أيضًا:
+
+```text
+EVERYTHING → CHAT RESPONSE
+```
+
+الذكاء الحقيقي هو اختيار الـRuntime Surface الصحيحة.
+
+---
+
+# 48. عدّل تقرير Vision Gap
+
+حدّث:
+
+```text
+docs/JASIM_FINAL_VISION_GAP_ANALYSIS.md
+```
+
+وأضف/صحح البنود:
+
+```text
+OUTPUT ROUTER
+SMART BUBBLE AGGREGATE
+BUBBLE ↔ WORLD BINDING
+BUBBLE REFERENCE RESOLUTION
+CONVERSATIONAL BUBBLE CONTROL
+SMART BUBBLE EVOLUTION
+BUBBLE-FIRST RENDERER
+CROSS-BUBBLE ARCHITECTURE
+```
+
+---
+
+# 49. أنشئ وثيقة نهائية
+
+أنشئ أيضًا:
+
+```text
+docs/JASIM_SMART_BUBBLE_ARCHITECTURE.md
+```
+
+ويجب أن تصبح مرجعًا معماريًا إلزاميًا.
+
+---
+
+# 50. لا تبدأ Features بعد
+
+هذه ما تزال Vision/Architecture correction.
+
+لا تعِد بناء المشروع في هذه الخطوة.
+
+---
+
+# 51. بعد التصحيح أريد Verdict جديدًا
+
+إما:
+
+```text
+FINAL VISION GATE: PASSED
+ARCHITECTURE CONTRACTS READY FOR IMPLEMENTATION
+```
+
+أو:
+
+```text
+FINAL VISION GATE: NOT PASSED
+```
+
+مع تحديد **الغموض المعماري المتبقي فقط**، وليس قائمة Features غير المنفذة.
+
+فرق مهم:
+
+Vision Gate لا يشترط أن Features مبنية.
+
+يشترط أن تكون:
+
+```text
+product semantics
+core abstractions
+entity relationships
+runtime responsibilities
+trust boundaries
+extension rules
+```
+
+واضحة وغير متناقضة.
+
+---
+
+# 52. متى نسمح بالتنفيذ؟
+
+إذا أصبحت الرؤية واضحة في:
+
+```text
+Conversation
+Output Router
+Smart Bubble
+World Runtime
+Task
+Capability
+Execution
+Evolution
+Memory
+Transactions
+Multi-user
+Rendering
+Cross-Bubble
+Long-running work
+Self-extension
+```
+
+فامنح:
+
+```text
+FINAL VISION GATE: PASSED
+```
+
+حتى لو كانت بعض هذه الطبقات غير منفذة بعد.
+
+بعدها سننتقل إلى:
+
+> JASIM FINAL IMPLEMENTATION PROGRAM
+
+---
+
+# القاعدة العليا
+
+ثبتها حرفيًا في الوثيقة:
+
+> The conversation is where the user speaks with Jasim.
+>
+> Smart Generative Bubbles are the living things Jasim creates and operates with the user.
+>
+> The World Runtime is the durable internal life of a persistent Bubble.
+>
+> Tasks are temporary units of work performed on behalf of the user or a Bubble.
+>
+> Jasim Intelligence understands natural language, resolves the correct Bubble and target, plans changes, and operates them only through trusted Runtime capabilities.
+>
+> A Bubble can grow from a simple generated surface into a persistent commercial world without becoming a hard-coded domain application.
+
+صحح Vision Gate وفق هذا التعريف، ثم توقف وأعطني النتيجة قبل بدء Full Implementation.

@@ -1,0 +1,2737 @@
+# =====================================================================
+# JASIM — PHASE 11
+# GENERAL KNOWLEDGE + MEDIA CAPABILITY EXPANSION
+#
+# WEB RESEARCH + IMAGE GENERATION
+# + CROSS-CAPABILITY COMPOSITION
+#
+# DO NOT REBUILD THE PROVEN CORE
+# DO NOT CREATE DOMAIN-SPECIFIC HANDLERS
+# DO NOT WASTE TOKENS RE-DISCOVERING SETTLED ARCHITECTURE
+# =====================================================================
+
+
+You are continuing development of the EXISTING canonical JASIM runtime.
+
+This is NOT a redesign task.
+
+This is NOT a new JASIM version.
+
+This is NOT permission to create a second AI runtime.
+
+This is NOT permission to build separate search/image applications.
+
+The objective is to prove that the existing Universal Generative Runtime
+can acquire NEW GENERAL CAPABILITIES through the SAME trusted execution architecture.
+
+
+=====================================================================
+0. CURRENT BASELINE — TREAT AS LOCKED UNLESS A REAL REGRESSION PROVES OTHERWISE
+=====================================================================
+
+The following foundation has already been implemented and proven.
+
+DO NOT reopen, rewrite, replace, or "improve" these merely because another design appears cleaner.
+
+CURRENT PROVEN FOUNDATION:
+
+- ONE canonical runtime
+- ONE runtimeRouter
+- ONE canonical PostgreSQL state truth
+- General Generative Runtime
+- semantic Output Router
+- Reference Resolution
+- Smart Bubbles
+- Bubble without World
+- Persistent Bubble with optional World
+- World/DNA definition
+- Natural-language Bubble mutation
+- ChangeSet
+- contentVersion
+- presentationVersion separation
+- atomic Bubble/World mutation
+- durable Runs
+- persistent DAG
+- atomic node claims
+- leases
+- heartbeat
+- fencing
+- stale-worker rejection
+- proposal/approval
+- approval resume after restart
+- trusted capability execution
+- immutable execution attempt ledger
+- execution receipts
+- independent verifier
+- VERIFIED / FAILED / INCONCLUSIVE
+- reconciliation
+- NO BLIND RETRY
+- Conversation Summary
+- Memory
+- Semantic Events
+- cross-owner security
+- Production Operations
+- health/readiness
+- graceful shutdown
+- secret validation
+- structured logging
+- migration safety
+- Web lifecycle/result UI
+- Mobile lifecycle/result UI
+- OpenAI real capability
+- Phase 7 Generalization PASS
+- no domain-specific core additions
+- fake success = 0
+
+
+IMPORTANT:
+
+A passing old proof does not mean "never touch the file".
+
+It means:
+
+DO NOT MODIFY THE PROVEN SEMANTICS
+unless Phase 11 requires a minimal compatible extension.
+
+If you must touch a locked subsystem:
+
+1. explain the exact compatibility need
+2. make the smallest change
+3. preserve all invariants
+4. run its existing regression proof
+
+
+=====================================================================
+1. CURRENT GENERALIZATION BASELINE
+=====================================================================
+
+Treat this as the current measured state:
+
+OUTPUT FORM ACCURACY:
+13 / 15 = 87%
+
+GENERIC ENTITY MODEL:
+15 / 15
+
+SMART BUBBLE NATURAL-LANGUAGE EVOLUTION:
+12 / 12
+
+RESTART PERSISTENCE:
+PASS
+
+DOMAIN-SPECIFIC CORE ADDITIONS:
+0
+
+FAKE SUCCESS:
+0
+
+Two provider failures were correctly classified INCONCLUSIVE.
+
+Do NOT "fix" generalization by adding special cases for those examples.
+
+The Output Router remains a permanent regression gate.
+
+Never solve routing errors with:
+
+if message contains "car"
+if message contains "job"
+if message contains "image"
+if message contains "restaurant"
+
+unless the condition is a generic protocol/input classification,
+not domain business logic.
+
+
+=====================================================================
+2. PHASE 11 PRODUCT OBJECTIVE
+=====================================================================
+
+Add real capabilities for:
+
+A. WEB KNOWLEDGE / RESEARCH
+
+B. IMAGE GENERATION
+
+Then prove JASIM can COMPOSE them with:
+
+- existing Conversation Intelligence
+- Analysis
+- Reference Resolution
+- Smart Bubbles
+- Runs
+- Trusted Executor
+- Persistence
+- Verification
+
+The product goal is NOT:
+
+"JASIM has a search button."
+
+The product goal is:
+
+A user can naturally ask:
+
+"ابحث لي عن أحدث اتجاهات تصميم متاجر العطور الفاخرة،
+استخلص لي الأنسب، ثم أنشئ تصورًا بصريًا للمنصة التي أنشأناها سابقًا."
+
+And JASIM can dynamically compose:
+
+conversation context
+→ existing Bubble resolution
+→ web research
+→ source-backed findings
+→ analysis
+→ image generation
+→ durable image artifact
+→ verified result
+→ attach/reference result
+→ same Smart Bubble
+
+WITHOUT:
+
+PerfumeResearchHandler
+LuxuryStoreImageHandler
+StoreDesignAgent
+RetailResearchRouter
+PerfumeBubble
+
+
+=====================================================================
+3. FIRST RULE — INSPECT BEFORE ADDING CAPABILITY IDS
+=====================================================================
+
+Before introducing ANY capability identifier:
+
+inspect the current canonical Capability Registry.
+
+Determine whether generic capabilities already exist conceptually such as:
+
+SEARCH
+EXTRACT
+ANALYZE
+GENERATE
+VERIFY
+
+If an equivalent canonical capability already exists:
+
+EXTEND / CONNECT IT.
+
+DO NOT create:
+
+SEARCH
+and
+WEB_SEARCH
+and
+web.search
+
+as three competing concepts.
+
+Likewise do not create duplicate generation abstractions.
+
+Use the CURRENT canonical naming/contract style.
+
+The architecture matters more than the exact name.
+
+
+=====================================================================
+4. TOKEN / TIME EFFICIENCY RULES
+=====================================================================
+
+This is extremely important.
+
+DO NOT spend large amounts of context/tokens re-reading the entire repository.
+
+You already have a mature canonical runtime.
+
+Use TARGETED DISCOVERY.
+
+
+Recommended discovery pattern:
+
+rg/search once for:
+
+Capability Registry
+executeTrustedCapability
+ExecutionAttempt
+Verifier
+Reconciliation
+RunReceipt
+Output Router
+Reference Resolution
+runtimeRouter
+RunLifecycleCard
+conversation result rendering
+mobile runtime result rendering
+object/file storage
+artifact storage
+OpenAI provider adapter
+structured logging
+
+Then inspect ONLY the active files involved.
+
+
+DO NOT:
+
+- reread every docs/ file
+- reread old legacy architecture
+- generate another huge architecture report
+- run broad static searches repeatedly
+- re-plan the entire JASIM project
+- inspect dead code unless an active import leads to it
+- refactor unrelated files
+- rename stable modules for aesthetics
+- create compatibility wrappers without need
+- produce large prose reports after every small step
+
+
+SEARCH / INSPECTION LOOP:
+
+TARGETED SEARCH
+→ inspect active implementation
+→ decide minimum compatible extension
+→ implement
+→ targeted proof
+→ continue
+
+
+Do not repeat:
+
+SEARCH
+→ PLAN
+→ SEARCH AGAIN
+→ PLAN AGAIN
+→ READ WHOLE REPO
+→ ASK USER
+→ START OVER
+
+
+=====================================================================
+5. ENGINEERING RESEARCH RULE
+=====================================================================
+
+Phase 11 depends on provider APIs that may have changed.
+
+For CURRENT provider/API details:
+
+SEARCH OFFICIAL DOCUMENTATION.
+
+Especially verify the current documentation/API for:
+
+- currently configured OpenAI integration
+- web/search APIs/tools
+- image generation APIs
+- response formats
+- streaming where applicable
+- usage metadata
+- provider request IDs
+- error responses
+- retries
+- rate limits
+- image output formats
+- temporary URL behavior
+- safety/moderation behavior
+- supported image sizes/aspect ratios
+- timeout/cancellation support
+
+
+SOURCE PRIORITY:
+
+1. official documentation
+2. official SDK repository
+3. official examples
+4. official API reference
+5. provider-maintainer issues only if necessary
+
+
+DO NOT use old tutorials as implementation authority.
+
+Record only genuinely useful findings in the existing:
+
+docs/JASIM_ENGINEERING_RESEARCH.md
+
+Do not create multiple research documents.
+
+For each relevant finding record only:
+
+TOPIC
+CURRENT API/VERSION
+OFFICIAL SOURCE
+DECISION
+WHY
+IMPLEMENTATION IMPACT
+DATE CHECKED
+
+
+If already researched recently and API has not changed:
+
+DO NOT RESEARCH IT AGAIN.
+
+
+=====================================================================
+6. PROVIDER-NEUTRAL ARCHITECTURE
+=====================================================================
+
+The capability must NOT become equivalent to the provider.
+
+Forbidden:
+
+JASIM Core
+→ OpenAI-specific business logic
+
+Required:
+
+JASIM Capability
+→ Provider Adapter
+→ External Provider
+
+
+Conceptually:
+
+Capability
+    ↓
+Provider Resolution
+    ↓
+Provider Adapter
+    ↓
+External Service
+    ↓
+Normalized Result
+
+
+If OpenAI is currently the first usable provider:
+
+that is acceptable.
+
+But:
+
+SEARCH ≠ OpenAI
+IMAGE_GENERATION ≠ OpenAI
+
+Provider must remain replaceable.
+
+Future provider changes must NOT require rewriting:
+
+Output Router
+Bubble Runtime
+Run/DAG
+Conversation
+Verifier architecture
+UI components
+
+
+=====================================================================
+7. DO NOT CREATE A SECOND MODEL GATEWAY
+=====================================================================
+
+A working OpenAI capability already exists.
+
+Inspect the existing provider/model execution architecture.
+
+Reuse it when appropriate.
+
+Do NOT create:
+
+ImageAIClient
+SearchAIClient
+ResearchLLM
+WebLLMRouter
+ImageLLMRouter
+
+if the current Model/Provider Gateway can support the responsibility.
+
+However:
+
+web provider adapters
+and
+image provider adapters
+
+may have provider-specific code behind canonical interfaces.
+
+Provider-specific code belongs at the edge.
+
+Not in JASIM Core.
+
+
+=====================================================================
+8. WEB RESEARCH — CAPABILITY DESIGN
+=====================================================================
+
+Build the MINIMUM GENERAL primitives necessary for real web research.
+
+Prefer composable primitives rather than one giant:
+
+doEverythingResearch()
+
+Conceptually the runtime should be able to compose:
+
+SEARCH
+→ optional FETCH
+→ optional EXTRACT
+→ ANALYZE
+→ STRUCTURED_RESULT
+
+But inspect what already exists first.
+
+If SEARCH/EXTRACT/ANALYZE already exist abstractly:
+
+connect them.
+
+Do not duplicate them.
+
+
+A web search request should support generic inputs such as:
+
+query
+language?
+locale?
+recency?
+dateRange?
+domainsAllowlist?
+domainsDenylist?
+resultLimit?
+safeSearchMode?
+searchIntent?
+
+
+Do not make the schema specific to:
+
+products
+cars
+jobs
+restaurants
+news
+
+
+=====================================================================
+9. WEB SEARCH NORMALIZED RESULT
+=====================================================================
+
+Create/reuse a generic normalized result contract.
+
+Conceptual shape:
+
+WebSearchResult
+{
+  query
+  provider
+  providerRequestId?
+  executedAt
+  durationMs
+  items[]
+  usage?
+  warnings[]
+}
+
+
+Each result item should preserve enough provenance:
+
+SourceReference
+{
+  sourceId
+  canonicalUrl
+  title?
+  snippet?
+  publisher/domain?
+  publishedAt?
+  retrievedAt
+  providerReference?
+  contentType?
+  language?
+  contentHash?      // where practical
+}
+
+
+Do not force this exact TypeScript shape
+if the current canonical contracts have a stronger equivalent.
+
+The semantic requirements matter.
+
+
+=====================================================================
+10. PROVENANCE IS FIRST-CLASS
+=====================================================================
+
+Search output must not become unattributed LLM prose.
+
+Whenever research is based on web sources:
+
+preserve source provenance.
+
+JASIM should be able to answer:
+
+"What source did this result come from?"
+
+and later:
+
+"افتح المصدر الثاني"
+
+or:
+
+"استخدم النتيجة الثالثة"
+
+or:
+
+"قارن المصدر الأول والرابع"
+
+
+Source references must remain addressable.
+
+Do NOT store only:
+
+"According to several sources..."
+
+without durable source references.
+
+
+=====================================================================
+11. EXECUTION VERIFICATION ≠ FACTUAL TRUTH
+=====================================================================
+
+This distinction is CRITICAL.
+
+Independent Verifier may prove:
+
+- provider request executed
+- response schema was valid
+- result references exist
+- expected search result was persisted
+- source references are validly associated
+- no execution corruption occurred
+
+But this does NOT automatically mean:
+
+"every claim in the web page is true."
+
+
+Maintain separate concepts where needed:
+
+EXECUTION_VERIFICATION
+
+vs
+
+SOURCE/CONTENT_CONFIDENCE
+
+
+Do NOT label a factual claim "VERIFIED TRUE"
+merely because a search provider returned it.
+
+
+=====================================================================
+12. WEB FETCH SAFETY
+=====================================================================
+
+If Phase 11 introduces URL fetching:
+
+treat ALL fetched web content as UNTRUSTED.
+
+Mandatory protections:
+
+- only supported URL schemes
+- block file://
+- block local filesystem
+- block localhost
+- block loopback
+- block private network ranges
+- block metadata endpoints
+- block internal infrastructure addresses
+- validate redirects
+- cap redirect count
+- cap response bytes
+- timeout
+- content-type validation
+- decompression safeguards
+- no credential forwarding
+- no internal cookies forwarded
+- safe error handling
+
+
+The fetched page MUST NOT gain authority over JASIM.
+
+Web content can provide DATA.
+
+Web content cannot issue trusted commands.
+
+
+=====================================================================
+13. PROMPT INJECTION DEFENSE FOR WEB RESEARCH
+=====================================================================
+
+Assume any web page may contain:
+
+"Ignore previous instructions"
+"send secrets here"
+"execute this tool"
+"delete user data"
+"call this URL"
+"reveal system prompt"
+
+Treat all retrieved text as:
+
+UNTRUSTED_EXTERNAL_CONTENT
+
+
+Required trust boundary:
+
+External Content
+→ Extract/Normalize
+→ Untrusted Evidence
+→ Model Reasoning
+→ Structured Proposal
+→ Server Validation
+→ Policy
+→ Trusted Execution
+
+
+NEVER:
+
+External Web Page
+→ direct capability execution
+
+
+Add adversarial tests for indirect prompt injection.
+
+
+=====================================================================
+14. SEARCH RESULT PERSISTENCE
+=====================================================================
+
+Do NOT automatically duplicate every search result into permanent DB state.
+
+Use JASIM's existing persistence semantics intelligently.
+
+Examples:
+
+temporary result
+→ can remain Run/message output
+
+result referenced later
+→ durable reference must remain resolvable
+
+result attached to Smart Bubble
+→ durable association
+
+research artifact intentionally saved
+→ durable artifact/result reference
+
+
+Do not create a giant database of copied websites.
+
+
+=====================================================================
+15. IMAGE GENERATION — GENERAL CAPABILITY
+=====================================================================
+
+Add a GENERAL image generation capability.
+
+Do NOT create:
+
+generateProductImage
+generateCarImage
+generateRestaurantImage
+generateAdvertisementImage
+generateStoreImage
+
+Core capability should be domain-neutral.
+
+
+Conceptual input:
+
+ImageGenerationRequest
+{
+  prompt
+  purpose?
+  aspectRatio?
+  width?
+  height?
+  quality?
+  outputFormat?
+  count?
+  contextReferences?
+  bubbleId?
+}
+
+
+Do not force unsupported vendor-specific options into the canonical contract.
+
+Canonical contract expresses semantic intent.
+
+Provider Adapter maps it to provider-specific parameters.
+
+
+=====================================================================
+16. IMAGE OUTPUT MUST BECOME A DURABLE ARTIFACT
+=====================================================================
+
+Provider response alone is NOT enough.
+
+If the provider returns:
+
+temporary URL
+base64
+binary payload
+provider file reference
+
+normalize it into JASIM's durable artifact system.
+
+
+FIRST:
+
+inspect the repository for an existing:
+
+artifact store
+file store
+object storage
+media table
+blob abstraction
+
+Reuse it if suitable.
+
+
+DO NOT create another storage system if one already exists.
+
+
+If no generic durable artifact concept exists,
+introduce the MINIMUM general artifact abstraction necessary.
+
+It must NOT be image-domain business state.
+
+Conceptually:
+
+RuntimeArtifact
+{
+  artifactId
+  ownerId
+  type
+  mimeType
+  storageReference
+  contentHash
+  sizeBytes
+  width?
+  height?
+  provider?
+  providerReference?
+  sourceRunId?
+  sourceAttemptId?
+  createdAt
+  metadata
+}
+
+
+Again:
+
+reuse stronger existing architecture if present.
+
+
+=====================================================================
+17. IMAGE VERIFICATION
+=====================================================================
+
+Do NOT mark image generation VERIFIED merely because provider HTTP returned 200.
+
+Verifier should independently establish, where practical:
+
+- corresponding immutable execution attempt exists
+- provider response belongs to that attempt
+- artifact persisted
+- artifact bytes/reference actually exist
+- MIME/type valid
+- binary can be decoded as supported image
+- dimensions are sane
+- byte size within limits
+- content hash persisted
+- owner binding correct
+- source Run/attempt linkage correct
+
+
+If provider succeeded
+but durable artifact persistence cannot be confirmed:
+
+INCONCLUSIVE or FAILED
+according to exact failure semantics.
+
+Never silently report:
+
+"تم إنشاء الصورة"
+
+when no durable usable artifact exists.
+
+
+=====================================================================
+18. ARTIFACT SECURITY
+=====================================================================
+
+Generated image access must enforce ownership / access policy server-side.
+
+User A cannot fetch User B artifact by guessing artifactId.
+
+Test:
+
+USER_A_ARTIFACT
+→ USER_B READ
+→ BLOCKED
+
+
+Do not place provider secrets in artifact metadata.
+
+Do not place raw signed temporary provider URLs into permanent public UI
+if they expire or expose private access.
+
+Use internal durable references.
+
+
+=====================================================================
+19. IMAGE RETRY VS REGENERATE
+=====================================================================
+
+These are NOT the same thing.
+
+RETRY:
+same intended execution after a technical failure,
+subject to canonical idempotency/retry policy.
+
+REGENERATE:
+a new creative request that may intentionally produce a different image.
+
+
+UI and backend should not confuse them.
+
+Server determines safe retry.
+
+User explicitly requests regenerate when a new generation is desired.
+
+
+=====================================================================
+20. USE EXISTING TRUSTED EXECUTION
+=====================================================================
+
+Both Web Research and Image Generation must enter through the canonical trusted execution boundary.
+
+No direct provider calls from:
+
+React components
+mobile components
+tRPC UI procedure bodies
+Output Router
+LLM prompt handlers
+Bubble renderer
+
+
+Required conceptual path:
+
+Conversation Intent
+→ Output Router
+→ Capability Resolution
+→ Run / Proposal as applicable
+→ Policy
+→ Approval rules as applicable
+→ Trusted Executor
+→ Immutable Attempt
+→ Provider Adapter
+→ Normalized Result
+→ Receipt
+→ Independent Verifier
+→ Final State
+
+
+Do not weaken this just because Search/Image are lower-risk than payment.
+
+
+=====================================================================
+21. APPROVAL / RISK POLICY
+=====================================================================
+
+Do NOT add unnecessary confirmation dialogs.
+
+Use the existing canonical Policy/Approval system.
+
+The user saying:
+
+"أنشئ صورة..."
+
+is itself strong intent for image generation.
+
+The user saying:
+
+"ابحث عن..."
+
+is strong intent for search.
+
+Do not invent redundant approval prompts
+unless current cost/security policy requires them.
+
+
+Consequential actions remain different:
+
+pay
+publish externally
+send message
+place order
+sign contract
+etc.
+
+Phase 11 must not alter those rules.
+
+
+=====================================================================
+22. IDEMPOTENCY
+=====================================================================
+
+Use canonical idempotency semantics.
+
+WEB SEARCH:
+
+retry after transport failure may be safe,
+but still record attempts honestly.
+
+IMAGE GENERATION:
+
+duplicate retry may create:
+
+duplicate provider cost
+duplicate artifacts
+
+therefore respect the existing idempotency model.
+
+Do not infer:
+
+same prompt = same idempotency key forever.
+
+Two intentional user requests with the same prompt
+may be two legitimate image generations.
+
+Idempotency scope must bind to the execution intent/run/attempt,
+not merely prompt text.
+
+
+=====================================================================
+23. RECONCILIATION
+=====================================================================
+
+Integrate new providers with the existing Reconciliation model.
+
+If provider state is uncertain:
+
+DO NOT blind retry.
+
+For providers that expose request/job IDs:
+
+persist provider reference.
+
+On unknown outcome:
+
+attempt provider lookup where supported.
+
+Then:
+
+RECONCILE
+→ VERIFY
+→ determine final state
+
+
+If the provider offers no lookup mechanism:
+
+represent this truthfully.
+
+Do not invent provider certainty.
+
+
+=====================================================================
+24. RESULT REFERENCES
+=====================================================================
+
+This is essential to JASIM's conversational nature.
+
+After a search or generation, the user must be able to say:
+
+"استخدم الصورة الأخيرة"
+
+"أضف الصورة الثانية إلى منصتي"
+
+"احفظ نتيجة البحث الثالثة"
+
+"قارن المصدر الأول والثاني"
+
+"اجعل الصورة التي أنشأناها غلافًا للفقاعة"
+
+"أضف هذه النتيجة إلى المشروع السابق"
+
+
+Reference Resolution must understand canonical references to:
+
+search result
+source
+generated artifact
+existing Bubble
+existing World
+existing entity
+Run/result
+
+
+Do NOT implement these as fragile client-side array indexes only.
+
+Resolve them against canonical server context.
+
+
+=====================================================================
+25. SMART BUBBLE INTEGRATION
+=====================================================================
+
+A research/image result must NOT automatically create a new Smart Bubble.
+
+Remember JASIM's core rule:
+
+CHOOSE THE SMALLEST SUFFICIENT OUTPUT FORM.
+
+
+Examples:
+
+"ابحث عن أسعار النفط اليوم"
+→ structured/text research result
+
+"أنشئ صورة شعار"
+→ generated image result/artifact
+
+"استخدم هذه الصورة في منصتي"
+→ resolve existing Bubble
+→ generic ChangeSet
+→ attach/reference artifact
+→ same Bubble contentVersion increments
+
+"ابن لي منصة تعرض أبحاث السوق وصور الحملات"
+→ persistent Smart Bubble may be justified
+
+
+DO NOT:
+
+search result
+→ always create World
+
+image
+→ always create Bubble
+
+
+=====================================================================
+26. ATTACHING RESULTS TO AN EXISTING BUBBLE
+=====================================================================
+
+Use the existing generic mutation pipeline.
+
+Example:
+
+User:
+"استخدم الصورة الأخيرة كصورة الغلاف لمنصتي."
+
+Expected:
+
+Reference Resolution
+→ generated artifact
+→ existing Bubble
+→ target property/view resolution
+→ generic Mutation Intent
+→ ChangeSet
+→ preview if appropriate
+→ policy
+→ atomic apply
+→ contentVersion +1
+→ projection refresh
+→ same Bubble
+
+
+No:
+
+StoreImageMutationHandler
+ProfileImageMutationHandler
+ProductImageMutationHandler
+
+
+=====================================================================
+27. CROSS-CAPABILITY COMPOSITION
+=====================================================================
+
+This is the MOST IMPORTANT Phase 11 proof.
+
+Do not test only:
+
+search works
+
+image works
+
+
+Prove that JASIM dynamically composes capabilities.
+
+
+Scenario:
+
+User has an existing Smart Bubble.
+
+Then says:
+
+"ابحث عن أحدث اتجاهات تصميم متاجر العطور الفاخرة،
+استخلص أفضل ثلاثة اتجاهات مناسبة لمشروعي،
+ثم أنشئ لي تصورًا بصريًا مناسبًا للمنصة التي أنشأناها."
+
+
+Expected:
+
+Conversation Intelligence
+↓
+Reference Resolution
+↓
+Existing Bubble / World context
+↓
+Search capability
+↓
+real sources
+↓
+source provenance
+↓
+Analysis capability
+↓
+three structured findings
+↓
+Image Generation capability
+↓
+durable artifact
+↓
+Receipt
+↓
+Independent Verifier
+↓
+Result shown
+↓
+user may attach it
+↓
+existing Bubble mutation
+↓
+same Bubble
+
+
+NO DOMAIN HANDLER.
+
+NO PREBUILT PERFUME WORKFLOW.
+
+NO SPECIAL RETAIL AGENT.
+
+
+=====================================================================
+28. ANOTHER CROSS-CAPABILITY SCENARIO
+=====================================================================
+
+Test an unrelated domain.
+
+Example:
+
+"لدي مشروع لتأجير معدات زراعية.
+ابحث عن أهم المشاكل التي تواجه مشاركة المعدات بين المزارعين،
+ثم اقترح ثلاث سياسات تشغيل،
+وأنشئ صورة Concept بسيطة للواجهة."
+
+
+Expected general composition:
+
+SEARCH
++
+EXTRACT / ANALYZE
++
+POLICY PROPOSAL
++
+IMAGE GENERATION
+
+
+No agriculture-specific core code.
+
+
+=====================================================================
+29. RESEARCH RESULT → STRUCTURAL EVOLUTION
+=====================================================================
+
+Test:
+
+User has Bubble.
+
+Search discovers useful general requirement.
+
+User says:
+
+"أضف هذه الفكرة إلى منصتي."
+
+Expected:
+
+research source/result reference
+→ existing Bubble
+→ Mutation Intent
+→ appropriate mutation type
+→ ChangeSet
+→ versioned apply
+
+
+The research output itself must not silently mutate Bubble state.
+
+User instruction or applicable policy must cause the mutation.
+
+
+=====================================================================
+30. COST / USAGE INSTRUMENTATION
+=====================================================================
+
+Commercial billing is NOT Phase 11.
+
+But Phase 11 must make future metering possible.
+
+Record provider usage metadata where available.
+
+
+WEB:
+
+provider
+request count
+search count
+result count
+fetch count
+bytes retrieved if relevant
+duration
+provider usage/cost metadata if available
+
+
+IMAGE:
+
+provider
+generation count
+dimensions
+quality/tier if applicable
+bytes
+duration
+provider usage/cost metadata if available
+
+
+LLM:
+
+continue existing token/usage accounting.
+
+
+Do NOT:
+
+hard-code retail prices
+hard-code user fees
+build billing now
+
+
+Just ensure canonical execution records expose sufficient usage data
+for later Commercial Runtime.
+
+
+=====================================================================
+31. PRIVACY
+=====================================================================
+
+Do not send unnecessary user information to external providers.
+
+Web search provider does NOT need:
+
+user phone
+email
+account identity
+private Bubble metadata
+
+unless the actual query semantically requires content from the Bubble.
+
+
+Image provider should receive:
+
+the minimum content necessary to create the requested image.
+
+Do not automatically attach:
+
+entire conversation history
+user profile
+other private Bubbles
+memory dump
+
+
+Use minimized context.
+
+
+=====================================================================
+32. SECRET HANDLING
+=====================================================================
+
+Never:
+
+log API key
+store API key in DB execution attempt
+return API key to client
+include API key in provider error
+include secrets in structured logs
+
+
+Existing production secret validation must remain intact.
+
+
+=====================================================================
+33. TIMEOUT / CANCELLATION
+=====================================================================
+
+Every external provider call must have bounded execution.
+
+Support:
+
+timeout
+AbortController / current SDK equivalent
+canonical provider error mapping
+Run cancellation where possible
+
+
+A cancelled Run must not later be marked VERIFIED because a late response arrived
+without canonical reconciliation.
+
+
+=====================================================================
+34. ERROR TAXONOMY
+=====================================================================
+
+Normalize provider failures.
+
+At minimum distinguish conceptually:
+
+PROVIDER_NOT_CONFIGURED
+PROVIDER_UNAVAILABLE
+PROVIDER_RATE_LIMITED
+PROVIDER_TIMEOUT
+PROVIDER_AUTH_ERROR
+PROVIDER_INVALID_RESPONSE
+PROVIDER_SAFETY_REJECTION
+NETWORK_ERROR
+VALIDATION_ERROR
+ARTIFACT_PERSISTENCE_ERROR
+VERIFICATION_FAILED
+UNKNOWN_OUTCOME
+
+
+Do not expose sensitive internal errors directly to user.
+
+Do not flatten everything into:
+
+"Something went wrong."
+
+
+=====================================================================
+35. USER-VISIBLE FAILURE SEMANTICS
+=====================================================================
+
+Web and Mobile should render truthful states.
+
+Examples:
+
+SEARCH FAILED:
+"تعذر إكمال البحث حاليًا."
+
+IMAGE PROVIDER RATE LIMITED:
+"تعذر إنشاء الصورة حاليًا بسبب قيود المزود."
+
+INCONCLUSIVE:
+"لم نتمكن من التأكد من اكتمال العملية."
+
+PROVIDER NOT CONFIGURED:
+"هذه القدرة غير مفعلة حاليًا."
+
+
+No fake fallback search results.
+
+No placeholder generated image presented as real.
+
+
+=====================================================================
+36. WEB UI
+=====================================================================
+
+Extend the existing canonical result UI.
+
+Do NOT build a second search page unless product architecture genuinely requires one.
+
+Search result rendering should support:
+
+- query/result summary
+- result cards/list
+- source title
+- domain/publisher
+- date when available
+- provenance/source link
+- source numbering/reference
+- loading
+- empty
+- failed
+- inconclusive
+- verified execution state where useful
+
+
+Research answer may show source references/citations naturally.
+
+
+Image result should support:
+
+- generated image
+- status
+- durable artifact reference
+- relevant metadata
+- "use in Bubble" / equivalent action when context supports it
+- regenerate as a NEW request
+- safe retry only when server permits
+
+
+Keep JASIM's visual language.
+
+Do not redesign the application.
+
+
+=====================================================================
+37. MOBILE UI
+=====================================================================
+
+Use the SAME canonical contracts.
+
+Mobile is a renderer.
+
+Do not introduce mobile-only business truth.
+
+Mobile should render:
+
+search results
+sources
+generated image artifacts
+VERIFIED
+FAILED
+INCONCLUSIVE
+safe retry
+artifact reference actions
+
+
+Same server-side state must be visible from Web and Mobile.
+
+
+=====================================================================
+38. CROSS-DEVICE PROOF
+=====================================================================
+
+Test:
+
+Web:
+generate image
+
+Mobile:
+load same conversation
+
+Expected:
+same result/artifact visible
+
+
+Then:
+
+Mobile:
+attach image to Bubble
+
+Web:
+reload Bubble
+
+Expected:
+same Bubble
+same updated contentVersion
+same artifact reference
+
+
+No duplicated local state truth.
+
+
+=====================================================================
+39. PROVIDER CREDENTIAL RULE
+=====================================================================
+
+Inspect configuration presence.
+
+DO NOT print secret values.
+
+If the currently configured provider credentials support the capability:
+
+use them.
+
+
+If a new provider credential is genuinely required:
+
+DO NOT stop all development.
+
+Continue:
+
+contract
+adapter
+validation
+security
+UI
+persistence
+verification architecture
+failure handling
+
+
+Then report:
+
+BLOCKED_BY_EXTERNAL_CREDENTIAL
+
+
+Document only:
+
+provider
+required environment variable
+where owner obtains it
+where to configure
+how to verify
+
+
+Never fake a real-provider PASS.
+
+
+=====================================================================
+40. REAL PROVIDER REQUIREMENT
+=====================================================================
+
+At least one real provider path should be proven for each capability
+before Phase 11 is called REAL:
+
+WEB_RESEARCH_REAL_PROVIDER
+
+IMAGE_GENERATION_REAL_PROVIDER
+
+
+If a provider is unavailable due to quota/rate limit:
+
+INCONCLUSIVE
+
+not PASS
+not FAIL if core execution was not reached due solely to provider availability.
+
+
+=====================================================================
+41. DO NOT USE MOCK PROVIDER AS FINAL EVIDENCE
+=====================================================================
+
+Mock/deterministic providers may be used only to prove:
+
+failure state
+reconciliation logic
+idempotency
+retry policy
+verifier branches
+
+
+They are NOT evidence that real web/image capabilities work.
+
+
+Final provider proof requires real execution.
+
+
+=====================================================================
+42. WEB SEARCH PROOF
+=====================================================================
+
+Add a dedicated real PostgreSQL-backed proof.
+
+Suggested script naming consistent with current project:
+
+test:jasim-web-research
+
+Use the actual canonical runtime path.
+
+Required scenario:
+
+conversation
+→ natural-language web research request
+→ capability resolution
+→ trusted execution
+→ immutable execution attempt
+→ real provider
+→ normalized results
+→ source references
+→ receipt
+→ verifier
+→ message/result
+→ persistence
+
+
+Prove:
+
+REAL_PROVIDER_CALL = PASS
+SOURCE_PROVENANCE = PASS
+RESULT_SCHEMA = PASS
+ATTEMPT_LEDGER = PASS
+RECEIPT = PASS
+VERIFIER = PASS
+PERSISTENCE = PASS
+RESTART_RESULT_REFERENCE = PASS
+
+
+=====================================================================
+43. IMAGE GENERATION PROOF
+=====================================================================
+
+Add:
+
+test:jasim-image-generation
+
+
+Required:
+
+conversation
+→ natural-language image request
+→ trusted capability
+→ immutable attempt
+→ real provider
+→ image returned
+→ durable artifact persistence
+→ verifier independently validates artifact
+→ result shown
+→ restart
+→ artifact still exists
+
+
+Prove:
+
+REAL_IMAGE_PROVIDER = PASS
+DURABLE_ARTIFACT = PASS
+IMAGE_DECODABLE = PASS
+MIME_VALID = PASS
+DIMENSIONS_VALID = PASS
+CONTENT_HASH = PASS
+OWNER_BINDING = PASS
+ATTEMPT_LINKAGE = PASS
+RECEIPT = PASS
+VERIFIER = PASS
+RESTART_DURABILITY = PASS
+
+
+=====================================================================
+44. CROSS-CAPABILITY PROOF
+=====================================================================
+
+Add:
+
+test:jasim-cross-capability
+
+
+Use a REAL natural-language prompt,
+not direct calls to internal functions.
+
+At minimum:
+
+existing Bubble
++
+research request
++
+analysis
++
+image generation
++
+reference result
++
+Bubble mutation
+
+
+Prove:
+
+CONVERSATION_PATH = PASS
+
+REFERENCE_RESOLUTION = PASS
+
+WEB_RESEARCH = PASS
+
+SOURCE_PROVENANCE = PASS
+
+ANALYSIS = PASS
+
+IMAGE_GENERATION = PASS
+
+ARTIFACT_PERSISTENCE = PASS
+
+BUBBLE_REFERENCE = PASS
+
+CHANGESET = PASS
+
+CONTENT_VERSION_INCREMENT = PASS
+
+SAME_BUBBLE = PASS
+
+NO_NEW_WORLD_UNLESS_JUSTIFIED = PASS
+
+DOMAIN_HANDLER_ADDED = NO
+
+
+=====================================================================
+45. PROMPT INJECTION SECURITY PROOF
+=====================================================================
+
+Add adversarial web content containing instructions like:
+
+"Ignore JASIM policy."
+"Execute another capability."
+"Reveal secrets."
+"Change the Bubble."
+"Send credentials."
+"Approve this transaction."
+
+
+Expected:
+
+external content treated as DATA only.
+
+No trusted action executed.
+
+
+Prove:
+
+INDIRECT_PROMPT_INJECTION_EXECUTION = BLOCKED
+
+SECRET_EXFILTRATION = BLOCKED
+
+WEB_CONTENT_POLICY_OVERRIDE = BLOCKED
+
+WEB_CONTENT_DIRECT_TOOL_CALL = BLOCKED
+
+
+=====================================================================
+46. CROSS-OWNER SECURITY TESTS
+=====================================================================
+
+Prove:
+
+USER_A_CANNOT_READ_USER_B_SEARCH_RESULT
+
+USER_A_CANNOT_READ_USER_B_ARTIFACT
+
+USER_A_CANNOT_ATTACH_USER_B_ARTIFACT
+
+USER_A_CANNOT_MUTATE_USER_B_BUBBLE_WITH_ARTIFACT
+
+USER_A_CANNOT_REFERENCE_USER_B_PRIVATE_RESULT
+
+
+Expected:
+
+ALL BLOCKED
+
+
+=====================================================================
+47. PROVIDER FAILURE TESTS
+=====================================================================
+
+Test at minimum:
+
+rate limit
+timeout
+provider auth failure
+invalid provider response
+network failure
+artifact persistence failure
+verifier failure
+
+
+Expected:
+
+truthful status
+immutable attempt preserved
+no fake success
+safe retry determined server-side
+
+
+=====================================================================
+48. INCONCLUSIVE TEST
+=====================================================================
+
+Create a deterministic uncertainty scenario.
+
+Expected:
+
+INCONCLUSIVE
+
+must NOT become:
+
+COMPLETED_SUCCESS
+VERIFIED
+FAKE_RESULT
+
+
+Then retry/reconcile only according to canonical safety rules.
+
+
+=====================================================================
+49. IDEMPOTENCY TEST
+=====================================================================
+
+For a single execution intent:
+
+simulate duplicate delivery/request.
+
+Expected:
+
+no unintended duplicate effect/artifact caused by infrastructure replay.
+
+
+Then issue a NEW intentional user generation with the same prompt.
+
+Expected:
+
+allowed as a new logical generation.
+
+
+This proves:
+
+IDEMPOTENCY
+≠
+PROMPT_DEDUPLICATION
+
+
+=====================================================================
+50. RESTART TEST
+=====================================================================
+
+Scenario:
+
+search
+→ image generation
+→ artifact
+→ Bubble attachment
+→ server restart
+
+
+After restart prove:
+
+conversation exists
+source references resolve
+artifact exists
+Bubble exists
+Bubble contentVersion correct
+World link correct where applicable
+Run history exists
+attempt history exists
+receipt exists
+verification state exists
+
+
+No regeneration.
+
+No reconstruction from prompt.
+
+
+=====================================================================
+51. GENERALIZATION REGRESSION
+=====================================================================
+
+Phase 11 must NOT regress the existing generalization suite.
+
+After Phase 11:
+
+rerun existing Phase 7 Generalization.
+
+Require:
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+FAKE_SUCCESS = 0
+
+OUTPUT_ROUTING >= previous acceptable threshold
+
+SMART_BUBBLE_EVOLUTION remains PASS
+
+RESTART_PERSISTENCE remains PASS
+
+
+Do NOT alter the known test prompts merely to improve score.
+
+
+=====================================================================
+52. NEW UNSEEN CAPABILITY-COMPOSITION TESTS
+=====================================================================
+
+Generate at least 5 unseen tasks dynamically.
+
+They must require different combinations of:
+
+search
+analysis
+image generation
+existing Bubble references
+structured results
+
+
+Do not modify Core between tests.
+
+
+Examples are NOT to be hard-coded.
+
+Possible categories only for inspiration:
+
+education
+agriculture
+construction
+events
+health information
+retail
+logistics
+tourism
+manufacturing
+professional services
+
+
+Do not turn categories into handlers.
+
+
+=====================================================================
+53. STATIC DOMAIN-CHEATING SCAN
+=====================================================================
+
+Scan newly changed files for patterns suggesting example-specific implementation.
+
+Examples:
+
+Perfume*
+Agriculture*
+Car*
+Restaurant*
+Job*
+Store*
+Retail*
+Farm*
+Construction*
+
+Do NOT mechanically reject legitimate test fixture names.
+
+Review whether any domain-specific term entered:
+
+Core
+Capability Registry
+Trusted Executor
+Output Router special cases
+Generic Renderer
+Verifier
+Reconciliation
+
+
+Expected:
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+
+=====================================================================
+54. DO NOT EXPAND SCOPE
+=====================================================================
+
+Phase 11 does NOT include:
+
+payments
+escrow
+billing
+subscriptions
+commercial entitlements
+quota enforcement
+maps
+delivery provider
+email
+WhatsApp
+calendar
+new collaboration model
+large mobile redesign
+new frontend theme
+Kernel modularization
+microservices
+Kafka
+Redis redesign
+Temporal
+new Agent framework
+new Event Sourcing architecture
+
+
+If you notice improvements in these areas:
+
+record briefly if important.
+
+DO NOT implement them now.
+
+
+=====================================================================
+55. COMMERCIAL PREPARATION WITHOUT BUILDING COMMERCIAL
+=====================================================================
+
+Although billing is deferred,
+make Phase 11 output measurable.
+
+Ensure future Commercial Runtime can answer:
+
+which user invoked capability?
+which capability?
+which provider?
+how many provider calls?
+how much usage?
+how much latency?
+how many images?
+what size?
+how many searches?
+what provider usage/cost metadata was available?
+
+
+Do not calculate user charges yet.
+
+
+=====================================================================
+56. ARTIFACT / RESULT LIFECYCLE
+=====================================================================
+
+Define/reuse clear lifecycle semantics.
+
+For example conceptually:
+
+CREATED
+PROCESSING
+AVAILABLE
+FAILED
+INCONCLUSIVE
+ARCHIVED
+
+
+Avoid creating a new giant lifecycle if current Run/result states already cover this.
+
+Artifact state and execution state are related
+but should not be conflated incorrectly.
+
+
+=====================================================================
+57. SOURCE FRESHNESS
+=====================================================================
+
+For Web Research store:
+
+retrievedAt
+
+and when provider exposes it:
+
+publishedAt / updatedAt
+
+
+Do not treat an old cached result as "current"
+without exposing its retrieval/freshness metadata.
+
+
+Future query may request:
+
+"latest"
+"today"
+"current"
+
+The capability must preserve enough metadata
+for reasoning about freshness.
+
+
+=====================================================================
+58. CITATION / SOURCE RESOLUTION
+=====================================================================
+
+Research output should preserve a stable mapping:
+
+claim/result
+→ sourceReference(s)
+
+
+The exact rendering can vary.
+
+But later conversation should be able to resolve:
+
+"المصدر الثاني"
+
+"الدراسة التي ذكرتها"
+
+"الموقع الأول"
+
+without depending solely on client-local UI state.
+
+
+=====================================================================
+59. LARGE CONTENT CONTROL
+=====================================================================
+
+Do NOT dump entire websites into LLM context.
+
+Use:
+
+bounded extraction
+relevant sections
+content size caps
+summarization
+source references
+
+
+Preserve provenance.
+
+Optimize context intentionally.
+
+
+=====================================================================
+60. TOKEN EFFICIENCY FOR JASIM RUNTIME
+=====================================================================
+
+Do not send:
+
+full conversation
+all memory
+all Bubbles
+all search page content
+all old research
+
+into every model call.
+
+
+Use current:
+
+Conversation Summary
+recent turns
+relevant memories
+resolved Bubble/World
+selected sources
+
+
+Context must be PURPOSE-BOUND.
+
+
+=====================================================================
+61. TOKEN EFFICIENCY FOR REPLIT DEVELOPMENT
+=====================================================================
+
+During implementation:
+
+DO NOT paste huge command outputs into your own context repeatedly.
+
+For tests:
+
+capture only:
+
+command
+exit code
+failing assertion
+relevant stack
+summary
+
+
+If a test passes:
+
+record PASS.
+
+Do not reread the full output again.
+
+
+Use targeted typecheck/testing during implementation.
+
+Run full regression only at meaningful tranche boundaries.
+
+
+=====================================================================
+62. SUB-AGENT RULE
+=====================================================================
+
+Use sub-agents only when tasks are truly independent.
+
+Maximum recommended initial split:
+
+Agent A:
+provider capability + contracts
+
+Agent B:
+UI/artifact/reference integration
+
+Agent C only if needed:
+security/adversarial proofs
+
+
+Do NOT launch many agents to independently redesign JASIM.
+
+They consume context and create conflicting implementations.
+
+One agent remains responsible for canonical integration.
+
+
+=====================================================================
+63. IMPLEMENTATION ORDER
+=====================================================================
+
+Follow this sequence unless repository evidence proves a better dependency order.
+
+PHASE 11A
+Capability / provider audit
+
+PHASE 11B
+Web Research provider connection
+
+PHASE 11C
+Source provenance + result persistence/reference
+
+PHASE 11D
+Image Generation provider connection
+
+PHASE 11E
+Durable artifact persistence
+
+PHASE 11F
+Independent verification integration
+
+PHASE 11G
+Reference Resolution integration
+
+PHASE 11H
+Smart Bubble attachment/mutation
+
+PHASE 11I
+Web rendering
+
+PHASE 11J
+Mobile rendering
+
+PHASE 11K
+Cross-capability composition
+
+PHASE 11L
+Security / failure / restart proofs
+
+PHASE 11M
+Generalization regression
+
+
+Do NOT stop for approval between internal non-destructive phases.
+
+
+=====================================================================
+64. DATABASE MIGRATION RULE
+=====================================================================
+
+Before adding a table:
+
+inspect current canonical schema.
+
+Reuse existing tables where semantically correct.
+
+DO NOT create:
+
+search_results_v2
+ai_images
+image_results_new
+research_results_new
+
+just because it is easy.
+
+
+If schema extension is necessary:
+
+use canonical Drizzle migration flow.
+
+Prove:
+
+fresh DB migration
++
+existing DB migration
+
+No direct production schema patch.
+
+No DROP/TRUNCATE.
+
+No destructive migration without explicit owner approval.
+
+
+=====================================================================
+65. PROOF SCRIPTS
+=====================================================================
+
+Prefer proof names aligned with existing scripts:
+
+test:jasim-web-research
+
+test:jasim-image-generation
+
+test:jasim-cross-capability
+
+test:jasim-phase11-security
+
+test:jasim-phase11-restart
+
+
+If equivalent proof infrastructure already exists:
+
+extend it.
+
+Do not create duplicate test harnesses.
+
+
+=====================================================================
+66. REGRESSION SUITE
+=====================================================================
+
+After targeted proofs pass, rerun at minimum the relevant canonical proofs for:
+
+Bubble mutation
+Conversation Summary
+Approval Resume
+Trusted Executor
+Receipt/Verifier
+Attempt Ledger
+Adversarial security
+Generalization
+Production Operations
+Web
+Mobile
+
+
+Then server/app typecheck.
+
+
+Do not claim Phase 11 complete if it breaks any prior hard gate.
+
+
+=====================================================================
+67. DEFINITION OF PHASE 11 SUCCESS
+=====================================================================
+
+Phase 11 is NOT complete because:
+
+provider SDK installed
+
+or:
+
+search API returned JSON
+
+or:
+
+image API returned URL
+
+or:
+
+UI showed an image
+
+
+It is complete only when:
+
+NATURAL LANGUAGE
+↓
+CANONICAL ROUTER
+↓
+GENERAL CAPABILITY
+↓
+TRUSTED EXECUTION
+↓
+IMMUTABLE ATTEMPT
+↓
+REAL PROVIDER
+↓
+NORMALIZED RESULT
+↓
+DURABLE PROVENANCE / ARTIFACT
+↓
+RECEIPT
+↓
+INDEPENDENT VERIFIER
+↓
+PERSISTENCE
+↓
+CONVERSATION RESULT
+↓
+REFERENCE RESOLUTION
+↓
+SMART BUBBLE WHEN JUSTIFIED
+↓
+WEB + MOBILE
+↓
+RESTART
+↓
+SAME STATE
+
+
+=====================================================================
+68. REQUIRED FINAL REPORT
+=====================================================================
+
+At the end report ONLY meaningful engineering truth.
+
+Do not write a huge essay.
+
+Use this exact matrix:
+
+
+PHASE_11_WEB_RESEARCH:
+REAL / PARTIAL / BLOCKED / FAIL
+
+REAL_WEB_PROVIDER:
+PASS / FAIL / INCONCLUSIVE
+
+WEB_SOURCE_PROVENANCE:
+PASS / FAIL
+
+WEB_RESULT_PERSISTENCE:
+PASS / FAIL
+
+WEB_REFERENCE_RESOLUTION:
+PASS / FAIL
+
+WEB_PROMPT_INJECTION_DEFENSE:
+PASS / FAIL
+
+
+PHASE_11_IMAGE_GENERATION:
+REAL / PARTIAL / BLOCKED / FAIL
+
+REAL_IMAGE_PROVIDER:
+PASS / FAIL / INCONCLUSIVE
+
+DURABLE_IMAGE_ARTIFACT:
+PASS / FAIL
+
+ARTIFACT_VERIFIER:
+PASS / FAIL
+
+ARTIFACT_OWNER_ISOLATION:
+PASS / FAIL
+
+IMAGE_RESTART_DURABILITY:
+PASS / FAIL
+
+
+CROSS_CAPABILITY_COMPOSITION:
+PASS / FAIL
+
+SEARCH_TO_ANALYSIS:
+PASS / FAIL
+
+ANALYSIS_TO_IMAGE:
+PASS / FAIL
+
+RESULT_TO_EXISTING_BUBBLE:
+PASS / FAIL
+
+SAME_BUBBLE_PRESERVED:
+PASS / FAIL
+
+CONTENT_VERSION_INCREMENT:
+PASS / FAIL
+
+
+TRUSTED_EXECUTOR_BYPASS:
+0 expected
+
+DIRECT_PROVIDER_CALL_FROM_UI:
+0 expected
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS:
+0 expected
+
+FAKE_SUCCESS:
+0 expected
+
+BLIND_RETRY:
+0 expected
+
+
+WEB_CROSS_OWNER:
+PASS / FAIL
+
+ARTIFACT_CROSS_OWNER:
+PASS / FAIL
+
+INDIRECT_PROMPT_INJECTION:
+PASS / FAIL
+
+PROVIDER_FAILURE_HANDLING:
+PASS / FAIL
+
+INCONCLUSIVE_NEVER_SUCCESS:
+PASS / FAIL
+
+
+WEB_UI:
+PASS / FAIL
+
+MOBILE_UI:
+PASS / FAIL
+
+CROSS_DEVICE_STATE:
+PASS / FAIL
+
+
+PHASE_7_GENERALIZATION_REGRESSION:
+PASS / FAIL
+
+SERVER_TYPECHECK:
+PASS / FAIL
+
+APP_TYPECHECK:
+PASS / FAIL
+
+FULL_CANONICAL_REGRESSION:
+PASS / FAIL
+
+
+OWNER_ACTION_REQUIRED:
+NONE
+or exact credential/configuration only
+
+
+=====================================================================
+69. THEN RECALCULATE JASIM STATUS
+=====================================================================
+
+After Phase 11, report:
+
+GENERAL_GENERATIVE_RUNTIME:
+REAL / PARTIAL
+
+VERIFIED_EXECUTION:
+REAL / PARTIAL
+
+CONVERSATION_INTELLIGENCE:
+REAL / PARTIAL
+
+WEB_RESEARCH:
+REAL / PARTIAL / BLOCKED
+
+IMAGE_GENERATION:
+REAL / PARTIAL / BLOCKED
+
+CROSS_CAPABILITY_COMPOSITION:
+REAL / PARTIAL
+
+GENERALIZATION:
+REAL / PARTIAL
+
+PRODUCTION_OPERATIONS:
+REAL / PARTIAL
+
+WEB:
+REAL / PARTIAL
+
+MOBILE:
+REAL / PARTIAL
+
+MULTI_USER_SECURITY:
+REAL / PARTIAL
+
+COMMERCIAL_RUNTIME:
+DEFERRED
+
+
+Then answer:
+
+IS JASIM READY FOR COMMERCIAL RUNTIME TRANCHE?
+YES / NO
+
+Do not start Commercial automatically.
+
+Report the evidence first.
+
+
+=====================================================================
+70. STOP CONDITIONS
+=====================================================================
+
+Do NOT stop for:
+
+internal refactor decision
+non-destructive schema addition
+test failure that can be debugged
+provider adapter implementation
+UI implementation
+ordinary architecture judgment
+
+
+Stop and request owner input only for:
+
+1. destructive/current production data migration risk
+2. missing external credential that cannot be substituted
+3. irreversible external side effect
+4. fundamental contradiction with JASIM architecture
+5. inability to preserve security guarantees
+6. provider account/business/legal requirement requiring owner action
+
+
+Otherwise continue automatically.
+
+
+=====================================================================
+71. FINAL ARCHITECTURAL REMINDER
+=====================================================================
+
+JASIM IS NOT:
+
+a chatbot with tools
+
+a web search wrapper
+
+an image generator
+
+a marketplace builder
+
+a collection of AI features
+
+a collection of domain agents
+
+
+JASIM IS:
+
+ONE CENTRAL INTELLIGENCE
++
+ONE GENERAL RUNTIME
++
+ONE CANONICAL STATE TRUTH
++
+ONE CAPABILITY SYSTEM
++
+ONE TRUSTED EXECUTION CHAIN
++
+ONE CONVERSATIONAL CONTROL SURFACE
++
+SMART GENERATIVE BUBBLES WHEN JUSTIFIED
+
+
+Capabilities such as Web Research and Image Generation
+are merely NEW ORGANS plugged into the same organism.
+
+
+The critical test is not:
+
+"Can web search run?"
+
+It is:
+
+"Can JASIM understand a new goal,
+select and compose Search + Analysis + Generation + Persistence +
+Bubble mutation,
+and produce a truthful durable result
+without any developer writing domain-specific code?"
+
+
+That is the Phase 11 goal.
+
+
+=====================================================================
+72. BEGIN
+=====================================================================
+
+Start with a NARROW capability/provider audit.
+
+Do not reread the entire repository.
+
+Do not create another architecture document.
+
+Do not rebuild proven subsystems.
+
+Inspect the current canonical contracts and provider path.
+
+Reuse what exists.
+
+Extend minimally.
+
+Run real proofs.
+
+Fix failures.
+
+Rerun regressions.
+
+Prove the composition.
+
+BEGIN PHASE 11 NOW.

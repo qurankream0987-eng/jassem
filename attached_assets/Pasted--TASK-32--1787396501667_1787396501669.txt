@@ -1,0 +1,554 @@
+نعم، نفّذ الآن:
+
+TASK #32 — إغلاق بوابة جاهزية جاسم العامة
+
+اعتمد المسودة الحالية كما وصفتها، مع الالتزام الصارم بالنطاق التالي فقط:
+
+1. عزل الرسم الخاص Private Graph بالكامل.
+2. GENERATED_EXECUTION_OWNER_SCOPE.
+3. WebSocket Bubble/Run subscription authorization.
+4. Admin / provider / approval / generated-execution negative proofs.
+5. Effectful restart uncertainty:
+   INCONCLUSIVE → Reconciliation
+   وليس blind retry.
+6. إصلاح canonical `tsc -b` حتى exit 0.
+7. تشغيل migrations الرسمية نفسها على:
+   - Fresh PostgreSQL
+   - Representative previous-schema upgrade
+8. تشغيل runtime فعليًا بعد كل migration proof.
+9. Migration ledger/idempotence.
+10. Readiness + worker/recovery readiness.
+
+لا تنفذ:
+
+- Block 1
+- Universal Capability Fabric
+- Economic Network
+- Scheduler
+- Maps
+- Tracking product features
+- Payments
+- Commercial Runtime
+- Backup/Restore
+- Production Deployment
+- Phase 12 calibration
+- أي provider مدفوع
+- أي Domain-specific implementation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+مهم جدًا — لا تعِد العمل المنجز
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+اعتبر الأدلة التالية Baseline ناجحًا ولا تعِد تنفيذها إلا إذا أثّر تعديل Task #32 مباشرة على مسارها:
+
+AUTH = PASS
+VALID_SESSION = PASS
+INVALID_SESSION = BLOCKED
+EXPIRED_SESSION = BLOCKED
+FORGED_OWNER = BLOCKED
+WEBSOCKET_AUTH = PASS
+CLIENT_CONTROLLED_WS_IDENTITY = 0
+
+TRUSTED_EXECUTOR = PASS
+ATTEMPT_LEDGER = PASS
+INDEPENDENT_VERIFIER = PASS
+RECONCILIATION = PASS
+FAKE_SUCCESS = 0
+
+RUN_RESTART = PASS
+MULTI_NODE_DAG = PASS
+LEASE_RECOVERY = PASS
+FENCE_REJECTION = PASS
+STALE_WORKER_COMMIT = 0
+COMPLETED_NODE_REEXECUTION = 0
+DOUBLE_VALID_WORKER_CLAIM = 0
+FALSE_RUN_SUCCESS = 0
+STARTUP_RECOVERY = PASS
+
+PHASE_7_GENERALIZATION = PASS
+TASK_22 = PASS
+TASK_26 = PASS
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+DOMAIN_SPECIFIC_HANDLER_REQUIRED = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+القاعدة المعمارية
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task #32 ليس هدفه جعل التقرير أخضر.
+
+هدفه إغلاق آخر invariants التي يجب أن تكون صحيحة قبل أن نسمح لجاسم ببناء قدرات عامة وديناميكية فوق Kernel.
+
+إذا وجدت مشكلة:
+
+أصلح الـGENERAL PRIMITIVE أو boundary نفسها.
+
+ممنوع حلها عن طريق:
+
+domain handler
+special-case
+test-only production behavior
+hardcoded owner bypass
+mock-only PASS
+broad @ts-ignore
+any casts لإخفاء مشاكل العقود
+تعطيل strictness
+تجاوز migrations الرسمية
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GENERATED EXECUTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هذه نقطة حرجة جدًا.
+
+أي generated workflow / DNA / World / future generated capability يجب أن يعمل:
+
+ON BEHALF OF
+canonical authorized principal
+
+ولا يتحول بعد restart أو background execution إلى:
+
+SYSTEM-GLOBAL AUTHORITY.
+
+يجب أن تثبت:
+
+Generated execution cannot:
+- impersonate another owner
+- read another owner's private resource
+- invoke arbitrary provider
+- skip Policy
+- skip Approval
+- set VERIFIED
+- fabricate Receipt
+- bypass Trusted Executor
+
+Required:
+
+GENERATED_EXECUTION_OWNER_SCOPE = PASS
+GENERATED_EXECUTION_PRIVILEGE = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PRIVATE GRAPH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أكمل Two-user A/B proof للموارد التي لم تُثبت سابقًا:
+
+Memory
+World
+Task
+Attempt
+Receipt
+Artifact Preview
+Artifact Lineage
+Research Result
+Source Reference
+Structured Findings if addressable
+ChangeSet
+Generated Execution State
+
+ولا تنس:
+
+WebSocket subscriptions:
+
+B → A private Bubble = BLOCKED
+B → A private Run = BLOCKED
+
+Required:
+
+CROSS_OWNER_PRIVATE_READS = 0
+CROSS_OWNER_PRIVATE_WRITES = 0
+CROSS_OWNER_PRIVATE_EXECUTIONS = 0
+CROSS_OWNER_PRIVATE_SUBSCRIPTIONS = 0
+IDOR_PRIVATE_ACCESS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NEGATIVE EXECUTION PROOFS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أثبت فعليًا وليس بمجرد inspection:
+
+ADMIN_EXECUTION_BYPASS = 0
+
+ADMIN_CAN_FORGE_VERIFIED_RESULT = NO
+
+ADMIN_CAN_OVERWRITE_ATTEMPT = NO
+
+DIRECT_EFFECTFUL_PROVIDER_BYPASS = 0
+
+GENERATED_EXECUTION_PRIVILEGE = 0
+
+CLIENT_DIRECT_EFFECT = 0
+
+CROSS_CONTEXT_APPROVAL_REPLAY = 0
+
+STALE_APPROVAL_EXECUTION = 0
+
+إذا لم يوجد active admin bypass أصلًا:
+
+صنّفه بوضوح:
+
+NO_ACTIVE_PRODUCTION_BYPASS
+
+مع إثبات أن المسارات القديمة/المرجعية غير مسجلة في canonical appRouter.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EFFECTFUL RECOVERY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+استخدم local controlled test adapter فقط.
+
+لا تستخدم provider مدفوعًا.
+
+اختبر:
+
+Trusted Executor
+→ Attempt
+→ effect adapter receives request
+→ effect outcome becomes uncertain
+→ process/worker dies
+→ restart
+→ no blind second provider call
+→ INCONCLUSIVE
+→ Reconciliation
+
+Required:
+
+PROVIDER_EFFECT_CALL_COUNT = 1
+
+BLIND_EFFECT_RETRY_AFTER_RESTART = 0
+
+اختبر حالتين:
+
+A. الأثر حدث فعلًا
+→ reconciliation discovers it
+→ state becomes truthful.
+
+B. الأثر لم يحدث فعلًا
+→ reconciliation proves absence/failure
+→ retry only if policy/idempotency allow it.
+
+لا تجعل test adapter يختصر المسار ويستدعي reconciliation مباشرة.
+
+يجب أن يمر عبر canonical Runtime.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TYPESCRIPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Canonical:
+
+tsc -b
+
+يجب أن يصل إلى exit 0.
+
+ابدأ بتجميع الأخطاء حسب Root Cause.
+
+لا تصلح 126 خطأ بشكل عشوائي.
+
+لا تستخدم:
+
+global strict disable
+blanket skip
+broad @ts-ignore
+unsafe any
+excluding active canonical runtime
+
+لإخفاء المشكلة.
+
+أصلح العقود الفعلية.
+
+خصوصًا أي بقايا legacy assumptions لا تتوافق مع:
+
+{ result, metadata }
+
+أو canonical runtime types.
+
+Required:
+
+FULL_CANONICAL_TYPECHECK = PASS
+TSC_ERROR_COUNT = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MIGRATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+يجب استخدام canonical migration command نفسه.
+
+ليس manual SQL proof فقط.
+
+Fresh proof:
+
+empty isolated PostgreSQL
+→ canonical migrate
+→ current schema
+→ migration ledger
+→ runtime boot
+→ basic canonical persistence
+
+Upgrade proof:
+
+legitimate previous migration checkpoint
+→ representative rows
+→ current canonical migrate
+→ preserved required data
+→ runtime boot
+
+ثم أعد migrate:
+
+no duplicate migration
+no schema corruption
+
+Required:
+
+DATABASE_MIGRATIONS = PASS
+FRESH_DATABASE_MIGRATION = PASS
+FRESH_DATABASE_RUNTIME_BOOT = PASS
+EXISTING_DATABASE_UPGRADE = PASS
+EXISTING_DATABASE_RUNTIME_BOOT = PASS
+MIGRATION_LEDGER = PASS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+READINESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Readiness must prove:
+
+DATABASE_READY
+SCHEMA_COMPATIBLE
+RUNTIME_INITIALIZED
+WORKER_INITIALIZED
+RECOVERY_LOOP_INITIALIZED
+
+اختبر:
+
+normal state → READY
+
+DB unavailable → NOT_READY
+
+schema incompatible → NOT_READY
+
+worker/recovery unavailable → NOT_READY
+
+normal restored → READY
+
+Optional external providers do not need to make all JASIM unready.
+
+Required:
+
+READINESS = PASS
+WORKER_READINESS = PASS
+RECOVERY_LOOP_READINESS = PASS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL DECISION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task #32 is complete only if the remaining foundation gate becomes:
+
+CROSS_OWNER_ISOLATION = PASS
+GENERATED_EXECUTION_OWNER_SCOPE = PASS
+
+ADMIN_EXECUTION_BYPASS = 0
+DIRECT_EFFECTFUL_PROVIDER_BYPASS = 0
+GENERATED_EXECUTION_PRIVILEGE = 0
+APPROVAL_REPLAY_PROTECTION = PASS
+
+BLIND_EFFECT_RETRY_AFTER_RESTART = 0
+
+FULL_CANONICAL_TYPECHECK = PASS
+
+DATABASE_MIGRATIONS = PASS
+FRESH_DATABASE_MIGRATION = PASS
+EXISTING_DATABASE_UPGRADE = PASS
+MIGRATION_LEDGER = PASS
+
+READINESS = PASS
+
+FAKE_SUCCESS = 0
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+DOMAIN_SPECIFIC_HANDLER_REQUIRED = 0
+
+ثم فقط:
+
+READY_FOR_UNIVERSAL_CAPABILITY_FABRIC = YES
+
+إذا لم تتحقق هذه الشروط:
+
+لا تخفف Gate.
+
+أعد:
+
+READY_FOR_UNIVERSAL_CAPABILITY_FABRIC = NO
+
+مع Root Cause الدقيق.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DEFERRED — لا تنفذها
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BACKUP:
+DEFERRED_TO_FINAL_PRODUCTION_GATE
+
+RESTORE:
+DEFERRED_TO_FINAL_PRODUCTION_GATE
+
+PRODUCTION_DEPLOYMENT:
+DEFERRED_TO_FINAL_PRODUCTION_GATE
+
+IOS_ANDROID_SIGNING:
+DEFERRED_TO_FINAL_PRODUCTION_GATE
+
+MODEL_POLICY_ECONOMIC_CALIBRATION:
+PARTIAL_DEFERRED
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أعد تقرير Task #32 النهائي بالأرقام والأدلة، ويتضمن على الأقل:
+
+TASK_32:
+PASS / PARTIAL / FAIL
+
+CROSS_OWNER_ISOLATION:
+PASS / FAIL
+
+GENERATED_EXECUTION_OWNER_SCOPE:
+PASS / FAIL
+
+CROSS_OWNER_PRIVATE_READS:
+<number>
+
+CROSS_OWNER_PRIVATE_WRITES:
+<number>
+
+CROSS_OWNER_PRIVATE_EXECUTIONS:
+<number>
+
+CROSS_OWNER_PRIVATE_SUBSCRIPTIONS:
+<number>
+
+IDOR_PRIVATE_ACCESS:
+<number>
+
+
+ADMIN_BYPASS_CLASSIFICATION:
+<exact>
+
+ADMIN_EXECUTION_BYPASS:
+<number>
+
+ADMIN_CAN_FORGE_VERIFIED_RESULT:
+YES / NO
+
+ADMIN_CAN_OVERWRITE_ATTEMPT:
+YES / NO
+
+DIRECT_EFFECTFUL_PROVIDER_BYPASS:
+<number>
+
+GENERATED_EXECUTION_PRIVILEGE:
+<number>
+
+CLIENT_DIRECT_EFFECT:
+<number>
+
+CROSS_CONTEXT_APPROVAL_REPLAY:
+<number>
+
+STALE_APPROVAL_EXECUTION:
+<number>
+
+
+BLIND_EFFECT_RETRY_AFTER_RESTART:
+<number>
+
+EFFECTFUL_RECOVERY_EFFECT_OCCURRED:
+PASS / FAIL
+
+EFFECTFUL_RECOVERY_EFFECT_NOT_OCCURRED:
+PASS / FAIL
+
+
+FULL_CANONICAL_TYPECHECK:
+PASS / FAIL
+
+TSC_ERROR_COUNT:
+<number>
+
+TSC_ROOT_CAUSE_GROUPS_FIXED:
+<number>
+
+
+DATABASE_MIGRATIONS:
+PASS / FAIL
+
+FRESH_DATABASE_MIGRATION:
+PASS / FAIL
+
+FRESH_DATABASE_RUNTIME_BOOT:
+PASS / FAIL
+
+EXISTING_DATABASE_UPGRADE:
+PASS / FAIL
+
+EXISTING_DATABASE_RUNTIME_BOOT:
+PASS / FAIL
+
+MIGRATION_LEDGER:
+PASS / FAIL
+
+
+READINESS:
+PASS / FAIL
+
+WORKER_READINESS:
+PASS / FAIL
+
+RECOVERY_LOOP_READINESS:
+PASS / FAIL
+
+
+GENERATIVE_RUNTIME_CHECK:
+PASS / FAIL
+
+WEB_PRODUCTION_BUILD:
+PASS / FAIL
+
+MOBILE_TYPECHECK:
+PASS / FAIL
+
+
+PHASE_7_GENERALIZATION:
+PASS / REUSED_PASS / FAIL
+
+TASK_22:
+PASS / REUSED_PASS / FAIL
+
+TASK_26:
+PASS / REUSED_PASS / FAIL
+
+
+FAKE_SUCCESS:
+<number>
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS:
+<number>
+
+DOMAIN_SPECIFIC_HANDLER_REQUIRED:
+<number>
+
+
+READY_FOR_UNIVERSAL_CAPABILITY_FABRIC:
+YES / NO
+
+
+OWNER_ACTION_REQUIRED_NOW:
+NONE
+
+
+STOP.
+
+لا تبدأ Block 1 تلقائيًا.

@@ -1,0 +1,161 @@
+ابدأ الآن تنفيذ Task #26 — تركيب البحث إلى توليد الصور مع lineage دائم
+وفق الخطة المعتمدة والموثقة بالكامل.
+
+هذه المهمة تمثل التنفيذ الفعلي لمسار Task #23 السابق.
+
+لا تعِد كتابة الخطة.
+لا تعِد تحليل المشروع من البداية.
+لا تنشئ Runtime أو Gateway جديداً.
+لا تلمس Phase 12 أو ModelPolicy أو تعيينات T1/T2/T3.
+لا تستأنف calibrate:jasim-models.
+لا تبدأ Task #24.
+لا تعدّل Task #22 إلا عند إعادة استخدام مساره المثبت.
+
+نفّذ فقط المسار canonical التالي:
+
+Natural-language user goal
+→ ONE canonical Run/DAG
+→ Web Research أو reuse لبحث موجود صالح
+→ Server-side SourceReference Resolution
+→ Selected Sources
+→ Bounded Evidence
+→ Structured Findings
+→ Image Prompt/Context Synthesis
+→ Existing Image Generation Capability
+→ Immutable Attempt
+→ Receipt
+→ Independent Verifier
+→ Durable RuntimeArtifact
+→ Generic Durable Artifact Lineage
+→ Restart Persistence
+→ Queryable Provenance
+→ Existing Task #22 path عند طلب استخدام الصورة داخل Bubble
+
+متطلبات ملزمة:
+
+1. لا تعِد البحث إذا كانت نتيجة بحث صالحة موجودة بالفعل ويشير إليها المستخدم.
+
+2. عبارة مثل:
+   «استخدم المصدرين الثاني والرابع»
+   يجب أن تُحل Server-side إلى SourceReference IDs canonical،
+   وليس من array index محلي في React أو Mobile state.
+
+3. لا ترسل صفحات الويب كاملة إلى نموذج الصور.
+   استخدم:
+   selected sources
+   → bounded relevant evidence
+   → structured findings
+   → minimal generation context.
+
+4. محتوى الويب يبقى:
+   UNTRUSTED_EXTERNAL_CONTENT
+
+   ولا يمكنه:
+   - تغيير Policy.
+   - تشغيل Capability.
+   - الموافقة على Action.
+   - طلب أسرار.
+   - تعديل Bubble.
+   - التحكم في Image Generation مباشرة.
+
+5. لا تنشئ workflow خاصاً بأي مجال.
+   ممنوع أي:
+   NajdHandler
+   CafeResearchPipeline
+   ProductImageResearch
+   ArchitectureAgent
+   أو ما يشابهها.
+
+6. استخدم الـRun/DAG الحالي.
+   لا تنشئ CrossCapabilityRuntime جديداً.
+
+7. احفظ lineage عامة ودائمة، بحيث نستطيع لاحقاً تتبع:
+
+   RuntimeArtifact
+   → image generation attempt
+   → structured findings
+   → selected SourceReferences
+   → original WebSearchResult
+
+8. لا تنسخ محتوى صفحات الويب بالكامل داخل Artifact metadata.
+
+9. حافظ على الفصل بين:
+
+   EXECUTION_VERIFICATION
+   SOURCE_PROVENANCE
+   FACTUAL_TRUTH
+   CREATIVE_DERIVATION
+
+   استخدام مصدر في توليد صورة لا يعني أن الصورة أصبحت «حقيقة موثقة».
+
+10. lineage يجب أن تكون immutable بالنسبة للـArtifact الناتجة.
+    إذا أنشأ المستخدم نسخة جديدة من مصادر أخرى:
+    → Artifact جديدة
+    → lineage جديدة
+    ولا تُعدّل provenance للصورة القديمة.
+
+11. حافظ على idempotency:
+    infrastructure retry لا ينشئ صورة مكررة.
+    أما طلب المستخدم «أنشئ نسخة أخرى» فهو Intent جديد.
+
+12. failure propagation يجب أن يكون صادقاً:
+    إذا نجح البحث وفشلت الصورة:
+    SEARCH = VERIFIED
+    IMAGE = FAILED / INCONCLUSIVE
+
+    لا تعتبر الـRun كاملة ناجحة.
+
+13. إذا حدث HTTP 429:
+    استخدم:
+    INCONCLUSIVE_PROVIDER_CAPACITY
+
+    ولا تحوله إلى quality failure أو fake success.
+
+14. EMPTY_COMPLETION يبقى فئة مستقلة عن HTTP 429 ما لم يوجد دليل صريح من المزود.
+
+15. حافظ على cross-owner isolation عبر:
+    ResearchResult
+    SourceReference
+    Finding
+    RuntimeArtifact
+    ArtifactLineage
+
+16. أعد استخدام Task #22 كما هي بعد إنشاء Artifact.
+    لا تنشئ مساراً خاصاً لإرفاق Research Image إلى Bubble.
+
+17. استخدم أقل عدد ممكن من provider calls.
+    أعد استخدام نتائج Phase 11 الموجودة للاختبارات عندما تكون صالحة.
+
+18. لا تهدر التوكنز:
+    TARGETED INSPECTION
+    → MINIMAL GENERIC EXTENSION
+    → TARGETED PROOF
+    → REGRESSION
+    → REPORT
+
+نفّذ أيضاً البراهين المعتمدة للخطة، بما فيها:
+
+- existing research reuse
+- explicit source selection
+- server-side reference resolution
+- bounded evidence
+- structured findings
+- research → image dataflow
+- artifact lineage
+- lineage immutability
+- prompt injection defense
+- cross-owner blocking
+- idempotency
+- reconciliation
+- restart durability
+- Task #22 interoperability
+- Web
+- Mobile/shared canonical state
+
+ثم أعد التقرير النهائي لـTask #26 فقط.
+
+لا تبدأ Task #24 بعد النجاح.
+لا تستأنف Phase 12 calibration.
+لا تغيّر ModelPolicy.
+
+ابدأ التنفيذ الآن ولا تتوقف عند كتابة الخطة.

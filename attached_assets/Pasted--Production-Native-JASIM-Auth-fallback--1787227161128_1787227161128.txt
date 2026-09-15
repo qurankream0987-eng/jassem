@@ -1,0 +1,206 @@
+اختر له **مسار تسجيل دخول Production Native حقيقي ومشترك مع نفس JASIM Auth**، وليس fallback تطويري ولا Auth منفصل للموبايل.
+
+أرسل له هذا الأمر:
+
+```text
+اعتمد الاتجاه التالي وأكمله ضمن البرنامج:
+
+PRODUCTION MOBILE AUTH = NATIVE CLIENT + CANONICAL JASIM AUTH
+
+لا تستخدم fallback التطويري في النسخة النهائية.
+ولا تنشئ نظام تسجيل دخول منفصل خاص بـiOS/Android.
+
+المطلوب:
+
+1. Web وiOS وAndroid يجب أن تستخدم نفس:
+   - users
+   - sessions
+   - auth policies
+   - identity source
+   - authorization rules
+
+2. تطبيق الجوال يتصل مباشرة بـCanonical JASIM API عبر HTTPS.
+
+3. بعد نجاح login:
+   - الخادم ينشئ session/token production حقيقي.
+   - iOS يخزن credential في Keychain عبر secure storage.
+   - Android يخزنه في Android Keystore-backed secure storage.
+   - لا تستخدم AsyncStorage لتخزين access token في production.
+
+4. لا تعتمد على Expo Go auth fallback.
+   Expo Go يمكن أن يبقى للتطوير فقط، لكن:
+   Standalone iOS/Android يجب أن يستخدم production native auth path.
+
+5. طبّق lifecycle كامل:
+   LOGIN
+   → secure credential storage
+   → authenticated API calls
+   → app restart session restore
+   → token/session validation
+   → expiration handling
+   → logout
+   → revoke/delete local credential
+
+6. لا تجعل client يقرر صلاحيات المستخدم.
+   كل authorization يبقى server-side.
+
+7. إذا الـCanonical JASIM الحالي يستخدم bearer sessions/tokens بالفعل:
+   لا تستبدله بـOAuth/JWT فقط من أجل الجوال.
+   Extend the existing canonical mechanism unless there is a proven security reason not to.
+
+8. افصل:
+   AUTHENTICATION
+   عن
+   DEVICE BIOMETRICS
+
+   Face ID / Touch ID / Android biometrics ليست تسجيل دخول مستقل إلى JASIM.
+
+   هي فقط local unlock للcredential المخزن بأمان، إن تم تفعيلها.
+
+   التدفق:
+   biometric success
+   → unlock stored credential
+   → server validates session
+   → authenticated
+
+9. لا تخزن:
+   - raw password
+   - provider secrets
+   - session secrets في logs
+   - credentials في runtime events
+   - tokens داخل Bubble state
+
+10. أضف production configuration واضحة:
+
+   DEVELOPMENT:
+   local/dev API where needed
+
+   PRODUCTION:
+   canonical HTTPS JASIM API
+
+   ولا تسمح للـproduction build بالرجوع تلقائيًا إلى localhost أو fallback dev endpoint.
+
+11. أضف startup guard:
+   إذا Production build لا يحتوي production API configuration الصحيحة:
+   FAIL CLOSED
+
+   لا:
+   silently fallback to dev.
+
+12. اختبر على mobile runtime:
+
+   A. Fresh install → login → success
+   B. Kill app → reopen → session restored
+   C. Server rejects expired/revoked session → client returns to login
+   D. Logout → secure credential deleted
+   E. Reopen after logout → login required
+   F. User A cannot access User B resources
+   G. Bubble ownership still enforced
+   H. Run ownership still enforced
+   I. Conversation ownership still enforced
+   J. Offline launch does not invent authenticated state
+   K. Production build never calls localhost
+   L. Tokens never appear in UI/logs/runtime payloads
+
+13. Web/Mobile identity parity test:
+
+   Login as same user on Web
+   → create Bubble
+
+   Login as same user on iOS/Android
+   → same Bubble visible
+
+   Mobile:
+   mutate Bubble
+
+   Web:
+   sees same canonical state
+
+   وكذلك Run:
+   Web creates Run
+   → Mobile resolves same Run
+
+14. حافظ على:
+   ONE USER IDENTITY
+   ONE AUTHORITY MODEL
+   ONE CANONICAL SESSION SYSTEM
+
+   وليس:
+   Web Auth
+   +
+   Mobile Auth
+   +
+   Expo Auth
+
+15. Expo Go:
+   يمكن إبقاء development adapter إذا احتجناه للاختبار،
+   لكن يجب عزله صراحة تحت DEVELOPMENT ONLY.
+
+   يجب ألا يدخل ذلك المسار في:
+   iOS standalone production
+   Android standalone production
+
+16. أضف check في build/config يمنع accidental dev auth path في production.
+
+17. لا تبدأ Social Login الآن إلا إذا كان موجودًا أصلًا كمتطلب.
+   الأولوية الآن هي production native session path الصحيح لنظام JASIM الحالي.
+
+18. بعد التنفيذ أعطني فقط:
+
+MOBILE PRODUCTION AUTH:
+PASS / FAIL
+
+USES CANONICAL JASIM AUTH:
+YES / NO
+
+SEPARATE MOBILE AUTH CREATED:
+YES / NO
+
+IOS SECURE STORAGE:
+PASS / FAIL
+
+ANDROID SECURE STORAGE:
+PASS / FAIL
+
+SESSION RESTORE:
+PASS / FAIL
+
+SESSION REVOCATION:
+PASS / FAIL
+
+LOGOUT CLEANUP:
+PASS / FAIL
+
+PRODUCTION DEV-FALLBACK:
+ABSENT / PRESENT
+
+LOCALHOST IN PRODUCTION:
+ABSENT / PRESENT
+
+WEB/MOBILE IDENTITY PARITY:
+PASS / FAIL
+
+OWNER ISOLATION:
+PASS / FAIL
+
+EXPO GO REQUIRED FOR FINAL AUTH:
+NO / YES
+
+19. Hard acceptance condition:
+
+لا تعتبر Mobile Production Auth مكتملة إلا إذا:
+
+USES CANONICAL JASIM AUTH = YES
+SEPARATE MOBILE AUTH CREATED = NO
+PRODUCTION DEV-FALLBACK = ABSENT
+LOCALHOST IN PRODUCTION = ABSENT
+EXPO GO REQUIRED FOR FINAL AUTH = NO
+WEB/MOBILE IDENTITY PARITY = PASS
+
+أكمل بهذا الاتجاه.
+لا تسألني عن اختيار Auth architecture أخرى ما دام نظام JASIM الأصلي يستطيع توفير session production آمنة.
+```
+
+هذا هو الاتجاه الأنسب لجاسم: **لا نبني Auth ثانية للموبايل**. الهاتف مجرد Client آخر لنفس المستخدم ونفس Runtime ونفس الصلاحيات.
+
+والنقطة الأهم: لا تجعل Replit يربط كلمة *Native Login* تلقائيًا بـSign in with Apple أو Google. هذه خيارات دخول يمكن إضافتها لاحقًا، أما المشكلة الحالية فهي أن **Standalone iOS/Android يحتاجان مسار جلسة Production حقيقي وآمن بدل fallback التطويري**.

@@ -1,0 +1,1114 @@
+# JASIM — CONTINUE CORE GAP CLOSURE
+
+## FROM BASIC OUTPUT ROUTER TO REAL GENERAL RUNTIME
+
+اعتمد ما تم حتى الآن كـBaseline صحيح ولا تعِد بناءه:
+
+```text
+Persistent Conversations
+Persistent Messages
+Owner Isolation
+Smart Bubble basic aggregate
+Bubble with optional World binding
+Safe Output Envelope
+TEXT output
+EPHEMERAL BUBBLE
+INTERACTIVE BUBBLE without actions/workflows/world
+Web + Mobile using server conversation as source of truth
+Honest 502/503 behavior
+```
+
+ولا ترجع إلى النموذج القديم:
+
+```text
+EVERY PROMPT
+→ CREATE TASK
+→ CREATE WORLD
+```
+
+من الآن أكمل جاسم وفق هذا الترتيب.
+
+---
+
+# PHASE 1 — MOVE WEB + MOBILE MAIN CHAT TO THE NEW TURN RUNTIME
+
+انقل Main Chat في:
+
+```text
+artifacts/jasim
+artifacts/jasim-mobile
+```
+
+من مسار إنشاء Task القديم إلى:
+
+```text
+POST /api/runtime/conversations/{conversationId}/turns
+```
+
+بحيث يكون هذا هو المسار الأساسي لأي رسالة جديدة من المستخدم.
+
+---
+
+## 1.1 لا تحذف Task Runtime القديم إذا كان ما زال مطلوبًا
+
+Task Runtime سيبقى للتنفيذ الحقيقي.
+
+لكن لا تجعله Entry Point لكل رسالة.
+
+الصحيح:
+
+```text
+User message
+↓
+Conversation Turn
+↓
+Output Router
+↓
+choose runtime form
+```
+
+ثم فقط إذا اختار الناتج Task/Run/Action:
+
+ينتقل إلى Execution Runtime.
+
+---
+
+# PHASE 2 — COMPLETE SEMANTIC OUTPUT ROUTER
+
+الـOutput Router الحالي آمن لكنه محدود.
+
+وسعه ليختار بوضوح بين:
+
+```text
+TEXT
+STRUCTURED_RESULT
+EPHEMERAL_BUBBLE
+INTERACTIVE_BUBBLE
+DIRECT_ACTION
+WORKFLOW
+DURABLE_RUN
+PERSISTENT_SMART_BUBBLE
+```
+
+---
+
+## 2.1 لا تجعل كل اختيار من LLM مقبولًا مباشرة
+
+المسار:
+
+```text
+Model proposes output form
+↓
+Validate schema
+↓
+Runtime validates feasibility
+↓
+Check required capability
+↓
+Accept / downgrade / block
+```
+
+---
+
+## 2.2 مثال
+
+المستخدم:
+
+> ما الفرق بين الخيارين؟
+
+Expected:
+
+```text
+TEXT / STRUCTURED_RESULT
+```
+
+وليس Task أو World.
+
+---
+
+## 2.3 مثال
+
+المستخدم:
+
+> بع هذا الهاتف.
+
+Expected:
+
+```text
+DIRECT_ACTION / DURABLE_RUN
+```
+
+وليس Persistent Bubble تلقائيًا.
+
+---
+
+## 2.4 مثال
+
+المستخدم:
+
+> راقب سعر هذا الجهاز وأخبرني إذا نزل عن 100.
+
+Expected:
+
+```text
+DURABLE_RUN
+```
+
+---
+
+## 2.5 مثال
+
+المستخدم:
+
+> أنشئ لي نظامًا أدير منه المنتجات والطلبات والعملاء.
+
+Expected:
+
+```text
+PERSISTENT_SMART_BUBBLE
+```
+
+---
+
+# PHASE 3 — GENERAL REFERENCE RESOLUTION
+
+ابنِ Reference Resolution عامة وليست Bubble-only.
+
+يجب أن يستطيع جاسم فهم مراجع مثل:
+
+```text
+فقاعتي
+منصتي
+متجري
+السيارة التي أرسلتها
+الإعلان السابق
+الحجز الذي عملناه
+المنتج الذي أضفته أمس
+الخدمة التي أنشأناها
+المهمة السابقة
+```
+
+---
+
+## 3.1 أنواع الأهداف الممكنة
+
+Resolver يجب أن يستطيع إرجاع:
+
+```text
+bubbleId?
+worldId?
+taskId?
+runId?
+entityId?
+workflowId?
+transactionId?
+message/reference?
+```
+
+بحسب السياق.
+
+---
+
+## 3.2 مصادر الحل
+
+استخدم:
+
+```text
+conversation history
+recent references
+active bubble
+recent bubble
+semantic description
+entity mentions
+temporal references
+ownership
+recent mutations
+```
+
+---
+
+## 3.3 لا تخمن إذا كان هناك غموض حقيقي
+
+إذا كان لدى المستخدم فقاعة واحدة فيها iPhone:
+
+> متجري الذي فيه الآيفون
+
+يجب حلها مباشرة.
+
+أما إذا كانت هناك فقاعتان تنطبقان على الوصف:
+
+اسأل المستخدم سؤالًا قصيرًا.
+
+---
+
+# PHASE 4 — DIRECT ACTION + DURABLE RUN MODEL
+
+هذه المرحلة أساسية جدًا حتى لا يتحول جاسم إلى Platform Builder فقط.
+
+ابنِ Generic Run Runtime.
+
+لا تستخدم Domain-specific Runs.
+
+---
+
+## 4.1 Run contract
+
+اجعل Run قادرة على تمثيل:
+
+```text
+runId
+conversationId
+ownerId
+bubbleId? optional
+goal
+state
+executionGraph
+inputs
+outputs
+requiredCapabilities
+status
+createdAt
+updatedAt
+resumeAt?
+```
+
+استخدم التصميم المناسب للمشروع الحالي.
+
+---
+
+## 4.2 Run ليست World
+
+مثال:
+
+> بع هذا المنتج.
+
+يمكن أن ينشئ Run مستمرة.
+
+لا يحتاج World كامل.
+
+---
+
+## 4.3 Run ليست Domain Class
+
+ممنوع:
+
+```text
+SellCarRun
+HireEmployeeRun
+AdvertiseProductRun
+```
+
+الصحيح:
+
+```text
+Run
++
+goal
++
+DAG
++
+capabilities
++
+state
+```
+
+---
+
+# PHASE 5 — CONVERSATIONAL SMART BUBBLE MUTATION
+
+بعد Reference Resolution:
+
+اجعل المستخدم يستطيع تعديل Bubble الموجودة مباشرة من Main Chat.
+
+مثال:
+
+> متجري الذي فيه الآيفون خفض سعر الآيفون إلى 280.
+
+المسار:
+
+```text
+resolve bubble
+↓
+resolve entity
+↓
+understand mutation
+↓
+create mutation plan
+↓
+policy/permission
+↓
+approval if needed
+↓
+execute
+↓
+verify
+↓
+version
+↓
+rerender
+```
+
+---
+
+# PHASE 6 — BUBBLE EVOLUTION
+
+فرق بين أنواع التغيير:
+
+```text
+DATA_MUTATION
+STRUCTURAL_MUTATION
+POLICY_MUTATION
+WORKFLOW_MUTATION
+VIEW_MUTATION
+PERMISSION_MUTATION
+COMMERCIAL_MUTATION
+```
+
+---
+
+## 6.1 Data mutation
+
+> أضف منتجًا.
+
+---
+
+## 6.2 Structural mutation
+
+> أضف نظام تقييمات.
+
+---
+
+## 6.3 Policy mutation
+
+> أي طلب فوق 500 يحتاج موافقتي.
+
+---
+
+## 6.4 Workflow mutation
+
+> بعد إكمال الطلب اطلب من العميل تقييم الخدمة.
+
+---
+
+## 6.5 Permission mutation
+
+> الموظف أحمد يستطيع إضافة منتجات لكنه لا يستطيع تغيير الأسعار.
+
+---
+
+## 6.6 Evolution pipeline
+
+للتعديلات المهمة استخدم:
+
+```text
+ChangeSet
+↓
+Validation
+↓
+Human-readable Preview
+↓
+Approval if needed
+↓
+Apply
+↓
+Version
+↓
+Verify
+↓
+Rollback if needed
+```
+
+---
+
+# PHASE 7 — DURABLE DAG EXECUTION
+
+أكمل DAG Engine الحقيقي.
+
+يجب أن يدعم:
+
+```text
+dependencies
+parallel execution
+joins
+branching
+input gates
+approval gates
+retry
+backoff
+resume
+scheduled nodes
+event-triggered resume
+```
+
+---
+
+## 7.1 لا تعتمد على Promise chain في الذاكرة
+
+Execution state يجب أن يكون Durable في DB.
+
+---
+
+## 7.2 Workers
+
+أضف Worker architecture مناسبة.
+
+يفضل دعم:
+
+```text
+leases
+heartbeats
+claim/release
+retryable failures
+dead/stuck detection
+```
+
+---
+
+## 7.3 Restart test
+
+ابدأ Run.
+
+نفذ بعض الخطوات.
+
+أوقف API/Worker.
+
+شغله من جديد.
+
+يجب أن يكمل من الحالة الصحيحة.
+
+---
+
+# PHASE 8 — INDEPENDENT VERIFIER
+
+أكمل Verifier مستقلًا عن Executor.
+
+لا تعتبر:
+
+```text
+provider returned success
+```
+
+دليلًا كافيًا.
+
+---
+
+## 8.1 Verification strategies
+
+دعم على الأقل:
+
+```text
+DB_READBACK
+STATE_ASSERTION
+PROVIDER_LOOKUP
+OUTPUT_VALIDATION
+COMPOSITE
+```
+
+---
+
+## 8.2 Verification evidence
+
+خزن:
+
+```text
+expectedOutcome
+actualEvidence
+strategy
+verificationStatus
+verifiedAt
+```
+
+---
+
+# PHASE 9 — LONG-RUNNING RUNTIME
+
+أكمل دعم:
+
+```text
+WAIT
+SCHEDULE
+MONITOR
+WATCH
+NOTIFY
+RESUME_ON_EVENT
+```
+
+دون إبقاء HTTP request مفتوحًا.
+
+---
+
+## 9.1 مثال
+
+> راقب سعر هذا المنتج وأخبرني إذا نزل عن 100.
+
+يجب أن يبقى Run فعالًا حتى بعد:
+
+```text
+app close
+server restart
+user logout
+```
+
+بحسب صلاحيات النظام.
+
+---
+
+# PHASE 10 — MULTI-USER AUTHORIZATION
+
+أكمل Membership/Permissions للفقاعات الدائمة.
+
+دعم مفاهيم عامة مثل:
+
+```text
+owner
+member
+customer
+provider
+moderator
+custom role
+```
+
+---
+
+## 10.1 Server-side only truth
+
+إخفاء زر في الواجهة ليس Permission.
+
+كل Action يجب أن يعاد التحقق منها على الخادم.
+
+---
+
+# PHASE 11 — CROSS-BUBBLE GRANTS
+
+أضف بنية آمنة تسمح لاحقًا بـ:
+
+> خذ المنتجات من فقاعة المخزون واعرضها في فقاعة المتجر.
+
+> اربط طلبات المتجر بفقاعة التوصيل.
+
+دعم:
+
+```text
+bubble references
+explicit grants
+controlled data sharing
+cross-bubble workflows
+event subscriptions
+```
+
+مع Ownership/Permissions واضحة.
+
+---
+
+# PHASE 12 — EXTERNAL PROVIDERS
+
+بعد صحة الـRuntime:
+
+أضف Providers عامة تدريجيًا.
+
+مثل:
+
+```text
+search.web
+notify.send
+publish.create
+schedule.create
+external.lookup
+```
+
+حسب ما تستطيع البيئة إثباته فعليًا.
+
+---
+
+## 12.1 لا تضف Domains
+
+ممنوع:
+
+```text
+CarsProvider
+JobsProvider
+RestaurantProvider
+```
+
+كمصدر للعمومية.
+
+Provider يجب أن يخدم Capability عامة.
+
+---
+
+# PHASE 13 — TRANSACTIONS
+
+ابنِ Transaction lifecycle عامة:
+
+```text
+intent
+authorization
+approval
+execute
+receipt
+verify
+settle
+refund/compensate
+```
+
+دون ربط Core ببوابة دفع واحدة.
+
+---
+
+# PHASE 14 — WEB + MOBILE FULL PARITY
+
+تأكد أن Web وMobile يعرضان نفس Runtime Truth.
+
+اختبر:
+
+```text
+conversation
+text result
+ephemeral bubble
+interactive bubble
+direct run
+persistent bubble
+bubble mutation
+approval
+execution
+verification
+resume
+```
+
+---
+
+# PHASE 15 — GENERALIZATION LAB
+
+بعد اكتمال ما سبق وربط Model Provider حقيقي:
+
+شغل:
+
+```text
+30+ unseen scenarios
+Arabic + English
+```
+
+---
+
+## 15.1 لا تجعل السيناريوهات كلها منصات
+
+وزعها على الأقل:
+
+```text
+6 direct actions
+6 text/structured results
+5 durable runs
+5 persistent Smart Bubbles
+4 mutations of existing Bubbles
+4 compound mixed scenarios
+```
+
+---
+
+## 15.2 القياسات الإلزامية
+
+احسب:
+
+```text
+Output Form Selection Accuracy
+Reasoning Generalization Score
+Reference Resolution Accuracy
+World/Bubble Modeling Success
+Plan Validity Rate
+Capability Mapping Accuracy
+Execution Coverage
+Verifier Success Rate
+Recovery Rate
+Security Negative Test Pass Rate
+```
+
+---
+
+## 15.3 أضف مقياسًا مهمًا جدًا
+
+```text
+UNNECESSARY PERSISTENT WORLD RATE
+```
+
+إذا بدأ النظام بإنشاء World لمعظم الطلبات البسيطة:
+
+FAIL.
+
+---
+
+# PHASE 16 — SAME DOMAIN / DIFFERENT INTENT TEST
+
+هذا اختبار إلزامي لمنع الانحياز للمنصات.
+
+## Cars
+
+> كم سعر هذه السيارة؟
+
+Expected:
+
+```text
+RESULT
+```
+
+> بع هذه السيارة.
+
+Expected:
+
+```text
+DIRECT ACTION / RUN
+```
+
+> راقب أسعار السيارات المشابهة.
+
+Expected:
+
+```text
+DURABLE RUN
+```
+
+> أنشئ لي سوقًا للسيارات.
+
+Expected:
+
+```text
+PERSISTENT SMART BUBBLE
+```
+
+إذا كانت النتيجة نفسها للأربعة:
+
+FAIL.
+
+---
+
+# PHASE 17 — SALES WITHOUT PLATFORM TEST
+
+اختبر:
+
+> أريد بيع هاتفي بـ200 دينار.
+
+لا تنشئ Marketplace.
+
+يجب أن يكون المسار أقرب إلى:
+
+```text
+collect missing info
+↓
+prepare listing
+↓
+select publishing/matching capabilities
+↓
+approval
+↓
+execute if provider exists
+↓
+monitor responses if requested
+```
+
+---
+
+# PHASE 18 — ADVERTISING WITHOUT PLATFORM TEST
+
+اختبر:
+
+> أعلن عن خدمة تصميم الشعارات التي أقدمها.
+
+لا تنشئ Ads Platform.
+
+نفذ Action/Run مباشرة إذا القدرات متوفرة.
+
+---
+
+# PHASE 19 — HIRING WITHOUT PLATFORM TEST
+
+> ابحث لي عن موظف استقبال مناسب.
+
+لا تنشئ Hiring Platform.
+
+استخدم Search/Match/Rank/Contact حسب القدرات.
+
+---
+
+# PHASE 20 — PLATFORM ONLY WHEN IT IS THE REAL GOAL
+
+اختبر:
+
+> أنشئ لي نظامًا دائمًا لإدارة الموظفين والمرشحين والمقابلات والصلاحيات.
+
+هنا Persistent Smart Bubble صحيحة.
+
+---
+
+# PHASE 21 — HONEST BLOCKING
+
+إذا فهم جاسم:
+
+> بع هذا المنتج.
+
+ولكن Provider النشر الخارجي غير موجود:
+
+يجب أن يكون:
+
+```text
+Understanding: PASS
+Output Form: DIRECT ACTION / RUN
+Plan: PASS
+Required Capability: publish.create
+Execution: BLOCKED
+Reason: trusted provider unavailable
+```
+
+ولا يبني منصة كحل بديل وهمي.
+
+---
+
+# PHASE 22 — EXAMPLES ARE NOT LIMITS
+
+ثبت في الوثائق والكود:
+
+> The 20 examples and compound scenarios are tests and demonstrations only.
+
+لا تجعلها Supported Domain List.
+
+إذا جاء طلب جديد لم يظهر في الأمثلة:
+
+```text
+understand
+↓
+decompose
+↓
+choose runtime form
+↓
+compose general capabilities
+↓
+execute supported portions
+↓
+block unavailable side effects honestly
+```
+
+---
+
+# PHASE 23 — NO DOMAIN HANDLERS
+
+استمر بفحص المشروع بحثًا عن:
+
+```text
+if intent === ...
+switch domain
+CarsScreen
+JobsModule
+RestaurantWorkflow
+```
+
+إذا كان أي شيء منها يؤثر في Core generality:
+
+أزله أو عممه.
+
+---
+
+# PHASE 24 — REGRESSION AFTER EVERY MAJOR PHASE
+
+أعد تشغيل:
+
+```text
+typecheck
+build
+runtime smoke
+conversation persistence
+ownership isolation
+bubble/world isolation
+world versioning
+output router regression
+reference resolution tests
+direct action vs bubble tests
+security tests
+```
+
+لا تنتظر النهاية.
+
+---
+
+# PHASE 25 — DO NOT STOP AT EXPO GO
+
+Expo Go يبقى Development Tool فقط.
+
+الهدف النهائي:
+
+```text
+WEB PRODUCT
+IOS STANDALONE PRODUCT
+ANDROID STANDALONE PRODUCT
+```
+
+كلها Clients لنفس Runtime.
+
+---
+
+# FINAL ACCEPTANCE JOURNEY
+
+اختبر الرحلة التالية كاملة:
+
+المستخدم:
+
+> أنشئ لي مساحة أبيع فيها منتجاتي.
+
+ينشأ Persistent Smart Bubble.
+
+ثم:
+
+> أضف آيفون بسعر 300.
+
+ثم:
+
+> أضف سماعة بسعر 40.
+
+ثم يغلق التطبيق ويعود.
+
+ثم:
+
+> متجري الذي فيه الآيفون خفض سعره إلى 280.
+
+يجب Resolve نفس Bubble.
+
+ثم:
+
+> أي طلب فوق 500 يحتاج موافقتي.
+
+Policy Mutation.
+
+ثم:
+
+> أضف أحمد كموظف يستطيع إضافة منتجات لكنه لا يستطيع تغيير الأسعار.
+
+Permission Mutation.
+
+ثم:
+
+> أخف الآيفون الجمعة وأعد عرضه السبت.
+
+Durable scheduling.
+
+ثم أعد تشغيل API/Worker.
+
+ثم افتح نفس Bubble من Mobile.
+
+يجب أن تبقى:
+
+```text
+conversation
+messages
+bubble
+world state
+entities
+policy
+membership
+schedule
+versions
+events
+receipts
+verification evidence
+```
+
+صحيحة.
+
+ثم في نفس المحادثة قل:
+
+> بع هذه السيارة.
+
+لا تنشئ Bubble جديدة تلقائيًا.
+
+يجب أن يختار Direct Action/Run.
+
+هذا الاختبار يثبت أن Jasim يدعم:
+
+```text
+persistent worlds
++
+direct action without worlds
+```
+
+في نفس Runtime.
+
+---
+
+# FINAL GATE
+
+لا تتوقف عند اكتمال Main Chat أو CRUD أو TypeScript.
+
+استمر:
+
+```text
+IMPLEMENT
+→ RUN
+→ TEST
+→ VERIFY
+→ FIX
+→ RETEST
+```
+
+حتى تصبح:
+
+```text
+JASIM GENERAL RUNTIME GATE: PASSED
+```
+
+أو يوجد فقط عائق خارجي حقيقي يحتاج Credential مني.
+
+---
+
+# FINAL REPORT
+
+حدّث:
+
+```text
+docs/JASIM_FINAL_COMPLETION_REPORT.md
+```
+
+وأضف:
+
+```text
+OUTPUT ROUTER STATUS
+REFERENCE RESOLUTION STATUS
+DIRECT ACTION STATUS
+DURABLE RUN STATUS
+SMART BUBBLE MUTATION STATUS
+DAG STATUS
+VERIFIER STATUS
+RECOVERY STATUS
+MULTI-USER STATUS
+CROSS-BUBBLE STATUS
+EXTERNAL PROVIDERS STATUS
+GENERALIZATION RESULTS
+```
+
+واكتب لكل بند:
+
+```text
+REAL
+PARTIAL
+BLOCKED_BY_EXTERNAL_DEPENDENCY
+NOT_COMPLETE
+```
+
+---
+
+# FINAL PRODUCT PRINCIPLE
+
+ثبت هذه القاعدة:
+
+> Jasim is not a platform builder that happens to have chat.
+
+> Jasim is a general intelligent runtime that can answer, act directly, run long-lived workflows, or create and evolve persistent Smart Bubbles when persistence is genuinely useful.
+
+> Selling does not require a platform.
+
+> Advertising does not require a platform.
+
+> Buying does not require a platform.
+
+> Hiring does not require a platform.
+
+> Monitoring does not require a platform.
+
+> A persistent Smart Bubble is one powerful runtime form among several, not the mandatory path for every goal.
+
+تابع التنفيذ الآن من الـBaseline الحالي ولا تعِد بناء الأجزاء التي ثبت أنها تعمل.

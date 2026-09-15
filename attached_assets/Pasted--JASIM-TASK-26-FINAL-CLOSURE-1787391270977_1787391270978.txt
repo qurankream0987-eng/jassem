@@ -1,0 +1,319 @@
+# ================================================================
+# JASIM — TASK #26 FINAL CLOSURE
+# REAL RESEARCH → IMAGE → ARTIFACT → LINEAGE PROOF ONLY
+#
+# DO NOT REBUILD TASK #26
+# DO NOT START TASK #24
+# DO NOT TOUCH PHASE 12 MODEL CALIBRATION
+# ================================================================
+
+Task #26 implementation is accepted as the current candidate implementation.
+
+Do NOT redesign it.
+
+Do NOT create new abstractions.
+
+Do NOT rerun broad repository audits.
+
+Do NOT start Task #24.
+
+Do NOT modify ModelPolicy or T1/T2/T3 mappings.
+
+The ONLY remaining objective is to prove the real external end-to-end
+Research → Image → Artifact → Lineage path.
+
+Current proven implementation already includes:
+
+- one canonical composition DAG
+- existing-search reuse
+- server-side SourceReference resolution
+- bounded evidence
+- structured findings
+- untrusted external-content boundary
+- prompt-injection filtering
+- DAG-scoped server bindings
+- generic immutable Artifact Lineage
+- protected lineage query
+- PROVIDER_CAPACITY taxonomy
+- EMPTY_COMPLETION taxonomy
+- safe attempt/node failure closure
+- Web/Mobile rendering
+- safe failure UI
+
+Preserve all of it.
+
+================================================
+1. REUSE EXISTING VERIFIED RESEARCH
+================================================
+
+Do NOT perform another web search unless absolutely necessary.
+
+Use an existing persisted verified WebSearchResult owned by the development user.
+
+Select valid existing SourceReferences.
+
+Required:
+
+NEW_WEB_SEARCH_CALLS = 0
+
+if valid research already exists.
+
+================================================
+2. RUN ONLY THE MISSING EXTERNAL IMAGE STEP
+================================================
+
+Resume/re-execute the canonical composition through the existing DAG/runtime.
+
+Do NOT bypass:
+
+Trusted Executor
+Attempt Ledger
+Verifier
+Artifact persistence
+Lineage persistence
+
+Required path:
+
+Existing verified research
+→ selected SourceReferences
+→ bounded evidence
+→ structured findings
+→ image generation
+→ immutable attempt
+→ real provider
+→ RuntimeArtifact
+→ independent verification
+→ durable Artifact Lineage
+
+================================================
+3. PROVIDER OUTCOME SEMANTICS
+================================================
+
+If real image generation succeeds:
+
+continue through artifact persistence and lineage verification.
+
+If HTTP 429 occurs:
+
+PROVIDER_CAPACITY
+→ INCONCLUSIVE_PROVIDER_CAPACITY
+
+If provider returns an empty successful-looking completion:
+
+EMPTY_COMPLETION
+
+Do NOT merge EMPTY_COMPLETION with 429.
+
+Do NOT label either as successful image generation.
+
+Do NOT repeatedly retry until success.
+
+Use the existing bounded retry policy.
+
+================================================
+4. REQUIRED REAL SUCCESS PROOF
+================================================
+
+A successful Task #26 closure must prove ALL:
+
+REAL_IMAGE_PROVIDER = PASS
+
+IMAGE_ATTEMPT = PASS
+
+IMAGE_RECEIPT = PASS
+
+INDEPENDENT_IMAGE_VERIFICATION = PASS
+
+RUNTIME_ARTIFACT = PASS
+
+ARTIFACT_BYTES_EXIST = PASS
+
+ARTIFACT_HASH_VALID = PASS
+
+ARTIFACT_OWNER_BINDING = PASS
+
+ARTIFACT_LINEAGE = PASS
+
+ARTIFACT_TO_GENERATION = PASS
+
+GENERATION_TO_FINDINGS = PASS
+
+FINDINGS_TO_SOURCE_REFERENCES = PASS
+
+SOURCES_TO_ORIGINAL_RESEARCH = PASS
+
+LINEAGE_IMMUTABLE = PASS
+
+================================================
+5. RESTART PROOF
+================================================
+
+After one successful real composition:
+
+restart the canonical API/runtime.
+
+Then prove:
+
+RUN_SURVIVES_RESTART = PASS
+
+RESEARCH_REFERENCE_SURVIVES_RESTART = PASS
+
+FINDINGS_SURVIVE_RESTART = PASS
+
+ARTIFACT_SURVIVES_RESTART = PASS
+
+LINEAGE_SURVIVES_RESTART = PASS
+
+LINEAGE_QUERYABLE_AFTER_RESTART = PASS
+
+PROTECTED_PREVIEW_AFTER_RESTART = PASS
+
+No reconstruction from transient client state.
+
+================================================
+6. TASK #22 INTEROPERABILITY
+================================================
+
+Use the successfully generated Task #26 RuntimeArtifact with the EXISTING
+Task #22 path.
+
+Do NOT create a special handler.
+
+Prove:
+
+TASK_22_ENDPOINT_REUSED = PASS
+
+ARTIFACT_ATTACH_TO_EXISTING_BUBBLE = PASS
+
+SAME_BUBBLE = PASS
+
+PRESENTATION_VERSION_INCREMENT = PASS
+
+ARTIFACT_LINEAGE_UNCHANGED = PASS
+
+================================================
+7. WEB / MOBILE
+================================================
+
+Verify the final real artifact result is visible through the existing contracts.
+
+WEB_REAL_RESULT = PASS
+
+MOBILE_SHARED_CONTRACT = PASS
+
+If real mobile visual automation is unavailable:
+
+report that limitation truthfully.
+
+Do not fake mobile visual PASS.
+
+================================================
+8. DO NOT WASTE PROVIDER CAPACITY
+================================================
+
+Do NOT:
+
+- repeat successful search calls
+- regenerate multiple images for the same proof
+- rerun Phase 12 calibration
+- probe all models
+- run unrelated AI evaluations
+- create multiple provider attempts in parallel
+
+Use one controlled proof.
+
+================================================
+9. FINAL REPORT
+================================================
+
+Return exactly:
+
+TASK_26:
+PASS / PARTIAL / FAIL
+
+REAL_RESEARCH_TO_IMAGE_E2E:
+PASS / INCONCLUSIVE_PROVIDER_CAPACITY / FAIL
+
+NEW_WEB_SEARCH_CALLS:
+<number>
+
+REAL_IMAGE_PROVIDER:
+PASS / INCONCLUSIVE_PROVIDER_CAPACITY / FAIL
+
+EMPTY_COMPLETION:
+YES / NO
+
+PROVIDER_CAPACITY_429:
+YES / NO
+
+RUNTIME_ARTIFACT:
+PASS / FAIL
+
+ARTIFACT_VERIFIER:
+PASS / FAIL
+
+ARTIFACT_LINEAGE:
+PASS / FAIL
+
+ARTIFACT_TO_GENERATION:
+PASS / FAIL
+
+GENERATION_TO_FINDINGS:
+PASS / FAIL
+
+FINDINGS_TO_SOURCES:
+PASS / FAIL
+
+SOURCES_TO_RESEARCH:
+PASS / FAIL
+
+LINEAGE_IMMUTABLE:
+PASS / FAIL
+
+RESTART_DURABILITY:
+PASS / FAIL
+
+TASK_22_PATH_REUSED:
+PASS / FAIL
+
+WEB_REAL_RESULT:
+PASS / FAIL
+
+MOBILE_SHARED_CONTRACT:
+PASS / PARTIAL / FAIL
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS:
+0 expected
+
+FAKE_SUCCESS:
+0 expected
+
+PHASE_12_STATUS:
+PARTIAL
+
+TASK_24_STARTED:
+NO
+
+READY_FOR_TASK_24:
+YES / NO
+
+OWNER_ACTION_REQUIRED:
+NONE
+or exact provider-capacity requirement only
+
+================================================
+10. TASK #24 GATE
+================================================
+
+READY_FOR_TASK_24 must remain NO unless:
+
+TASK_26 = PASS
+
+AND the real image-provider E2E has been proven.
+
+Phase 12 may remain PARTIAL due its separate calibration quota,
+but this must be stated explicitly.
+
+STOP after the report.
+
+BEGIN TASK #26 FINAL CLOSURE ONLY.

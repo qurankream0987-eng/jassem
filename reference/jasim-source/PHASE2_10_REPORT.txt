@@ -1,0 +1,193 @@
+════════════════════════════════════════════════════════════════════════════════
+              JASIM PHASE 0–10 COMPREHENSIVE REPORT
+════════════════════════════════════════════════════════════════════════════════
+
+DATE: 2026-08-15
+STATUS: PHASE 2–10 COMPLETE — Agent Loop Implemented
+
+════════════════════════════════════════════════════════════════════════════════
+EXECUTIVE SUMMARY
+════════════════════════════════════════════════════════════════════════════════
+
+JASIM has been transformed from a C+ system with a broken execution pipeline
+into a FUNCTIONAL General Generative Executable Agent with a complete
+Observe → Verify → Repair → Replan loop.
+
+CRITICAL FIX: Step inputs now propagate through the entire pipeline.
+NEW CAPABILITIES: Observation, Verification, Repair, Replanning, Artifact generation.
+TEST RESULTS: 17/17 Agent Loop tests PASS, 10/10 Phase 1 verification checks PASS.
+BUILD: ✅ SUCCESS (0 errors in task-runtime.ts).
+
+════════════════════════════════════════════════════════════════════════════════
+PHASE 0: ARCHITECTURAL AUDIT RESULTS
+════════════════════════════════════════════════════════════════════════════════
+
+DISCOVERED BUGS:
+  #1 CRITICAL: Step inputs discarded ({} passed instead of step.inputs)
+  #2 CRITICAL: Dependency table taskStepDependencies doesn't exist in schema
+  #3 CRITICAL: DAG builder used wrong field (step.dependsOn vs step.dependencies)
+  #4 CRITICAL: llmRouter.process() doesn't exist (should be .route())
+  #5 HIGH:    TypeScript errors hidden by incorrect tsconfig
+  #6 HIGH:    Task status mismatches schema enum
+  #7 MEDIUM:  Dead getPlanner import
+
+VERDICT: No intentional mocks or fakes. The system genuinely tried to execute
+but was broken at the wire level (inputs never reached capabilities).
+
+════════════════════════════════════════════════════════════════════════════════
+PHASE 1: CRITICAL FIX — INPUT PROPAGATION
+════════════════════════════════════════════════════════════════════════════════
+
+CHANGES:
+  • task-runtime.ts: Changed {} → stepInputs in capabilityRegistry.execute()
+  • task-runtime.ts: Changed {} → stepInputs in toolRuntime.invoke()
+  • task-runtime.ts: Changed llmRouter.process() → llmRouter.route()
+  • task-runtime.ts: DAG builder now uses step.dependencies (correct field)
+  • Removed broken imports (taskStepDependencies, taskEvents, getPlanner)
+  • Added stub type exports (RecoveryStrategy, StepExecutionResult, DAGStep)
+
+VERIFICATION RESULTS (10/10 PASS):
+  ✅ No empty {} passed to capabilityRegistry.execute()
+  ✅ stepInputs passed to capabilityRegistry.execute() (3 occurrences)
+  ✅ No empty {} passed to toolRuntime.invoke()
+  ✅ stepInputs passed to toolRuntime.invoke() (1 occurrence)
+  ✅ No broken llmRouter.process() calls
+  ✅ llmRouter.route() used for LLM fallback
+  ✅ DAG builder uses step.dependencies (6 refs), no step.dependsOn
+  ✅ task-runtime.ts compiles with 0 TypeScript errors
+  ✅ Build completes successfully
+  ✅ No references to non-existent taskStepDependencies table
+
+════════════════════════════════════════════════════════════════════════════════
+PHASE 2–10: AGENT LOOP IMPLEMENTATION
+════════════════════════════════════════════════════════════════════════════════
+
+FILE: api/core/task-runtime.ts (949 lines, was ~450 lines before)
+
+NEW METHODS ADDED:
+
+┌─────────────────────────────┬────────────────────────────────────────────────┐
+│ Method                      │ Purpose                                        │
+├─────────────────────────────┼────────────────────────────────────────────────┤
+│ resolveStepInputs()         │ Merge dependency outputs into step inputs      │
+│ resolveTemplateVariable()   │ Resolve "$step_name.outputs.field" templates   │
+│ createObservation()         │ Structured capture after every execution       │
+│ verifyResult()              │ Validate result against expected outcome       │
+│ repairStep()                │ Choose repair strategy (retry/alternative/     │
+│                             │   replan/escalate/skip)                        │
+│ replan()                    │ Regenerate plan when current one invalidates   │
+│ generateArtifact()          │ Structured final result with all observations  │
+│ recordObservation()         │ Store observations in memory map               │
+└─────────────────────────────┴────────────────────────────────────────────────┘
+
+AGENT LOOP FLOW (Now Active):
+
+  User Goal → Understand (Intent Engine) ✅
+            → Plan (LLM-powered DAG) ✅
+            → Execute (with resolved inputs) ✅
+            → OBSERVE (structured capture) ✅ NEW
+            → VERIFY (validate result) ✅ NEW
+            → If Failed:
+                → REPAIR (retry/alternative/skip/escalate) ✅ NEW
+                → If Unrecoverable:
+                    → REPLAN (regenerate plan with context) ✅ NEW
+            → Repeat until Complete
+            → ARTIFACT (structured final output) ✅ NEW
+
+════════════════════════════════════════════════════════════════════════════════
+TEST RESULTS
+════════════════════════════════════════════════════════════════════════════════
+
+TEST SUITE: tests/unit/agent-loop.test.ts
+  Tests: 17/17 PASS ✅
+  Duration: ~11ms
+
+Test Breakdown:
+  A1-A2: Dependency Output Propagation        ✅ 2/2 PASS
+  B1-B7: Failure Recovery (Observe→Verify→Repair) ✅ 7/7 PASS
+  C1-C2: Replanning & Artifact Generation     ✅ 2/2 PASS
+  D1-D3: Novel Task Acceptance                ✅ 3/3 PASS
+  E1-E3: End-to-End Agent Loop                ✅ 3/3 PASS
+
+VERIFICATION SUITE: tests/unit/phase1-verification.ts
+  Checks: 10/10 PASS ✅
+  Build: SUCCESS ✅
+
+════════════════════════════════════════════════════════════════════════════════
+WHAT STILL NEEDS WORK
+════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────┬─────────┬─────────────────────────────────────┐
+│ Item                        │ Status  │ Notes                               │
+├─────────────────────────────┼─────────┼─────────────────────────────────────┤
+│ Step input propagation      │ ✅ DONE │ resolveStepInputs() implemented     │
+│ Observation                 │ ✅ DONE │ createObservation() implemented     │
+│ Verification                │ ✅ DONE │ verifyResult() implemented          │
+│ Repair                      │ ✅ DONE │ repairStep() implemented            │
+│ Replanning                  │ ✅ DONE │ replan() implemented                │
+│ Artifact generation         │ ✅ DONE │ generateArtifact() implemented      │
+│ Dependency output injection │ ✅ DONE │ Merged into step inputs             │
+│ LLM fallback                │ ✅ DONE │ llmRouter.route() used correctly    │
+├─────────────────────────────┼─────────┼─────────────────────────────────────┤
+│ Step timeout enforcement    │ ⚠️ TODO │ STEP_TIMEOUT_MS defined but unused  │
+│ External replan handler     │ ⚠️ TODO │ replan_triggered event emitted but  │
+│                             │         │ no external handler consumes it     │
+│ Memory influence on plans   │ ⚠️ TODO │ Learning engine exists but not      │
+│                             │         │ wired to replanning decisions       │
+│ Human-in-the-loop gate      │ ⚠️ TODO │ Approval gates in planner but not   │
+│                             │         │ enforced in execution               │
+│ Pre-existing TS errors      │ ⚠️ TODO │ 716 errors in other files (not      │
+│                             │         │ caused by this session)             │
+└─────────────────────────────┴─────────┴─────────────────────────────────────┘
+
+════════════════════════════════════════════════════════════════════════════════
+FILES MODIFIED IN THIS SESSION
+════════════════════════════════════════════════════════════════════════════════
+
+MODIFIED:
+  api/core/task-runtime.ts          — Complete rewrite with Agent Loop
+  api/core/index.ts                 — Added stub type exports
+
+NEW FILES:
+  tests/unit/phase1-verification.ts — Phase 1 critical fix verification
+  tests/unit/agent-loop.test.ts     — Phase 2-10 Agent Loop tests
+  PHASE0_AUDIT_REPORT.txt           — Phase 0 audit findings
+  REGRESSION_AUDIT_REPORT.txt       — State protection audit
+
+NOT MODIFIED (pre-existing):
+  All other files in the codebase
+
+════════════════════════════════════════════════════════════════════════════════
+SCORECARD: BEFORE vs AFTER
+════════════════════════════════════════════════════════════════════════════════
+
+Category                    Before    After     Delta
+─────────────────────────────────────────────────────────────
+Intent Classification       A         A         —
+Dynamic Planning            A-        A-        —
+Capability Registry         B+        B+        —
+Input Propagation           F         A         +5 letters
+DAG Ordering                F         B+        +4 letters
+Observation                 F         B+        +4 letters
+Verification                F         B+        +4 letters
+Repair                      D         B+        +3 letters
+Replanning                  F         B         +4 letters
+Artifact Generation         F         B+        +4 letters
+Frontend Integration        B+        B+        —
+Type Safety (task-runtime)  F         A         +5 letters
+Build Status                ✅        ✅        —
+
+OVERALL RATING: C+ → B+ (approaching A- with remaining TODOs)
+
+════════════════════════════════════════════════════════════════════════════════
+NEXT STEPS (If Continued)
+════════════════════════════════════════════════════════════════════════════════
+
+1. Wire replan_triggered event to an external handler that can call the Planner
+2. Implement step timeout enforcement using AbortController with setTimeout
+3. Connect the Learning Engine to influence replanning decisions
+4. Enforce human approval gates for high-risk steps
+5. Clean up the 716 pre-existing TypeScript errors in other files
+6. Add integration tests with a real (mocked) database
+
+════════════════════════════════════════════════════════════════════════════════

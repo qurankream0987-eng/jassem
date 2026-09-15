@@ -1,0 +1,9 @@
+{
+  "formatVersion": 1,
+  "gateCommands": {
+    "compile": ["node", "node_modules/typescript/bin/tsc", "-p", "tsconfig.generative-runtime.json"],
+    "unit": ["node", "node_modules/vitest/vitest.mjs", "run", "--config", "vitest.generative.config.ts", "tests/unit"],
+    "integration": ["node", "node_modules/vitest/vitest.mjs", "run", "--config", "vitest.config.ts", "tests/integration"]
+  },
+  "replayCommand": null
+}

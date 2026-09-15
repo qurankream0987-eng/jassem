@@ -1,0 +1,1344 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM SMART GENERATIVE EXPERIENCE
+
+# TASK 5A — UI MORPHING LOGIC + OPERATIONAL CONTINUITY
+
+MODE INTENT:
+Focused implementation only.
+
+Task 1 = CLOSED / PASS
+Task 2 = CLOSED / PASS
+Task 3 = CLOSED / PASS
+Task 4A = CLOSED / PASS
+Task 4B = CLOSED / PASS
+
+Accepted current state:
+
+Task 4A:
+
+* ActiveWorkspaceProjection exists
+* canonical Goal / ResultSet / ReferenceBindings / selections / Run / Approval / World context are projected
+* Workspace is projection, not canonical truth
+* stable ResultSet identity exists
+* presentationVersion exists
+* no new persistence
+
+Task 4B:
+
+* one generic ActiveGenerativeWorkspace Web shell
+* real runtime.workspaceProjection wiring
+* Conversation remains primary and usable
+* SEARCH_RESULTS
+* COMPARISON
+* FORM
+* APPROVAL
+* STATUS
+* TIMELINE
+* loading / error / empty / collapse / expand
+* stable references preserved
+* presentationVersion preserved
+* no domain Workspace components
+* no client canonical truth
+* Production build PASS
+* READY_FOR_SMART_UI_TASK_5 = YES
+
+Reports:
+
+.local/tasks/smart-ui-task-1-report.md
+.local/tasks/smart-ui-task-2-report.md
+.local/tasks/smart-ui-task-3-report.md
+.local/tasks/smart-ui-task-4a-report.md
+.local/tasks/smart-ui-task-4b-report.md
+
+Do NOT redo previous tasks.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. GOAL
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Implement the LOGICAL UI MORPHING mechanism for the existing:
+
+ActiveGenerativeWorkspace
+
+The goal is:
+
+THE WORKSPACE CHANGES ITS CURRENT SURFACE
+
+while:
+
+THE SAME CANONICAL OPERATIONAL CONTEXT CONTINUES.
+
+Required conceptual flow:
+
+SEARCH_RESULTS
+↓
+COMPARISON
+↓
+DETAIL / SELECTION
+↓
+FORM / APPROVAL
+↓
+STATUS / TIMELINE
+
+without losing:
+
+Goal
+ResultSet
+ReferenceBindings
+selected entities
+current Run
+transaction context
+approval context
+World reference
+provenance
+
+Task 5A focuses on:
+
+identity
+continuity
+replacement semantics
+state preservation
+stale protection
+
+NOT visual animation.
+
+Task 5B will handle visual transitions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. PERMANENT MORPHING RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The Workspace is NOT a chronological stack of every presentation ever shown.
+
+The Workspace represents:
+
+THE CURRENT USEFUL VISUAL STATE OF THE ACTIVE GOAL.
+
+Example:
+
+User:
+"ابحث لي عن خمسة لابتوبات."
+
+Current Workspace:
+SEARCH_RESULTS
+
+Then:
+"قارن الثاني والرابع."
+
+Expected Workspace:
+COMPARISON
+
+Do NOT render:
+
+SEARCH_RESULTS
++
+COMPARISON
++
+old SEARCH_RESULTS
++
+new COMPARISON
+
+inside one growing Workspace.
+
+Chat history may preserve past interaction.
+
+Active Workspace should represent current context.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. MORPHING IS NOT CANONICAL MUTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Changing:
+
+SEARCH_RESULTS → COMPARISON
+
+does NOT mutate business truth merely because the UI changed.
+
+The morph is a projection change caused by canonical/runtime state.
+
+Required direction:
+
+Runtime / Conversation update
+↓
+Canonical state changes where appropriate
+↓
+new ActiveWorkspaceProjection
+↓
+new PresentationDefinition
+↓
+Workspace morphs
+
+Never:
+
+Workspace local state
+↓
+invent new canonical Goal
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. REUSE SERVER PROJECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use:
+
+runtime.workspaceProjection
+
+as the truth source.
+
+Do NOT create a client morph state machine that duplicates Runtime state.
+
+A small presentation transition state is acceptable, such as:
+
+previousPresentationKey
+currentPresentationKey
+transitionPhase
+
+but only for presentation.
+
+Not for:
+
+Goal status
+selection truth
+approval truth
+transaction truth
+Run truth
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. PRESENTATION IDENTITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Define/reuse stable presentation identity.
+
+Use existing:
+
+PresentationDefinition identity
+
+presentationVersion
+
+semantic type
+
+goal/reference context
+
+where appropriate.
+
+The UI must be able to distinguish:
+
+same presentation updated
+
+versus:
+
+new semantic presentation replacing old one.
+
+Example:
+
+SEARCH_RESULTS P1 version 1
+↓
+same ResultSet updated
+SEARCH_RESULTS P1 version 2
+
+may be an UPDATE.
+
+But:
+
+SEARCH_RESULTS
+↓
+COMPARISON
+
+is a semantic MORPH.
+
+Do not generate random keys on every render.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. MORPH CLASSIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Implement a small generic classification equivalent to:
+
+NO_CHANGE
+
+UPDATE
+
+MORPH
+
+ENTER
+
+EXIT
+
+or the minimum existing architecture requires.
+
+Do NOT create a large workflow engine.
+
+Examples:
+
+null → SEARCH_RESULTS
+= ENTER
+
+SEARCH_RESULTS v1 → SEARCH_RESULTS v2
+= UPDATE
+
+SEARCH_RESULTS → COMPARISON
+= MORPH
+
+APPROVAL → STATUS
+= MORPH
+
+STATUS → null after finished/context closed
+= EXIT
+
+Names may differ.
+
+Keep it presentation-only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. RESULTSET CONTINUITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Critical invariant:
+
+Morphing away from SEARCH_RESULTS must NOT destroy the ResultSet identity required for follow-ups.
+
+Example:
+
+R1 contains:
+
+E1
+E2
+E3
+E4
+E5
+
+Workspace:
+SEARCH_RESULTS
+
+User:
+"قارن الثاني والرابع."
+
+Workspace:
+COMPARISON(E2,E4)
+
+But canonical context still knows:
+
+ResultSet R1
+
+Then:
+
+"أوجد لي مثل الثاني لكن أرخص."
+
+Reference resolution must still resolve the intended entity.
+
+Task 5A must preserve this continuity through server projection/context.
+
+Do NOT store R1 only inside SearchResults React component.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. REFERENCE CONTINUITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Preserve:
+
+"الأول"
+"الثاني"
+"هذا"
+"نفسه"
+"مثل هذا"
+"الخيار السابق"
+"المشروع"
+
+through existing Block 3.1 ReferenceBindings.
+
+UI morph must not reset reference scope merely because surface changes.
+
+Do NOT create frontend pronoun resolution.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. SELECTION CONTINUITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+SEARCH_RESULTS
+
+User selects E2.
+
+Then COMPARISON.
+
+Then DETAIL.
+
+Then APPROVAL.
+
+E2 must remain the same canonical selected entity unless runtime changes selection.
+
+The Workspace may visually highlight it.
+
+But React must not become selection authority.
+
+Test reload after selection.
+
+Expected:
+
+selection remains from server projection.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. GOAL CONTINUITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Morphing must remain under SAME active Goal when the user is refining the same objective.
+
+Example:
+
+"أريد لابتوب أقل من 400."
+
+Then:
+
+"لا أريد HP."
+
+Then:
+
+"قارن الثاني والرابع."
+
+Then:
+
+"الثاني أفضل."
+
+These should not create unrelated UI goal contexts unless Runtime already determines a new Goal is required.
+
+Task 5A must not invent new goals.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. PARTIAL REPLANNING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Block 3.1 already owns replanning/runtime semantics.
+
+Task 5A only needs to correctly consume updated Workspace projection.
+
+Example:
+
+Results R1
+
+User:
+"لا أريد الأحمر."
+
+Runtime updates Goal / results.
+
+Projection returns R2 or updated R1 depending existing semantics.
+
+Workspace updates accordingly.
+
+Do not re-run searches from frontend.
+
+Do not implement planner logic.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. APPROVAL TRANSITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+DETAIL
+↓
+APPROVAL
+
+Workspace must preserve:
+
+selected entity
+transaction context
+amount
+currency
+approval reference
+presentationVersion
+
+When approval becomes stale:
+
+do NOT continue displaying old approval as actionable.
+
+Use existing version/fingerprint/runtime truth.
+
+Possible UI state:
+
+"This confirmation needs to be refreshed."
+
+Do not invent approval authority.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. APPROVAL → EXECUTION → STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Target logical sequence:
+
+APPROVAL
+↓
+runtime accepts valid approval
+↓
+execution starts
+↓
+projection updates
+↓
+STATUS / TIMELINE
+
+Workspace morphs accordingly.
+
+Do NOT mark operation complete from button click.
+
+Button click != verified completion.
+
+Preserve:
+
+AUTHORIZED != EXECUTED
+EXECUTED != VERIFIED
+
+Existing Runtime remains authoritative.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. INCONCLUSIVE / BLOCKED MORPH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If runtime returns:
+
+BLOCKED
+FAILED
+INCONCLUSIVE
+WAITING_EXTERNAL
+
+Workspace must morph/update truthfully.
+
+Examples:
+
+Approval
+↓
+execution uncertain
+↓
+INCONCLUSIVE Status
+
+Not:
+
+Success.
+
+Search
+↓
+external provider unavailable
+↓
+safe blocker / internal results
+
+Not:
+
+fake external results.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. WORLD CONTINUITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+World Summary visible.
+
+User:
+"أضف اشتراك 25."
+
+Runtime mutates same World.
+
+Projection refreshes.
+
+Workspace updates same World context.
+
+Do NOT remount a new fake World entity.
+
+Do NOT build domain-specific World morph logic.
+
+Generic reference continuity only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. FORM CONTINUITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+FORM requests:
+
+date
+time
+party size
+
+User submits valid information.
+
+Runtime processes it.
+
+New presentation might be:
+
+APPROVAL
+
+Workspace should transition:
+
+FORM
+→ APPROVAL
+
+without losing the operational goal.
+
+Local form draft may disappear after successful server acceptance.
+
+Canonical submitted data must exist server-side.
+
+Do not treat local form state as durable truth.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. SIMPLE ANSWER REMAINS SIMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 5A must preserve smallest-sufficient-output.
+
+Example:
+
+User:
+"كم سعر الذهب؟"
+
+TEXT.
+
+No Workspace if not needed.
+
+Then:
+
+"راقبه."
+
+Runtime creates durable context.
+
+Later Task 6 will expose Living Object.
+
+Task 5A should not force a Morphing Workspace for every simple answer.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. ACTIVE WORKSPACE REPLACEMENT POLICY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Define one generic current-surface policy.
+
+Do not use domain-specific stacking.
+
+Conceptually:
+
+currentPresentation = latest valid active presentation for current context
+
+previousPresentation = optional temporary presentation metadata for transition only
+
+Do NOT permanently store a frontend list:
+
+workspacePresentations[]
+
+as a second history system.
+
+Chat history already preserves chronological interaction.
+
+Workspace is current state.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. HISTORY VS WORKSPACE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Keep distinction:
+
+# Conversation History
+
+what happened over time.
+
+# Active Workspace
+
+what is useful NOW.
+
+# Living Objects
+
+what continues LATER.
+
+Do not merge these concepts.
+
+This distinction is permanent.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. STALE RESPONSE PROTECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Handle race condition:
+
+Request A starts.
+
+Request B starts later.
+
+B becomes canonical current presentation.
+
+A response arrives late.
+
+A must NOT overwrite current Workspace with stale presentation.
+
+Use:
+
+presentationVersion
+
+request ordering
+
+canonical projection freshness
+
+or existing suitable version mechanism.
+
+Do not invent timestamp-only security where version semantics already exist.
+
+Add focused race/stale test.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. STALE ACTION PROTECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Existing:
+
+expectedPresentationVersion
+
+must remain honored.
+
+If user clicks an action belonging to presentation version 3 while current version is 4:
+
+do not silently execute stale action.
+
+Task 5A should ensure Morphing does not drop the version context necessary for this protection.
+
+Full action unification is Task 7.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. RELOAD DURING MORPHED STATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Test:
+
+Search
+→ Comparison
+
+Reload Web.
+
+Expected:
+
+Workspace reconstructs current Comparison presentation from runtime projection.
+
+Not:
+
+return to Search because that was original local state.
+
+Another:
+
+Approval visible.
+
+Reload.
+
+Expected:
+
+Approval still visible only if runtime still awaits that approval.
+
+If state changed:
+render current state instead.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. COLLAPSE / EXPAND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Workspace collapse is local presentation state.
+
+If collapsed during Comparison:
+
+canonical Comparison context remains.
+
+Expand:
+
+current projection renders again.
+
+Do not restore an obsolete local presentation snapshot if server has moved forward.
+
+Always prefer current projection.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. NAVIGATION / CONVERSATION CHANGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If user changes to another conversation:
+
+Workspace must bind to new conversation projection.
+
+Do not leak prior conversation:
+
+ResultSet
+
+selection
+
+approval
+
+World
+
+Run
+
+presentation
+
+into new conversation.
+
+Add focused cross-conversation isolation test if practical.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. NO DOMAIN MORPH RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Forbidden:
+
+if product → comparison
+
+if vehicle → booking
+
+if job → application
+
+Instead generic:
+
+candidate collection
+→ comparison request
+→ COMPARISON
+
+selected actionable entity
+→ detail/action presentation
+
+approval-required action
+→ APPROVAL
+
+ongoing process
+→ STATUS
+
+No domain-specific morph map.
+
+Target:
+
+DOMAIN_SPECIFIC_MORPH_RULES = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. NO VISUAL ANIMATION YET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT spend this task on:
+
+Framer Motion polish
+
+Soap transitions
+
+shared element animations
+
+crossfades
+
+spring physics
+
+Bubble Pop effects
+
+Task 5B handles visual Morphing.
+
+Task 5A proves correct logical replacement and continuity first.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. COMPONENT STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prefer minimal extension around:
+
+ActiveGenerativeWorkspace
+
+Possible generic helper:
+
+useWorkspacePresentationTransition
+
+or:
+
+resolveWorkspacePresentationState
+
+or equivalent.
+
+Do NOT create many separate transition managers.
+
+One coherent generic mechanism.
+
+Do not create domain hooks.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. CLIENT STATE BOUNDARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Allowed local state:
+
+previousPresentationKey
+
+transition type
+
+workspace collapsed
+
+visual pending indicator
+
+Forbidden:
+
+canonical selected entity
+
+goal
+
+ResultSet
+
+approval
+
+Run
+
+transaction
+
+World truth
+
+Target:
+
+CLIENT_CANONICAL_TRUTH_ADDED = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. FOCUSED E2E LOGICAL SCENARIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prove:
+
+STEP 1
+
+Goal G1.
+
+ResultSet R1.
+
+Presentation:
+SEARCH_RESULTS P1.
+
+Workspace:
+Search.
+
+STEP 2
+
+Same G1.
+
+User:
+"قارن الثاني والرابع."
+
+References resolve:
+E2 / E4.
+
+Presentation:
+COMPARISON P2.
+
+Workspace:
+Comparison.
+
+Verify:
+
+G1 preserved
+
+R1 preserved
+
+ReferenceBindings preserved
+
+E2/E4 stable identities
+
+STEP 3
+
+User:
+"الثاني أفضل."
+
+Selected entity persists.
+
+STEP 4
+
+User:
+"خذه."
+
+Action context prepared.
+
+STEP 5
+
+Runtime requires approval.
+
+Presentation:
+APPROVAL P3.
+
+Verify context still bound correctly.
+
+STEP 6
+
+Approval accepted.
+
+Runtime starts work.
+
+Presentation:
+STATUS P4.
+
+Verify:
+
+UI did not itself mark completion.
+
+STEP 7
+
+Reload.
+
+Expected:
+P4 reconstructed as current state.
+
+No stale Search surface restored.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. NON-COMMERCE MORPH SCENARIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Also prove generality without commerce.
+
+Example:
+
+Document analysis.
+
+DOCUMENT / DETAIL
+↓
+user asks comparison
+↓
+COMPARISON / TABLE
+↓
+user asks for structured next inputs
+↓
+FORM
+
+or another realistic generic sequence based on existing test contracts.
+
+No product/payment assumptions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. WORLD MORPH SCENARIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use existing World fixtures/contracts.
+
+WORLD_SUMMARY
+↓
+conversation mutation
+↓
+updated WORLD_SUMMARY / WORKSPACE presentation
+
+Same World reference.
+
+No domain Workspace.
+
+No new World created accidentally.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. ERROR / BLOCKED SCENARIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Current:
+
+SEARCH_RESULTS
+
+Then provider/capability unavailable for requested next operation.
+
+New presentation:
+
+WARNING / ERROR / BLOCKED Status
+
+Expected:
+
+previous Results may remain in canonical history/context as appropriate
+
+but active Workspace truthfully reflects blocker.
+
+No fake success.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. FOCUSED TESTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add focused tests for at least:
+
+1. ENTER: null → SEARCH_RESULTS.
+
+2. UPDATE: SEARCH_RESULTS version change.
+
+3. MORPH: SEARCH_RESULTS → COMPARISON.
+
+4. MORPH: FORM → APPROVAL.
+
+5. MORPH: APPROVAL → STATUS.
+
+6. EXIT: active presentation → none when context ends.
+
+7. Goal reference preserved across morph.
+
+8. ResultSet identity preserved across morph.
+
+9. ReferenceBindings preserved.
+
+10. selected entity preserved.
+
+11. World reference preserved.
+
+12. approval reference/version preserved.
+
+13. transaction/run context not duplicated locally.
+
+14. stale earlier response cannot overwrite newer presentation.
+
+15. stale expectedPresentationVersion remains rejected.
+
+16. reload reconstructs latest canonical presentation.
+
+17. collapse/expand uses current projection.
+
+18. conversation switch does not leak previous Workspace.
+
+19. no domain-specific morph rule.
+
+20. simple response still avoids unnecessary Workspace.
+
+21. Task 1 validation regression.
+
+22. Task 2 decision regression.
+
+23. Task 3 renderer regression.
+
+24. Task 4A projection regression.
+
+25. Task 4B Workspace regression.
+
+26. plain chat regression.
+
+27. Smart Bubble regression.
+
+Do not require visual animation assertions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. VERIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run:
+
+Task 5A focused tests
+
+affected Tasks 1–4B regressions
+
+affected Workspace tests
+
+Web TypeScript
+
+Server TypeScript if shared/runtime types affected
+
+git diff --check
+
+Web smoke check if component behavior changed
+
+Do NOT run:
+
+all Block suites
+
+Mobile suite
+
+full production build unless needed due changed active Web compilation
+
+deployment
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. EXPECTED CHANGE SIZE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expected small/medium changes:
+
+ActiveGenerativeWorkspace
+
+workspace transition/morph helper
+
+projection consumption logic
+
+focused tests
+
+possibly small presentation identity utility
+
+No DB.
+
+Expected:
+
+NEW_DATABASE_TABLES = 0
+
+NEW_MIGRATIONS = 0
+
+NEW_EXTERNAL_SDKS = 0
+
+If Task 5A appears to require new persistence:
+
+STOP and report exact blocker.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create exactly:
+
+.local/tasks/smart-ui-task-5a-report.md
+
+Sections:
+
+CAUSE
+
+MORPHING_MODEL
+
+PRESENTATION_IDENTITY
+
+MORPH_CLASSIFICATION
+
+CURRENT_PRESENTATION_POLICY
+
+RESULTSET_CONTINUITY
+
+REFERENCE_CONTINUITY
+
+SELECTION_CONTINUITY
+
+GOAL_CONTINUITY
+
+APPROVAL_CONTINUITY
+
+RUN_TRANSACTION_CONTINUITY
+
+WORLD_CONTINUITY
+
+STALE_RESPONSE_PROTECTION
+
+STALE_ACTION_PROTECTION
+
+RELOAD_BEHAVIOR
+
+CLIENT_STATE_BOUNDARY
+
+DOMAIN_GENERICITY
+
+FILES_CHANGED
+
+TESTS
+
+Final counters:
+
+SMART_UI_TASK_5A =
+PASS / PARTIAL / FAIL
+
+UI_MORPHING_LOGIC =
+PASS / FAIL
+
+MORPH_ENTER =
+PASS / FAIL
+
+MORPH_UPDATE =
+PASS / FAIL
+
+MORPH_REPLACE =
+PASS / FAIL
+
+MORPH_EXIT =
+PASS / FAIL
+
+CURRENT_WORKSPACE_REPRESENTS_NOW =
+YES / NO
+
+GOAL_REFERENCE_PRESERVED =
+YES / NO
+
+RESULTSET_IDENTITY_PRESERVED =
+YES / NO
+
+REFERENCE_BINDINGS_PRESERVED =
+YES / NO
+
+SELECTED_ENTITY_PRESERVED =
+YES / NO
+
+WORLD_REFERENCE_PRESERVED =
+YES / NO
+
+APPROVAL_CONTEXT_PRESERVED =
+YES / NO
+
+PRESENTATION_VERSION_PRESERVED =
+YES / NO
+
+STALE_RESPONSE_OVERWRITE_BLOCKED =
+YES / NO
+
+STALE_ACTION_PROTECTION_PRESERVED =
+YES / NO
+
+RELOAD_RECONSTRUCTS_CURRENT_PRESENTATION =
+YES / NO
+
+CONVERSATION_SWITCH_ISOLATED =
+YES / NO
+
+DOMAIN_SPECIFIC_MORPH_RULES_ADDED = <number>
+
+CLIENT_CANONICAL_TRUTH_ADDED = <number>
+
+NEW_DATABASE_TABLES =
+0
+
+NEW_MIGRATIONS =
+0
+
+NEW_EXTERNAL_SDKS =
+0
+
+TASK_1_REGRESSION =
+PASS / FAIL
+
+TASK_2_REGRESSION =
+PASS / FAIL
+
+TASK_3_REGRESSION =
+PASS / FAIL
+
+TASK_4A_REGRESSION =
+PASS / FAIL
+
+TASK_4B_REGRESSION =
+PASS / FAIL
+
+BLOCKS_0_TO_3_1_REMAIN_CLOSED =
+YES / NO
+
+READY_FOR_SMART_UI_TASK_5B =
+YES / NO
+
+If NO:
+list only the exact blocker.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Task 5A:
+
+STOP.
+
+DO NOT add final morph animations.
+
+DO NOT begin Task 5B.
+
+DO NOT implement Living Objects.
+
+DO NOT implement Active Objects Rail.
+
+DO NOT redesign Mobile.
+
+DO NOT begin Trusted Action Dispatcher.
+
+Return only:
+
+Task 5A verdict
+
+Morphing logic status
+
+continuity status
+
+test count
+
+domain morph rule count
+
+client canonical truth added
+
+READY_FOR_SMART_UI_TASK_5B
+
+BEGIN TASK 5A.

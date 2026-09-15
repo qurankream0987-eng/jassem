@@ -1,0 +1,332 @@
+RECOMMENDED REPLIT MODE: POWER
+
+JASIM — FINAL SMART INTEGRATION + ARCHITECTURE FREEZE
+
+CURRENT BASELINE:
+- Blocks 0–3.1 = CLOSED / PASS
+- Smart UI Tasks 1–9B = CLOSED / PASS
+- Web TypeScript = PASS
+- Server TypeScript = PASS
+- Mobile TypeScript = PASS
+- Shared runtime-contract TypeScript = PASS
+- Web production build = PASS
+- Mobile Metro/static build = PASS
+- Task 9B truthfulness = PASS
+- READY_FOR_POWER_INTEGRATION = YES
+- Deployment has NOT started
+- Real money has NOT been used
+
+GOAL:
+Evaluate JASIM as ONE complete integrated product, not as isolated completed tasks.
+
+Prove the complete path:
+
+USER
+→ Conversation
+→ Semantic Understanding
+→ Discovery / Reference Resolution
+→ Presentation Decision
+→ Workspace / Living Objects when justified
+→ Trusted Action Dispatcher
+→ Policy / Approval
+→ Durable Run / DAG
+→ Attempt
+→ Receipt
+→ Independent Verification
+→ Canonical State
+→ Projection
+→ Web / Mobile
+
+REQUIRED INTEGRATION SCENARIOS:
+
+1. Simple question
+→ TEXT only
+→ no unnecessary Workspace / World / Living Object.
+
+2. Search
+→ stable ResultSet
+→ provenance
+→ no fake results.
+
+3. Follow-up:
+"قارن الثاني والرابع"
+→ same ResultSet references
+→ COMPARISON.
+
+4. Form
+→ trusted submission
+→ canonical refresh
+→ APPROVAL.
+
+5. Approval
+→ trusted runtime
+→ execution state
+→ STATUS
+→ never local fake success.
+
+6. Retry:
+FAILED may retry according to policy.
+PENDING / INCONCLUSIVE / unknown verification must NOT blindly retry.
+
+7. Living Object:
+durable process
+→ same underlying object on Web and Mobile
+→ Task+Run duplicates merged.
+
+8. World:
+create generic durable World
+→ mutate same World conversationally
+→ no domain-specific agent.
+
+9. Cross-device:
+Web action
+→ server truth
+→ Mobile refresh sees change.
+
+Mobile action
+→ server truth
+→ Web refresh sees change.
+
+10. Model/provider unavailable:
+truthful unavailable/blocked state.
+NO stub success.
+NO mock success.
+
+VERIFY AGAIN:
+
+AUTHORIZED != EXECUTED
+EXECUTED != VERIFIED
+RECEIPT != VERIFICATION
+DISPATCH_ACCEPTED != SUCCESS
+INCONCLUSIVE != SUCCESS
+
+LATEST ATTEMPT:
+Use latest Attempt per DAG node.
+Old failed attempt must not invalidate a later successful verified retry.
+
+SECURITY REGRESSION:
+Active unsafe generated UI paths = 0.
+Raw executable HTML = 0.
+Generated JS = 0.
+Dynamic untrusted components = 0.
+Generated action bypasses = 0.
+WebView Smart UI = 0.
+
+TRUTHFULNESS REGRESSION:
+Fake production results = 0.
+Fake success = 0.
+Fake progress = 0.
+Fake location/ETA = 0.
+Fake payment success = 0.
+Production mock provider fallback = 0.
+
+LEGACY ROUTES:
+Audit old demo/mock/experimental Smart UI paths.
+Production reachability to experimental truth must be 0.
+Development tooling may remain isolated.
+
+VISUAL INTEGRATION:
+Use the approved JASIM mobile visual reference.
+Do NOT rebuild architecture from the examples.
+Check that Web/Mobile now look like one product:
+- Conversation-first
+- premium dark JASIM
+- Soap Glass
+- compact generated surfaces
+- coherent typography/spacing/radii
+- Living Objects secondary
+- Arabic RTL polished
+
+REAL MOBILE:
+Attempt strongest available real-device/native smoke.
+Do not fake evidence.
+Classify:
+PASS / PARTIAL / BLOCKED_BY_ENVIRONMENT.
+
+CROSS-DEVICE VISUAL:
+Attempt real Web/Mobile comparison for same semantic state.
+Layouts may differ.
+Canonical meaning must match.
+
+GENERALITY FREEZE:
+Test unseen generic goals such as:
+- employee transportation
+- farm surplus to restaurants
+- idle construction equipment
+- warehouse capacity
+- specialist hiring
+- home care
+- tutoring
+- spare factory capacity
+- empty return truck
+- university lab capacity
+- corporate procurement
+- vague SaaS platform
+
+DO NOT add domain patches after seeing these cases.
+
+Target:
+DOMAIN_PATCHES_REQUIRED = 0
+
+If capability is genuinely missing:
+return truthful capability gap.
+
+TYPE SAFETY:
+Web = PASS
+Server = PASS
+Mobile = PASS
+Shared contracts = PASS
+
+BUILDS:
+Web production build = PASS
+Metro/static = PASS
+
+DATABASE:
+Use accepted migrations only.
+NEW_TABLES = 0
+NEW_MIGRATIONS = 0
+PRODUCTION_DB_TOUCHED = NO
+
+DO NOT:
+- deploy
+- use real money
+- connect production payment credentials
+- redesign Kernel
+- add domain agents
+- add speculative features
+
+FIX POLICY:
+Only fix reproducible cross-layer integration defects.
+For every fix document:
+ROOT_CAUSE
+WHY_PREVIOUS_FOCUSED_TASKS_MISSED_IT
+MINIMAL_FIX
+REGRESSION_EVIDENCE
+
+FINAL REPORT:
+.local/tasks/jasim-power-final-smart-integration-report.md
+
+FINAL REQUIRED COUNTERS:
+
+JASIM_POWER_FINAL_SMART_INTEGRATION =
+PASS / PARTIAL / FAIL
+
+INTEGRATION_BLOCKERS_REMAINING =
+<number>
+
+EVIDENCE_DEBTS_REMAINING =
+<number>
+
+BLOCKS_0_TO_3_1_REMAIN_CLOSED =
+YES / NO
+
+SMART_UI_TASKS_1_TO_9B_REMAIN_CLOSED =
+YES / NO
+
+CANONICAL_TRUTH_BOUNDARY =
+PASS / FAIL
+
+CONVERSATION_E2E =
+PASS / FAIL
+
+REFERENCE_CONTINUITY =
+PASS / FAIL
+
+PRESENTATION_E2E =
+PASS / FAIL
+
+WORKSPACE_E2E =
+PASS / FAIL
+
+MORPHING_E2E =
+PASS / FAIL
+
+LIVING_OBJECT_E2E =
+PASS / FAIL
+
+TRUSTED_ACTION_E2E =
+PASS / FAIL
+
+APPROVAL_TO_STATUS_CANONICAL =
+PASS / FAIL
+
+EXECUTION_RECEIPT_VERIFICATION =
+PASS / FAIL
+
+LATEST_ATTEMPT_SEMANTICS =
+PASS / FAIL
+
+BLIND_RETRY_PATHS =
+<number>
+
+SEMANTIC_CROSS_DEVICE_PARITY =
+PASS / FAIL
+
+REAL_DEVICE_MOBILE_SMOKE =
+PASS / PARTIAL / BLOCKED_BY_ENVIRONMENT
+
+VISUAL_CROSS_DEVICE_SMOKE =
+PASS / PARTIAL / BLOCKED_BY_ENVIRONMENT
+
+ACTIVE_SECURITY_BYPASSES =
+<number>
+
+ACTIVE_FAKE_TRUTH_PATHS =
+<number>
+
+ACTIVE_PRODUCTION_ROUTE_TO_LEGACY_EXPERIMENTAL_TRUTH =
+<number>
+
+DOMAIN_SPECIFIC_SMART_UI_ARCHITECTURE =
+<number>
+
+DOMAIN_PATCHES_REQUIRED_IN_FROZEN_GENERALITY_SET =
+<number>
+
+WEB_TYPESCRIPT =
+PASS / FAIL
+
+SERVER_TYPESCRIPT =
+PASS / FAIL
+
+MOBILE_TYPESCRIPT =
+PASS / FAIL
+
+SHARED_CONTRACT_TYPESCRIPT =
+PASS / FAIL
+
+WEB_PRODUCTION_BUILD =
+PASS / FAIL
+
+METRO_BUNDLE =
+PASS / FAIL
+
+PRODUCTION_DATABASE_TOUCHED =
+NO / YES
+
+REAL_MONEY_USED =
+NO / YES
+
+DEPLOYMENT_STARTED =
+NO / YES
+
+READY_FOR_FINAL_PRODUCTION_CLOSURE =
+YES / NO
+
+PASS REQUIREMENTS:
+INTEGRATION_BLOCKERS_REMAINING = 0
+ACTIVE_SECURITY_BYPASSES = 0
+ACTIVE_FAKE_TRUTH_PATHS = 0
+ACTIVE_PRODUCTION_ROUTE_TO_LEGACY_EXPERIMENTAL_TRUTH = 0
+DOMAIN_SPECIFIC_SMART_UI_ARCHITECTURE = 0
+DOMAIN_PATCHES_REQUIRED_IN_FROZEN_GENERALITY_SET = 0
+all TypeScript/build checks PASS.
+
+IF PASS:
+Freeze the current Kernel / Runtime / Smart UI architecture.
+
+After freeze:
+future changes require a proven production blocker.
+
+STOP.
+Do not begin Production Closure automatically.

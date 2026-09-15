@@ -1,0 +1,1107 @@
+# JASIM — NON-NEGOTIABLE PRODUCT INVARIANTS DURING CANONICAL MERGE
+# PRESERVE BUBBLE-FIRST ARCHITECTURE + DIRECT RUNS + GENERATIVE SMART UI
+
+أثناء دمج Runtime المطورة داخل مجلد `جاسم` الأصلي، ثبت القواعد التالية كـNON-NEGOTIABLE ARCHITECTURAL INVARIANTS.
+
+لا تسمح لعملية الدمج أن تعيد جاسم إلى World-first أو Task-first أو Platform-first.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. THE PRODUCT IS BUBBLE-FIRST, NOT WORLD-FIRST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+العلاقة الصحيحة:
+
+Conversation
+↓
+Smart Generative Bubble
+↓
+optional durable World Runtime
+
+وليس:
+
+Conversation
+↓
+World
+↓
+UI
+
+ولا:
+
+World = separate product surface
+
+World هي الحياة الداخلية الدائمة للفقاعة عندما تحتاج الفقاعة Persistence حقيقية.
+
+User sees/interacts with Bubble.
+
+World stores/runtime-manages durable internal state.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. WORLD MUST LIVE INSIDE / BEHIND A PERSISTENT BUBBLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا Bubble تحتاج:
+
+- entities
+- workflows
+- policies
+- permissions
+- versions
+- transactions
+- long-lived state
+
+يمكن ربطها بـWorld.
+
+لكن لا تعرض World للمستخدم كمنتج منفصل عن Bubble.
+
+العلاقة:
+
+SmartBubble {
+  id
+  conversationId?
+  worldId? nullable
+  ...
+}
+
+World {
+  durable runtime state
+}
+
+مهم:
+worldId OPTIONAL.
+
+لا تجعل:
+bubble.worldId NOT NULL
+بشكل عام.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. SIMPLE BUBBLES DO NOT NEED WORLD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Bubble قد تكون:
+
+- result bubble
+- comparison bubble
+- interactive result
+- temporary entity view
+- ephemeral assistant surface
+
+بدون World دائم.
+
+اختبر:
+
+"قارن لي هذه الخيارات"
+
+Expected:
+ephemeral/interactive bubble
+
+NOT:
+persistent world
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. RUN DOES NOT REQUIRE BUBBLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هذه قاعدة أساسية.
+
+Run يجب أن تستطيع أن تعمل بدون:
+
+bubbleId
+worldId
+
+مثال:
+
+"بع سيارتي"
+
+Expected:
+DIRECT_ACTION / DURABLE_RUN
+
+وليس:
+create persistent bubble
+
+مثال:
+
+"أعلن عن هذه الخدمة"
+
+Expected:
+ACTION / RUN
+
+وليس:
+Ads platform
+
+مثال:
+
+"راقب السعر"
+
+Expected:
+DURABLE_RUN
+
+وليس:
+World
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. BUBBLE DOES NOT REQUIRE RUN TO EXIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Bubble دائمة يمكن أن تستمر بعد انتهاء Run التي أنشأتها.
+
+مثال:
+
+Run A:
+creates Bubble
+
+تنتهي Run A.
+
+Bubble تبقى.
+
+لاحقًا:
+
+Run B:
+adds product
+
+Run C:
+changes policy
+
+Run D:
+schedules action
+
+العلاقة:
+
+Bubble
+├── Run A
+├── Run B
+├── Run C
+└── Run D
+
+لا تجعل Bubble lifecycle مساوية لـRun lifecycle.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. TASK / RUN / BUBBLE / WORLD ARE DIFFERENT CONCEPTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تدمجهم لمجرد تبسيط DB.
+
+ثبت المعاني:
+
+Task
+= planned unit / orchestration work
+
+Run
+= durable execution lifecycle
+
+Smart Bubble
+= user-facing generative living surface
+
+World
+= optional durable runtime backing model for persistent Bubble
+
+إذا implementation الأصلية تسمي الأشياء بشكل مختلف:
+حافظ على semantics لا على الاسم.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. DO NOT FORCE PLATFORM CREATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+جاسم ليس Platform Builder فقط.
+
+اختبر دائمًا:
+
+"بع هذه السيارة"
+→ Run
+
+"أنشئ سوق سيارات"
+→ Persistent Smart Bubble + optional World
+
+"أعلن عن المنتج"
+→ Action / Run
+
+"أنشئ نظامًا لإدارة الحملات"
+→ Persistent Smart Bubble
+
+"ابحث لي عن موظف"
+→ Workflow / Run
+
+"أنشئ نظام توظيف للشركة"
+→ Persistent Smart Bubble
+
+إذا نفس المجال ينتج نفس الشكل دائمًا:
+FAIL.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. OUTPUT ROUTER MUST REMAIN GENERAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+احتفظ بالأنواع:
+
+TEXT
+STRUCTURED_RESULT
+EPHEMERAL_BUBBLE
+INTERACTIVE_BUBBLE
+DIRECT_ACTION
+WORKFLOW
+DURABLE_RUN
+PERSISTENT_SMART_BUBBLE
+
+لا ترجع إلى:
+
+EVERY PROMPT
+→ Task
+→ World
+
+ولا:
+
+EVERY ACTION
+→ Bubble
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. SMART BUBBLES MUST BE INTELLIGENT THROUGH JASIM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Smart Bubble ليست card ثابتة فقط.
+
+المستخدم يجب أن يستطيع من Main Chat أن يقول:
+
+"متجري الذي فيه الآيفون خفض سعره"
+
+"أضف منتجًا"
+
+"احذف هذه الخدمة"
+
+"أضف نظام تقييم"
+
+"اجعل أي طلب فوق 500 يحتاج موافقتي"
+
+"أعلن عن هذه الفقاعة"
+
+ويقوم JASIM بـ:
+
+resolve bubble
+↓
+resolve target
+↓
+understand mutation
+↓
+plan
+↓
+policy/approval
+↓
+execute
+↓
+verify
+↓
+version/state update
+↓
+rerender same bubble
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. DO NOT CREATE ONE AGENT PER BUBBLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+الذكاء يكون:
+
+Central Jasim Intelligence
++
+Conversation Context
++
+Bubble/World Scoped Context
+
+وليس:
+
+Bubble A Agent
+Bubble B Agent
+Bubble C Agent
+
+لا تضاعف LLMs/agents لكل Bubble.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. BUBBLE REFERENCE RESOLUTION MUST SURVIVE MERGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هذه طبقة Core.
+
+يجب أن تبقى قادرة على فهم:
+
+فقاعتي
+منصتي
+متجري
+المنصة السابقة
+الفقاعة التي فيها الآيفون
+الخدمة الثانية
+المشروع الذي عملناه أمس
+
+وتحويلها إلى:
+
+bubbleId
+entityId
+worldId if needed
+
+بناءً على ownership + context + semantics.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. GENERAL REFERENCES ARE NOT BUBBLE-ONLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أيضًا:
+
+السيارة التي طلبت منك بيعها
+الإعلان السابق
+الحجز الذي عملناه
+العملية التي ما زالت تنتظر
+المنتج الذي أرسلته أمس
+
+قد تشير إلى:
+
+Run
+Entity
+Task
+Proposal
+Message Result
+
+لا تحصر resolver في Bubble فقط.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. BUBBLE MUTATION PIPELINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+احتفظ بالمسار:
+
+Natural Language
+↓
+Resolve Bubble
+↓
+Resolve Target
+↓
+Classify Mutation
+↓
+Execution Proposal
+↓
+Policy
+↓
+Approval
+↓
+DAG/Run
+↓
+Execution
+↓
+Verification
+↓
+Version
+↓
+Rerender
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. MUTATION TYPES MUST STAY GENERIC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+دعم:
+
+DATA_MUTATION
+STRUCTURAL_MUTATION
+POLICY_MUTATION
+WORKFLOW_MUTATION
+VIEW_MUTATION
+PERMISSION_MUTATION
+COMMERCIAL_MUTATION
+
+لا تضف:
+
+CarPriceMutation
+RestaurantMenuMutation
+HiringMutation
+
+في Core.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. BUBBLE EVOLUTION MUST REMAIN POSSIBLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Persistent Bubble يجب أن تتطور:
+
+ChangeSet
+↓
+Preview
+↓
+Validation
+↓
+Approval if needed
+↓
+Apply
+↓
+Version
+↓
+Verify
+↓
+Rollback if safe
+
+لا تجعلها schema ثابتة مولدة مرة واحدة فقط.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. SAME BUBBLE — MULTIPLE SURFACES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+نفس Bubble يجب أن تظهر في:
+
+compact
+expanded
+full-screen
+owner-facing
+public-facing
+
+لكن بنفس:
+
+bubbleId
+state
+worldId if applicable
+permissions
+versions
+
+Full-screen ليست App جديدة.
+
+اسمها مفهوميًا:
+
+Expanded Bubble Surface
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. HTML UI MODEL I WILL PROVIDE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+سأرسل لك نموذج HTML مرجعي للواجهة والفقاعات.
+
+تعامل معه كـ:
+
+VISUAL + INTERACTION REFERENCE
+
+وليس:
+new runtime architecture
+
+عند استلام HTML:
+
+افحص بالتفصيل:
+
+- layout
+- bubble geometry
+- spacing
+- animations
+- transitions
+- glass effect
+- shadows
+- typography
+- responsive behavior
+- bubble expansion
+- interaction patterns
+- composer/chat layout
+
+ثم طبّق الشكل بأقرب تطابق عملي ممكن داخل Web JASIM.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. DO NOT COPY STATIC HTML LOGIC AS BUSINESS LOGIC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا HTML تحتوي JavaScript ثابتًا مثل:
+
+onClick → add product
+onClick → open fake panel
+
+لا تنقل هذا كمنطق Business.
+
+استخرج فقط:
+
+UI behavior
+
+واربط actions بـJASIM Runtime.
+
+مثال:
+
+HTML reference:
+button "خفض السعر"
+
+المنتج الحقيقي:
+
+UI Action
+↓
+Jasim Conversation/Mutation Intent
+↓
+Reference Resolution
+↓
+Proposal
+↓
+Policy
+↓
+Execution Runtime
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. BUBBLES MUST RENDER FROM RUNTIME SCHEMA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تبنِ:
+
+StoreBubble.tsx
+CarBubble.tsx
+JobsBubble.tsx
+
+كأساس للعمومية.
+
+الصحيح:
+
+Runtime Schema
++
+Bubble State
++
+Role
++
+Permissions
++
+Actions
++
+View Definition
+↓
+Generic Bubble Renderer
+
+يمكن استخدام components primitives مثل:
+
+Text
+Image
+List
+Grid
+Metric
+Form
+Button
+Table
+Status
+Timeline
+Chart
+Media
+Section
+
+لكن لا Domain hardcoding.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. HTML LOOK SHOULD BECOME GENERATIVE UI PRIMITIVES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا HTML فيها عناصر تصميم مميزة:
+
+- floating glass cards
+- rounded living bubbles
+- animated expansion
+- inline controls
+- nested surfaces
+
+حوّلها إلى generic UI primitives.
+
+مثال:
+
+SoapGlassSurface
+SmartBubbleShell
+BubbleHeader
+BubbleContent
+BubbleActionBar
+BubbleExpandedSurface
+RuntimeFieldRenderer
+
+الأسماء ليست إلزامية.
+
+المهم العمومية.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. SAME RENDERER CONTRACT FOR WEB + MOBILE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تنشئ منطق Bubble مختلفًا للموبايل.
+
+الصحيح:
+
+Shared Runtime Bubble Schema
+↓
+Web Renderer
+Mobile Renderer
+
+الفرق فقط presentation/layout.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. HTML REFERENCE SHOULD NOT BREAK MOBILE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+الـHTML سيكون مرجعًا للويب.
+
+لا تنسخ CSS حرفيًا للموبايل.
+
+استخرج design tokens:
+
+spacing
+radius
+blur
+surface hierarchy
+motion
+typography
+interaction behavior
+
+ثم طبّق equivalent React Native styles.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. BUBBLE INTELLIGENCE MUST NOT LIVE IN CLIENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Web/Mobile لا تقرر:
+
+what entity to mutate
+which capability to use
+whether approval is needed
+what policy applies
+whether action succeeded
+
+كل ذلك Server-side.
+
+Client فقط:
+
+display
+collect user interaction
+send intent/action request
+render runtime truth
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. NO FAKE SMART BUBBLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ممنوع إنشاء Bubble تبدو ذكية لكنها:
+
+- تستخدم local dummy data
+- تحتوي fake actions
+- تغير state في React فقط
+- لا تحفظ server-side
+- لا تمر عبر Jasim Runtime
+
+أي Bubble دائمة تعتبر REAL فقط إذا state مصدرها server runtime.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. PERSISTENCE RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا Bubble persistent:
+
+close browser
+reload
+logout/login if session permits
+server restart
+open mobile
+
+يجب أن تستعيد نفس Bubble/World state.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. DIRECT RUN PERSISTENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run أيضًا يجب أن تستمر بدون Bubble.
+
+مثال:
+
+"بع سيارتي"
+
+ثم يغلق المستخدم التطبيق.
+
+لاحقًا:
+
+"السيارة التي نبيعها خفض سعرها"
+
+يجب:
+
+resolve existing Run/entity
+not create Bubble
+not restart process from zero
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. CROSS-DEVICE CONTINUITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+مثال:
+
+Web:
+"أنشئ لي متجرًا"
+
+→ Bubble created
+
+Mobile:
+"متجري أضف فيه منتجًا"
+
+→ same Bubble
+
+Web reload:
+same state
+
+مثال مباشر:
+
+Mobile:
+"بع هاتفي"
+
+Web:
+"الهاتف الذي نبيعه خفض سعره"
+
+→ same Run
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. DO NOT TURN WORLD INTO A ROUTE TREE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تجعل World Runtime تنتج صفحات Domain ثابتة مثل:
+
+/world/car
+/world/jobs
+/world/store
+
+World هي durable model.
+
+Renderer يعرض Bubble حسب schema.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. DO NOT TURN BUBBLE INTO A DATABASE VIEW ONLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Bubble ليست مجرد row.
+
+هي aggregate لها:
+
+identity
+presentation schema
+interaction surface
+references
+optional world backing
+versions
+state projection
+
+لكن Business truth تبقى في Runtime.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. THE USER CAN CONTROL BUBBLE THROUGH CHAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هذه Acceptance invariant إلزامية.
+
+يجب أن تعمل رحلة مثل:
+
+"أنشئ مساحة لإدارة منتجاتي"
+
+→ Persistent Bubble
+
+ثم:
+
+"أضف آيفون بـ300"
+
+ثم:
+
+"خفض الآيفون إلى 280"
+
+ثم:
+
+"أضف تقييمات"
+
+ثم:
+
+"أي طلب فوق 500 يحتاج موافقتي"
+
+ثم:
+
+"أضف موظفًا بصلاحية إضافة المنتجات فقط"
+
+كل هذا على نفس Bubble.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. THE USER CAN ACT WITHOUT A BUBBLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+رحلة إلزامية أخرى:
+
+"بع هذه السيارة"
+
+→ Run
+
+ثم:
+
+"اجعل السعر 5000"
+
+ثم:
+
+"إذا جاء عرض فوق 4500 اطلب موافقتي"
+
+ثم:
+close/reopen
+
+ثم:
+"السيارة التي نبيعها ما وضعها؟"
+
+لا تنشئ Bubble لمجرد وجود state.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. OUTPUT FORM REGRESSION TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+احتفظ باختبار:
+
+"كم سعر هذه السيارة؟"
+→ TEXT/RESULT
+
+"بع هذه السيارة"
+→ ACTION/RUN
+
+"راقب السعر"
+→ DURABLE_RUN
+
+"أنشئ سوق سيارات"
+→ PERSISTENT_SMART_BUBBLE
+
+هذا test يجب أن يبقى بعد canonical merge.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. NO DOMAIN TEST CHEATING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تنجح الاختبارات عبر:
+
+if prompt includes "سيارة"
+if prompt includes "متجر"
+if prompt includes "وظيفة"
+
+اختبر semantics العامة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. CANONICAL MERGE MUST PRESERVE THESE INVARIANTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+قبل اعتبار merge ناجحًا:
+
+RUN WITHOUT BUBBLE:
+PASS
+
+BUBBLE WITHOUT WORLD:
+PASS
+
+PERSISTENT BUBBLE WITH WORLD:
+PASS
+
+MULTIPLE RUNS AGAINST SAME BUBBLE:
+PASS
+
+REFERENCE TO EXISTING BUBBLE:
+PASS
+
+REFERENCE TO EXISTING RUN:
+PASS
+
+SAME DOMAIN DIFFERENT OUTPUT FORMS:
+PASS
+
+BUBBLE SERVER PERSISTENCE:
+PASS
+
+RUN SERVER PERSISTENCE:
+PASS
+
+WEB/MOBILE SAME RUNTIME:
+PASS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. HTML IMPLEMENTATION TIMING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+عندما أرسل HTML:
+
+لا توقف canonical merge بالكامل لإعادة تصميم UI.
+
+افعل:
+
+1. analyze HTML
+2. extract design system/primitives
+3. preserve it as UI target
+4. complete canonical merge
+5. integrate final renderer/UI into canonical Web
+6. port equivalent primitives to Mobile
+
+إذا كان يمكن تنفيذ UI بالتوازي بدون كسر runtime ownership:
+يمكن ذلك.
+
+لكن لا تسمح للUI أن تعطل الدمج الأساسي.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. HTML FIDELITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أريد أقرب تطابق ممكن مع النموذج الذي سأرسله في:
+
+- hierarchy
+- bubble shapes
+- surface behavior
+- expansion
+- motion
+- spacing
+- typography
+- interaction
+
+لكن لا تقلد أي placeholder/fake data أو hard-coded example.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. CONNECT EVERY VISUAL ACTION TO REAL RUNTIME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أي:
+
+button
+toggle
+form
+card action
+bubble action
+menu action
+
+يجب أن يكون واحدًا من:
+
+UI-only navigation
+أو
+real runtime intent/action
+
+ولا تترك interactive controls بلا implementation حقيقي.
+
+إذا action لم تُنفذ بعد:
+disabled/blocked truthful state
+
+وليس fake success.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. SMART BUBBLE EVENT LOOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+التدفق النهائي:
+
+Runtime Event
+↓
+Bubble State Projection
+↓
+Web/Mobile Renderer
+↓
+User Interaction
+↓
+Conversation/Action Intent
+↓
+Runtime Mutation
+↓
+Event
+↓
+Bubble Re-render
+
+هذه هي "ذكاء الفقاعة".
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. DO NOT MOVE JASIM INTELLIGENCE INTO FRONTEND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+حتى لو HTML النموذج يحتوي logic كثيرة:
+
+لا تنقل planner/reference resolver/policy إلى frontend.
+
+Central Jasim Intelligence + Runtime يبقيان المصدر.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. FINAL ARCHITECTURE AFTER MERGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+الهدف:
+
+JASIM MAIN CONVERSATION
+↓
+Semantic Output Router
+├── Text / Result
+├── Direct Action
+├── Workflow
+├── Durable Run
+└── Persistent Smart Bubble
+          ↓
+       optional World Runtime
+
+Actions/Runs/Bubbles
+↓
+Reference Resolution
+↓
+Proposals
+↓
+Policy/Approval
+↓
+DAG
+↓
+Trusted Execution later
+↓
+Events
+↓
+Runtime Projections
+↓
+Web/Mobile
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. DO NOT ADD NEW FEATURE WORK NOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هذه الرسالة لا تعني بدء Features جديدة أثناء merge.
+
+هي Architecture Guardrails فقط.
+
+أكمل canonical merge الجاري.
+
+لكن أي merge decision يجب أن يحترم هذه القواعد.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. IF ORIGINAL JASIM CONFLICTS WITH THESE RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا وجدت implementation أصلية قديمة تقول:
+
+every task creates world
+world is separate product
+bubble is static UI
+run requires bubble
+domain template controls output
+
+لا تحتفظ بهذا behavior لمجرد أنه أصلي.
+
+الرؤية النهائية المعتمدة أعلى من implementation القديمة.
+
+طبق:
+
+PRESERVE USEFUL CODE
++
+MIGRATE SEMANTICS TO FINAL ARCHITECTURE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. REPORT ONLY VIOLATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تكتب تقريرًا جديدًا طويلًا.
+
+إذا وجدت conflict حقيقي أثناء merge، أخبرني فقط:
+
+INVARIANT:
+<which rule>
+
+CURRENT ORIGINAL BEHAVIOR:
+<what conflicts>
+
+PROPOSED SAFE MIGRATION:
+<short technical fix>
+
+وإلا تابع التنفيذ.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL NON-NEGOTIABLE RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. World lives behind/inside persistent Smart Bubble when needed.
+2. Bubble does not always need World.
+3. Run does not need Bubble.
+4. Direct actions do not require platforms.
+5. Persistent Bubble survives individual Runs.
+6. Bubbles are intelligent through central Jasim intelligence.
+7. User can mutate existing Bubble naturally through chat.
+8. General Reference Resolution handles Bubble AND non-Bubble objects.
+9. Web/Mobile render same Runtime truth.
+10. HTML model changes presentation, not architecture.
+11. No domain hardcoding.
+12. No fake interactive Bubble.
+13. Runtime remains server-side.
+14. Final architecture is Bubble-first, not World-first.
+
+أكمل canonical merge الجاري مع الالتزام بهذه الـinvariants.
+لا توقف العمل لإعادة التخطيط ما لم تجد conflict حقيقيًا.

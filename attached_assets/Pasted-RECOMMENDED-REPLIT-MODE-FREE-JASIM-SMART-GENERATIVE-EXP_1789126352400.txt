@@ -1,0 +1,1877 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM — SMART GENERATIVE EXPERIENCE
+
+# FOCUSED UI DELTA MAPPING
+
+# REPORT ONLY — NO IMPLEMENTATION
+
+This is a focused inspection task.
+
+DO NOT implement the interface yet.
+
+DO NOT redesign JASIM.
+
+DO NOT reopen completed architecture blocks.
+
+DO NOT create migrations.
+
+DO NOT install UI frameworks or SDKs.
+
+DO NOT modify Web or Mobile behavior.
+
+DO NOT create prototypes.
+
+DO NOT create demo-only screens.
+
+DO NOT deploy.
+
+Your only job is to inspect the CURRENT active JASIM repository and determine the exact UI/presentation delta required for the final Smart Generative Experience.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+0. CANONICAL PROJECT STATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The following architecture is already accepted and CLOSED:
+
+BLOCK_0   = CLOSED / PASS
+BLOCK_1   = CLOSED / PASS
+BLOCK_1_1 = CLOSED / PASS
+BLOCK_2   = CLOSED / PASS
+BLOCK_3   = CLOSED / PASS
+BLOCK_3_1 = CLOSED / PASS
+
+Block 3.1 proved:
+
+* conversation-first runtime
+* durable conversation context
+* reference resolution
+* durable result identity
+* internal JASIM discovery
+* source planning
+* mixed-source normalization
+* provenance
+* search → action
+* conversation → commerce
+* trusted payment path
+* durable DAG resume
+* Web/Mobile canonical runtime
+* generated World creation
+* generated World mutation
+* 25/25 unseen goals
+* zero domain-specific patches after freeze
+
+Do NOT re-audit these systems broadly.
+
+Do NOT propose replacing them.
+
+The UI phase must be built ON TOP OF them.
+
+Relevant existing reports include:
+
+.local/tasks/block3-1-canonical-mapping.md
+.local/tasks/block3-1-report.md
+.local/tasks/block3-report.md
+
+Use them only where necessary to understand the accepted server/runtime contracts.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. FINAL PRODUCT PHILOSOPHY
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The final interface philosophy is now fixed.
+
+JASIM is NOT:
+
+* a dashboard-first product
+* a marketplace-first product
+* a collection of mini apps
+* a Bubble-only system
+* a page-per-domain system
+* a domain-specific UI framework
+
+JASIM IS:
+
+ONE JASIM
++
+ONE PRIMARY CONVERSATION
++
+VALIDATED GENERATIVE UI
++
+ACTIVE GENERATIVE WORKSPACE
++
+UI MORPHING
++
+PERSISTENT LIVING OBJECTS
++
+SOAP GLASS / POP AS VISUAL LANGUAGE
+
+Canonical principle:
+
+CONVERSATION FIRST
+UI WHEN USEFUL
+EXECUTION WHEN AUTHORIZED
+
+The user should primarily need to know WHAT they want.
+
+The user should NOT need to know:
+
+which page
+which marketplace
+which app
+which workflow
+which agent
+which provider
+which feature
+
+should perform it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. CRITICAL CONCEPTUAL DISTINCTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+These distinctions are NON-NEGOTIABLE.
+
+### A. Adaptive Surface
+
+An Adaptive Surface represents:
+
+WHAT THE USER NEEDS TO SEE / INTERACT WITH NOW.
+
+Examples:
+
+Search results
+Comparison
+Form
+Map
+Calendar
+Approval
+Checkout
+Timeline
+Status
+Document
+Workspace subsection
+
+### B. Active Generative Workspace
+
+The Workspace represents:
+
+THE CURRENT VISUAL CONTEXT OF THE ACTIVE GOAL.
+
+It may contain:
+
+Conversation
+Generated Views
+Current Results
+Selected Entities
+Current Goal
+Current Action
+Status
+
+The Workspace may MORPH as the task evolves.
+
+Example:
+
+Search
+→ Results Workspace
+
+Then:
+
+"قارن الثاني والرابع"
+
+→ Comparison Workspace
+
+Then:
+
+"خذ الرابع واحجز السبت"
+
+→ Selected Entity + Calendar + Approval
+
+The VIEW changes.
+
+The OPERATIONAL STATE must remain.
+
+### C. Living Object
+
+A Living Object represents:
+
+SOMETHING THAT CONTINUES AFTER THE CURRENT RESPONSE.
+
+Examples:
+
+monitor
+active order
+delivery
+World
+project
+negotiation
+booking
+long-running Run
+subscription task
+
+Rule:
+
+IF IT ENDS WITH THE RESPONSE
+→ NO LIVING OBJECT REQUIRED
+
+IF IT CONTINUES BEYOND THE RESPONSE
+→ LIVING OBJECT MAY BE JUSTIFIED
+
+### D. Bubble
+
+Bubble is NOT architecture.
+
+Bubble is NOT canonical state.
+
+Bubble is NOT a data model.
+
+Bubble is ONE possible presentation form.
+
+A Bubble / Orb / Capsule / Panel / Sheet / Grid / Workspace are visual render modes.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. TARGET PRESENTATION ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The target architecture is:
+
+CANONICAL RUNTIME STATE
+↓
+AUTHORIZED PROJECTION
+↓
+PRESENTATION INTENT
+↓
+PRESENTATION IR / GENERATIVE UI AST
+↓
+SCHEMA VALIDATION
+↓
+PRESENTATION DECISION
+↓
+SAFE COMPONENT RESOLUTION
+↓
+ACTIVE GENERATIVE WORKSPACE
+↓
+DEVICE-SPECIFIC RENDERER
+↓
+WEB / MOBILE
+
+Possible final render forms include:
+
+Inline Bubble
+Expanded Bubble
+Entity Card
+Grid
+List
+Comparison
+Table
+Form
+Calendar
+Map
+Approval
+Checkout
+Timeline
+Tracker
+Panel
+Bottom Sheet
+Full Workspace
+Living Object
+Orb
+Capsule
+
+The Runtime must NOT choose CSS or React components directly.
+
+The LLM must NOT generate arbitrary React/HTML/JavaScript.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. PRESENTATION AST / IR RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect whether JASIM currently has:
+
+Presentation IR
+GenUI schema
+UI AST
+UI schema
+UI intent
+renderer schema
+structured response schema
+bubble schema
+projection schema
+
+or an equivalent.
+
+The desired contract is conceptually:
+
+LLM / Planner
+↓
+semantic presentation intent
+↓
+structured typed presentation representation
+↓
+runtime schema validation
+↓
+trusted component resolution
+↓
+safe renderer
+
+The exact existing names may differ.
+
+DO NOT propose a second competing UI AST if an existing one can be extended.
+
+For each existing presentation contract classify:
+
+REUSE
+EXTEND
+REFACTOR
+REPLACE
+REMOVE
+NOT_ACTIVE
+
+Explain why.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. GENERATIVE UI AST MUST BE SAFE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect the active production rendering path for any ability to render:
+
+raw HTML from LLM
+raw HTML from providers
+raw React from model output
+raw JavaScript
+eval()
+Function()
+dynamic arbitrary component names
+unsafe innerHTML
+untrusted HTML from search/provider/MCP/A2A
+
+Report all active paths.
+
+The desired architecture must support only:
+
+validated structured presentation
++
+trusted component registry
++
+safe renderer
+
+External/provider content must remain DATA.
+
+It must never create privileged UI actions merely by returning markup.
+
+Report:
+
+UNTRUSTED_RAW_HTML_RENDER_PATHS
+ARBITRARY_GENERATED_JS_PATHS
+UNTRUSTED_COMPONENT_INJECTION_PATHS
+
+Do NOT fix them during this task.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. PRESENTATION DECISION LAYER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect whether there is currently a generic layer that decides the smallest useful visual form.
+
+Examples:
+
+simple fact
+→ Text
+
+few entities
+→ Cards
+
+many comparable entities
+→ Grid/List
+
+comparison request
+→ Comparison
+
+locations
+→ Map + Cards
+
+dates
+→ Calendar
+
+multiple missing structured fields
+→ Form
+
+consequential action
+→ Approval
+
+long-running process
+→ Timeline / Tracker / Living Object
+
+generated business/system
+→ World Summary / Workspace
+
+This decision must depend on:
+
+semantic output
+task/goal state
+available data
+required interaction
+risk
+device/context
+
+NOT domain names.
+
+Search for:
+
+presentation router
+output router
+view selector
+UI decision
+renderer selection
+surface selection
+bubble selection
+GenUI compiler
+presentation compiler
+
+Determine:
+
+REAL
+PARTIAL
+MISSING
+LEGACY
+DEMO_ONLY
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. ACTIVE GENERATIVE WORKSPACE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is a critical part of the final UX.
+
+Inspect whether any current system already represents something equivalent to:
+
+Active Generative Workspace
+
+Conceptually containing:
+
+conversationReference
+activeGoalReference
+currentPresentation
+resultSetReference
+selectedEntityReferences
+activeActionReference
+status
+attention
+relatedLivingObjects
+
+Do NOT assume a new database table is needed.
+
+It may be a projection over existing runtime state.
+
+Determine whether current Web UI already has:
+
+split pane
+generated panel
+workspace
+canvas
+side panel
+bubble window
+active content area
+dynamic result surface
+
+that can be reused.
+
+For every existing candidate classify:
+
+REUSE
+EXTEND
+REFACTOR
+REPLACE
+REMOVE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. UI MORPHING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect whether the current UI can change presentation while preserving the SAME underlying goal and state.
+
+Required target behavior:
+
+User:
+
+"ابحث لي عن خمسة لابتوبات."
+
+View:
+Results
+
+Then:
+
+"قارن الثاني والرابع."
+
+View morphs:
+Comparison
+
+Then:
+
+"الثاني أفضل."
+
+Selection persists.
+
+Then:
+
+"هل يوجد مثله أرخص؟"
+
+View morphs:
+Updated Results / Alternatives
+
+Then:
+
+"خذه."
+
+View:
+Selected Item / Transaction preparation
+
+Then:
+
+"ادفع."
+
+View:
+Approval / Checkout
+
+Then:
+Status / Tracker
+
+During these changes the system must NOT lose:
+
+Goal
+constraints
+selected entities
+ResultSet identity
+ReferenceBindings
+transaction context
+pending action
+provenance
+
+Determine whether current UI:
+
+1. can morph existing surfaces,
+2. only appends new chat cards forever,
+3. creates separate pages,
+4. replaces state locally,
+5. loses state during presentation change.
+
+Report exact active behavior.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. UI STATE VS OPERATIONAL STATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect state ownership.
+
+UI/client state may contain:
+
+open panel
+selected visual tab
+expanded/collapsed
+draft text
+scroll position
+animation state
+temporary loading indicator
+
+Canonical operational state must NOT live only in client UI stores.
+
+Examples of canonical state:
+
+Goal
+ResultSet
+ReferenceBinding
+selected canonical entity
+Run
+Task
+World
+TransactionIntent
+PaymentIntent
+Order
+approval
+monitor
+booking
+
+Determine whether any current client store duplicates canonical truth.
+
+Report:
+
+CLIENT_CANONICAL_TRUTH_DUPLICATION
+
+For each occurrence identify:
+
+file
+symbol/store
+duplicated state
+risk
+recommended future action
+
+Do NOT fix it now.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. CURRENT BUBBLE ENGINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Audit the active Bubble / Pop / Soap / GenUI implementation.
+
+Determine whether Bubbles currently represent:
+
+A. visual presentation only
+
+or incorrectly act as:
+
+B. canonical state
+C. business logic
+D. task state
+E. domain-specific mini apps
+
+Inspect:
+
+bubble registry
+bubble schemas
+bubble lifecycle
+bubble persistence
+drag/window state
+bubble actions
+bubble content source
+bubble-to-runtime wiring
+
+Classify each major part:
+
+KEEP_AS_VISUAL_LANGUAGE
+REUSE
+EXTEND
+REFACTOR
+REMOVE_FROM_ACTIVE_PATH
+DEMO_ONLY
+
+Critical:
+
+DO NOT conclude that the Bubble system should be deleted merely because it is not the architecture.
+
+We WANT to preserve useful:
+
+Soap Glass
+Pop transitions
+Orbs
+depth
+motion
+window mechanics where useful
+
+but only as presentation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. SOAP GLASS / POP VISUAL LANGUAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect whether the current UI already contains reusable:
+
+glass tokens
+blur
+surface elevation
+rounded geometry
+animations
+Pop transitions
+Orb design
+window transitions
+dock mechanics
+responsive motion
+theme variables
+
+Report what can be reused without carrying demo/business logic.
+
+Classify:
+
+VISUAL_REUSE_SAFE
+VISUAL_REUSE_WITH_REFACTOR
+DEMO_ONLY
+PERFORMANCE_RISK
+ACCESSIBILITY_RISK
+
+Do NOT redesign visuals during this report.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. LIVING OBJECTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Search for any existing equivalents to:
+
+Living Object
+Smart Bubble
+Persistent Bubble
+Active Object
+Run Card
+World Bubble
+Task Bubble
+Transaction Bubble
+Monitor Card
+Dock item
+
+Determine whether current persistent UI entities are tied safely to canonical references.
+
+Target:
+
+LivingObjectProjection
+→ references canonical Run / World / Transaction / Goal / etc.
+
+NOT:
+
+LivingObject
+→ duplicates all canonical business state
+
+Determine whether existing objects:
+
+survive reload
+survive restart through canonical server state
+appear cross-device
+have attention state
+have lifecycle
+can archive/complete
+retain underlying reference
+
+Report:
+
+LIVING_OBJECTS =
+REAL / PARTIAL / MISSING
+
+and the minimum delta.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. ACTIVE OBJECTS RAIL / DOCK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect existing:
+
+dock
+sidebar
+bubble rail
+task rail
+recent items
+active run list
+
+Determine whether any can become:
+
+ACTIVE OBJECTS RAIL
+
+Target use:
+
+◉ مراقبة السعر
+◉ الطلب
+◉ بيع السيارة
+◉ مشروع الشركة
+◉ التفاوض
+
+Do not show every past action permanently.
+
+Determine whether existing UI supports:
+
+active
+attention required
+approval required
+blocked
+recently completed
+archived
+
+Again:
+
+report only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. GENERIC UI PRIMITIVES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect current component library.
+
+Map existing general components to these semantic primitives where equivalents exist:
+
+Text
+Heading
+EntityCard
+EntityGrid
+EntityList
+Detail
+Comparison
+Table
+Gallery
+Map
+Calendar
+DatePicker
+TimePicker
+Form
+Field
+Choice
+PriceSummary
+Status
+Progress
+Timeline
+Tracker
+Document
+Media
+ActionBar
+Approval
+Warning
+Receipt
+EmptyState
+ErrorState
+WorldSummary
+Workspace
+LivingObjectProjection
+
+Do NOT treat this as a required component creation list.
+
+For each concept classify:
+
+REAL
+PARTIAL
+MISSING
+DOMAIN_SPECIFIC_ONLY
+DEMO_ONLY
+NOT_REQUIRED
+
+Then classify the future action:
+
+REUSE
+EXTEND
+GENERALIZE
+REPLACE
+REMOVE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. DOMAIN-SPECIFIC UI LEAKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Search active UI architecture for components such as:
+
+CarCard
+JobCard
+RestaurantCard
+HotelCard
+ProductCard with domain/business logic
+CourierCard
+
+CarDashboard
+JobDashboard
+RestaurantDashboard
+TransportDashboard
+
+CarBubble
+JobBubble
+DeliveryBubble
+
+domain-specific output routers
+domain-specific presentation planners
+domain-specific UI compilers
+
+Names alone do not automatically fail.
+
+Inspect behavior.
+
+A visual adapter can be acceptable.
+
+Domain business logic inside presentation architecture is not.
+
+Report:
+
+DOMAIN_SPECIFIC_CORE_UI_COMPONENTS
+DOMAIN_SPECIFIC_PRESENTATION_ROUTERS
+DOMAIN_SPECIFIC_WORKSPACES
+
+with counts and exact evidence.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. CURRENT WEB EXPERIENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Trace the active Web path from:
+
+server/runtime response
+↓
+API/tRPC/etc.
+↓
+client state
+↓
+conversation component
+↓
+generated UI/bubble rendering
+
+Identify actual files/symbols.
+
+Determine:
+
+how text responses render
+
+how structured results render
+
+whether Search results can render
+
+whether Comparison exists
+
+whether Forms exist
+
+whether Approval exists
+
+whether Timeline/Status exists
+
+whether World views exist
+
+whether surfaces are inline only
+
+whether a side workspace exists
+
+whether bubbles are active
+
+whether fake/demo paths remain
+
+Do not infer from filenames.
+
+Trace the actual runtime path.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. CURRENT MOBILE EXPERIENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Trace the active Mobile runtime UI.
+
+Block 3.1 already proved Mobile chat uses the real runtime.
+
+Do NOT reopen that question unless evidence directly contradicts it.
+
+Instead inspect the presentation layer:
+
+What does a structured server response become on Mobile?
+
+Does Mobile receive any UI AST / presentation metadata?
+
+Does it currently render only text?
+
+Does it render generic cards?
+
+Can it render approval?
+
+Can it render status/timeline?
+
+Does it have an expandable workspace/sheet pattern?
+
+Could the existing navigation support:
+
+conversation-first
++
+inline surfaces
++
+Bottom Sheet
++
+full-screen generated surface
++
+Living Object rail
+
+without duplicating business logic?
+
+Report the minimum Mobile UI delta.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. WEB / MOBILE PRESENTATION CONTRACT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The target is NOT necessarily pixel-identical Web and Mobile.
+
+The target is:
+
+SAME PRESENTATION SEMANTICS
++
+DEVICE-APPROPRIATE RENDERER
+
+Example:
+
+Presentation semantic:
+Comparison
+
+Desktop:
+wide comparison grid/table
+
+Mobile:
+stacked comparison cards / full-screen sheet
+
+Same underlying:
+
+entities
+attributes
+actions
+references
+authorization
+
+Inspect whether current architecture can support:
+
+Shared Presentation IR
+↓
+Web presentation policy
+↓
+Web renderer
+
+and:
+
+Shared Presentation IR
+↓
+Mobile presentation policy
+↓
+Mobile renderer
+
+Determine minimum delta.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. AUTHORIZED PROJECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect where authorization happens before UI rendering.
+
+Target:
+
+Canonical State
+↓
+Authorization / Visibility
+↓
+Safe Projection
+↓
+Presentation IR
+↓
+Client
+
+Not:
+
+Canonical State
+↓
+send everything to client
+↓
+hide unauthorized fields with CSS
+
+Check current structured UI paths for:
+
+private fields
+internal IDs
+seller notes
+payout details
+customer details
+restricted World state
+privileged actions
+
+Report whether:
+
+AUTHORIZED_PROJECTION_BEFORE_RENDER =
+REAL / PARTIAL / MISSING
+
+Do not broadly reopen backend authorization already closed in prior Blocks.
+
+Focus only on the presentation boundary.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. ACTIONS FROM UI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Trace what happens when a user clicks a current actionable UI element.
+
+Target:
+
+UI Action
+↓
+server/runtime
+↓
+reference resolution / validation
+↓
+policy
+↓
+approval
+↓
+trusted executor
+↓
+verification
+↓
+canonical update
+↓
+projection refresh
+
+Search for client-side paths that bypass runtime:
+
+direct provider calls
+direct database writes
+direct payment execution
+direct canonical state mutation
+client-only completion flags
+
+Report:
+
+CLIENT_DIRECT_PROVIDER_BYPASSES
+CLIENT_DIRECT_PAYMENT_BYPASSES
+CLIENT_DIRECT_CANONICAL_MUTATIONS
+
+Do NOT fix them here.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. APPROVAL PRESENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Block 0–3 approval semantics are already accepted.
+
+Only inspect the UI presentation.
+
+Does current UI have a generic Approval surface?
+
+Can it display:
+
+what will happen
+entity/resource
+amount
+currency
+recipient/provider
+material terms
+impact
+confirm/cancel
+
+Does it bind to server approval identity/fingerprint?
+
+Does it display stale approval invalidation correctly?
+
+Classify:
+
+APPROVAL_UI =
+REAL / PARTIAL / MISSING
+
+No payment runtime redesign.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. TRACKING / TIMELINE PRESENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect whether current UI can represent real runtime events as:
+
+Status
+Timeline
+Tracker
+Map
+
+Target:
+
+Event truth
+↓
+Projection
+↓
+Timeline
+
+No frontend-created fake steps.
+
+Map only if real location observations exist.
+
+Report current support and missing presentation pieces.
+
+Do not reopen Block 3.1 tracking logic unless direct contradiction is found.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. WORKSPACE MORPHING EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use this as a mapping scenario only.
+
+DO NOT implement.
+
+Scenario:
+
+USER:
+"ابحث لي عن خمسة لابتوبات أقل من 400 دينار."
+
+Expected presentation:
+Conversation + Search Workspace
+
+Then:
+
+"قارن الثاني والرابع."
+
+Expected:
+same goal
+same ResultSet references
+Comparison Workspace
+
+Then:
+
+"الثاني أفضل، هل يوجد مثله أرخص؟"
+
+Expected:
+same selected reference
+replanned results
+updated Workspace
+
+Then:
+
+"خذ الثاني."
+
+Expected:
+Selected Item / action preparation
+
+Then:
+
+"ادفع."
+
+Expected:
+Approval / Checkout Surface
+
+Then:
+verified Status / Living Object if ongoing
+
+Map current support for every transition:
+
+REAL
+PARTIAL
+MISSING
+
+and exact missing UI infrastructure.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. WORLD WORKSPACE EXAMPLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mapping scenario only:
+
+USER:
+"افتح شركة النقل."
+
+Target:
+
+Conversation remains available.
+
+Workspace may display authorized:
+
+overview
+resources
+offerings
+operations
+transactions
+economics
+policies
+attention
+
+Then user says:
+
+"غير الاشتراك إلى 30."
+
+The same World changes through conversation.
+
+Do NOT require navigating an admin dashboard.
+
+Inspect current World UI and determine:
+
+REUSE
+EXTEND
+REFACTOR
+REPLACE
+
+Do not build a Transport dashboard.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. SIMPLE-ANSWER DISCIPLINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect whether current presentation tends to over-render UI.
+
+Target:
+
+"كم سعر الذهب؟"
+→ text/structured answer
+
+not:
+
+World
+Workspace
+Living Object
+persistent Bubble
+
+Then:
+
+"راقبه."
+→ Living Object becomes justified
+
+Determine whether existing output router/presentation layer already supports this smallest-sufficient-output principle.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. ADAPTIVE FORMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect whether generic dynamic forms exist.
+
+Important UX principle:
+
+If three structured missing fields can be collected better via a small generated form, JASIM may show one.
+
+Example:
+
+restaurant reservation missing:
+
+party size
+date
+time
+
+Better:
+
+small Form surface
+
+rather than three separate textual questions.
+
+But do not turn every clarification into a form.
+
+Map existing support.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. CONTEXTUAL CLARIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Block 3.1 already has awaiting_input.
+
+Inspect how UI renders it.
+
+Target:
+
+Runtime:
+awaiting_input
+
+Presentation:
+one focused question
++
+choices/form only if useful
+
+User may:
+
+click
+or
+reply naturally
+
+Determine whether current Web/Mobile can support this cleanly.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. UI VERSIONING / CONTRACTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect whether current presentation schemas have explicit versioning.
+
+Examples conceptually:
+
+Presentation IR v1
+UI AST v1
+Action contract v1
+
+Do NOT create versioning if unnecessary during this report.
+
+Determine whether future renderer compatibility requires it.
+
+Classify:
+
+UI_SCHEMA_VERSIONING =
+REAL / PARTIAL / MISSING / NOT_REQUIRED_YET
+
+Explain.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. RUNTIME SCHEMA VALIDATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TypeScript alone is insufficient for data crossing runtime boundaries.
+
+Inspect whether structured presentation data is runtime-validated using existing schema system, such as Zod or equivalent.
+
+Target:
+
+server-generated or model-assisted presentation
+↓
+runtime validation
+↓
+safe renderer
+
+Report:
+
+PRESENTATION_RUNTIME_VALIDATION =
+REAL / PARTIAL / MISSING
+
+Do not install a new validation library.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. ACCESSIBILITY / PERFORMANCE RISKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not perform a complete accessibility audit.
+
+Only inspect architectural UI risks relevant to future implementation.
+
+Examples:
+
+glass contrast
+hover-only critical actions
+drag-only navigation
+motion without reduced-motion
+continuous canvas animation
+large unvirtualized grids
+desktop interaction copied to Mobile
+tiny Orb controls
+
+Report major blockers only.
+
+Do not fix them now.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. FINAL TARGET MODEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The desired final interface model is:
+
+ONE CONVERSATION
+
+plus:
+
+ACTIVE GENERATIVE WORKSPACE
+
+which may display:
+
+ADAPTIVE SURFACES
+
+and:
+
+LIVING OBJECTS
+
+through:
+
+SOAP GLASS / POP VISUAL LANGUAGE
+
+The relationship is:
+
+# Adaptive Surface
+
+what the user needs NOW
+
+# Active Workspace
+
+the current visual context of the goal
+
+# Living Object
+
+what continues AFTER now
+
+# Bubble / Orb / Card / Panel / Sheet / Grid
+
+visual render forms only
+
+This distinction must be preserved in all recommendations.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. DO NOT PROPOSE THESE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT propose:
+
+Block 3.2
+
+new Agent architecture
+
+new workflow engine
+
+new runtime
+
+new capability registry
+
+new payment engine
+
+new discovery system
+
+new state engine
+
+new memory system
+
+domain apps
+
+domain marketplaces
+
+domain dashboards
+
+separate Mobile brain
+
+new external search provider
+
+real PSP
+
+production deployment
+
+The backend/runtime architecture is already accepted.
+
+This report is UI DELTA ONLY.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. REQUIRED CLASSIFICATION METHOD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For every inspected UI subsystem classify current state as:
+
+REAL
+PARTIAL
+MISSING
+LEGACY_ONLY
+DEMO_ONLY
+DEAD
+BROKEN
+NOT_REQUIRED
+
+Then classify recommended future action as:
+
+REUSE
+EXTEND
+REFACTOR
+REPLACE
+REMOVE_FROM_ACTIVE_PATH
+KEEP_AS_VISUAL_LANGUAGE
+DEFER_FINAL_PRODUCTION
+NO_CHANGE
+
+Do not merely say "needs work."
+
+Be exact.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. REQUIRED FILE/SYMBOL EVIDENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For each major finding include:
+
+FILE
+SYMBOL / COMPONENT / FUNCTION
+ACTIVE PATH?
+CURRENT RESPONSIBILITY
+CURRENT STATE
+RECOMMENDED ACTION
+WHY
+
+Do not infer architecture from names.
+
+Trace callers and active render paths.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. REQUIRED REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create exactly:
+
+.local/tasks/jasim-smart-interface-delta-mapping.md
+
+Do not create competing reports.
+
+Required sections:
+
+A. Executive Verdict
+
+B. Current Conversation UI Path
+
+C. Current Presentation Architecture
+
+D. Current Presentation IR / UI AST
+
+E. Runtime Schema Validation
+
+F. Presentation Decision Layer
+
+G. Active Generative Workspace
+
+H. UI Morphing
+
+I. UI State vs Operational State
+
+J. Current Bubble / GenUI Engine
+
+K. Soap Glass / Pop Visual Reuse
+
+L. Living Objects
+
+M. Active Objects Rail / Dock
+
+N. Generic UI Primitives
+
+O. Domain-Specific UI Leaks
+
+P. Web Renderer
+
+Q. Mobile Renderer
+
+R. Shared Web/Mobile Presentation Contract
+
+S. Authorized Projection Boundary
+
+T. UI Action → Trusted Runtime Path
+
+U. Approval Presentation
+
+V. Status / Timeline / Tracking Presentation
+
+W. Adaptive Forms / Clarification
+
+X. World Workspace
+
+Y. Smallest Sufficient Output
+
+Z. Security of Generated UI
+
+AA. Accessibility / Performance Risks
+
+AB. Reuse / Extend / Refactor / Replace Matrix
+
+AC. Minimum Implementation Delta
+
+AD. Recommended Implementation Sequence
+
+AE. Final Counters
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. REQUIRED MINIMUM IMPLEMENTATION DELTA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In section AC, propose ONLY the minimum future implementation needed to reach:
+
+Conversation
++
+Validated Generative UI
++
+Presentation Decision Layer
++
+Active Generative Workspace
++
+UI Morphing
++
+Living Objects
++
+Soap Glass Renderer
+
+For every proposed addition explain:
+
+What user-facing failure it solves.
+
+Why existing code cannot already solve it.
+
+Whether it requires:
+
+code only
+schema change
+new persistence
+Web changes
+Mobile changes
+
+Prefer:
+
+0 new database tables
+
+unless independently justified.
+
+Do not create implementation code.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. REQUIRED IMPLEMENTATION SEQUENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Recommend a small sequence for the future MAX implementation.
+
+Do NOT implement it.
+
+The sequence should be based on actual repository findings.
+
+Expected conceptual direction may resemble:
+
+1. stabilize/reuse Presentation IR
+2. runtime validation
+3. presentation decision
+4. generic renderer primitives
+5. Active Workspace
+6. UI Morphing
+7. Living Objects / rail
+8. Web adaptation
+9. Mobile adaptation
+10. acceptance/regression
+
+But do not force this order if repository evidence supports a better one.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. REQUIRED FINAL COUNTERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+End the report with exactly:
+
+SMART_INTERFACE_DELTA_MAPPING =
+COMPLETE / INCOMPLETE
+
+BLOCK_0_REMAINS_CLOSED =
+YES / NO
+
+BLOCK_1_REMAINS_CLOSED =
+YES / NO
+
+BLOCK_1_1_REMAINS_CLOSED =
+YES / NO
+
+BLOCK_2_REMAINS_CLOSED =
+YES / NO
+
+BLOCK_3_REMAINS_CLOSED =
+YES / NO
+
+BLOCK_3_1_REMAINS_CLOSED =
+YES / NO
+
+CONVERSATION_FIRST_CURRENTLY =
+REAL / PARTIAL / MISSING
+
+PRESENTATION_IR =
+REAL / PARTIAL / MISSING
+
+GENERATIVE_UI_AST =
+REAL / PARTIAL / MISSING
+
+PRESENTATION_RUNTIME_VALIDATION =
+REAL / PARTIAL / MISSING
+
+PRESENTATION_DECISION_LAYER =
+REAL / PARTIAL / MISSING
+
+ACTIVE_GENERATIVE_WORKSPACE =
+REAL / PARTIAL / MISSING
+
+UI_MORPHING =
+REAL / PARTIAL / MISSING
+
+UI_STATE_PRESERVATION =
+REAL / PARTIAL / MISSING
+
+LIVING_OBJECTS =
+REAL / PARTIAL / MISSING
+
+ACTIVE_OBJECTS_RAIL =
+REAL / PARTIAL / MISSING
+
+SOAP_GLASS_VISUAL_SYSTEM =
+REAL / PARTIAL / MISSING
+
+WEB_GENERIC_RENDERER =
+REAL / PARTIAL / MISSING
+
+MOBILE_GENERIC_RENDERER =
+REAL / PARTIAL / MISSING
+
+SHARED_WEB_MOBILE_PRESENTATION_CONTRACT =
+REAL / PARTIAL / MISSING
+
+AUTHORIZED_PROJECTION_BEFORE_RENDER =
+REAL / PARTIAL / MISSING
+
+APPROVAL_UI =
+REAL / PARTIAL / MISSING
+
+TRACKING_TIMELINE_UI =
+REAL / PARTIAL / MISSING
+
+ADAPTIVE_FORMS =
+REAL / PARTIAL / MISSING
+
+WORLD_WORKSPACE =
+REAL / PARTIAL / MISSING
+
+SMALLEST_SUFFICIENT_OUTPUT =
+REAL / PARTIAL / MISSING
+
+UNTRUSTED_RAW_HTML_RENDER_PATHS = <number>
+
+ARBITRARY_GENERATED_JS_PATHS = <number>
+
+UNTRUSTED_COMPONENT_INJECTION_PATHS = <number>
+
+CLIENT_CANONICAL_TRUTH_DUPLICATION = <number>
+
+CLIENT_DIRECT_PROVIDER_BYPASSES = <number>
+
+CLIENT_DIRECT_PAYMENT_BYPASSES = <number>
+
+CLIENT_DIRECT_CANONICAL_MUTATIONS = <number>
+
+DOMAIN_SPECIFIC_CORE_UI_COMPONENTS = <number>
+
+DOMAIN_SPECIFIC_PRESENTATION_ROUTERS = <number>
+
+DOMAIN_SPECIFIC_WORKSPACES = <number>
+
+ACTIVE_FAKE_AI_UI_PATHS = <number>
+
+ACTIVE_FAKE_TRANSACTION_UI_PATHS = <number>
+
+ACTIVE_FAKE_TRACKING_UI_PATHS = <number>
+
+REUSABLE_GENERIC_UI_PRIMITIVES = <number>
+
+MISSING_GENERIC_UI_PRIMITIVES = <number>
+
+NEW_DATABASE_TABLES_REQUIRED_ESTIMATE = <number>
+
+NEW_MIGRATIONS_REQUIRED_ESTIMATE = <number>
+
+NEW_EXTERNAL_UI_SDKS_REQUIRED_ESTIMATE = <number>
+
+SMART_INTERFACE_IMPLEMENTATION_READY =
+YES / NO
+
+REQUIRES_PREVIOUS_BLOCK_REWORK =
+YES / NO
+
+READY_FOR_OWNER_REVIEW =
+YES / NO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. FINAL REQUIRED ANSWER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Answer this exact question:
+
+"Can the current accepted JASIM runtime be evolved into the final
+Conversation + Validated Generative UI + Active Generative Workspace
+
+* UI Morphing + Living Objects experience mostly by reusing/extending
+  the current presentation layer, without rebuilding the accepted runtime
+  or introducing domain-specific applications?"
+
+Answer exactly:
+
+YES
+PARTIAL
+or
+NO
+
+Then list ONLY:
+
+the generic UI/presentation gaps preventing YES.
+
+Do not list backend capabilities already closed by Blocks 0–3.1.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After creating:
+
+.local/tasks/jasim-smart-interface-delta-mapping.md
+
+STOP.
+
+DO NOT IMPLEMENT.
+
+DO NOT MODIFY UI.
+
+DO NOT CREATE MIGRATIONS.
+
+DO NOT INSTALL PACKAGES.
+
+DO NOT START FINAL PRODUCTION CLOSURE.
+
+DO NOT DEPLOY.
+
+Return only:
+
+* mapping verdict
+* strongest reusable presentation pieces
+* exact missing generic UI pieces
+* recommended future implementation sequence
+* SMART_INTERFACE_IMPLEMENTATION_READY
+* READY_FOR_OWNER_REVIEW
+
+BEGIN FOCUSED SMART INTERFACE DELTA MAPPING NOW.

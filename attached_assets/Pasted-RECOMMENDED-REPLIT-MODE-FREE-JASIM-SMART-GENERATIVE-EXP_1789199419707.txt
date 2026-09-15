@@ -1,0 +1,1593 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM SMART GENERATIVE EXPERIENCE
+# TASK 8B2B — MOBILE LIVING OBJECTS + CROSS-DEVICE EXPERIENCE PARITY
+
+MODE INTENT:
+Focused Mobile Living Objects presentation and Web/Mobile semantic parity only.
+
+This is the FINAL Mobile Smart Generative Experience implementation task.
+
+Task 8A = CLOSED / PASS
+Task 8B1 = CLOSED / PASS
+Task 8B1.1 = CLOSED / PASS
+Task 8B2A = CLOSED / PASS
+
+Accepted current state:
+
+- Mobile uses shared JASIM runtime contracts.
+- MobilePresentationRenderer exists.
+- MobileWorkspaceSurface exists.
+- semantic presentation types render natively.
+- trusted actions use runtime.dispatchAction.
+- workspaceProjection is live.
+- activeLivingObjects is live.
+- target-specific versions are preserved.
+- Mobile visual Morphing supports:
+  ENTER
+  UPDATE
+  MORPH
+  EXIT
+  NO_CHANGE
+- stale visual revival is blocked.
+- app restart/background/conversation-switch continuity exists.
+- canonical truth remains on server.
+- no WebView.
+- no domain-specific Mobile components.
+- no client canonical business truth.
+- real Mobile app UI is reachable.
+- authenticated Mobile runtime readiness is proven.
+
+Task 8B2A visual smoke was PARTIAL only because the environment did not provide an interactive tool capable of exercising the complete authenticated Search → Comparison → Approval → Status sequence.
+
+Do NOT reopen 8B2A for that reason.
+
+Carry this evidence limitation into final integration acceptance.
+
+Relevant reports:
+
+.local/tasks/smart-ui-task-8a-report.md
+.local/tasks/smart-ui-task-8b1-report.md
+.local/tasks/smart-ui-task-8b-1-readiness-report.md
+.local/tasks/smart-ui-task-8b2a-report.md
+.local/tasks/smart-ui-task-6a-report.md
+.local/tasks/smart-ui-task-6b-report.md
+
+Also use the APPROVED JASIM MOBILE VISUAL REFERENCE supplied by the owner.
+
+IMPORTANT:
+The visual reference defines the visual language only.
+
+Do NOT infer domain architecture from cars, jobs, shopping, travel, health, etc. shown in the concept image.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. GOAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Complete the Mobile Smart Generative Experience by implementing:
+
+A. Native Mobile Living Objects experience.
+
+B. Native access to ongoing work without cluttering Conversation.
+
+C. Cross-device semantic parity between Web and Mobile.
+
+D. Same canonical object identity across devices.
+
+E. Same trusted actions across devices.
+
+F. Same Workspace/current-goal truth across devices.
+
+The final Mobile experience should now consist of:
+
+ONE CONVERSATION
++
+GENERATIVE NATIVE SURFACES
++
+MOBILE WORKSPACE
++
+VISUAL MORPHING
++
+LIVING OBJECTS WHEN JUSTIFIED
+
+Do NOT add another architecture layer.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. PERMANENT MOBILE EXPERIENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Conversation remains PRIMARY.
+
+Living Objects remain SECONDARY.
+
+Do NOT make the home screen a task dashboard.
+
+Do NOT replace conversation with:
+
+Projects page
+Orders page
+Monitors page
+Worlds page
+
+The user should open JASIM and talk.
+
+Ongoing work remains easy to return to through a compact Living Objects surface.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. DO NOT COPY WEB ACTIVE OBJECTS RAIL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Web uses Active Objects Rail.
+
+Mobile should NOT copy the Desktop side rail.
+
+Build a Mobile-native presentation.
+
+Preferred conceptual forms:
+
+compact horizontal strip
+
+small expandable tray
+
+bottom sheet
+
+compact activity row
+
+Use existing Mobile primitives.
+
+Do NOT add a new UI SDK.
+
+The exact form should follow the approved JASIM visual direction:
+
+compact
+premium
+Soap Glass
+conversation-first
+low visual noise
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. ONE GENERIC MOBILE LIVING OBJECT COMPONENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create/reuse ONE generic component equivalent to:
+
+MobileLivingObjectItem
+
+It may display:
+
+icon/presentation hint
+
+title
+
+short summary
+
+status
+
+attention
+
+real progress if available
+
+last update
+
+small action affordance
+
+Do NOT create:
+
+OrderLivingObjectCard
+
+MonitorLivingObjectCard
+
+WorldLivingObjectCard
+
+DeliveryLivingObjectCard
+
+CarSaleLivingObjectCard
+
+The component consumes Task 6A LivingObjectProjection.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. USE REAL LIVING OBJECT PROJECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use:
+
+runtime.activeLivingObjects
+
+Do NOT infer Living Objects from visible UI.
+
+Do NOT create one merely because:
+
+search results exist
+
+comparison exists
+
+document exists
+
+approval exists
+
+Only server eligibility from Task 6A decides.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. LIVING OBJECT NEGATIVE RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Preserve:
+
+simple answer
+→ no Living Object
+
+search only
+→ no Living Object
+
+comparison only
+→ no Living Object
+
+document summary
+→ no Living Object by default
+
+Do NOT turn every rich response into a persistent bubble.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. LIVING OBJECT POSITIVE EXAMPLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Generic examples only:
+
+price monitor
+
+active order
+
+ongoing booking
+
+negotiation
+
+persistent World
+
+long-running Run
+
+selling process
+
+scheduled/conditional process
+
+These are acceptance examples.
+
+Do not build domain-specific code.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. MOBILE LIVING OBJECT STRIP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When one or more active Living Objects exist, provide a compact native surface near the Conversation experience.
+
+Conceptual example:
+
+[ مراقبة السعر ] [ طلب الشراء ] [ شركة النقل ]
+
+This must NOT dominate the screen.
+
+If zero Living Objects:
+
+show nothing.
+
+Do not render:
+
+"لا توجد عناصر نشطة"
+
+as permanent screen furniture unless user explicitly opens an activity view.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. EXPANDED LIVING OBJECT VIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When user taps a Living Object:
+
+either:
+
+open/focus the relevant current Workspace
+
+or:
+
+open a compact Mobile detail sheet before Workspace
+
+depending on existing semantic data.
+
+Do NOT navigate to a domain-specific application.
+
+Preferred chain:
+
+Living Object
+→ OPEN_REFERENCE
+→ runtime.dispatchAction
+→ authorized canonical reference
+→ projection refresh
+→ current Workspace
+→ existing Mobile Morphing
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. OPEN_REFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use existing shared Trusted Action semantics.
+
+No direct local object opening that changes canonical truth.
+
+Opening must NOT:
+
+clone Run
+
+clone World
+
+clone Order
+
+create Task
+
+change lifecycle
+
+mark anything active
+
+It only resolves/focuses existing canonical context.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. ATTENTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Render Task 6A canonical attention.
+
+Examples:
+
+NONE
+→ quiet
+
+INFO
+→ subtle
+
+ACTION_REQUIRED
+→ clear indicator
+
+APPROVAL_REQUIRED
+→ stronger indicator
+
+BLOCKED
+→ blocked state
+
+FAILED
+→ failure state
+
+COMPLETED
+→ subdued
+
+Do NOT use constant animation for normal active objects.
+
+Attention is semantic.
+
+Not decorative.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. ATTENTION + WORKSPACE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+Living Object:
+
+طلب الشراء
+
+attention:
+APPROVAL_REQUIRED
+
+Tap.
+
+Expected:
+
+OPEN_REFERENCE
+→ current canonical context
+→ Workspace displays APPROVAL
+→ Mobile Morphing uses existing mechanisms
+
+Do NOT create separate:
+
+Approval Living Object
+
+if approval belongs to same process.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. DEDUPLICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Preserve Task 6A aggregation.
+
+Related Task + Run representing one user process:
+
+ONE Living Object.
+
+Do not turn internal runtime objects into multiple Mobile cards.
+
+Likewise avoid obvious user-facing explosion from:
+
+Transaction
+PaymentIntent
+Order
+Delivery
+
+when server projection already aggregates them.
+
+Mobile must respect projection identity.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. BOUNDED COLLECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use the bounded server projection.
+
+Do not load/render full process history in main Conversation screen.
+
+If projection returns more objects than compact strip can comfortably show:
+
+allow horizontal scroll
+
+or generic "المزيد"
+
+or expanded sheet
+
+Do not query hundreds of historical objects.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. COMPLETED OBJECTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Completed objects should not dominate the compact strip.
+
+Use the server projection/lifecycle classification.
+
+Do not delete canonical history.
+
+Do not invent local archive business state.
+
+If recently completed appears:
+
+render subdued.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. STALE LIVING OBJECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If server projection changes or removes an object:
+
+Mobile must reflect current projection.
+
+Do NOT keep old local object because:
+
+it was previously rendered
+
+it was expanded
+
+an animation is still running
+
+Latest projection wins.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. BACKGROUND / FOREGROUND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If app backgrounds while an object changes:
+
+foreground should refresh/use current canonical projection.
+
+Example:
+
+WAITING_APPROVAL
+→ operation advanced elsewhere
+→ COMPLETED
+
+Mobile must not restore WAITING_APPROVAL from local snapshot.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. APP RESTART
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Living Objects must reconstruct from:
+
+runtime.activeLivingObjects
+
+after restart.
+
+Do not persist a separate canonical Mobile object list.
+
+Query cache may help presentation.
+
+Server projection wins.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. CROSS-DEVICE IDENTITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is critical.
+
+For the SAME authenticated user and canonical process:
+
+Web Living Object L1
+
+and:
+
+Mobile Living Object L1
+
+must represent the SAME:
+
+underlyingReference
+
+semantic identity
+
+status
+
+attention
+
+current relevant canonical object
+
+Device presentation may differ.
+
+Identity must not.
+
+Add explicit parity tests.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. CROSS-DEVICE WORKSPACE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Given the same current canonical conversation/goal:
+
+Web:
+
+workspaceProjection = W1
+
+Mobile:
+
+workspaceProjection = W1 semantic context
+
+The devices may render differently.
+
+But they must agree on:
+
+Goal
+
+ResultSet
+
+selected references
+
+current presentation
+
+approval
+
+Run
+
+World
+
+status
+
+presentationVersion
+
+where present.
+
+No semantic divergence.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. CROSS-DEVICE PRESENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Same PresentationDefinition should retain:
+
+semantic type
+
+stable identity
+
+reference context
+
+version
+
+actions
+
+Web renderer:
+
+Web components
+
+Mobile renderer:
+
+Native components
+
+No reclassification by device.
+
+Only presentation policy/layout differs.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. CROSS-DEVICE ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Both devices use:
+
+runtime.dispatchAction
+
+The same canonical action from:
+
+Web Approval
+
+and:
+
+Mobile Approval
+
+must reach the same trusted server boundary.
+
+No Mobile shortcut.
+
+No Web shortcut.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. CROSS-DEVICE STATE UPDATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Target scenario:
+
+Mobile shows:
+
+WAITING_APPROVAL
+
+User approves on Web.
+
+Server canonical state advances.
+
+Mobile refreshes/foregrounds.
+
+Expected:
+
+Mobile receives STATUS / current truth.
+
+Not:
+
+old Approval.
+
+Inverse scenario:
+
+Mobile acts.
+
+Web refreshes.
+
+Web sees same canonical result.
+
+This is required parity.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. NO REALTIME REQUIREMENT UNLESS ALREADY AVAILABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT add WebSocket/realtime infrastructure solely for Task 8B2B.
+
+Cross-device parity means:
+
+same canonical truth when projections refresh.
+
+If current system already has push/realtime:
+
+reuse it.
+
+Otherwise:
+
+refetch/focus/invalidation is sufficient for this task.
+
+Do not expand architecture.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. MOBILE MORPHING INTEGRATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Opening a Living Object can change Workspace current presentation.
+
+Use Task 8B2A.
+
+Do NOT build:
+
+LivingObjectMorphEngine
+
+Example:
+
+Current:
+SEARCH_RESULTS
+
+Tap active order Living Object.
+
+Projection changes/focuses:
+STATUS
+
+Existing Mobile morph mechanism handles transition.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. MOBILE VISUAL REFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use the APPROVED JASIM MOBILE visual reference.
+
+The desired characteristics:
+
+dark navy background
+
+soft blue/cyan/violet highlights
+
+Soap Glass cards
+
+rounded surfaces
+
+compact information
+
+premium Arabic RTL typography
+
+JASIM orb identity
+
+conversation-first composition
+
+generated cards embedded naturally
+
+restrained glow
+
+Living Objects compact and secondary
+
+Do not place the marketing cards outside the phone inside the actual product.
+
+Do not copy all examples into one production conversation.
+
+The concept image demonstrates the visual language.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. LIVING OBJECT VISUAL LANGUAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A Mobile Living Object should feel like a compact "live object".
+
+Not a flat admin row.
+
+Possible appearance:
+
+soft glass capsule
+
+small orb + title
+
+status dot
+
+short summary
+
+attention ring only when justified
+
+Keep touch target accessible.
+
+Do not create large decorative spheres that consume content area.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. JASIM ORB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If current Mobile implementation has a JASIM orb/assistant identity:
+
+reuse it.
+
+Do NOT make every Living Object use the main JASIM orb.
+
+Objects may have generic semantic glyphs.
+
+The JASIM orb represents JASIM intelligence.
+
+Not each business entity.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. RTL / LTR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Verify:
+
+Arabic object titles
+
+mixed English product names
+
+status
+
+numbers
+
+dates
+
+money
+
+horizontal strip direction
+
+sheet positioning
+
+touch order
+
+Do not mechanically reverse numeric content.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. ACCESSIBILITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Each Living Object must expose accessible semantics:
+
+title
+
+status
+
+attention where important
+
+action label
+
+Use native accessibility roles.
+
+Do not rely on glow/color alone.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. REDUCED MOTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+New Living Object appearance/attention animations must respect reduced-motion preference.
+
+No continuous pulse for normal monitoring.
+
+Subtle attention transition only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. PERFORMANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use bounded data.
+
+Use stable keys.
+
+Avoid rendering full detail content inside compact strip.
+
+Do not keep every expanded object mounted.
+
+No large hidden surfaces.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. CLIENT STATE BOUNDARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Allowed local state:
+
+strip expanded/collapsed
+
+sheet open/closed
+
+focused visual item
+
+scroll position
+
+animation
+
+Forbidden local authority:
+
+status
+
+attention
+
+progress
+
+underlying canonical identity
+
+approval
+
+transaction
+
+Run lifecycle
+
+World state
+
+monitor truth
+
+Target:
+
+CLIENT_CANONICAL_TRUTH_ADDED = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. NO NEW DATABASE / MIGRATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Strict:
+
+NEW_DATABASE_TABLES = 0
+
+NEW_MIGRATIONS = 0
+
+Do NOT add Living Object persistence.
+
+Task 6A already proved projection from canonical truth.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. NO NEW SDK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use existing Expo/React Native/Reanimated stack only.
+
+NEW_EXTERNAL_SDKS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. NO NAVIGATION REDESIGN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not redesign app tabs.
+
+Do not add:
+
+Orders
+Monitors
+Worlds
+
+as permanent domain/navigation destinations.
+
+A generic activity/history concept may exist later, but is out of scope.
+
+Keep Conversation as main JASIM experience.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. NO DOMAIN COMPONENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Forbidden:
+
+MonitorLivingObjectCard
+
+OrderLivingObjectCard
+
+TransportWorldChip
+
+CarSaleObject
+
+JobProcessObject
+
+Target:
+
+DOMAIN_SPECIFIC_MOBILE_LIVING_OBJECT_COMPONENTS_ADDED = 0
+
+DOMAIN_SPECIFIC_MOBILE_LIVING_OBJECT_BRANCHES_ADDED = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. FOCUSED SCENARIO — MONITOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Canonical monitor M1 exists.
+
+Mobile receives Living Object L1.
+
+Compact strip shows:
+
+title
+MONITORING
+no fake progress
+
+Tap:
+OPEN_REFERENCE
+
+Workspace shows current monitor detail/status.
+
+Reload:
+L1 reconstructs.
+
+No duplicate.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. FOCUSED SCENARIO — ORDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Canonical active Order O1.
+
+Mobile Living Object:
+
+طلب ...
+
+status:
+RUNNING / equivalent
+
+Canonical state advances.
+
+Projection updates.
+
+Mobile Living Object status changes from server.
+
+Tap:
+Workspace STATUS/TIMELINE.
+
+No local lifecycle mutation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. FOCUSED SCENARIO — WORLD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Persistent World W1.
+
+Mobile Living Object uses same generic item.
+
+Tap:
+Workspace shows generic World presentation.
+
+User may continue controlling World through Conversation.
+
+No domain World screen.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. FOCUSED SCENARIO — ATTENTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+L1:
+
+attention NONE
+
+Canonical runtime changes:
+WAITING_APPROVAL
+
+Projection:
+APPROVAL_REQUIRED
+
+Mobile item becomes visually noticeable.
+
+Tap:
+Workspace Approval.
+
+After action/server update:
+attention changes from server.
+
+No second approval object.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. CROSS-DEVICE SCENARIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use same canonical fixture/session.
+
+Verify Web + Mobile agree on:
+
+Living Object underlyingReference
+
+status
+
+attention
+
+current Workspace Goal
+
+ResultSet identity if relevant
+
+PresentationDefinition semantic type
+
+presentationVersion
+
+Then mutate via one client through trusted dispatcher.
+
+Refresh second client.
+
+Verify canonical parity.
+
+No need for real realtime transport.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. SIMPLE NEGATIVE SCENARIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+User asks simple question.
+
+Server returns no Living Object.
+
+Mobile must NOT manufacture compact activity chip merely because current presentation is rich.
+
+Search + Comparison should remain transient unless durable process exists.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. TRUSTED ACTION NEGATIVE TESTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mobile Living Object action cannot:
+
+change owner
+
+set completed
+
+set paid
+
+set verified
+
+override policy
+
+supply provider URL
+
+supply server handler
+
+Open/resume must pass through trusted action semantics.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. TESTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add focused tests proving at minimum:
+
+1. zero Living Objects → compact surface hidden.
+
+2. one object → one generic item.
+
+3. multiple objects render bounded collection.
+
+4. server projection order respected.
+
+5. Task+Run merged object renders once.
+
+6. monitor uses generic component.
+
+7. order uses same generic component.
+
+8. World uses same generic component.
+
+9. approval attention does not create duplicate object.
+
+10. unknown progress is not invented.
+
+11. object tap uses OPEN_REFERENCE.
+
+12. open/resume uses trusted dispatcher.
+
+13. object tap does not mutate lifecycle locally.
+
+14. Workspace uses existing Mobile morphing.
+
+15. object removal follows latest server projection.
+
+16. stale projection cannot revive object.
+
+17. app restart reconstructs objects.
+
+18. foreground refresh uses current objects.
+
+19. reduced motion works.
+
+20. accessibility labels include useful semantic status.
+
+21. RTL strip works.
+
+22. CLIENT_CANONICAL_TRUTH_ADDED remains 0.
+
+23. no domain-specific object component.
+
+24. simple text produces no object.
+
+25. search-only produces no object.
+
+26. comparison-only produces no object.
+
+27. Web/Mobile same underlyingReference parity.
+
+28. Web/Mobile same status parity.
+
+29. Web/Mobile same attention parity.
+
+30. Web/Mobile same PresentationDefinition semantics.
+
+31. Web/Mobile same presentationVersion.
+
+32. Mobile mutation → Web refreshed canonical parity.
+
+33. Web mutation → Mobile refreshed canonical parity.
+
+34. Task 8B2A regression.
+
+35. Task 8B1 regression.
+
+36. Task 8A regression.
+
+37. Task 7 trusted dispatcher regression.
+
+38. Task 6 Living Object projection regression.
+
+Keep focused.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. REAL MOBILE VISUAL SMOKE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use the real Expo application.
+
+Where authenticated test/runtime state permits, inspect:
+
+zero-object state
+
+one Living Object
+
+multiple Living Objects
+
+attention-required object
+
+open object → Workspace
+
+return to Conversation
+
+RTL
+
+narrow phone
+
+Do not use static HTML.
+
+Do not replace runtime with fake production success.
+
+Test fixtures are allowed only in explicit test/dev harnesses and must never be presented as live provider/canonical proof.
+
+If environment still cannot reach certain canonical visual states:
+
+report PARTIAL honestly.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+47. CROSS-DEVICE EVIDENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Automated parity tests are required.
+
+Visual side-by-side screenshots are useful but NOT mandatory if environment prevents them.
+
+Do not claim visual cross-device PASS without actual evidence.
+
+Report separately:
+
+SEMANTIC_CROSS_DEVICE_PARITY
+
+and:
+
+VISUAL_CROSS_DEVICE_SMOKE
+
+Semantic parity is the critical gate.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+48. EXISTING 11 CANONICAL ERRORS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The prior readiness work documented 11 unrelated canonical errors.
+
+Do NOT fix them in Task 8B2B unless one directly blocks this implementation.
+
+Carry them to the final Power integration gate.
+
+Do not let scope expand.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+49. VERIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run:
+
+Task 8B2B focused tests
+
+Task 8B2A regression
+
+Task 8B1 regression
+
+Task 8A regression
+
+Task 7 dispatcher regression
+
+Task 6 Living Object regression
+
+Mobile TypeScript
+
+shared contract TypeScript if touched
+
+Web TypeScript if parity helpers touched
+
+Server TypeScript if shared/runtime changed
+
+Metro bundle
+
+Web production build only if Web shared code changed materially
+
+git diff --check
+
+real Mobile smoke
+
+Use safe sequential database tests where PostgreSQL parallel test collisions are known.
+
+Do NOT deploy.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+50. EXPECTED CHANGE SIZE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expected:
+
+MobileLivingObjectsSurface / equivalent
+
+generic Mobile LivingObjectItem
+
+Mobile Conversation composition
+
+small open/focus integration
+
+cross-device parity tests
+
+styles/accessibility
+
+No database.
+
+No migrations.
+
+No SDK.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+51. REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create exactly:
+
+.local/tasks/smart-ui-task-8b2b-report.md
+
+Sections:
+
+CAUSE
+
+MOBILE_LIVING_OBJECT_ARCHITECTURE
+
+GENERIC_MOBILE_LIVING_OBJECT
+
+COMPACT_SURFACE
+
+ATTENTION_PRESENTATION
+
+BOUNDED_COLLECTION
+
+DEDUPLICATION
+
+OPEN_REFERENCE
+
+WORKSPACE_INTEGRATION
+
+MOBILE_MORPHING_INTEGRATION
+
+RELOAD_RECONSTRUCTION
+
+APP_FOREGROUND_REFRESH
+
+RTL_LTR
+
+ACCESSIBILITY
+
+REDUCED_MOTION
+
+CLIENT_STATE_BOUNDARY
+
+DOMAIN_GENERICITY
+
+WEB_MOBILE_IDENTITY_PARITY
+
+WEB_MOBILE_WORKSPACE_PARITY
+
+WEB_MOBILE_PRESENTATION_PARITY
+
+WEB_MOBILE_ACTION_PARITY
+
+CROSS_DEVICE_REFRESH_PARITY
+
+FILES_CHANGED
+
+TESTS
+
+REAL_MOBILE_VISUAL_SMOKE
+
+CROSS_DEVICE_EVIDENCE
+
+Final counters:
+
+SMART_UI_TASK_8B2B =
+PASS / PARTIAL / FAIL
+
+MOBILE_LIVING_OBJECTS =
+PASS / FAIL
+
+MOBILE_COMPACT_ACTIVE_OBJECTS_SURFACE =
+PASS / FAIL
+
+RAIL_COPIED_FROM_DESKTOP =
+NO / YES
+
+GENERIC_MOBILE_LIVING_OBJECT_COMPONENT =
+PASS / FAIL
+
+ZERO_OBJECT_STATE_HIDDEN =
+YES / NO
+
+BOUNDED_LIVING_OBJECT_COLLECTION =
+PASS / FAIL
+
+TASK_RUN_DEDUPLICATION =
+PASS / FAIL
+
+ATTENTION_PRESENTATION =
+PASS / FAIL
+
+OPEN_REFERENCE_TRUSTED =
+PASS / FAIL
+
+USES_EXISTING_MOBILE_MORPHING =
+YES / NO
+
+RELOAD_RECONSTRUCTION =
+PASS / FAIL
+
+APP_FOREGROUND_REFRESH =
+PASS / FAIL
+
+RTL =
+PASS / FAIL
+
+ACCESSIBILITY =
+PASS / FAIL
+
+REDUCED_MOTION =
+PASS / FAIL
+
+SEMANTIC_CROSS_DEVICE_PARITY =
+PASS / FAIL
+
+LIVING_OBJECT_IDENTITY_PARITY =
+PASS / FAIL
+
+LIVING_OBJECT_STATUS_PARITY =
+PASS / FAIL
+
+LIVING_OBJECT_ATTENTION_PARITY =
+PASS / FAIL
+
+WORKSPACE_GOAL_PARITY =
+PASS / FAIL
+
+RESULTSET_IDENTITY_PARITY =
+PASS / FAIL
+
+PRESENTATION_SEMANTIC_PARITY =
+PASS / FAIL
+
+PRESENTATION_VERSION_PARITY =
+PASS / FAIL
+
+TRUSTED_ACTION_SERVER_BOUNDARY_PARITY =
+PASS / FAIL
+
+MOBILE_TO_WEB_REFRESH_PARITY =
+PASS / FAIL
+
+WEB_TO_MOBILE_REFRESH_PARITY =
+PASS / FAIL
+
+DOMAIN_SPECIFIC_MOBILE_LIVING_OBJECT_COMPONENTS_ADDED =
+<number>
+
+DOMAIN_SPECIFIC_MOBILE_LIVING_OBJECT_BRANCHES_ADDED =
+<number>
+
+CLIENT_CANONICAL_TRUTH_ADDED =
+<number>
+
+FAKE_STATUS_COUNT =
+<number>
+
+FAKE_PROGRESS_COUNT =
+<number>
+
+MOBILE_REAL_VISUAL_SMOKE =
+PASS / PARTIAL / FAIL
+
+VISUAL_CROSS_DEVICE_SMOKE =
+PASS / PARTIAL / NOT_AVAILABLE
+
+NEW_DATABASE_TABLES =
+0
+
+NEW_MIGRATIONS =
+0
+
+NEW_EXTERNAL_SDKS =
+0
+
+TASK_8B2A_REGRESSION =
+PASS / FAIL
+
+TASK_8B1_REGRESSION =
+PASS / FAIL
+
+TASK_8A_REGRESSION =
+PASS / FAIL
+
+TASK_7_DISPATCHER_REGRESSION =
+PASS / FAIL
+
+TASK_6_LIVING_OBJECT_REGRESSION =
+PASS / FAIL
+
+MOBILE_TYPESCRIPT =
+PASS / FAIL
+
+METRO_BUNDLE =
+PASS / FAIL
+
+BLOCKS_0_TO_3_1_REMAIN_CLOSED =
+YES / NO
+
+READY_FOR_SMART_UI_TASK_9 =
+YES / NO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+52. PASS GATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 8B2B may be PASS only if:
+
+MOBILE_LIVING_OBJECTS = PASS
+
+MOBILE_COMPACT_ACTIVE_OBJECTS_SURFACE = PASS
+
+RAIL_COPIED_FROM_DESKTOP = NO
+
+ZERO_OBJECT_STATE_HIDDEN = YES
+
+TASK_RUN_DEDUPLICATION = PASS
+
+OPEN_REFERENCE_TRUSTED = PASS
+
+SEMANTIC_CROSS_DEVICE_PARITY = PASS
+
+LIVING_OBJECT_IDENTITY_PARITY = PASS
+
+WORKSPACE_GOAL_PARITY = PASS
+
+PRESENTATION_SEMANTIC_PARITY = PASS
+
+PRESENTATION_VERSION_PARITY = PASS
+
+TRUSTED_ACTION_SERVER_BOUNDARY_PARITY = PASS
+
+DOMAIN_SPECIFIC_MOBILE_LIVING_OBJECT_COMPONENTS_ADDED = 0
+
+DOMAIN_SPECIFIC_MOBILE_LIVING_OBJECT_BRANCHES_ADDED = 0
+
+CLIENT_CANONICAL_TRUTH_ADDED = 0
+
+FAKE_STATUS_COUNT = 0
+
+FAKE_PROGRESS_COUNT = 0
+
+and affected tests pass.
+
+MOBILE_REAL_VISUAL_SMOKE may be PARTIAL only if exact inaccessible visual states are documented and semantic/integration evidence is complete.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+53. STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Task 8B2B:
+
+STOP.
+
+DO NOT start Task 9.
+
+DO NOT run Final Production Closure.
+
+DO NOT deploy.
+
+DO NOT redesign navigation.
+
+Return only:
+
+Task 8B2B verdict
+
+Mobile Living Objects status
+
+cross-device semantic parity status
+
+focused test count
+
+real Mobile visual smoke status
+
+visual cross-device smoke status
+
+domain-specific Living Object component count
+
+client canonical truth added
+
+fake status/progress counts
+
+READY_FOR_SMART_UI_TASK_9
+
+BEGIN TASK 8B2B.

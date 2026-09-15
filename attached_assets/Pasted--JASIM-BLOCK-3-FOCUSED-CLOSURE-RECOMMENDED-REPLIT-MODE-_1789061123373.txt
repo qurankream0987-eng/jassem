@@ -1,0 +1,600 @@
+# JASIM — BLOCK 3 FOCUSED CLOSURE
+
+RECOMMENDED REPLIT MODE: POWER
+
+Current canonical result:
+
+JASIM_BLOCK_3 = PARTIAL
+READY_FOR_BLOCK_3_1 = NO
+
+The complete closure report already exists at:
+
+.local/tasks/block3-report.md
+
+Do NOT redo the full Block 3 audit.
+
+Do NOT redesign completed Block 3 components.
+
+Do NOT reopen Blocks 0 / 1 / 1.1 / 2.
+
+Do NOT modify the already-PASS payment truth boundary unless a direct regression is proven.
+
+Do NOT connect a real production PSP.
+
+Do NOT charge real money.
+
+Do NOT deploy.
+
+Your task is to close ONLY the exact remaining blockers already identified in `.local/tasks/block3-report.md`:
+
+1. Payout closure
+2. Generated Business Economics
+3. Block2 → Block3 migration upgrade proof
+4. Missing scenario/regression completeness
+
+Read the existing Block 3 report first and use its exact evidence and blocker descriptions as canonical input.
+
+---
+
+## 1. PAYOUT — DISTINGUISH ARCHITECTURE FROM PROVIDER AVAILABILITY
+
+First determine exactly why payout is currently a blocker.
+
+A missing real production payout provider is NOT by itself a Block 3 failure.
+
+Block 3 is allowed to end with:
+
+REAL_PAYOUT_PROVIDER = BLOCKED_BY_PROVIDER
+
+provided the generic payout architecture and truth semantics are complete.
+
+Required invariants:
+
+PAYOUT != SETTLEMENT
+
+PAYOUT_REQUESTED != PAYOUT_EXECUTED
+
+PAYOUT_EXECUTED != PAYOUT_VERIFIED
+
+PROVIDER_RECEIPT != PAYOUT_VERIFIED
+
+PAYOUT_COMPLETED must never be claimed without sufficient evidence.
+
+Payout destination changes are consequential and must be authority/policy/fingerprint protected.
+
+Payout financial effects must reuse the trusted financial execution boundary where applicable.
+
+No blind retry after uncertain payout effect.
+
+Duplicate payout request must not create duplicate financial effect.
+
+If provider response is uncertain:
+
+→ INCONCLUSIVE
+→ reconciliation/readback when supported
+
+If no provider supports payout:
+
+return BLOCKED_BY_PROVIDER truthfully.
+
+Do NOT invent fake payout success.
+
+Do NOT create a production payout simulator and label it real.
+
+If payout semantics already satisfy all required invariants and only external provider availability is missing:
+
+change the closure classification appropriately rather than implementing unnecessary architecture.
+
+---
+
+## 2. GENERATED BUSINESS ECONOMICS
+
+This is a required Block 3 capability.
+
+Generated businesses / Worlds must use the SAME generic economic primitives already created in Block 3.
+
+Do NOT create:
+
+GeneratedBusinessEconomicsEngine
+
+TransportEconomics
+
+MarketplaceEconomics
+
+JobEconomics
+
+FoodEconomics
+
+or any domain-specific economics system.
+
+Required flow:
+
+Generated World
+↓
+owner-configured commercial model
+↓
+Plan / FeeRule / Offering / Transaction rules
+↓
+verified EconomicEvent
+↓
+FeeRule eligibility
+↓
+RevenueEvent / SellerPayable / ProviderCost as applicable
+↓
+Economic Ledger
+
+Prove at least these cases using existing general primitives:
+
+### Case A — Generated subscription business
+
+User creates a generated business.
+
+Then:
+
+"أضف اشتراكًا شهريًا للشركات بقيمة 25 د.ك."
+
+Expected:
+
+Plan
+Subscription
+Entitlement
+
+No domain-specific code.
+
+Then:
+
+"أول أسبوع مجاني."
+
+Expected:
+
+trial entitlement
+
+NO fake PaymentIntent
+
+NO fake RevenueEvent
+
+Then:
+
+"غير الاشتراك إلى 30 د.ك."
+
+Expected:
+
+versioned commercial mutation
+
+existing subscriptions handled according to defined semantics
+
+not silent history rewrite.
+
+### Case B — Generated commission business
+
+Generated World owner says:
+
+"خذ 5% من كل عملية مكتملة."
+
+Expected:
+
+generic FeeRule
+
+Fee eligibility depends on appropriate VERIFIED economic outcome.
+
+JASIM revenue must not equal gross customer payment.
+
+No hardcoded 5% in Core.
+
+### Case C — Generated success-fee model
+
+Example:
+
+"إذا تم توظيف الشخص بنجاح خذ 2 د.ك."
+
+The 2 KWD is owner-configured data.
+
+It must NOT become permanent employment logic.
+
+Expected:
+
+verified success event
+→ generic FeeRule
+→ RevenueEvent
+
+No JobFeeEngine.
+
+### Case D — Capacity monetization
+
+Example:
+
+generated World sells unused warehouse / equipment / production capacity.
+
+Expected:
+
+Resource
+Capacity
+Offering
+Reservation
+Transaction
+verified economic outcome
+generic fee/revenue system
+
+No domain economics patches.
+
+### Case E — Change business model conversationally
+
+Start with commission.
+
+Then owner says:
+
+"أوقف العمولة وخله اشتراك شهري."
+
+Expected:
+
+World commercial ChangeSet
+↓
+policy/approval if required
+↓
+versioned economic configuration
+↓
+same World
+
+Do NOT regenerate a second business.
+
+---
+
+## 3. BLOCK2 → BLOCK3 UPGRADE MIGRATION
+
+Do not alter shipped migration history.
+
+0009 must remain byte-for-byte consistent with its shipped canonical version.
+
+0010_payment_provider_binding remains forward-only.
+
+Required proof:
+
+A. Fresh database:
+
+empty DB
+→ all migrations
+→ current schema
+→ PASS
+
+B. Upgrade database:
+
+database at canonical Block 2 migration state
+→ apply Block 3 migrations only
+→ current schema
+→ PASS
+
+C. Verify:
+
+existing Block 2 data survives
+
+no destructive rewrite
+
+provider binding schema exists
+
+financial/economic tables exist as designed
+
+constraints/indexes exist
+
+journal order is correct
+
+no migration drift
+
+no requirement to edit an old shipped migration
+
+Report separately:
+
+FRESH_INSTALL_MIGRATION = PASS/FAIL
+
+BLOCK2_TO_BLOCK3_UPGRADE = PASS/FAIL
+
+MIGRATION_HISTORY_IMMUTABLE = YES/NO
+
+MIGRATION_DRIFT_FOUND = <number>
+
+---
+
+## 4. COMPLETE THE MISSING BLOCK 3 ACCEPTANCE PROOF
+
+Do NOT invent new architecture for tests.
+
+Use the existing implementation.
+
+Complete only the missing acceptance/regression evidence identified by the report.
+
+### Known scenarios
+
+Ensure existing Block 3 acceptance covers, at minimum:
+
+* exact KWD payment
+* mandate-limited purchase
+* concurrent mandate budget protection
+* single-use authority race
+* successful payment
+* decline
+* timeout before effect
+* timeout after effect
+* duplicate payment request
+* duplicate callback
+* forged callback
+* stale callback
+* wrong amount
+* wrong currency
+* wrong payment reference
+* provider disagreement
+* refund
+* duplicate refund
+* settlement truth
+* payout semantics
+* free trial
+* subscription
+* failed renewal
+* entitlement enforcement
+* usage replay
+* generated subscription business
+* generated commission business
+* generated success-fee business
+* generated capacity business
+* non-payment transaction
+
+Do not count static unit mocks alone as proof for real persistence/concurrency/execution properties.
+
+Use real PostgreSQL where the property depends on persistence, atomicity, locking, uniqueness, or concurrency.
+
+---
+
+## 5. ARCHITECTURE FREEZE + UNSEEN ECONOMIC GOALS
+
+Once the missing known scenarios pass:
+
+FREEZE BLOCK 3 ARCHITECTURE.
+
+Then run >=15 unseen economic goals.
+
+These must NOT be copied from the known test cases.
+
+They must vary:
+
+actors
+
+resources
+
+commercial models
+
+pricing
+
+subscriptions
+
+capacity
+
+fees
+
+refunds
+
+bounded payment authority
+
+non-payment exchange
+
+generated businesses
+
+If any unseen scenario requires a domain-specific Core patch:
+
+GENERALIZATION = FAIL
+
+Do not patch the example directly.
+
+Classify the missing GENERAL primitive.
+
+If no generic primitive is actually missing, do not modify architecture.
+
+Required:
+
+UNSEEN_ECONOMIC_GOALS_COUNT >= 15
+
+DOMAIN_SPECIFIC_PATCHES_AFTER_FREEZE = 0
+
+---
+
+## 6. FINAL REGRESSION — ONCE
+
+After focused implementation is complete, run one final affected regression gate only.
+
+Required:
+
+Block 3 complete suite
+
+affected Block 2 delegation/security/provider/event regression
+
+affected Block 1.1 provider regression
+
+affected Block 1 capability regression
+
+affected Block 0 trust/executor/verifier/reconciliation regression
+
+canonical TypeScript
+
+Web production build
+
+Mobile typecheck
+
+fresh migrations
+
+Block2 → Block3 upgrade migration
+
+Do not run unrelated historical test programs.
+
+Do not run Phase 12.
+
+Do not deploy.
+
+---
+
+## 7. PRESERVE ALREADY-CLOSED FINANCIAL INVARIANTS
+
+All of these must remain true:
+
+FLOAT_CANONICAL_MONEY_PATHS = 0
+
+UNAUTHENTICATED_FINANCIAL_WEBHOOKS = 0
+
+WEBHOOK_REPLAY_EFFECTS = 0
+
+RAW_PROVIDER_OUTPUT_DIRECTLY_IN_PRIVILEGED_MODEL_CONTEXT = 0
+
+VALID_SIGNATURE_EQUALS_VERIFIED = NO
+
+DIRECT_PAYMENT_SIDE_EFFECT_BYPASS = 0
+
+DOUBLE_CHARGE_COUNT = 0
+
+DOUBLE_REFUND_COUNT = 0
+
+DOUBLE_PAYOUT_COUNT = 0
+
+BLIND_FINANCIAL_RETRY_COUNT = 0
+
+CROSS_INTENT_PAYMENT_ASSIGNMENT = 0
+
+CROSS_PROVIDER_PAYMENT_ASSIGNMENT = 0
+
+UNKNOWN_PROVIDER_PAYMENT_EXECUTION = 0
+
+UNBOUND_PROVIDER_PAYMENT_EFFECT = 0
+
+ATTEMPT_LEDGER_EQUALS_FINANCIAL_LEDGER = NO
+
+CUSTOMER_PAYMENT_EQUALS_JASIM_REVENUE = NO
+
+CLIENT_DIRECT_ENTITLEMENT_GRANTS = 0
+
+USAGE_REPLAY_DOUBLE_COUNTS = 0
+
+HARDCODED_DOMAIN_FEES = 0
+
+PRODUCTION_CONTROLLED_TEST_PROVIDER_COUNT = 0
+
+REAL_MONEY_CHARGED = NO
+
+PRODUCTION_PAYMENT_PROVIDER_CONNECTED = NO
+
+---
+
+## 8. DO NOT EXPAND SCOPE
+
+Do not implement:
+
+Block 3.1
+
+Universal Discovery
+
+new Search architecture
+
+final Smart Generative Interface
+
+Soap Bubbles
+
+Final Production Closure
+
+real PSP credentials
+
+ACP
+
+AP2
+
+tax engine
+
+escrow
+
+App Store deployment
+
+Google Play deployment
+
+These remain later work.
+
+---
+
+## 9. UPDATE THE EXISTING FINAL REPORT
+
+After completing the focused closure, update:
+
+.local/tasks/block3-report.md
+
+Do not create another competing Block 3 final report.
+
+Clearly mark what changed from PARTIAL.
+
+Final verdict must be exactly one of:
+
+JASIM_BLOCK_3 = PASS
+
+JASIM_BLOCK_3 = PARTIAL
+
+JASIM_BLOCK_3 = FAIL
+
+Required final lines:
+
+BLOCK_0_REMAINS_CLOSED = YES/NO
+BLOCK_1_REMAINS_CLOSED = YES/NO
+BLOCK_1_1_REMAINS_CLOSED = YES/NO
+BLOCK_2_REMAINS_CLOSED = YES/NO
+
+PAYOUT_SEMANTICS = PASS/FAIL
+REAL_PAYOUT_PROVIDER = CONNECTED/BLOCKED_BY_PROVIDER/NOT_REQUIRED
+
+GENERATED_BUSINESS_ECONOMICS = PASS/FAIL
+
+FRESH_INSTALL_MIGRATION = PASS/FAIL
+BLOCK2_TO_BLOCK3_UPGRADE = PASS/FAIL
+MIGRATION_HISTORY_IMMUTABLE = YES/NO
+
+KNOWN_ECONOMIC_SCENARIOS = PASS/FAIL
+
+ARCHITECTURE_FROZEN_BEFORE_UNSEEN = YES/NO
+UNSEEN_ECONOMIC_GOALS_COUNT = <number>
+UNSEEN_ECONOMIC_GOALS_PASS = <number>/<number>
+DOMAIN_SPECIFIC_PATCHES_AFTER_FREEZE = <number>
+
+BLOCK_3_SUITE = <passed>/<total>
+BLOCK_2_AFFECTED_REGRESSION = <passed>/<total>
+BLOCK_1_1_AFFECTED_REGRESSION = PASS/FAIL
+BLOCK_1_AFFECTED_REGRESSION = PASS/FAIL
+BLOCK_0_AFFECTED_REGRESSION = PASS/FAIL
+
+TYPESCRIPT = PASS/FAIL
+WEB_PRODUCTION_BUILD = PASS/FAIL
+MOBILE_TYPECHECK = PASS/FAIL
+
+REAL_MONEY_CHARGED = NO
+PRODUCTION_PAYMENT_PROVIDER_CONNECTED = NO
+
+READY_FOR_BLOCK_3_1 = YES/NO
+
+If READY_FOR_BLOCK_3_1 = NO:
+
+list ONLY the remaining exact blockers.
+
+---
+
+## 10. PASS CONDITION
+
+Block 3 may PASS without:
+
+a live PSP
+real KNET/card money
+real payout provider
+ACP/AP2
+global tax implementation
+escrow
+production deployment
+
+provided those boundaries are truthfully represented and no fake financial state is claimed.
+
+Block 3 MUST NOT PASS if any safety or canonical economic invariant remains broken.
+
+When all Block 3 requirements are proven:
+
+JASIM_BLOCK_3 = PASS
+READY_FOR_BLOCK_3_1 = YES
+
+Then STOP.
+
+DO NOT START BLOCK 3.1.

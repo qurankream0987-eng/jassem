@@ -1,0 +1,569 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM SMART GENERATIVE EXPERIENCE
+
+# TASK 7B — ROUTE ACTIVE WEB ACTIONS THROUGH TRUSTED ACTION DISPATCHER
+
+MODE INTENT:
+Focused Web action migration only.
+
+Task 1 = CLOSED / PASS
+Task 2 = CLOSED / PASS
+Task 3 = CLOSED / PASS
+Task 4A = CLOSED / PASS
+Task 4B = CLOSED / PASS
+Task 5A = CLOSED / PASS
+Task 5B = CLOSED / PASS
+Task 6A = CLOSED / PASS
+Task 6B = CLOSED / PASS
+Task 7A = CLOSED / PASS
+
+Task 7A already implemented:
+
+* shared typed Trusted Action contract
+* server Trusted Action Dispatcher
+* one server route:
+  runtime.dispatchAction
+* static allowlisted route registry
+* runtime schema revalidation
+* stable reference validation
+* ownership / authorization validation
+* expectedPresentationVersion validation
+* existing idempotency reuse
+* existing trusted execution / approval paths
+* client helper + small hook
+* fail-closed unsupported actions
+
+Canonical report:
+
+.local/tasks/smart-ui-task-7a-report.md
+
+READ THAT REPORT FIRST.
+
+Use the actual values from:
+
+TRUSTED_ACTION_BYPASSES_FOUND
+BYPASSES_REQUIRING_TASK_7B
+
+Do NOT repeat the Task 7A audit from scratch.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. GOAL
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Migrate the ACTIVE WEB GENERATED-UI ACTION PATHS so that every canonical/consequential generated action routes through:
+
+runtime.dispatchAction
+
+or the existing trusted Task 7A client helper/hook.
+
+Target:
+
+Presentation UI
+Workspace
+Living Objects
+Smart Bubbles where consequential
+Forms
+Choices
+Approval
+Checkout/action surfaces
+↓
+Trusted Action Dispatcher
+↓
+existing trusted server/runtime
+↓
+canonical state
+↓
+projection refresh
+↓
+existing Workspace Morphing / Living Object updates
+
+Task 7B does NOT create a new dispatcher.
+
+Task 7A is authoritative.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. PRIMARY RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Task 7B:
+
+NO ACTIVE WEB GENERATED UI SURFACE MAY DIRECTLY EXECUTE A CONSEQUENTIAL ACTION OUTSIDE THE TASK 7A TRUSTED ACTION BOUNDARY.
+
+Exceptions are ONLY:
+
+explicit safe local presentation actions
+
+such as:
+
+collapse
+expand
+visual tab change
+non-canonical UI-only state
+
+Use the exact local allowlist from Task 7A.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. READ THE BYPASS AUDIT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+From:
+
+.local/tasks/smart-ui-task-7a-report.md
+
+extract every path classified:
+
+MUST_FIX_IN_7B
+
+Do NOT broaden into unrelated legacy UI unless the path is currently active in the Smart Generative Experience.
+
+For each bypass:
+
+identify:
+
+SOURCE COMPONENT
+CURRENT ACTION PATH
+CONSEQUENTIAL OR LOCAL
+NEW TRUSTED PATH
+RESULT
+
+Close all MUST_FIX_IN_7B paths.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. DO NOT REWRITE DISPATCHER CORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT redesign:
+
+trusted-action.ts
+
+trusted-action-dispatcher.ts
+
+route registry
+
+authorization rules
+
+payment architecture
+
+approval engine
+
+execution runtime
+
+unless a concrete integration defect prevents Task 7B.
+
+If integration exposes a real defect:
+
+make the smallest fix and document it.
+
+Do not refactor Task 7A for style.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. PRESENTATION RENDERER ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect active actions emitted from:
+
+PresentationRenderer
+
+SchemaRenderer
+
+ActionBar
+
+generic primitives
+
+Ensure canonical/consequential actions use the trusted helper/dispatcher.
+
+Presentation metadata must not map directly to arbitrary mutation names.
+
+Unknown action:
+
+blocked.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. FORM ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Generic Form submission must route through Task 7A dispatcher when submission affects canonical state.
+
+Required:
+
+validated form payload
++
+stable references
++
+current presentation version
+→ dispatchAction
+
+Do NOT call domain-specific mutation directly from Form.
+
+Local form draft state remains allowed.
+
+Submission success must trigger canonical projection refresh.
+
+Do not locally synthesize final business state.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. CHOICE / SELECT ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Distinguish:
+
+presentation-only choice
+vs
+canonical choice
+
+Presentation-only:
+may remain local if on Task 7A allowlist.
+
+Canonical:
+must dispatch.
+
+Stable reference/value required.
+
+Do not use visual array position as canonical target.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. APPROVAL UI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+All active generated Approval controls must route through trusted dispatcher.
+
+Expected chain:
+
+Approval button
+↓
+trusted typed envelope
+↓
+runtime.dispatchAction
+↓
+existing Task 7A approval adapter
+↓
+existing approval subsystem
+
+No direct:
+
+approval mutation
+setApproved
+setAuthorized
+
+from generated UI.
+
+Preserve:
+
+approval reference
+expectedPresentationVersion
+material/reference context
+
+Stale approval action must fail closed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. CHECKOUT / FINANCIAL SURFACES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Any generated:
+
+checkout
+pay
+refund
+financial confirmation
+
+action must route through dispatcher.
+
+No direct provider calls.
+
+No browser-paid truth.
+
+No local:
+
+paymentStatus = PAID
+
+No generated UI may set:
+
+VERIFIED
+SETTLED
+PAYOUT_COMPLETED
+
+Task 7B is wiring only.
+
+Block 3 remains financial authority.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. ACTIVE WORKSPACE ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect:
+
+ActiveGenerativeWorkspace
+
+and its current presentation primitives.
+
+Canonical actions use dispatcher.
+
+Safe local actions may remain local:
+
+collapse
+expand
+
+according to Task 7A allowlist.
+
+Do not route harmless panel layout actions through trusted executor unnecessarily.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. ACTIVE OBJECTS RAIL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Living Object actions such as:
+
+open
+resume
+review
+
+should use the generic trusted path when they require canonical reference resolution.
+
+Opening should:
+
+resolve owned reference
+focus/resume correct context
+refresh projection
+
+It must NOT:
+
+clone World
+clone Run
+create duplicate Task
+change lifecycle locally
+
+Pure Rail collapse/expand remains local.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. SMART BUBBLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Audit active Smart Bubble action paths identified by 7A.
+
+Consequential Smart Bubble action:
+
+must route through dispatcher.
+
+Pure visual Bubble behavior may remain local.
+
+Do NOT remove Smart Bubble support.
+
+Do NOT create a second SmartBubble dispatcher.
+
+Task 7A dispatcher is the single canonical Web action boundary.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. RUNTIME BUBBLE ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect:
+
+RuntimeBubbleLayer
+RuntimeBubbleRenderer
+
+only where they expose user actions.
+
+Canonical/consequential actions:
+→ trusted dispatcher.
+
+Visual presentation actions:
+→ local allowlist if valid.
+
+Do not change Bubble lifecycle architecture unnecessarily.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. ONE CLIENT ACTION ENTRY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prefer one reusable Web helper/hook from Task 7A.
+
+Conceptually:
+
+useTrustedAction()
+
+or existing Task 7A equivalent.
+
+Do NOT create:
+
+useFormDispatcher
+useApprovalDispatcher
+useOrderDispatcher
+useWorldDispatcher
+useBubbleDispatcher
+
+unless these are trivial wrappers around ONE trusted entry and already exist for UI ergonomics.
+
+No parallel security boundaries.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. ACTION ENVELOPE CONSTRUCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Components should provide only allowed presentation-level data.
+
+The client helper should construct normalized trusted action envelopes.
+
+Do not let each component manually invent:
+
+owner
+policy
+verification
+provider
+handler
+authorization
+
+Server derives/verifies trusted context.
+
+Preserve:
+
+targetReference
+conversationReference where required
+goal/reference context
+expectedPresentationVersion
+typed payload
+
+according to Task 7A contract.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. PENDING UI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For consequential action dispatch:
+
+show reasonable pending state.
+
+Disable repeated click for UX where appropriate.
+
+But safety must still rely on server/idempotency.
+
+Do not block Conversation globally.
+
+Do not optimistically mark operation complete.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. DISPATCH OUTCOME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Handle Task 7A outcome truthfully.
+
+Examples:
+
+ACCEPTED
+STALE
+BLOCKED
+UNAUTHORIZED
+INVALID_ACTION
+REQUIRES_APPROVAL
+INCONCLUSIVE
+FAILED
+
+or exact implemented vocabulary.
+
+Do not translate ACCEPTED into:
+
+"تم بنجاح"
+
+unless downstream canonical projection proves completion.
+
+Preferred:
+
+dispatch result
+→ refresh projection
+→ UI shows canonical current state.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. PROJECTION REFRESH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After accepted canonical mutation:
+
+invalidate/refetch relevant:
+
+workspaceProjection
+
+Living Object collection
+
+current presentation/runtime response
+
+or exact existing projections touched.
+
+Use existing query infrastructure.
+
+Do not construct final Workspace state locally.
+
+Existing Task 5 Morphing should respond to refreshed projection.
+
+Existing Task 6 Rail should respond to refreshed Living Object projection.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. MORPHING INTEGRATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Critical scenario:
+
+APPROVAL
+↓
+user clicks Approve
+↓
+dispatcher ACCEPTED
+↓
+projection refresh
+↓
+runtime now RUNNING
+↓
+Workspace Morphing:
+APPROVAL → STATUS
+
+Do not manually call:
+
+setPresentation("STATUS")
+
+Task 5A/5B must remain authoritative for presentation morphing.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. LIVING OBJECT INTEGRATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+Living Object WAITING_APPROVAL.
+
+User acts.
+
+Dispatcher routes trusted action.
+
+Canonical state changes.
+
+Living Object projection refreshes.
+
+Rail attention/status updates.
+
+Do NOT locally set:
+
+attention = NONE
+
+status = RUNNING
+
+Use server truth.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. STALE UI ACTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Test old DOM/action race:
+
+P5 visible
+→ projection advances P6
+→ delayed click from P5
+
+Web helper still sends:
+
+expectedPresentationVersion = P5
+
+Server dispatcher blocks it.
+
+UI then refreshes current projection.
+
+Do not suppress version metadata to make action

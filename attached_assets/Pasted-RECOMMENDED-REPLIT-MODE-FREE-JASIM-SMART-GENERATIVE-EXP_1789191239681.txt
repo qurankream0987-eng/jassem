@@ -1,0 +1,1603 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM SMART GENERATIVE EXPERIENCE
+
+# TASK 6A — LIVING OBJECT PROJECTION + GENERIC LIFECYCLE
+
+MODE INTENT:
+Focused implementation only.
+
+Task 1 = CLOSED / PASS
+Task 2 = CLOSED / PASS
+Task 3 = CLOSED / PASS
+Task 4A = CLOSED / PASS
+Task 4B = CLOSED / PASS
+Task 5A = CLOSED / PASS
+Task 5B = CLOSED / PASS
+
+The Active Generative Workspace is now complete.
+
+Task 6 introduces a DIFFERENT concept:
+
+LIVING OBJECTS
+
+Do NOT confuse Living Objects with:
+
+Workspace
+Bubble
+Run
+World
+Transaction
+Task
+canonical entity
+
+Relevant reports:
+
+.local/tasks/smart-ui-task-1-report.md
+.local/tasks/smart-ui-task-2-report.md
+.local/tasks/smart-ui-task-3-report.md
+.local/tasks/smart-ui-task-4a-report.md
+.local/tasks/smart-ui-task-4b-report.md
+.local/tasks/smart-ui-task-5a-report.md
+.local/tasks/smart-ui-task-5b-report.md
+.local/tasks/jasim-smart-interface-delta-mapping.md
+
+Do NOT redo previous tasks.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. GOAL
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Implement the generic semantic projection for:
+
+LIVING OBJECT
+
+A Living Object represents:
+
+SOMETHING DURABLE THAT CONTINUES AFTER THE CURRENT RESPONSE.
+
+It is NOT new business truth.
+
+It is a presentation projection over existing canonical durable objects.
+
+Examples:
+
+price monitor
+
+active order
+
+delivery
+
+booking
+
+negotiation
+
+generated World
+
+long-running Run
+
+persistent project
+
+ongoing selling process
+
+subscription-related operation
+
+Do NOT implement the visual Active Objects Rail yet.
+
+Task 6B handles Web presentation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. PERMANENT RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This rule is NON-NEGOTIABLE:
+
+IF IT ENDS WITH THE RESPONSE
+→ DO NOT CREATE A LIVING OBJECT
+
+IF IT CONTINUES AFTER THE RESPONSE
+→ A LIVING OBJECT MAY BE JUSTIFIED
+
+Examples:
+
+"كم سعر الذهب؟"
+→ NO Living Object
+
+"قارن هذه الثلاثة."
+→ NO Living Object
+
+"لخص هذا الملف."
+→ NO Living Object by default
+
+"راقب سعر الذهب."
+→ Living Object justified
+
+"تابع طلبي."
+→ existing order may project as Living Object
+
+"بع سيارتي وتابع المشترين."
+→ Living Object justified
+
+"ابن لي شركة نقل."
+→ World may project as Living Object
+
+The architecture must enforce this distinction generically.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. RELATIONSHIP TO EXISTING UI CONCEPTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Permanent distinction:
+
+# ADAPTIVE SURFACE
+
+what the user needs to see NOW.
+
+# ACTIVE GENERATIVE WORKSPACE
+
+the current visual context of the active goal.
+
+# LIVING OBJECT
+
+something that continues AFTER now.
+
+# BUBBLE / ORB / CAPSULE / CARD
+
+visual forms only.
+
+A Living Object may later render as:
+
+Orb
+Capsule
+Rail item
+Card
+Panel
+
+But the Living Object contract itself must not be tied to visual geometry.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. LIVING OBJECT IS A PROJECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Required architecture:
+
+CANONICAL DURABLE OBJECT
+↓
+AUTHORIZATION
+↓
+LIVING OBJECT ELIGIBILITY
+↓
+LIVING OBJECT PROJECTION
+↓
+UI
+
+Do NOT create:
+
+living_objects table
+
+smart_objects table
+
+persistent_bubbles table
+
+active_objects table
+
+unless a truly independent durable requirement is proven.
+
+Expected:
+
+NEW_DATABASE_TABLES = 0
+NEW_MIGRATIONS = 0
+
+Use existing canonical truth.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. POSSIBLE UNDERLYING OBJECTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A Living Object may reference existing:
+
+Run
+
+Goal
+
+World
+
+Order
+
+Transaction
+
+Booking
+
+Monitoring task
+
+Negotiation
+
+Delivery task
+
+Project
+
+Subscription process
+
+other durable canonical objects
+
+Do NOT create one Living Object class per underlying entity.
+
+Use one generic projection contract.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. TARGET CONTRACT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create/reuse the smallest generic contract equivalent to:
+
+LivingObjectProjection
+
+Conceptually it may expose:
+
+id / presentation identity
+
+underlyingReference
+
+semanticType
+
+title
+
+summary
+
+status
+
+attention
+
+progress
+
+primaryAction
+
+secondaryActions
+
+updatedAt
+
+createdAt where useful
+
+presentationVersion
+
+durability
+
+completion state
+
+But DO NOT blindly implement this exact list.
+
+Inspect existing:
+
+Smart Bubble contracts
+
+RunLifecycleCard data
+
+RuntimeBubbleLayer contracts
+
+World projections
+
+Run/Task projection
+
+presentation-fabric
+
+and reuse existing fields whenever possible.
+
+Avoid duplicate contracts.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. UNDERLYING REFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every Living Object must be bound to a stable canonical underlying reference.
+
+Examples:
+
+Run R1
+
+World W1
+
+Order O1
+
+Booking B1
+
+Do not identify Living Object canonically by:
+
+visual position
+
+array index
+
+title string
+
+Bubble ID generated only by client
+
+React component key
+
+The reference must survive:
+
+reload
+
+re-render
+
+cross-device projection
+
+where canonical object survives.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. ELIGIBILITY POLICY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Implement ONE generic Living Object eligibility decision.
+
+It should answer:
+
+"Should this canonical object remain visible as ongoing user work after the current response?"
+
+Possible generic signals:
+
+durable runtime object exists
+
+status is active/pending/monitoring/ongoing
+
+future condition exists
+
+user attention may later be required
+
+persistent World exists
+
+transaction/order continues
+
+booking continues
+
+negotiation continues
+
+scheduled/monitoring goal continues
+
+Do NOT route by domain.
+
+Forbidden:
+
+if domain === "cars" → Living Object
+
+if entity === "delivery" → Living Object
+
+Use lifecycle/durability semantics.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. DO NOT OVER-CREATE OBJECTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is critical.
+
+Do NOT create Living Objects for:
+
+every assistant response
+
+every search
+
+every comparison
+
+every selected item
+
+every document
+
+every generated card
+
+every approval
+
+Approval itself is usually a state of an underlying durable operation.
+
+It may increase ATTENTION on an existing Living Object.
+
+It does not automatically require a brand-new object.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. ONE CANONICAL THING → ONE LIVING OBJECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Avoid duplicates.
+
+Example:
+
+Order O1 exists.
+
+It should not generate:
+
+Order Living Object
+
+Payment Living Object
+
+Delivery Living Object
+
+Transaction Living Object
+
+automatically if they are all simply aspects of the same user-facing process.
+
+Projection should select an appropriate user-facing semantic object boundary.
+
+However genuinely independent durable processes may be separate.
+
+Keep logic generic.
+
+Document deduplication/aggregation policy.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. USER-FACING SEMANTIC BOUNDARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Living Object boundary should represent something meaningful to the user.
+
+Example:
+
+"طلب الآيفون"
+
+may project:
+
+Order
++
+payment state
++
+fulfillment state
+
+as ONE Living Object if canonical relationships support it.
+
+Do not expose internal object explosion such as:
+
+PaymentIntent #...
+
+ExecutionAttempt #...
+
+Verifier job #...
+
+Webhook #...
+
+These are runtime internals.
+
+Likewise:
+
+a generated World may be one Living Object even though it contains many resources.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Derive Living Object status from canonical state.
+
+Possible user-facing semantic statuses may include equivalent of:
+
+ACTIVE
+
+WAITING
+
+RUNNING
+
+MONITORING
+
+WAITING_USER
+
+WAITING_APPROVAL
+
+VERIFYING
+
+BLOCKED
+
+FAILED
+
+COMPLETED
+
+ARCHIVED
+
+Do not create conflicting runtime state machine.
+
+This is presentation normalization only.
+
+Reuse current status vocabularies where practical.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. ATTENTION MODEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Implement/reuse a generic presentation attention model.
+
+Examples:
+
+NONE
+
+INFO
+
+ACTION_REQUIRED
+
+APPROVAL_REQUIRED
+
+BLOCKED
+
+FAILED
+
+COMPLETED
+
+Attention must be DERIVED from canonical truth.
+
+Examples:
+
+monitoring normally
+→ NONE
+
+new condition matched
+→ ACTION_REQUIRED or INFO depending semantics
+
+WAITING_APPROVAL
+→ APPROVAL_REQUIRED
+
+BLOCKED_BY_PROVIDER
+→ BLOCKED
+
+FAILED
+→ FAILED
+
+COMPLETED
+→ COMPLETED
+
+Do NOT allow client to arbitrarily set attention.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. PROGRESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expose progress only when canonical data genuinely supports it.
+
+Allowed:
+
+known 3/5 steps
+
+known progress ratio
+
+known completed milestones
+
+Not allowed:
+
+inventing 60%
+
+estimating completion visually without source
+
+If progress is unknown:
+
+omit it.
+
+Status alone is enough.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. TITLE / SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Living Object should have human-readable presentation.
+
+Examples:
+
+"مراقبة سعر اللابتوب"
+
+"طلب الآيفون"
+
+"بيع السيارة"
+
+"شركة نقل الموظفين"
+
+But do not generate titles from domain hardcoding.
+
+Prefer existing:
+
+Goal summary
+
+World name
+
+Order label
+
+Offering/entity title
+
+Run semantic description
+
+If no safe meaningful label exists:
+
+use generic canonical summary.
+
+Do not expose IDs.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Living Object may expose generic actions already supported by current presentation/runtime contracts.
+
+Examples:
+
+Open
+
+Resume
+
+Review
+
+Approve
+
+Cancel
+
+Pause
+
+Archive
+
+View details
+
+But:
+
+Task 6A does NOT implement final Trusted Action Dispatcher.
+
+Actions should remain:
+
+typed
+
+validated
+
+reference-bound
+
+presentation-version aware
+
+Task 7 will unify dispatch.
+
+Do not add local business execution.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. SMART BUBBLE REUSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The delta mapping identified existing:
+
+Smart Bubble contract
+
+RuntimeBubbleLayer
+
+RuntimeBubbleRenderer
+
+RunLifecycleCard
+
+Use them where their semantics help.
+
+But do NOT simply rename SmartBubble to LivingObject.
+
+First distinguish:
+
+visual Bubble state
+
+from:
+
+durable canonical projection.
+
+Reuse:
+
+versioning
+
+action contracts
+
+lifecycle projection ideas
+
+where correct.
+
+Refactor minimally if necessary.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. RUNLIFECYCLECARD REUSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect RunLifecycleCard.
+
+Determine which concepts can become generic Living Object presentation fields.
+
+Do not create:
+
+RunLivingObject
+
+WorldLivingObject
+
+OrderLivingObject
+
+as separate core architectures unless they are thin render adapters only.
+
+Prefer one generic projection plus current semantic rendering.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. WORLD AS LIVING OBJECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A persistent World is a strong Living Object candidate.
+
+Example:
+
+World W1
+"شركة نقل الموظفين"
+
+Living Object may show:
+
+title
+
+active status
+
+attention
+
+small summary
+
+primary action: open
+
+But World business state remains in existing World runtime.
+
+Do not copy:
+
+resources
+
+transactions
+
+customers
+
+policies
+
+into Living Object storage.
+
+Projection only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. MONITOR AS LIVING OBJECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+User:
+"راقب هذا اللابتوب وإذا نزل تحت 300 نبهني."
+
+Existing durable monitoring Goal/Run should project as:
+
+title:
+مراقبة سعر اللابتوب
+
+status:
+MONITORING
+
+attention:
+NONE
+
+summary:
+الهدف أقل من 300 د.ك
+
+If threshold condition occurs later:
+
+attention may change.
+
+Do NOT create fake price monitor state in UI.
+
+Underlying durable runtime is authoritative.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. ORDER AS LIVING OBJECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+canonical Order O1
+
+while:
+
+preparing
+shipping
+delivery
+verification
+
+Living Object remains active.
+
+After verified fulfillment:
+
+status = COMPLETED
+
+It may remain in recently completed set temporarily.
+
+Do not invent fulfillment.
+
+Do not use browser checkout success.
+
+Canonical Block 3 truth only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. NEGOTIATION AS LIVING OBJECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Generic ongoing negotiation may project as:
+
+title
+
+current status
+
+attention
+
+current safe summary
+
+latest actionable proposal if authorized
+
+Do not create:
+
+CarNegotiationObject
+
+JobNegotiationObject
+
+One generic durable process model.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. COMPLETION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Living Objects should not clutter Active UI forever.
+
+Define generic eligibility after completion.
+
+Possible future visual buckets:
+
+ACTIVE
+
+NEEDS_ATTENTION
+
+RECENTLY_COMPLETED
+
+ARCHIVED
+
+Task 6A may expose lifecycle classification.
+
+Task 6B will decide visual Rail behavior.
+
+Do not create archive persistence if existing object lifecycle already supports history.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. ARCHIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prefer derived/archive behavior from underlying canonical objects or existing user-visible history.
+
+Do not add archive truth solely for Living Object visuals unless absolutely necessary.
+
+If manual UI archive later becomes desirable:
+
+that may be presentation preference only.
+
+Out of scope for Task 6A unless existing architecture already supports it safely.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. AUTHORIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Living Object Projection must be authorized before client delivery.
+
+Never expose:
+
+another user's Run
+
+another user's Order
+
+private World
+
+restricted transaction
+
+unauthorized approval
+
+private resource
+
+Required:
+
+canonical durable objects
+↓
+ownership / visibility / auth
+↓
+LivingObjectProjection
+
+Reuse existing auth boundaries.
+
+Do not broadly reopen authorization architecture.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. RELOAD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Living Objects must be reconstructible after reload from canonical server state.
+
+Test:
+
+monitor active
+
+reload
+
+Living Object still projects.
+
+World active
+
+reload
+
+Living Object still projects.
+
+Order active
+
+reload
+
+Living Object still projects.
+
+No client-local persistence as proof.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. SERVER RESTART
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use existing persisted canonical runtime.
+
+Do NOT persist Living Objects separately just to survive restart.
+
+After canonical state is reloaded:
+
+Living Objects should be re-derived.
+
+Focused proof only.
+
+Do not rerun broad Block 0/2 recovery suites.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. CROSS-DEVICE SEMANTICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 6A should keep LivingObjectProjection device-neutral.
+
+Later:
+
+Web Task 6B → Rail/Orb
+
+Mobile Task 8 → compact row/sheet
+
+Same semantic projection.
+
+Do not put:
+
+pixel dimensions
+
+desktop window coordinates
+
+drag positions
+
+into canonical LivingObjectProjection.
+
+These are presentation preferences at most.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. LIVING OBJECT COLLECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expose a generic authorized collection endpoint/projection if needed.
+
+Prefer extending existing runtime APIs where natural.
+
+Conceptually:
+
+runtime.activeLivingObjects
+
+or equivalent.
+
+Do not create new API family unnecessarily.
+
+Result should return only objects relevant to current user.
+
+Generic ranking/order may consider:
+
+attention first
+
+active recency
+
+last update
+
+status
+
+But avoid complex personalized ranking engine.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. COLLECTION ORDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use deterministic generic ordering.
+
+Possible precedence:
+
+APPROVAL_REQUIRED
+
+ACTION_REQUIRED
+
+BLOCKED
+
+FAILED
+
+ACTIVE/RUNNING
+
+MONITORING
+
+recent completed
+
+Within category:
+updatedAt descending
+
+or existing equivalent.
+
+Do not order by domain.
+
+Document actual chosen ordering.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. LIMIT ACTIVE CLUTTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The projection API should support returning a bounded active set.
+
+Do not send hundreds of historical completed items into future Rail.
+
+Use existing lifecycle/history boundaries.
+
+Possible:
+
+active
+
+attention-required
+
+recently completed
+
+with sensible bounded limits.
+
+Do NOT arbitrarily delete canonical history.
+
+Only projection filtering.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. WORKSPACE INTEGRATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Living Object may link/open the current:
+
+Active Generative Workspace
+
+But do not implement visual behavior in 6A.
+
+Provide enough trusted reference/action context for Task 6B to open/resume it safely.
+
+Do not create a second Workspace per Living Object.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. CONVERSATION INTEGRATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Living Object belongs to same ONE JASIM experience.
+
+User may say:
+
+"افتح طلبي."
+
+"وقف المراقبة."
+
+"ما صار على بيع السيارة؟"
+
+"افتح الشركة."
+
+Existing Reference Resolution should resolve canonical object.
+
+Do NOT build a separate command parser specifically for Living Objects.
+
+Task 6A should expose stable references usable by existing conversation system.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. DOMAIN GENERICITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prove same LivingObjectProjection handles:
+
+monitor
+
+order
+
+World
+
+negotiation/booking/run
+
+without domain-specific projection types.
+
+Forbidden:
+
+CarLivingObject
+
+JobLivingObject
+
+DeliveryLivingObject
+
+HotelLivingObject
+
+TransportWorldObject
+
+Target:
+
+DOMAIN_SPECIFIC_LIVING_OBJECT_MODELS_ADDED = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. SIMPLE RESPONSE NEGATIVE TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Critical.
+
+Test:
+
+simple factual answer.
+
+Expected:
+0 new Living Objects.
+
+Search only.
+
+Expected:
+0 Living Objects unless underlying durable process exists.
+
+Comparison only.
+
+Expected:
+0 Living Objects.
+
+Document summary.
+
+Expected:
+0 Living Objects by default.
+
+This proves:
+
+NOT EVERYTHING BECOMES A BUBBLE/OBJECT.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. MONITOR POSITIVE TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create/use a durable monitor fixture through existing accepted runtime mechanisms.
+
+Expected:
+
+1 Living Object
+
+stable underlying reference
+
+MONITORING status
+
+no fake progress
+
+reload reconstruction
+
+authorized ownership
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. WORLD POSITIVE TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Existing World W1.
+
+Expected:
+
+Living Object for W1
+
+same canonical World reference
+
+safe summary
+
+no duplicated World business state
+
+reload reconstruction
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. ORDER POSITIVE TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Existing active Order O1.
+
+Expected:
+
+one Living Object representing appropriate user-facing process
+
+status derived from canonical Order/Transaction/Fulfillment state
+
+no duplicate payment/order/delivery objects unless independently justified
+
+completion derives from canonical verified state.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. ATTENTION TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Same durable process:
+
+RUNNING
+→ NONE/INFO
+
+WAITING_APPROVAL
+→ APPROVAL_REQUIRED
+
+BLOCKED
+→ BLOCKED
+
+FAILED
+→ FAILED
+
+COMPLETED
+→ COMPLETED
+
+No client attention mutation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. DEDUPLICATION TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If related canonical objects belong to one user-facing process:
+
+ensure projection does not automatically create redundant objects.
+
+Example:
+
+Transaction + PaymentIntent + Order
+
+should not necessarily become 3 Rail objects.
+
+Define and test generic aggregation boundary.
+
+Do not hardcode by product domain.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. NO BUBBLE POSITION PERSISTENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not store:
+
+x
+y
+width
+height
+drag position
+
+inside Living Object semantic projection.
+
+If existing Bubble visual layout persists such values:
+
+keep them clearly presentation-only and separate.
+
+Living Object identity/lifecycle cannot depend on coordinates.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. NO UI CREATION OF DURABLE OBJECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The frontend must not be able to say:
+
+createLivingObject()
+
+and thereby create a fake durable process.
+
+Living Objects are derived from canonical processes.
+
+Canonical operation first.
+
+Projection second.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. EXPECTED IMPLEMENTATION AREAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expected:
+
+shared projection/schema
+
+server projection builder
+
+existing runtime router endpoint or extension
+
+Smart Bubble / Run lifecycle reuse where appropriate
+
+focused tests
+
+No visual Rail yet.
+
+No large frontend changes.
+
+No DB.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. FOCUSED TESTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add focused tests proving at minimum:
+
+1. simple text answer → no Living Object.
+
+2. search-only result → no Living Object.
+
+3. comparison-only → no Living Object.
+
+4. document summary → no Living Object by default.
+
+5. durable monitor → Living Object.
+
+6. active Order → Living Object.
+
+7. persistent World → Living Object.
+
+8. durable Run/booking/negotiation → generic Living Object where eligible.
+
+9. stable underlying reference.
+
+10. authorization excludes foreign object.
+
+11. reload reconstructs same semantic projection.
+
+12. canonical restart reconstruction works from persisted objects.
+
+13. status derives from underlying truth.
+
+14. attention derives from underlying truth.
+
+15. progress omitted when unknown.
+
+16. approval-required changes attention.
+
+17. completion is derived, not locally set.
+
+18. deduplication avoids obvious internal object explosion.
+
+19. collection order is deterministic.
+
+20. active collection is bounded.
+
+21. no domain-specific Living Object model.
+
+22. no new canonical client state.
+
+23. Smart Bubble regression.
+
+24. Active Workspace regression.
+
+25. UI Morphing regression.
+
+26. Task 1–5B affected presentation regressions.
+
+Keep tests focused.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. VERIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run:
+
+Task 6A focused tests
+
+affected Tasks 1–5B regressions
+
+Server TypeScript
+
+Web TypeScript only if shared contracts affect Web
+
+git diff --check
+
+Do NOT run:
+
+full Block suites
+
+Mobile suite
+
+visual Rail tests
+
+production deployment
+
+real providers
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+46. DATABASE / DEPENDENCY GATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expected:
+
+NEW_DATABASE_TABLES = 0
+
+NEW_MIGRATIONS = 0
+
+NEW_EXTERNAL_SDKS = 0
+
+If durable Living Object persistence appears necessary:
+
+STOP.
+
+Return PARTIAL with exact reason.
+
+Do not create new persistence automatically.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+47. REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create exactly:
+
+.local/tasks/smart-ui-task-6a-report.md
+
+Sections:
+
+CAUSE
+
+LIVING_OBJECT_DEFINITION
+
+REUSED_EXISTING_COMPONENTS
+
+PROJECTION_CONTRACT
+
+ELIGIBILITY_POLICY
+
+UNDERLYING_REFERENCE
+
+STATUS
+
+ATTENTION
+
+PROGRESS
+
+TITLE_SUMMARY
+
+ACTIONS
+
+SMART_BUBBLE_REUSE
+
+RUNLIFECYCLE_REUSE
+
+WORLD_PROJECTION
+
+MONITOR_PROJECTION
+
+ORDER_PROJECTION
+
+DEDUPLICATION_POLICY
+
+COLLECTION_ORDER
+
+AUTHORIZATION
+
+RELOAD_RECONSTRUCTION
+
+SERVER_RESTART_RECONSTRUCTION
+
+CROSS_DEVICE_SEMANTICS
+
+DOMAIN_GENERICITY
+
+FILES_CHANGED
+
+TESTS
+
+Final counters:
+
+SMART_UI_TASK_6A =
+PASS / PARTIAL / FAIL
+
+LIVING_OBJECT_PROJECTION =
+PASS / FAIL
+
+LIVING_OBJECT_IS_PROJECTION_NOT_CANONICAL_TRUTH =
+YES / NO
+
+ELIGIBILITY_POLICY =
+PASS / FAIL
+
+SIMPLE_TEXT_CREATES_LIVING_OBJECT =
+NO / YES
+
+SEARCH_ONLY_CREATES_LIVING_OBJECT =
+NO / YES
+
+COMPARISON_ONLY_CREATES_LIVING_OBJECT =
+NO / YES
+
+DOCUMENT_SUMMARY_CREATES_LIVING_OBJECT =
+NO / YES
+
+MONITOR_CREATES_LIVING_OBJECT =
+YES / NO
+
+ACTIVE_ORDER_CREATES_LIVING_OBJECT =
+YES / NO
+
+PERSISTENT_WORLD_CREATES_LIVING_OBJECT =
+YES / NO
+
+STABLE_UNDERLYING_REFERENCE =
+YES / NO
+
+STATUS_DERIVED_FROM_CANONICAL_TRUTH =
+YES / NO
+
+ATTENTION_DERIVED_FROM_CANONICAL_TRUTH =
+YES / NO
+
+FAKE_PROGRESS_COUNT = <number>
+
+DUPLICATE_USER_FACING_OBJECT_COUNT = <number>
+
+AUTHORIZED_PROJECTION =
+PASS / FAIL
+
+RELOAD_RECONSTRUCTION =
+PASS / FAIL
+
+SERVER_RESTART_RECONSTRUCTION =
+PASS / FAIL
+
+DEVICE_NEUTRAL_PROJECTION =
+YES / NO
+
+DOMAIN_SPECIFIC_LIVING_OBJECT_MODELS_ADDED = <number>
+
+CLIENT_CANONICAL_TRUTH_ADDED = <number>
+
+NEW_DATABASE_TABLES =
+0
+
+NEW_MIGRATIONS =
+0
+
+NEW_EXTERNAL_SDKS =
+0
+
+TASK_5B_REGRESSION =
+PASS / FAIL
+
+TASK_5A_REGRESSION =
+PASS / FAIL
+
+TASK_4B_REGRESSION =
+PASS / FAIL
+
+SMART_BUBBLE_REGRESSION =
+PASS / FAIL
+
+BLOCKS_0_TO_3_1_REMAIN_CLOSED =
+YES / NO
+
+READY_FOR_SMART_UI_TASK_6B =
+YES / NO
+
+If NO:
+list only exact blocker.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+48. STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Task 6A:
+
+STOP.
+
+DO NOT build Active Objects Rail.
+
+DO NOT create visual Orbs.
+
+DO NOT redesign Mobile.
+
+DO NOT implement final Trusted Action Dispatcher.
+
+DO NOT start Task 6B.
+
+Return only:
+
+Task 6A verdict
+
+Living Object projection status
+
+eligibility result
+
+focused test count
+
+duplicate count
+
+domain-specific model count
+
+new persistence count
+
+READY_FOR_SMART_UI_TASK_6B
+
+BEGIN TASK 6A.

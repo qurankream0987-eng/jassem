@@ -1,0 +1,1671 @@
+# =====================================================================
+# JASIM — BLOCK 0 FINAL CLOSURE
+#
+# ONE TARGETED CLOSURE BLOCK.
+#
+# DO NOT REPEAT BLOCK 0.
+# DO NOT REPEAT TASK #24.
+#
+# THREE INTERNAL PHASES:
+#
+# CLOSURE A — OWNER SCOPE + PRIVATE GRAPH AUTHORIZATION
+# CLOSURE B — EXECUTION NEGATIVE PROOFS + EFFECTFUL RECOVERY
+# CLOSURE C — TYPESCRIPT + MIGRATIONS + WORKER READINESS
+#
+# PRIMARY GOAL:
+# CLOSE ONLY THE REMAINING BLOCKERS TO:
+#
+# READY_FOR_UNIVERSAL_CAPABILITY_FABRIC = YES
+# =====================================================================
+
+
+ابدأ الآن:
+
+JASIM BLOCK 0 — FINAL CLOSURE
+
+هذا ليس Block 0 جديدًا.
+
+لا تعِد تنفيذ الاختبارات الناجحة بلا سبب.
+
+استخدم الأدلة السابقة كـbaseline ثابت ما لم يمس الإصلاح الكود المرتبط بها.
+
+
+=====================================================================
+0. COST CONTROL — EXTREMELY IMPORTANT
+=====================================================================
+
+Replit consumes real money.
+
+DO NOT:
+
+- rerun Task #24
+- rerun the whole Block 0 suite before fixing
+- reread historical documentation
+- run Phase 12 calibration
+- call image provider
+- perform unnecessary Web Research
+- rebuild Task #22
+- rebuild Task #26
+- rebuild Run Runtime
+- rebuild Auth
+- rebuild WebSocket auth
+- rebuild Attempt Ledger
+- rebuild Verifier
+- rebuild Reconciliation
+- build backup infrastructure
+- configure Replit Deployment
+- build Scheduler
+- build Maps
+- build Payments
+- build Economic Network
+- build Universal Capability Fabric
+- build Commercial Runtime
+- build domain-specific code
+
+Work only on the remaining blockers in the submitted report.
+
+
+=====================================================================
+1. ACCEPTED BASELINE — DO NOT REPROVE UNLESS TOUCHED
+=====================================================================
+
+Treat the following as accepted baseline:
+
+AUTH = PASS
+
+VALID_SESSION = PASS
+
+INVALID_SESSION = BLOCKED
+
+EXPIRED_SESSION = BLOCKED
+
+PRIVATE_ANONYMOUS_ACCESS = 0
+
+FORGED_OWNER = BLOCKED
+
+WEBSOCKET_AUTH = PASS
+
+CLIENT_CONTROLLED_WS_IDENTITY = 0
+
+
+TRUSTED_EXECUTOR = PASS
+
+ATTEMPT_LEDGER = PASS
+
+INDEPENDENT_VERIFIER = PASS
+
+RECONCILIATION = PASS
+
+FAKE_SUCCESS = 0
+
+
+RUN_RESTART = PASS
+
+MULTI_NODE_DAG = PASS
+
+LEASE_RECOVERY = PASS
+
+FENCE_REJECTION = PASS
+
+STALE_WORKER_COMMIT = 0
+
+COMPLETED_NODE_REEXECUTION = 0
+
+DOUBLE_VALID_WORKER_CLAIM = 0
+
+FALSE_RUN_SUCCESS = 0
+
+STARTUP_RECOVERY = PASS
+
+
+PHASE_7_GENERALIZATION = PASS
+
+TASK_22 = PASS
+
+TASK_26 = PASS
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+DOMAIN_SPECIFIC_HANDLER_REQUIRED = 0
+
+
+Do not consume resources reproducing these before implementing remaining fixes.
+
+
+######################################################################
+# CLOSURE A
+# GENERATED EXECUTION OWNER SCOPE + FULL PRIVATE GRAPH
+######################################################################
+
+
+=====================================================================
+2. PRIMARY DEFECT
+=====================================================================
+
+Current report:
+
+CROSS_OWNER_ISOLATION = PARTIAL
+
+GENERATED_EXECUTION_OWNER_SCOPE = FAIL
+
+
+This must be fixed structurally before Block 1.
+
+Universal Capability Fabric will later execute dynamically generated
+workflows.
+
+Therefore generated execution must NEVER become a privileged
+system-level path that loses user ownership.
+
+
+=====================================================================
+3. GENERATED EXECUTION MUST HAVE A PRINCIPAL
+=====================================================================
+
+Every generated execution path must derive or preserve canonical:
+
+principal
+
+owner scope
+
+Run/World/Bubble relationship
+
+authorization context.
+
+
+No generated execution operation may rely only on:
+
+resourceId
+
+taskId
+
+worldId
+
+entityId
+
+without resolving authorization.
+
+
+Conceptually:
+
+GeneratedExecutionContext {
+    principal
+    ownerScope
+    runId?
+    worldId?
+    bubbleId?
+    capabilityId
+}
+
+
+Use existing canonical structures.
+
+Do NOT create a parallel authentication system.
+
+
+=====================================================================
+4. NO SYSTEM-UNSCOPED GENERATED EXECUTION
+=====================================================================
+
+Search only production-active generated execution paths.
+
+
+Flag patterns equivalent to:
+
+store.get(id)
+
+executeGenerated(id)
+
+loadEntity(id)
+
+updateGeneratedState(id)
+
+without authorization relationship.
+
+
+Repair through canonical authorization boundary.
+
+
+Required:
+
+GENERATED_EXECUTION_OWNER_SCOPE = PASS
+
+
+=====================================================================
+5. SYSTEM WORKER DOES NOT BECOME OWNER
+=====================================================================
+
+Background worker may execute work technically.
+
+But:
+
+worker/system identity
+!=
+resource owner.
+
+
+Worker must execute:
+
+ON BEHALF OF
+
+the durable authorized principal/Run context.
+
+
+Restart must not transform:
+
+User A Run
+
+into:
+
+system-global Run.
+
+
+=====================================================================
+6. DURABLE AUTHORIZATION CONTEXT
+=====================================================================
+
+After restart, worker must be able to reconstruct authorization from
+durable canonical relationships.
+
+
+Do not persist raw session token merely to solve this.
+
+
+Prefer durable references such as:
+
+Run
+→ Conversation/Bubble/World
+→ authorized principal/owner relationship.
+
+
+=====================================================================
+7. COMPLETE PRIVATE GRAPH PROOF
+=====================================================================
+
+Do NOT rerun resources already proven unless needed.
+
+Extend the two-user A/B proof to the previously unproven resources:
+
+Memory
+
+World
+
+Task
+
+Attempt
+
+Receipt
+
+Artifact Preview
+
+Artifact Lineage
+
+ResearchResult
+
+SourceReference
+
+Structured Findings if separately addressable
+
+ChangeSet
+
+Generated Execution state
+
+
+For each applicable resource prove at least private READ.
+
+
+For writable/executable resources also prove:
+
+WRITE / MUTATE / EXECUTE
+
+as applicable.
+
+
+Do not manufacture endpoints solely for testing.
+
+Use active canonical access paths.
+
+
+=====================================================================
+8. WEBSOCKET PRIVATE SUBSCRIPTION PROOF
+=====================================================================
+
+WebSocket authentication already passes.
+
+Do NOT redesign it.
+
+
+Only prove authorization on subscriptions:
+
+
+User A → A private Bubble = allowed
+
+User A → A private Run = allowed
+
+User B → A private Bubble = blocked
+
+User B → A private Run = blocked
+
+
+Required:
+
+CROSS_OWNER_PRIVATE_SUBSCRIPTIONS = 0
+
+
+=====================================================================
+9. GRAPH AUTHORIZATION MUST BE RELATIONAL
+=====================================================================
+
+Examples:
+
+Receipt
+→ Attempt
+→ Run
+→ owner
+
+
+ArtifactLineage
+→ Artifact
+→ Run
+→ owner
+
+
+Finding
+→ ResearchResult
+→ Run/owner
+
+
+Do not require direct ownerId duplication if canonical relationship exists.
+
+
+=====================================================================
+10. IDOR EXTENSION
+=====================================================================
+
+Authenticated User B uses known IDs from User A for all newly tested resources.
+
+Expected:
+
+no unauthorized private access.
+
+
+Required:
+
+IDOR_PRIVATE_ACCESS = 0
+
+
+=====================================================================
+11. CLOSURE A GATE
+=====================================================================
+
+CLOSURE A PASS requires:
+
+CROSS_OWNER_ISOLATION = PASS
+
+GENERATED_EXECUTION_OWNER_SCOPE = PASS
+
+CROSS_OWNER_PRIVATE_READS = 0
+
+CROSS_OWNER_PRIVATE_WRITES = 0
+
+CROSS_OWNER_PRIVATE_EXECUTIONS = 0
+
+CROSS_OWNER_PRIVATE_SUBSCRIPTIONS = 0
+
+IDOR_PRIVATE_ACCESS = 0
+
+
+If this fails:
+
+fix the generic authorization primitive.
+
+Never add domain authorization.
+
+
+######################################################################
+# CLOSURE B
+# EXECUTION NEGATIVE PROOFS + EFFECTFUL RESTART SAFETY
+######################################################################
+
+
+=====================================================================
+12. DO NOT REBUILD TRUSTED EXECUTOR
+=====================================================================
+
+Current:
+
+TRUSTED_EXECUTOR = PASS.
+
+
+We only need to prove remaining negative invariants.
+
+
+=====================================================================
+13. ADMIN BYPASS — RESOLVE THE AMBIGUITY
+=====================================================================
+
+The previous report states no tested active force-success route,
+but did not execute a dedicated proof.
+
+
+Perform targeted active-router inspection first.
+
+
+If there truly is no registered active admin bypass:
+
+prove that through active route registration + executable adversarial request
+where possible.
+
+
+Do not inspect every historical legacy file.
+
+
+Classify:
+
+ADMIN_BYPASS_CLASSIFICATION =
+NO_ACTIVE_PRODUCTION_BYPASS
+
+or exact alternate classification.
+
+
+=====================================================================
+14. ADMIN CANNOT FORGE VERIFIED
+=====================================================================
+
+Attempt through active externally reachable/canonical admin surfaces
+to force:
+
+Run
+Attempt
+Receipt
+Execution
+
+to VERIFIED without canonical verification evidence.
+
+
+Expected:
+
+BLOCKED / impossible.
+
+
+Required:
+
+ADMIN_CAN_FORGE_VERIFIED_RESULT = NO
+
+
+=====================================================================
+15. ADMIN CANNOT OVERWRITE ATTEMPT
+=====================================================================
+
+Attempt to modify immutable failed/completed Attempt history through
+active canonical admin path.
+
+
+Expected:
+
+impossible / blocked.
+
+
+Required:
+
+ADMIN_CAN_OVERWRITE_ATTEMPT = NO
+
+
+=====================================================================
+16. DIRECT PROVIDER BYPASS
+=====================================================================
+
+Search active production runtime for effectful provider invocation.
+
+
+Required architecture:
+
+Trusted Executor
+→ Adapter
+
+
+No:
+
+Router/UI/Generated Workflow
+→ effectful Adapter directly.
+
+
+Classify each discovered effectful provider invocation.
+
+
+Required:
+
+DIRECT_EFFECTFUL_PROVIDER_BYPASS = 0
+
+
+Do not count legitimate non-effectful read providers as effectful bypasses.
+
+
+=====================================================================
+17. GENERATED EXECUTION PRIVILEGE PROOF
+=====================================================================
+
+Construct malicious/adversarial generated definition attempting to:
+
+invoke adapter directly
+
+set VERIFIED
+
+forge Receipt
+
+change owner
+
+skip Policy
+
+skip Approval.
+
+
+Expected:
+
+cannot do so through canonical generated-runtime contract.
+
+
+Required:
+
+GENERATED_EXECUTION_PRIVILEGE = 0
+
+
+=====================================================================
+18. CLIENT DIRECT EFFECT
+=====================================================================
+
+Confirm Web/Mobile clients cannot call provider adapter/effect endpoint
+outside canonical Runtime.
+
+
+Required:
+
+CLIENT_DIRECT_EFFECT = 0
+
+
+=====================================================================
+19. CROSS-CONTEXT APPROVAL REPLAY
+=====================================================================
+
+Take a real approval/proposal context for:
+
+User A
+Run A
+parameters/fingerprint A.
+
+
+Attempt reuse against:
+
+User B
+
+different Run
+
+different effect parameters.
+
+
+Expected:
+
+BLOCKED.
+
+
+Required:
+
+CROSS_CONTEXT_APPROVAL_REPLAY = 0
+
+
+=====================================================================
+20. STALE APPROVAL
+=====================================================================
+
+Create:
+
+Proposal version/fingerprint V1
+
+approve V1
+
+then alter relevant effect parameters/state to V2.
+
+
+Attempt execute using V1 approval.
+
+
+Expected:
+
+BLOCKED.
+
+
+Required:
+
+STALE_APPROVAL_EXECUTION = 0
+
+
+=====================================================================
+21. EFFECTFUL RESTART — THE REMAINING CRITICAL PROOF
+=====================================================================
+
+Current:
+
+BLIND_EFFECT_RETRY_AFTER_RESTART = NOT_PROVEN.
+
+
+Do NOT use a real paid provider.
+
+
+Use canonical Trusted Executor with a controlled test adapter
+that behaves like a real effectful provider.
+
+
+This adapter is TEST INFRASTRUCTURE,
+not production mock success.
+
+
+It must support observable call count and outcome uncertainty.
+
+
+=====================================================================
+22. UNCERTAIN EFFECT SCENARIO
+=====================================================================
+
+Execute an effectful node such that:
+
+1. Trusted Executor creates Attempt.
+
+2. Adapter receives effect request.
+
+3. Adapter records that external-side effect MAY have occurred.
+
+4. Simulate worker/process failure before canonical final verification/state commit.
+
+5. Restart worker/runtime.
+
+
+Expected after restart:
+
+DO NOT call adapter a second time blindly.
+
+
+State should become/recover through:
+
+INCONCLUSIVE
+→ Reconciliation
+
+
+Then reconciliation uses deterministic provider/status evidence
+from test adapter.
+
+
+Required:
+
+PROVIDER_EFFECT_CALL_COUNT = 1
+
+BLIND_EFFECT_RETRY_AFTER_RESTART = 0
+
+
+=====================================================================
+23. TWO RECONCILIATION OUTCOMES
+=====================================================================
+
+Test at least:
+
+
+CASE A:
+
+external effect actually happened
+
+→ reconciliation finds effect
+
+→ canonical Receipt/Verification
+→ state progresses truthfully
+
+
+CASE B:
+
+effect definitely did not happen
+
+→ reconciliation proves absence/failure
+
+→ retry may be permitted according to idempotency policy.
+
+
+Do NOT equate these cases.
+
+
+=====================================================================
+24. EFFECT TEST MUST USE NORMAL RUNTIME
+=====================================================================
+
+Test adapter must enter through:
+
+Proposal
+Policy
+Trusted Executor
+Attempt
+Adapter
+Receipt/uncertainty
+Verifier/Reconciliation.
+
+
+Do not directly invoke reconciliation function with fabricated object
+as the main proof.
+
+
+=====================================================================
+25. CLOSURE B GATE
+=====================================================================
+
+CLOSURE B PASS requires:
+
+TRUSTED_EXECUTOR = PASS
+
+ADMIN_EXECUTION_BYPASS = 0
+
+ADMIN_CAN_FORGE_VERIFIED_RESULT = NO
+
+ADMIN_CAN_OVERWRITE_ATTEMPT = NO
+
+DIRECT_EFFECTFUL_PROVIDER_BYPASS = 0
+
+GENERATED_EXECUTION_PRIVILEGE = 0
+
+CLIENT_DIRECT_EFFECT = 0
+
+CROSS_CONTEXT_APPROVAL_REPLAY = 0
+
+STALE_APPROVAL_EXECUTION = 0
+
+BLIND_EFFECT_RETRY_AFTER_RESTART = 0
+
+ATTEMPT_LEDGER = PASS
+
+VERIFIER = PASS
+
+RECONCILIATION = PASS
+
+FAKE_SUCCESS = 0
+
+
+######################################################################
+# CLOSURE C
+# TYPESCRIPT + MIGRATIONS + READINESS
+######################################################################
+
+
+=====================================================================
+26. TYPESCRIPT FAILURES ARE REAL
+=====================================================================
+
+Current canonical:
+
+tsc -b
+
+fails with 126 errors.
+
+
+Do NOT ignore this because Web build succeeds.
+
+
+Do NOT:
+
+disable strictness globally
+
+add broad @ts-ignore
+
+use skipLibCheck as a blanket escape
+
+exclude canonical runtime files
+
+replace types with any everywhere.
+
+
+We need the active canonical runtime type-safe.
+
+
+=====================================================================
+27. CLASSIFY THE 126 ERRORS FIRST
+=====================================================================
+
+Run canonical check once.
+
+
+Group errors by ROOT CAUSE.
+
+
+Example categories:
+
+schema/runtime mismatch
+
+canonical envelope migration mismatch
+
+generated types
+
+project references
+
+nullability
+
+wrong imports
+
+legacy inactive code
+
+API contract mismatch
+
+
+Do not fix 126 errors one by one blindly.
+
+
+Report internally:
+
+ROOT_CAUSE_GROUPS
+
+error count per group.
+
+
+Then fix root causes.
+
+
+=====================================================================
+28. ACTIVE VS DEAD CODE
+=====================================================================
+
+If errors exist only in proven dead/legacy code:
+
+do not simply silence them.
+
+
+Either:
+
+remove from active project compilation if genuinely non-production
+through correct project boundary
+
+or safely repair/remove dead code.
+
+
+Do not exclude active canonical code.
+
+
+=====================================================================
+29. CANONICAL ENVELOPE CONSISTENCY
+=====================================================================
+
+Task #24 previously fixed proof assumptions around:
+
+{ result, metadata }
+
+
+Search TypeScript failures for remaining legacy payload assumptions.
+
+
+Repair canonical contract at source,
+not through random casts.
+
+
+=====================================================================
+30. TYPESCRIPT EXIT GATE
+=====================================================================
+
+Required:
+
+canonical `tsc -b` = exit 0
+
+
+and relevant:
+
+artifacts/api-server canonical check/typecheck = exit 0
+if part of current workspace architecture.
+
+
+Then:
+
+FULL_CANONICAL_TYPECHECK = PASS
+
+
+=====================================================================
+31. MIGRATION PROOF — USE CANONICAL COMMAND
+=====================================================================
+
+Previous attempt executed migration SQL,
+but NOT canonical migration command + runtime boot.
+
+
+Now perform exact product migration workflow.
+
+
+Identify ONE canonical migration command used by JASIM.
+
+
+Do not invent special test migration logic.
+
+
+=====================================================================
+32. FRESH DATABASE TEST
+=====================================================================
+
+Create isolated empty PostgreSQL database.
+
+
+Then execute:
+
+CANONICAL MIGRATION COMMAND
+
+
+not manually applying SQL.
+
+
+Then:
+
+start canonical runtime configured against that database.
+
+
+Verify:
+
+migration ledger
+
+expected core tables
+
+critical constraints
+
+canonical runtime boot
+
+basic write/read.
+
+
+Required:
+
+FRESH_DATABASE_MIGRATION = PASS
+
+
+=====================================================================
+33. EXISTING DATABASE UPGRADE TEST
+=====================================================================
+
+Use an actual legitimate previous migration checkpoint.
+
+
+Process:
+
+create isolated DB
+
+apply migrations only through checkpoint N
+
+insert representative safe test rows
+
+then run CURRENT canonical migration command
+
+then boot current canonical runtime.
+
+
+Verify:
+
+required old test data preserved
+
+current schema exists
+
+constraints correct
+
+runtime boots.
+
+
+Required:
+
+EXISTING_DATABASE_UPGRADE = PASS
+
+
+=====================================================================
+34. MIGRATION LEDGER
+=====================================================================
+
+Prove:
+
+applied migration history exists
+
+current migration command detects already-applied migrations
+
+second migrate does not duplicate/change schema improperly.
+
+
+Required:
+
+MIGRATION_LEDGER = PASS
+
+
+=====================================================================
+35. MIGRATION FAILURE DETECTION
+=====================================================================
+
+Already PASS unless implementation changes migration runner.
+
+
+Reuse evidence unless affected.
+
+
+Do not retest unnecessarily.
+
+
+=====================================================================
+36. NO PRODUCTION SCHEMA HACKS
+=====================================================================
+
+Current:
+
+DIRECT_PRODUCTION_SCHEMA_HACKS = 0
+
+DESTRUCTIVE_UNSAFE_MIGRATIONS = 0
+
+
+Preserve these.
+
+Only rerun focused check if migration code changes make it relevant.
+
+
+=====================================================================
+37. READINESS
+=====================================================================
+
+Current readiness already checks:
+
+DB schema tables
+
+critical columns
+
+attempt idempotency constraint.
+
+
+Extend minimally to prove worker/runtime readiness.
+
+
+Do NOT build observability platform.
+
+
+A readiness result should establish at least:
+
+DATABASE_READY
+
+SCHEMA_COMPATIBLE
+
+RUNTIME_INITIALIZED
+
+WORKER_INITIALIZED
+
+RECOVERY_LOOP_INITIALIZED
+
+
+Use actual runtime state,
+not hard-coded true booleans.
+
+
+=====================================================================
+38. READINESS MUST NOT REQUIRE EVERY PROVIDER
+=====================================================================
+
+Future optional provider outage must not make whole JASIM unready.
+
+
+Example:
+
+Image provider unavailable
+does not necessarily mean conversation runtime cannot start.
+
+
+Readiness checks foundational process dependencies only.
+
+
+Capability-specific provider readiness belongs to capability health.
+
+
+=====================================================================
+39. READINESS PROOF
+=====================================================================
+
+Test:
+
+normal runtime
+→ READY
+
+
+DB unavailable
+→ NOT_READY
+
+
+schema incompatible
+→ NOT_READY
+
+
+worker/recovery initialization deliberately unavailable
+→ NOT_READY
+
+
+Then normal state restored
+→ READY.
+
+
+Required:
+
+READINESS = PASS
+
+
+=====================================================================
+40. GRACEFUL SHUTDOWN
+=====================================================================
+
+Current:
+
+GRACEFUL_SHUTDOWN = PARTIAL
+
+
+Do not expand scope unnecessarily.
+
+
+If prior worker lifecycle fixes already make shutdown safely:
+
+stop claiming
+stop heartbeat
+preserve durable state
+close worker
+recover after restart
+
+prove it and mark PASS.
+
+
+If only non-safety operational polish remains:
+
+PARTIAL may remain,
+but it must not make READY_FOR_UNIVERSAL_CAPABILITY_FABRIC = NO.
+
+
+=====================================================================
+41. BACKUP / RESTORE IS DEFERRED
+=====================================================================
+
+IMPORTANT SCOPE DECISION:
+
+
+BACKUP = MISSING
+
+RESTORE_PROCEDURE = MISSING
+
+RESTORE_PROOF = MISSING
+
+
+These are FINAL PRODUCTION LAUNCH requirements.
+
+They are NOT blockers for building Universal Capability Fabric.
+
+
+Do NOT implement them now.
+
+
+Report:
+
+DEFERRED_TO_FINAL_PRODUCTION_GATE
+
+
+Do not misrepresent them as complete.
+
+
+=====================================================================
+42. MODEL CALIBRATION IS DEFERRED
+=====================================================================
+
+MODEL_POLICY_ECONOMIC_CALIBRATION remains:
+
+PARTIAL
+
+
+Do not run it.
+
+
+It does NOT block starting product/runtime development.
+
+
+=====================================================================
+43. PRODUCTION DEPLOYMENT IS DEFERRED
+=====================================================================
+
+Do not activate Replit Deployment.
+
+
+Not a Block 0 Closure requirement.
+
+
+=====================================================================
+44. CLOSURE C GATE
+=====================================================================
+
+Required before Block 1:
+
+FULL_CANONICAL_TYPECHECK = PASS
+
+DATABASE_MIGRATIONS = PASS
+
+FRESH_DATABASE_MIGRATION = PASS
+
+EXISTING_DATABASE_UPGRADE = PASS
+
+MIGRATION_LEDGER = PASS
+
+READINESS = PASS
+
+
+GRACEFUL_SHUTDOWN may be:
+
+PASS
+
+or:
+
+PARTIAL_NON_BLOCKING
+
+only if execution/recovery safety is already proven.
+
+
+######################################################################
+# FINAL TARGETED REGRESSION
+######################################################################
+
+
+=====================================================================
+45. DO NOT RERUN EVERYTHING
+=====================================================================
+
+Only after Closure A/B/C changes pass:
+
+run ONE final targeted regression.
+
+
+Required:
+
+canonical tsc -b
+
+check:generative-runtime
+
+Trusted Executor regression
+
+Attempt Ledger
+
+Verifier
+
+Reconciliation
+
+Run restart/recovery focused suite
+
+authorization/private graph focused suite
+
+migration suite
+
+Web production build
+
+Mobile typecheck
+
+
+Phase 7 / Task 22 / Task 26:
+
+reuse previous PASS evidence unless touched code can reasonably affect them.
+
+
+If affected:
+
+rerun only affected proof.
+
+
+=====================================================================
+46. NO PAID EXTERNAL EFFECTS
+=====================================================================
+
+Do not consume paid external providers for Closure proof.
+
+
+Use deterministic local/test infrastructure where external effect uncertainty
+must be simulated.
+
+
+=====================================================================
+47. FINAL DECISION RULE
+=====================================================================
+
+READY_FOR_UNIVERSAL_CAPABILITY_FABRIC may become YES when:
+
+
+AUTH = PASS
+
+WEBSOCKET_AUTH = PASS
+
+CROSS_OWNER_ISOLATION = PASS
+
+GENERATED_EXECUTION_OWNER_SCOPE = PASS
+
+
+TRUSTED_EXECUTOR = PASS
+
+ADMIN_EXECUTION_BYPASS = 0
+
+DIRECT_EFFECTFUL_PROVIDER_BYPASS = 0
+
+GENERATED_EXECUTION_PRIVILEGE = 0
+
+APPROVAL_REPLAY_PROTECTION = PASS
+
+
+RUN_RESTART = PASS
+
+LEASE_RECOVERY = PASS
+
+BLIND_EFFECT_RETRY_AFTER_RESTART = 0
+
+
+FULL_CANONICAL_TYPECHECK = PASS
+
+
+DATABASE_MIGRATIONS = PASS
+
+FRESH_DATABASE_MIGRATION = PASS
+
+EXISTING_DATABASE_UPGRADE = PASS
+
+MIGRATION_LEDGER = PASS
+
+
+READINESS = PASS
+
+
+FAKE_SUCCESS = 0
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+
+The following are explicitly NOT required for Block 1 start:
+
+BACKUP/RESTORE production proof
+
+Replit production deployment
+
+native iOS/Android signing
+
+Maps provider
+
+Payment provider
+
+Scheduler
+
+Cross-user discovery
+
+Commercial Runtime
+
+Phase 12 calibration.
+
+
+Those belong to later Blocks/final production.
+
+
+=====================================================================
+48. FINAL REPORT FORMAT
+=====================================================================
+
+Return:
+
+
+JASIM_BLOCK_0_FINAL_CLOSURE:
+PASS / PARTIAL / FAIL
+
+
+================================================
+CLOSURE A — AUTHORIZATION
+================================================
+
+AUTH:
+PASS / FAIL
+
+WEBSOCKET_AUTH:
+PASS / FAIL
+
+CROSS_OWNER_ISOLATION:
+PASS / FAIL
+
+GENERATED_EXECUTION_OWNER_SCOPE:
+PASS / FAIL
+
+CROSS_OWNER_PRIVATE_READS:
+<number>
+
+CROSS_OWNER_PRIVATE_WRITES:
+<number>
+
+CROSS_OWNER_PRIVATE_EXECUTIONS:
+<number>
+
+CROSS_OWNER_PRIVATE_SUBSCRIPTIONS:
+<number>
+
+IDOR_PRIVATE_ACCESS:
+<number>
+
+
+================================================
+CLOSURE B — EXECUTION
+================================================
+
+TRUSTED_EXECUTOR:
+PASS / FAIL
+
+ADMIN_BYPASS_CLASSIFICATION:
+<exact>
+
+ADMIN_EXECUTION_BYPASS:
+<number>
+
+ADMIN_CAN_FORGE_VERIFIED_RESULT:
+YES / NO
+
+ADMIN_CAN_OVERWRITE_ATTEMPT:
+YES / NO
+
+DIRECT_EFFECTFUL_PROVIDER_BYPASS:
+<number>
+
+GENERATED_EXECUTION_PRIVILEGE:
+<number>
+
+CLIENT_DIRECT_EFFECT:
+<number>
+
+CROSS_CONTEXT_APPROVAL_REPLAY:
+<number>
+
+STALE_APPROVAL_EXECUTION:
+<number>
+
+BLIND_EFFECT_RETRY_AFTER_RESTART:
+<number>
+
+EFFECTFUL_RECOVERY_CASE_EFFECT_OCCURRED:
+PASS / FAIL
+
+EFFECTFUL_RECOVERY_CASE_EFFECT_NOT_OCCURRED:
+PASS / FAIL
+
+ATTEMPT_LEDGER:
+PASS / FAIL
+
+VERIFIER:
+PASS / FAIL
+
+RECONCILIATION:
+PASS / FAIL
+
+FAKE_SUCCESS:
+<number>
+
+
+================================================
+RECOVERY BASELINE
+================================================
+
+RUN_RESTART:
+PASS / FAIL
+
+MULTI_NODE_DAG:
+PASS / FAIL
+
+LEASE_RECOVERY:
+PASS / FAIL
+
+FENCE_REJECTION:
+PASS / FAIL
+
+STALE_WORKER_COMMIT:
+<number>
+
+COMPLETED_NODE_REEXECUTION:
+<number>
+
+
+================================================
+CLOSURE C — BUILD / DB / READINESS
+================================================
+
+FULL_CANONICAL_TYPECHECK:
+PASS / FAIL
+
+TSC_ERROR_COUNT:
+<number>
+
+TSC_ROOT_CAUSE_GROUPS:
+<number>
+
+
+DATABASE_MIGRATIONS:
+PASS / FAIL
+
+FRESH_DATABASE_MIGRATION:
+PASS / FAIL
+
+FRESH_DATABASE_RUNTIME_BOOT:
+PASS / FAIL
+
+EXISTING_DATABASE_UPGRADE:
+PASS / FAIL
+
+EXISTING_DATABASE_RUNTIME_BOOT:
+PASS / FAIL
+
+MIGRATION_LEDGER:
+PASS / FAIL
+
+MIGRATION_FAILURE_DETECTION:
+PASS / FAIL
+
+DIRECT_PRODUCTION_SCHEMA_HACKS:
+<number>
+
+DESTRUCTIVE_UNSAFE_MIGRATIONS:
+<number>
+
+
+LIVENESS:
+PASS / FAIL
+
+READINESS:
+PASS / FAIL
+
+WORKER_READINESS:
+PASS / FAIL
+
+RECOVERY_LOOP_READINESS:
+PASS / FAIL
+
+GRACEFUL_SHUTDOWN:
+PASS / PARTIAL_NON_BLOCKING / FAIL
+
+
+================================================
+REGRESSION
+================================================
+
+GENERATIVE_RUNTIME_CHECK:
+PASS / FAIL
+
+WEB_PRODUCTION_BUILD:
+PASS / FAIL
+
+MOBILE_TYPECHECK:
+PASS / FAIL
+
+PHASE_7_GENERALIZATION:
+PASS / REUSED_PASS / FAIL
+
+TASK_22:
+PASS / REUSED_PASS / FAIL
+
+TASK_26:
+PASS / REUSED_PASS / FAIL
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS:
+<number>
+
+DOMAIN_SPECIFIC_HANDLER_REQUIRED:
+<number>
+
+
+================================================
+EXPLICITLY DEFERRED
+================================================
+
+BACKUP:
+DEFERRED_TO_FINAL_PRODUCTION_GATE
+
+RESTORE_PROOF:
+DEFERRED_TO_FINAL_PRODUCTION_GATE
+
+PRODUCTION_DEPLOYMENT:
+DEFERRED_TO_FINAL_PRODUCTION_GATE
+
+IOS_ANDROID_SIGNING:
+DEFERRED_TO_FINAL_PRODUCTION_GATE
+
+MODEL_POLICY_ECONOMIC_CALIBRATION:
+PARTIAL_DEFERRED
+
+SCHEDULER:
+NOT_STARTED
+
+CROSS_USER_DISCOVERY:
+NOT_STARTED
+
+MAPS:
+NOT_STARTED
+
+PAYMENTS:
+NOT_STARTED
+
+COMMERCIAL_RUNTIME:
+NOT_STARTED
+
+
+================================================
+NEXT
+================================================
+
+READY_FOR_UNIVERSAL_CAPABILITY_FABRIC:
+YES / NO
+
+
+If NO:
+
+REMAINING_FOUNDATION_BLOCKERS:
+1.
+2.
+3.
+
+
+If YES:
+
+Do NOT start it automatically.
+
+Return:
+
+NEXT_RECOMMENDED_STEP:
+JASIM BLOCK 1 — UNIVERSAL CAPABILITY FABRIC
+
+
+OWNER_ACTION_REQUIRED_NOW:
+NONE
+
+
+STOP.

@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "economic_proposals_engagement_version_idx" ON "economic_proposals" USING btree ("engagementId","version");

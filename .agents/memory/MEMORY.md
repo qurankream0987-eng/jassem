@@ -1,0 +1,38 @@
+- [OpenAPI scalar codegen](openapi-integer-codegen.md) — use number plus multipleOf: 1 for integers and plain strings for UUIDs with the current Orval/Zod generator.
+- [Generated execution safety](generated-execution-safety.md) — only server-bound, side-effect-free capabilities may run until durable external-effect reconciliation exists.
+- [JASIM final vision lock](jasim-vision-lock.md) — conversation plus Smart Bubbles lead the general runtime; World is optional durable Bubble backing life.
+- [Expo web session storage](expo-web-session-storage.md) — use AsyncStorage only for Expo Web; keep SecureStore for native bearer sessions.
+- [Durable DAG lease authority](dag-lease-authority.md) — final worker writes must validate lease expiry with database time, not an earlier application timestamp.
+- [Replit AI model gateway](replit-ai-model-gateway.md) — Replit's OpenAI-compatible proxy needs current GPT request fields, not legacy OpenAI defaults.
+- [Expo canonical tRPC](expo-canonical-trpc.md) — Expo talks directly to canonical tRPC with SuperJSON inputs and development-only cross-origin access.
+- [Smart Bubble PostgreSQL proof](smart-bubble-proof.md) — both focused (JASIM_SMART_BUBBLE_ONLY=1) and broad proofs now pass after Tranche 1 isolation work.
+- [Tranche 1 isolation](tranche1-isolation.md) — runtime_tasks UUID table, NaN guards for owner isolation, tsconfig.server.json exclude list, boot.ts legacy removal.
+- [Post-Smart-Bubble foundation](post-smart-bubble-foundation.md) — follow the dependency-ordered path from Conversation/Memory/Events through verified execution and release.
+- [Phase C-G completion](phase-c-e-completion.md) — Phases C-G complete: Bubble Mutation, Conversation Intelligence, Semantic Events, Approval Resume, Trusted Executor; continue from Phase H.
+- [Phase H-J completion](phase-h-j-completion.md) — Phases H-J complete: Receipt/Reconciliation, Frontend Lifecycle UI, Mobile Session Auth; continue from Phase K.
+- [Phase K-N completion](phase-k-n-completion.md) — Phases K-N complete: openai-chat provider, adversarial hardening, production hardening, E2E integration; DIRECTIVE COMPLETE.
+- [Phase 1-10 completion](phase-1-10-completion.md) — Post-Audit Closure Phases 1-10: security patches, attempt ledger, verifier, reconciliation, summary, routing, prod ops, AI result UI, retry UX.
+- [Generated artifact delivery](generated-artifact-delivery.md) — private images use the Replit sidecar plus an owner-scoped preview route; signed URLs are only an optional convenience.
+- [Model calibration throttling](model-calibration-throttling.md) — Replit OpenAI-compatible evaluation runs must be resumable and rate-limited; discard 429/empty rows from economic conclusions.
+- [Expo static build port conflict](expo-build-port-conflict.md) — mobile static builds need the mockup preview server off port 8081 temporarily.
+- [Pre-materialized DAG execution](pre-materialized-dag-execution.md) — executor must inspect the persisted graph before proposal materialization; composition runs may intentionally have no proposals.
+- [Receipt presentation boundary](receipt-presentation-boundary.md) — durable receipts may hold protected artifact internals; conversation text and UI must render only safe summaries.
+- [Generic presentation registry](generic-presentation-registry.md) — semantic UI types resolve only through a static local registry; unsupported types fail closed without executing actions.
+- [Active Workspace projection](active-workspace-projection.md) — Workspace context is an owner-scoped read model; expose only currently provable references and never add a Workspace entity.
+- [Browser-safe presentation validation](browser-safe-presentation-validation.md) — browser renderers must not runtime-import server source under api/; keep validation on a client-safe boundary.
+- [Smart UI target versions](smart-ui-target-versions.md) — generated UI actions must carry the canonical version of their actual target, not the surrounding presentation version.
+- [Workspace morphing continuity](workspace-morphing-continuity.md) — derive current-surface identity from canonical projection context and reject older same-conversation projections without caching business truth.
+- [Workspace visual cleanup](workspace-visual-cleanup.md) — scope disposable transition cleanup by conversation, presentation identity, and transition so stale timers cannot revive old UI.
+- [Living Object canonical links](living-object-canonical-links.md) — only explicit same-runtime keys may deduplicate Living Objects; never infer links across legacy and runtime ID domains.
+- [Living Object Rail boundary](living-object-rail-boundary.md) — Web Rail consumes the bounded projection; client state may control presentation only, never lifecycle truth or actions.
+- [JASIM architectural constitution](jasim-architectural-constitution.md) — generality is judged by shared primitives; close kernel trust and recovery before adding capability or economic fabrics.
+- [Drizzle migration snapshot gap](drizzle-migration-snapshot-gap.md) — early meta snapshots are missing, so drizzle-kit generate can re-emit existing tables; verify SQL deltas and record hashes manually.
+- [Provider fabric trust boundaries](provider-fabric-trust-boundaries.md) — instance-scoped provider registries only; non-native providers fail closed without expiry lease; semantic mapping via JASIM-controlled keys never descriptions.
+- [Block 2 hardening lessons](block2-hardening-lessons.md) — trust invariants for any future capability/reservation/remote work: selector-binding authz, dispatch-before-claim exactly-once, real attempt lineage, authenticated remote receipts, full-axis delegation, pinned-endpoint SSRF guard.
+- [Block 3 constitution status](block3-constitution-status.md) — Block 3 executed per owner order; production PSP stays BLOCKED, append-only ledger and canonical minor-unit money are permanent.
+- [Block 3.1 mapping status](block31-mapping-status.md) — canonical reality mapping delivered; JASIM is PARTIAL for the 3.1 vision; wiring gaps, not missing primitives, dominate.
+- [Block 3.1 test isolation](block31-test-isolation.md) — block suites use shared temporary PostgreSQL databases; never run block2/block3/block31 suites concurrently.
+- [Client-safe workspace packages](client-safe-workspace-packages.md) — shared client contracts must be declared as workspace dependencies in every consumer so pnpm links them for Metro/Vite.
+- [Nullable tRPC projection fields](nullable-tRPC-projection-fields.md) — optional projection values can arrive as null over tRPC; validate the serialized wire shape in shared schemas.
+- [Smart UI truthfulness gates](smart-ui-truthfulness-gates.md) — completion, receipt success, and retry permission require explicit independent verification; missing state fails closed.
+- [Discovery follow-up truth](discovery-followup-truth.md) — ordinal comparisons require one canonical ResultSet; unavailable external-only search blocks explicitly.

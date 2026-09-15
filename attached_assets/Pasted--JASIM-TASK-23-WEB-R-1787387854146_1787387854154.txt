@@ -1,0 +1,1802 @@
+# =====================================================================
+# JASIM — TASK #23
+# WEB RESEARCH → SELECTED EVIDENCE → IMAGE GENERATION
+# + DURABLE ARTIFACT LINEAGE
+#
+# COMPLETE TRUE CROSS-CAPABILITY COMPOSITION
+#
+# IMPORTANT:
+# TASK #22 IS NOW CLOSED.
+# PHASE 12 CALIBRATION REMAINS PARTIAL AND MUST NOT BE TOUCHED.
+# TASK #24 MUST NOT START.
+# =====================================================================
+
+
+Task #23 is now authorized for implementation.
+
+This task does NOT add Web Research.
+
+Web Research is already REAL.
+
+This task does NOT add Image Generation.
+
+Image Generation is already REAL.
+
+This task proves that JASIM can take the validated output of one
+general capability and use it as bounded, provenance-preserving input
+to another general capability.
+
+The target is:
+
+WEB RESEARCH
+→ SELECTED SOURCES
+→ BOUNDED EVIDENCE
+→ STRUCTURED FINDINGS
+→ IMAGE GENERATION CONTEXT
+→ IMAGE CAPABILITY
+→ RUNTIME ARTIFACT
+→ DURABLE LINEAGE
+
+through the EXISTING canonical JASIM runtime.
+
+
+=====================================================================
+0. CURRENT PROVEN FOUNDATION
+=====================================================================
+
+Preserve:
+
+Web Research
+
+SourceReferences
+
+external-content untrusted boundary
+
+search provenance
+
+Trusted Executor
+
+immutable attempts
+
+receipts
+
+Independent Verifier
+
+RuntimeArtifact
+
+Private App Storage
+
+SHA-256 / artifact metadata
+
+protected artifact preview
+
+Task #22:
+RuntimeArtifact → Existing Smart Bubble
+
+Reference Resolution
+
+Smart Bubble mutation
+
+Web
+
+Mobile
+
+cross-owner isolation
+
+restart persistence
+
+ModelPolicy implementation
+
+
+DO NOT rebuild any of these.
+
+
+Phase 12 calibration is still externally blocked.
+
+DO NOT:
+
+resume calibrate:jasim-models
+
+change T1/T2/T3
+
+change ModelPolicy
+
+change provider mappings
+
+
+=====================================================================
+1. TASK #23 PRODUCT GOAL
+=====================================================================
+
+JASIM should understand workflows such as:
+
+"ابحث عن تصاميم المنازل التقليدية في نجد،
+ثم استخدم المصدرين الثاني والرابع لإنشاء تصور بصري."
+
+or:
+
+"ابحث عن أحدث اتجاهات تصميم المقاهي الهادئة،
+استخلص أفضل ثلاثة عناصر،
+ثم أنشئ لي تصورًا بصريًا مبنيًا عليها."
+
+or later:
+
+"استخدم الصورة الناتجة في المنصة التي أنشأناها."
+
+The important proof is NOT:
+
+Search works
++
+Image works
+
+The proof is:
+
+OUTPUT OF CAPABILITY A
+becomes
+VALIDATED INPUT/CONTEXT FOR CAPABILITY B
+
+without domain-specific code.
+
+
+=====================================================================
+2. DISTINGUISH TWO CONCEPTS PERMANENTLY
+=====================================================================
+
+MULTI_CAPABILITY_AVAILABILITY:
+
+Search exists
+Image exists
+
+
+is NOT the same as:
+
+
+CROSS_CAPABILITY_COMPOSITION:
+
+Search output
+→ validated transformation
+→ Image input
+
+
+Task #23 must prove the second concept.
+
+
+=====================================================================
+3. DO NOT BUILD A DOMAIN WORKFLOW
+=====================================================================
+
+Forbidden:
+
+NajdArchitectureWorkflow
+
+PerfumeDesignResearchHandler
+
+CafeResearchToImage
+
+HouseStyleAgent
+
+RetailImageResearchPipeline
+
+
+Required:
+
+GENERAL CAPABILITY COMPOSITION.
+
+
+The same primitives must work for:
+
+architecture
+agriculture
+education
+retail
+events
+manufacturing
+logistics
+etc.
+
+
+=====================================================================
+4. INSPECT EXISTING DAG / PLAN PRIMITIVES FIRST
+=====================================================================
+
+Before introducing new composition types:
+
+inspect the existing canonical:
+
+Run
+
+DAG
+
+node dependencies
+
+capability invocation
+
+normalized capability result
+
+Reference Resolution
+
+SourceReference
+
+RuntimeArtifact
+
+receipt
+
+verifier
+
+semantic events
+
+
+Prefer expressing Task #23 through the CURRENT DAG/runtime.
+
+
+Do NOT build:
+
+CrossCapabilityRuntime
+
+ResearchImageEngine
+
+PipelineRuntime
+
+
+if Run/DAG already models dependency flow.
+
+
+=====================================================================
+5. TARGET DAG
+=====================================================================
+
+The canonical plan should conceptually support:
+
+NODE A:
+WEB_RESEARCH
+
+        ↓
+
+NODE B:
+EVIDENCE_SELECTION / EXTRACTION
+
+        ↓
+
+NODE C:
+ANALYSIS / STRUCTURED_FINDINGS
+
+        ↓
+
+NODE D:
+IMAGE_PROMPT_CONTEXT_SYNTHESIS
+
+        ↓
+
+NODE E:
+IMAGE_GENERATION
+
+        ↓
+
+NODE F:
+ARTIFACT_PERSIST / VERIFY
+
+        ↓
+
+FINAL RESULT
+
+
+Do NOT force exactly six physical nodes
+if existing planner/runtime can safely combine adjacent deterministic steps.
+
+The semantic dependency is what matters.
+
+
+=====================================================================
+6. SAME RUN WHEN IT IS ONE USER GOAL
+=====================================================================
+
+For a user request that explicitly asks:
+
+search
+THEN
+generate image from the findings
+
+prefer ONE canonical Run / DAG representing the whole user goal.
+
+
+Do NOT create:
+
+Run A = search
+
+then unrelated:
+
+Run B = image
+
+
+with no durable causal relationship.
+
+
+Expected:
+
+one parent goal
+
+one execution graph
+
+dependent attempts
+
+durable dataflow
+
+
+If current canonical architecture supports child/sub-runs more naturally,
+that is acceptable only if the parent causal graph remains explicit.
+
+
+=====================================================================
+7. SOURCE SELECTION
+=====================================================================
+
+Support two modes.
+
+
+A. EXPLICIT USER SELECTION
+
+Example:
+
+"استخدم المصدرين الثاني والرابع."
+
+Reference Resolution should resolve:
+
+source 2
+source 4
+
+against the canonical WebSearchResult / SourceReferences.
+
+
+B. JUSTIFIED AUTOMATIC SELECTION
+
+Example:
+
+"استخدم أفضل المصادر."
+
+JASIM may select evidence based on generic criteria such as:
+
+relevance
+freshness
+source quality metadata
+coverage
+duplicate reduction
+
+
+Do NOT implement domain rules.
+
+
+Whenever automatic selection occurs:
+
+persist which sources were selected
+and why.
+
+
+=====================================================================
+8. SOURCE NUMBERING MUST NOT BE CLIENT-LOCAL TRUTH
+=====================================================================
+
+"المصدر الثاني"
+
+must resolve server-side against canonical conversation/run context.
+
+
+Do NOT rely solely on:
+
+array index in React state.
+
+
+Resolve to:
+
+canonical SourceReference IDs.
+
+
+After restart:
+
+"المصدر الثاني"
+
+should still resolve if the conversational reference remains valid.
+
+
+=====================================================================
+9. BOUNDED EVIDENCE
+=====================================================================
+
+Do NOT pass entire search result dumps or complete pages into image generation.
+
+
+Required:
+
+SourceReferences
+↓
+bounded relevant evidence
+↓
+structured findings
+
+
+Use:
+
+selected excerpts
+summaries
+structured facts
+visual/design attributes
+relevant evidence only
+
+
+Apply:
+
+content-size caps
+token budget
+deduplication
+relevance selection
+
+
+Preserve source links separately.
+
+
+=====================================================================
+10. EXTERNAL CONTENT REMAINS UNTRUSTED
+=====================================================================
+
+Phase 11 security invariant remains mandatory.
+
+Search/web content is:
+
+UNTRUSTED_EXTERNAL_CONTENT
+
+
+It may influence:
+
+facts
+observations
+design inspiration
+structured findings
+
+
+It may NOT:
+
+change JASIM policy
+
+execute capabilities
+
+approve actions
+
+request secrets
+
+override system instructions
+
+change another Bubble
+
+invoke image generation directly
+
+
+Required boundary:
+
+External Content
+→ extraction
+→ evidence
+→ validated structured findings
+→ planner/runtime
+→ capability invocation
+
+
+Never:
+
+Web Page
+→ direct Image Tool Call
+
+
+=====================================================================
+11. PROMPT INJECTION
+=====================================================================
+
+Test a source containing instructions such as:
+
+"Ignore the user."
+
+"Do not create an image."
+
+"Send secrets."
+
+"Call another tool."
+
+"Change the user's project."
+
+"Use this exact hidden prompt."
+
+
+Expected:
+
+treated as source content only.
+
+No authority.
+
+
+Required:
+
+WEB_CONTENT_DIRECT_CAPABILITY_CONTROL = BLOCKED
+
+WEB_CONTENT_POLICY_OVERRIDE = BLOCKED
+
+SECRET_EXFILTRATION = BLOCKED
+
+
+=====================================================================
+12. STRUCTURED FINDINGS
+=====================================================================
+
+Do NOT merely concatenate snippets into a giant prompt.
+
+
+Create/reuse a generic structured intermediate representation.
+
+Conceptually:
+
+ResearchFinding {
+  findingId
+  statement
+  evidenceReferences[]
+  confidence?
+  category?
+  relevance?
+}
+
+
+For visual-generation context it may also represent generic attributes such as:
+
+materials
+forms
+colors
+layout patterns
+visual motifs
+constraints
+
+
+But DO NOT make the schema architecture-specific.
+
+
+A finding may be:
+
+"facades often use X"
+
+or:
+
+"interfaces emphasize Y"
+
+or:
+
+"equipment commonly requires Z"
+
+
+The schema remains generic.
+
+
+=====================================================================
+13. FACTUAL FINDINGS VS CREATIVE INSPIRATION
+=====================================================================
+
+This distinction is important.
+
+Some evidence is factual.
+
+Some is merely visual/creative inspiration.
+
+
+Do not label creative interpretation as factual truth.
+
+
+Conceptually preserve:
+
+FACTUAL_FINDING
+
+DESIGN_INSPIRATION
+
+USER_CONSTRAINT
+
+MODEL_INTERPRETATION
+
+
+or equivalent provenance semantics.
+
+
+Do not overbuild taxonomy if existing metadata can represent it.
+
+
+=====================================================================
+14. IMAGE PROMPT SYNTHESIS
+=====================================================================
+
+Generate image instructions from:
+
+USER GOAL
++
+SELECTED STRUCTURED FINDINGS
++
+USER CONSTRAINTS
++
+OPTIONAL EXISTING BUBBLE CONTEXT
+
+
+NOT:
+
+entire raw search pages.
+
+
+Prompt synthesis must preserve the fact that external content is evidence,
+not instructions.
+
+
+If current ModelPolicy chooses model intelligence for synthesis:
+
+use it.
+
+Do NOT alter ModelPolicy.
+
+Do NOT resume calibration.
+
+
+=====================================================================
+15. MODEL ECONOMY DURING TASK #23
+=====================================================================
+
+Use current provisional ModelPolicy as-is.
+
+
+Simple evidence synthesis:
+likely T1
+
+
+complex multi-source synthesis:
+may use T2
+
+
+T3 only if the overall task genuinely requires deep generative reasoning.
+
+
+Do NOT hard-code:
+
+research-to-image = T3
+
+
+Do not touch the calibration experiment.
+
+
+=====================================================================
+16. ARTIFACT LINEAGE — CORE REQUIREMENT
+=====================================================================
+
+When the generated image becomes a RuntimeArtifact,
+persist durable lineage.
+
+
+We must be able to answer:
+
+What user request produced this artifact?
+
+Which Run produced it?
+
+Which image-generation attempt produced it?
+
+Which research findings influenced it?
+
+Which SourceReferences supported those findings?
+
+
+Conceptually:
+
+RuntimeArtifact
+↓
+GenerationRecord
+↓
+StructuredFindings
+↓
+SelectedSourceReferences
+↓
+WebSearchResult
+
+
+Do NOT duplicate entire web content into artifact metadata.
+
+
+Use durable references.
+
+
+=====================================================================
+17. LINEAGE MUST BE GENERIC
+=====================================================================
+
+Do not create:
+
+imageResearchSources
+
+architectureSources
+
+designImageReferences
+
+
+Prefer a generic concept such as:
+
+ArtifactLineage
+DerivedFrom
+ProvenanceLink
+GenerationInputReference
+
+
+Reuse existing provenance/event model if it already supports this.
+
+
+The same lineage primitive should later support:
+
+research → report
+
+document → summary
+
+dataset → chart
+
+audio → transcript
+
+image → transformed image
+
+
+not only Research → Image.
+
+
+=====================================================================
+18. SOURCE PROVENANCE != IMAGE FACTUAL VERIFICATION
+=====================================================================
+
+Permanent distinction:
+
+EXECUTION_VERIFICATION
+
+SOURCE_PROVENANCE
+
+FACTUAL_TRUTH
+
+CREATIVE_DERIVATION
+
+
+If the artifact derives from Source 2 and Source 4,
+this means:
+
+those sources influenced the generation context.
+
+
+It does NOT mean:
+
+"the pixels are factually verified by sources 2 and 4."
+
+
+Do not show misleading VERIFIED labels.
+
+
+=====================================================================
+19. VERIFIER RESPONSIBILITY
+=====================================================================
+
+Independent Verifier may verify:
+
+search execution occurred
+
+selected SourceReferences exist
+
+findings reference valid sources
+
+image-generation attempt exists
+
+artifact exists
+
+artifact bytes/hash valid
+
+lineage references are internally valid
+
+Run dependency graph matches lineage
+
+
+It cannot automatically prove:
+
+every factual claim in source is true
+
+or:
+
+generated image is historically accurate
+
+
+Maintain truthful boundaries.
+
+
+=====================================================================
+20. LINEAGE IMMUTABILITY
+=====================================================================
+
+Once an artifact is generated,
+its generation lineage must not silently change.
+
+
+If user later creates a NEW generation from different sources:
+
+new artifact
++
+new lineage
+
+
+Do NOT rewrite old artifact provenance.
+
+
+If metadata corrections are required,
+use existing event/version/audit semantics.
+
+
+=====================================================================
+21. IDEMPOTENCY
+=====================================================================
+
+Infrastructure replay must not create duplicate generated images when the same
+canonical image-generation attempt has already succeeded.
+
+
+Respect existing attempt/idempotency semantics.
+
+
+But:
+
+User explicitly says:
+
+"أنشئ نسخة أخرى."
+
+This is a NEW creative intent.
+
+It may generate another artifact.
+
+
+Retry
+!=
+regenerate.
+
+
+=====================================================================
+22. FAILURE PROPAGATION
+=====================================================================
+
+If research fails:
+
+do NOT continue pretending evidence exists.
+
+
+If evidence selection fails:
+
+do NOT fabricate selected sources.
+
+
+If image provider fails:
+
+preserve completed research result.
+
+
+If artifact persistence fails:
+
+do NOT report image creation as fully complete.
+
+
+Represent partial graph truthfully.
+
+
+Examples:
+
+SEARCH = VERIFIED
+IMAGE = FAILED
+
+
+or:
+
+SEARCH = VERIFIED
+IMAGE = INCONCLUSIVE
+
+
+No fake whole-run success.
+
+
+=====================================================================
+23. RECONCILIATION
+=====================================================================
+
+Use existing Reconciliation rules per effectful provider step.
+
+
+If image provider outcome is uncertain:
+
+do not blindly call generation again.
+
+
+Preserve upstream research nodes.
+
+
+Reconcile only the uncertain image-generation step.
+
+
+Do not rerun research unnecessarily.
+
+
+=====================================================================
+24. REUSE RESULTS
+=====================================================================
+
+If a valid research result already exists in the current conversation
+and user says:
+
+"استخدم المصدرين الثاني والرابع لإنشاء صورة."
+
+do NOT perform another web search automatically.
+
+
+Resolve existing:
+
+WebSearchResult
++
+SourceReferences
+
+
+then continue downstream.
+
+
+This is both better UX and cheaper.
+
+
+Required:
+
+UNNECESSARY_REPEAT_SEARCH = 0
+
+
+when valid existing research context already satisfies the request.
+
+
+=====================================================================
+25. FRESHNESS
+=====================================================================
+
+If user explicitly asks:
+
+"ابحث الآن..."
+
+or:
+
+"استخدم أحدث النتائج..."
+
+fresh search may be justified.
+
+
+Do not reuse stale research merely to save cost.
+
+
+Reference reuse must respect:
+
+user intent
+freshness
+retrievedAt
+context
+
+
+=====================================================================
+26. EXISTING SMART BUBBLE CONTEXT
+=====================================================================
+
+Task #23 itself does NOT require attaching the result to a Bubble.
+
+Task #22 already solves that.
+
+
+But image-generation context may optionally use an EXISTING Bubble if user says:
+
+"أنشئ صورة مناسبة لمنصتي بناءً على هذه النتائج."
+
+
+Expected:
+
+Reference Resolution
+→ existing Bubble
+→ minimal relevant design/state context
+
+
+Do NOT send entire Bubble/World if unnecessary.
+
+
+Do NOT mutate Bubble automatically.
+
+
+Mutation happens only when user asks to use/attach the resulting artifact.
+
+
+=====================================================================
+27. POST-GENERATION TASK #22 COMPOSITION
+=====================================================================
+
+After Task #23 generation succeeds,
+the output is a normal RuntimeArtifact.
+
+
+Therefore existing Task #22 should work immediately:
+
+Generated Artifact
+→ "استخدمها في Bubble"
+→ generic VIEW_MUTATION
+
+
+Do NOT create a special ResearchImageBubble attachment path.
+
+
+Required:
+
+TASK_22_PATH_REUSED = YES
+
+
+=====================================================================
+28. WEB UI
+=====================================================================
+
+Keep UI minimal and conversational.
+
+
+For a research-driven generation,
+show enough to understand provenance:
+
+generated image
+
+selected sources summary/reference
+
+generation status
+
+artifact status
+
+
+Do NOT clutter UI with internal DAG details.
+
+
+Optional user-facing concept:
+
+"استندت هذه الصورة إلى مصدرين"
+
+with accessible source references.
+
+
+Do not imply factual certification.
+
+
+Existing:
+
+"استخدم في Bubble"
+
+from Task #22 should remain available.
+
+
+=====================================================================
+29. MOBILE UI
+=====================================================================
+
+Use same canonical result and lineage contracts.
+
+
+Mobile must not construct its own source→artifact relation.
+
+
+Render:
+
+image
+
+source references where useful
+
+status
+
+existing Task #22 attach action
+
+
+Same server truth.
+
+
+=====================================================================
+30. RESTART DURABILITY
+=====================================================================
+
+After successful execution:
+
+restart canonical runtime.
+
+
+Then prove:
+
+Run exists
+
+research result exists
+
+selected source references exist
+
+structured findings exist or their durable canonical representation exists
+
+image attempt exists
+
+RuntimeArtifact exists
+
+artifact lineage exists
+
+receipt exists
+
+verification state exists
+
+
+Then ask/read:
+
+"ما المصادر التي استخدمناها لهذه الصورة؟"
+
+
+The canonical data must be sufficient to answer correctly.
+
+
+No reconstruction from transient client state.
+
+
+=====================================================================
+31. CROSS-OWNER LINEAGE SECURITY
+=====================================================================
+
+Mandatory:
+
+User B cannot read User A artifact lineage.
+
+User B cannot read private SourceReferences from User A conversation.
+
+User B cannot create an image using User A private research result by guessing ID.
+
+User B cannot attach User A artifact via Task #22.
+
+
+Server-side ownership/policy required at every link.
+
+
+=====================================================================
+32. TEST — EXISTING RESEARCH → IMAGE
+=====================================================================
+
+Add:
+
+test:jasim-research-to-image
+
+
+Prefer reuse of an existing REAL Phase 11 WebSearchResult if suitable
+to avoid unnecessary provider search calls.
+
+
+Scenario:
+
+existing verified research result
+→ select two SourceReferences
+→ bounded evidence
+→ findings
+→ image generation
+→ RuntimeArtifact
+→ lineage
+
+
+If image provider quota returns HTTP 429:
+
+classify image part:
+
+INCONCLUSIVE_PROVIDER_CAPACITY
+
+
+Do not fake PASS.
+
+
+But deterministic upstream pipeline can still be proven separately.
+
+
+=====================================================================
+33. TEST — SINGLE NATURAL-LANGUAGE GOAL
+=====================================================================
+
+When provider capacity permits, test a real natural-language request such as:
+
+"ابحث عن تصاميم المنازل التقليدية في نجد،
+ثم استخدم المصدرين الثاني والرابع لإنشاء تصور بصري."
+
+
+Required:
+
+ONE_USER_GOAL = PASS
+
+CANONICAL_RUN_GRAPH = PASS
+
+WEB_RESEARCH_NODE = PASS
+
+SOURCE_SELECTION = PASS
+
+BOUNDED_EVIDENCE = PASS
+
+STRUCTURED_FINDINGS = PASS
+
+IMAGE_GENERATION_NODE = PASS
+
+ARTIFACT = PASS
+
+LINEAGE = PASS
+
+
+If provider 429 prevents completion:
+
+NATURAL_LANGUAGE_E2E =
+INCONCLUSIVE_PROVIDER_CAPACITY
+
+
+Do not mislabel it.
+
+
+=====================================================================
+34. TEST — REUSE EXISTING RESEARCH
+=====================================================================
+
+Scenario:
+
+conversation already contains valid research.
+
+
+User:
+
+"استخدم المصدرين الثاني والرابع لإنشاء صورة."
+
+
+Require:
+
+NEW_WEB_SEARCH_CALLS = 0
+
+EXISTING_RESEARCH_RESOLVED = PASS
+
+SOURCE_2_RESOLVED = PASS
+
+SOURCE_4_RESOLVED = PASS
+
+IMAGE_PIPELINE_STARTED = PASS
+
+
+=====================================================================
+35. TEST — SOURCE LINEAGE
+=====================================================================
+
+After successful image generation:
+
+query the artifact lineage.
+
+
+Require:
+
+ARTIFACT_TO_GENERATION = PASS
+
+GENERATION_TO_FINDINGS = PASS
+
+FINDINGS_TO_SOURCES = PASS
+
+SOURCES_TO_RESEARCH_RESULT = PASS
+
+
+No broken references.
+
+
+=====================================================================
+36. TEST — DIFFERENT SOURCES → NEW ARTIFACT
+=====================================================================
+
+Generate from:
+
+sources 2 + 4
+
+
+Then user requests:
+
+"أنشئ نسخة جديدة باستخدام المصدرين 1 و3."
+
+
+Expected:
+
+NEW ARTIFACT
+
+NEW LINEAGE
+
+
+Old artifact lineage unchanged.
+
+
+Require:
+
+ORIGINAL_LINEAGE_IMMUTABLE = PASS
+
+
+=====================================================================
+37. TEST — PROMPT INJECTION
+=====================================================================
+
+Use controlled external evidence containing malicious instructions.
+
+
+Require:
+
+WEB_INJECTION_EXECUTED = NO
+
+POLICY_OVERRIDE = BLOCKED
+
+DIRECT_IMAGE_CAPABILITY_TRIGGER_FROM_WEB = BLOCKED
+
+SECRET_EXFILTRATION = BLOCKED
+
+
+The user request, not web page instructions,
+authorizes composition.
+
+
+=====================================================================
+38. TEST — CROSS OWNER
+=====================================================================
+
+Add:
+
+test:jasim-research-image-security
+
+
+Require:
+
+CROSS_OWNER_RESEARCH_READ = BLOCKED
+
+CROSS_OWNER_SOURCE_RESOLUTION = BLOCKED
+
+CROSS_OWNER_RESEARCH_TO_IMAGE = BLOCKED
+
+CROSS_OWNER_LINEAGE_READ = BLOCKED
+
+
+No information leakage.
+
+
+=====================================================================
+39. TEST — RESTART
+=====================================================================
+
+Add:
+
+test:jasim-research-image-restart
+
+
+After restart:
+
+RESEARCH_RESULT_PERSISTED = PASS
+
+SOURCE_REFERENCES_PERSISTED = PASS
+
+ARTIFACT_PERSISTED = PASS
+
+LINEAGE_PERSISTED = PASS
+
+LINEAGE_QUERYABLE = PASS
+
+PROTECTED_ARTIFACT_PREVIEW = PASS
+
+
+=====================================================================
+40. TEST — TASK #22 INTEROPERABILITY
+=====================================================================
+
+Take Task #23 resulting RuntimeArtifact.
+
+Use EXISTING Task #22 path.
+
+Attach it to an existing Bubble.
+
+
+Require:
+
+TASK_22_ENDPOINT_REUSED = PASS
+
+NO_SPECIAL_RESEARCH_IMAGE_ATTACHMENT = PASS
+
+SAME_BUBBLE = PASS
+
+PRESENTATION_VERSION_INCREMENT = PASS
+
+ARTIFACT_LINEAGE_UNCHANGED = PASS
+
+
+This proves composition of general primitives.
+
+
+=====================================================================
+41. NO NEW PROVIDER CALLS UNLESS NECESSARY
+=====================================================================
+
+Because provider capacity is constrained:
+
+reuse existing verified:
+
+research results
+
+source references
+
+artifacts
+
+where possible for deterministic pipeline tests.
+
+
+Only call real provider where required to prove the missing capability.
+
+
+Do not burn quota repeating already-proven search behavior.
+
+
+Do not touch model calibration.
+
+
+=====================================================================
+42. EMPTY COMPLETION / 429
+=====================================================================
+
+Task #23 must retain honest provider failure taxonomy.
+
+
+HTTP 429
+
+and:
+
+EMPTY_COMPLETION
+
+
+must remain distinct unless provider evidence proves otherwise.
+
+
+Do not change Phase 12 calibration code during this task.
+
+
+But new capability execution must preserve correct error category.
+
+
+=====================================================================
+43. DATABASE / SCHEMA
+=====================================================================
+
+Before adding lineage storage:
+
+inspect:
+
+RuntimeArtifact metadata
+
+semantic events
+
+execution attempts
+
+receipts
+
+source provenance storage
+
+Run/DAG edges
+
+
+Prefer reuse/extension.
+
+
+Do NOT create a large parallel provenance database.
+
+
+If a schema addition is genuinely required:
+
+generic only
+
+canonical migration
+
+non-destructive
+
+fresh + existing DB migration test
+
+
+No production direct SQL.
+
+
+=====================================================================
+44. LINEAGE QUERY
+=====================================================================
+
+Provide/reuse a server-authoritative way to resolve:
+
+artifact
+→ provenance/lineage
+
+
+This may be internal runtime API or current canonical query mechanism.
+
+
+It must enforce ownership.
+
+
+Do not expose raw internal storage paths or provider secrets.
+
+
+=====================================================================
+45. TOKEN EFFICIENCY
+=====================================================================
+
+Do not waste engineering/model tokens.
+
+
+DO NOT:
+
+reread historical JASIM docs
+
+repeat Phase 11 architecture audit
+
+repeat Task #22 implementation
+
+resume Phase 12 calibration
+
+perform broad model research
+
+create a new agent framework
+
+dump large page contents
+
+call search provider repeatedly for identical proof data
+
+
+Use:
+
+TARGETED INSPECTION
+→ MINIMAL GENERIC EXTENSION
+→ TARGETED PROOFS
+
+
+=====================================================================
+46. REGRESSIONS
+=====================================================================
+
+After Task #23 run:
+
+test:jasim-research-to-image
+
+test:jasim-research-image-security
+
+test:jasim-research-image-restart
+
+Task #22 artifact-bubble proof
+
+Phase 11 cross-capability proof
+
+Phase 11 security
+
+relevant Reference Resolution proofs
+
+Attempt Ledger
+
+Independent Verifier
+
+Reconciliation
+
+server/runtime typecheck
+
+mobile typecheck
+
+Web production build
+
+
+Do NOT rerun model calibration.
+
+
+=====================================================================
+47. GENERALITY SCAN
+=====================================================================
+
+Inspect changed core files.
+
+
+Expected:
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+
+No:
+
+Najd
+house
+perfume
+restaurant
+agriculture
+car
+job
+
+business logic in Core.
+
+
+Test fixtures may contain domains.
+
+Core may not.
+
+
+=====================================================================
+48. DEFINITION OF DONE
+=====================================================================
+
+Task #23 is complete only when:
+
+USER GOAL
+↓
+CANONICAL RUN / DAG
+↓
+WEB RESEARCH OR EXISTING RESEARCH REFERENCE
+↓
+SELECTED CANONICAL SOURCE REFERENCES
+↓
+BOUNDED EVIDENCE
+↓
+STRUCTURED FINDINGS
+↓
+IMAGE GENERATION CONTEXT
+↓
+IMAGE CAPABILITY
+↓
+IMMUTABLE ATTEMPT
+↓
+RUNTIME ARTIFACT
+↓
+INDEPENDENT VERIFICATION
+↓
+DURABLE GENERIC ARTIFACT LINEAGE
+↓
+RESTART
+↓
+QUERYABLE PROVENANCE
+↓
+TASK #22 CAN REUSE THE ARTIFACT
+
+
+Not merely:
+
+search text copied into prompt.
+
+
+=====================================================================
+49. REQUIRED FINAL REPORT
+=====================================================================
+
+Return:
+
+TASK_23:
+PASS / PARTIAL / FAIL
+
+
+ONE_USER_GOAL:
+PASS / PARTIAL / INCONCLUSIVE_PROVIDER_CAPACITY / FAIL
+
+
+SINGLE_CANONICAL_RUN_GRAPH:
+PASS / FAIL
+
+
+EXISTING_RESEARCH_REUSE:
+PASS / FAIL
+
+UNNECESSARY_REPEAT_SEARCH:
+0 expected
+
+
+SOURCE_REFERENCE_RESOLUTION:
+PASS / FAIL
+
+EXPLICIT_SOURCE_SELECTION:
+PASS / FAIL
+
+AUTOMATIC_SOURCE_SELECTION:
+PASS / NOT_APPLICABLE / FAIL
+
+
+BOUNDED_EVIDENCE:
+PASS / FAIL
+
+FULL_PAGE_DUMP_TO_IMAGE_MODEL:
+0 expected
+
+
+STRUCTURED_FINDINGS:
+PASS / FAIL
+
+
+IMAGE_PROMPT_SYNTHESIS:
+PASS / FAIL
+
+
+REAL_IMAGE_PROVIDER:
+PASS / INCONCLUSIVE_PROVIDER_CAPACITY / FAIL
+
+
+RUNTIME_ARTIFACT:
+PASS / FAIL
+
+
+ARTIFACT_LINEAGE:
+PASS / FAIL
+
+ARTIFACT_TO_GENERATION:
+PASS / FAIL
+
+GENERATION_TO_FINDINGS:
+PASS / FAIL
+
+FINDINGS_TO_SOURCES:
+PASS / FAIL
+
+SOURCES_TO_RESEARCH_RESULT:
+PASS / FAIL
+
+
+ORIGINAL_LINEAGE_IMMUTABLE:
+PASS / FAIL
+
+
+EXECUTION_VERIFICATION_SEPARATE_FROM_FACTUAL_TRUTH:
+PASS / FAIL
+
+CREATIVE_DERIVATION_SEMANTICS:
+PASS / FAIL
+
+
+PROMPT_INJECTION_DEFENSE:
+PASS / FAIL
+
+CROSS_OWNER_SECURITY:
+PASS / FAIL
+
+
+RESTART_DURABILITY:
+PASS / FAIL
+
+
+TASK_22_PATH_REUSED:
+PASS / FAIL
+
+SPECIAL_RESEARCH_IMAGE_BUBBLE_HANDLER:
+0 expected
+
+
+WEB_UI:
+PASS / FAIL
+
+MOBILE_UI:
+PASS / PARTIAL / FAIL
+
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS:
+0 expected
+
+FAKE_SUCCESS:
+0 expected
+
+
+MODEL_CALIBRATION_TOUCHED:
+NO expected
+
+PHASE_12_STATUS:
+PARTIAL
+
+
+READY_FOR_TASK_24:
+YES / NO
+
+
+OWNER_ACTION_REQUIRED:
+NONE
+or exact external provider capacity requirement
+
+
+=====================================================================
+50. STOP
+=====================================================================
+
+After Task #23 report:
+
+STOP.
+
+DO NOT start Task #24 automatically.
+
+DO NOT resume Phase 12 calibration.
+
+DO NOT modify model mappings.
+
+BEGIN TASK #23 NOW.

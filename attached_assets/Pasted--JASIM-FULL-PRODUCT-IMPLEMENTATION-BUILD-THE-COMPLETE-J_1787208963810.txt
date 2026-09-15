@@ -1,0 +1,1491 @@
+# JASIM — FULL PRODUCT IMPLEMENTATION
+
+## BUILD THE COMPLETE JASIM PRODUCT — NOT AN EXPO GO DEMO
+
+هناك توضيح مهم جدًا قبل بدء التنفيذ النهائي.
+
+لا أريد أن ينتهي مشروع جاسم على أنه:
+
+```text
+Web prototype
++
+Expo Go development client
++
+API server
+```
+
+الهدف هو بناء:
+
+> JASIM COMPLETE PRODUCT
+
+للويب وiPhone وAndroid، فوق نفس الـUniversal Runtime ونفس فلسفة Smart Generative Bubbles.
+
+---
+
+# 1. Expo Go ليست المنتج النهائي
+
+وجود:
+
+```text
+Metro running
+Expo Go opens
+TypeScript passes
+```
+
+لا يعني أن تطبيق جاسم للموبايل اكتمل.
+
+Expo Go يمكن استخدامه أثناء التطوير والاختبارات السريعة فقط.
+
+لكن Definition of Done للموبايل يجب أن يتطلب تطبيقًا مستقلًا قابلًا للبناء مثل:
+
+```text
+iOS standalone build
+Android standalone build
+```
+
+باستخدام بنية Expo/React Native الحالية إذا كانت مناسبة.
+
+لا أطلب إعادة كتابة التطبيق Native من الصفر إذا لم توجد ضرورة تقنية.
+
+لكن:
+
+> Expo Go must not be treated as the final production runtime.
+
+---
+
+# 2. لا تبنِ نسخة موبايل منفصلة عن جاسم
+
+جاسم ليس:
+
+```text
+Jasim Web
+Jasim Mobile
+```
+
+كمنتجين بعقلين مختلفين.
+
+الصحيح:
+
+```text
+                 JASIM CORE
+                     │
+              UNIVERSAL RUNTIME
+                     │
+       ┌─────────────┴─────────────┐
+       │                           │
+      WEB                       MOBILE
+                                │
+                         iPhone + Android
+```
+
+العملاء مختلفون.
+
+لكن:
+
+```text
+Conversation
+Bubbles
+World Runtime
+Tasks
+Capabilities
+Policies
+Events
+Verification
+Memory
+```
+
+يجب أن تكون مشتركة على مستوى الـRuntime.
+
+---
+
+# 3. ابدأ الآن برنامج إكمال جاسم بالكامل
+
+بعد تثبيت Final Vision وBubble-first Architecture:
+
+لا أريد Tasks صغيرة متفرقة بلا نهاية.
+
+حوّل الفجوات إلى:
+
+> JASIM FINAL IMPLEMENTATION PROGRAM
+
+ونفذها حسب Dependencies.
+
+---
+
+# 4. المرجع الأعلى
+
+اعتمد الوثائق الأخيرة، خصوصًا:
+
+```text
+JASIM_FINAL_VISION_GAP_ANALYSIS.md
+JASIM_SMART_BUBBLE_ARCHITECTURE.md
+JASIM_FINAL_ARCHITECTURE_BLUEPRINT.md
+```
+
+إذا تعارضت وثيقة قديمة مع الرؤية الأخيرة:
+
+الرؤية الأخيرة هي المرجع الأعلى.
+
+---
+
+# 5. فلسفة المنتج النهائية
+
+ثبت:
+
+```text
+ONE JASIM
+ONE INTELLIGENCE
+ONE GENERAL RUNTIME
+ONE CAPABILITY SYSTEM
+ONE EVENT MODEL
+ONE WORLD MODEL
+MULTIPLE CLIENTS
+```
+
+---
+
+# 6. الواجهة الرئيسية
+
+المنتج يبدأ من:
+
+```text
+JASIM MAIN CHAT
+```
+
+على:
+
+```text
+Web
+iPhone
+Android
+```
+
+---
+
+# 7. Smart Generative Bubbles
+
+الفقاعات هي الوحدة التوليدية الأساسية التي يراها المستخدم.
+
+يمكن للفقاعة أن تكون:
+
+```text
+simple result
+interactive result
+entity
+collection
+workflow
+service
+commercial space
+persistent generated platform
+```
+
+ولا تستخدم Domain-specific templates كأساس.
+
+---
+
+# 8. العوالم داخل الفقاعات
+
+ثبت العلاقة:
+
+```text
+Smart Bubble
+↓
+optional durable World Runtime
+```
+
+العالم هو الحياة الدائمة الداخلية للفقاعة.
+
+لا تحوله إلى منتج منفصل عن الفقاعة.
+
+---
+
+# 9. الذكاء داخل الفقاعات
+
+يجب أن يستطيع المستخدم أن يقول لجاسم:
+
+> منصتي التي أنشأناها، أضف فيها منتجًا.
+
+> احذف هذا المنتج.
+
+> خفّض سعره.
+
+> أضف خدمة.
+
+> عدل شروط الخدمة.
+
+> أضف تقييمات.
+
+> اجعل العمولة 5%.
+
+> أعلن عن الفقاعة التي فيها خدمة كذا.
+
+> أوقف هذا المنتج أسبوعًا.
+
+ويجب أن يعرف جاسم:
+
+```text
+target bubble
+target entity
+requested mutation
+required capability
+permissions
+approval
+```
+
+ثم يعدل نفس الفقاعة.
+
+---
+
+# 10. Bubble Reference Resolution
+
+هذه ليست Feature اختيارية.
+
+ابنِها ضمن Core.
+
+يجب فهم:
+
+```text
+فقاعتي
+منصتي
+متجري
+المشروع السابق
+التي فيها الآيفون
+المنصة التي عملناها أمس
+خدمة التصميم عندي
+```
+
+وتحويلها إلى Bubble/Entity حقيقية.
+
+---
+
+# 11. Conversation Runtime
+
+أكمل:
+
+```text
+Conversations
+Messages
+References
+Tasks
+Bubbles
+```
+
+بحيث تستمر المحادثة بعد:
+
+```text
+close app
+logout/login
+server restart
+device restart
+```
+
+حسب صلاحيات الجلسة.
+
+---
+
+# 12. Output Router
+
+لا تجعل كل Prompt ينشئ World.
+
+يجب أن يختار جاسم بين:
+
+```text
+TEXT
+STRUCTURED RESPONSE
+EPHEMERAL BUBBLE
+INTERACTIVE BUBBLE
+ACTION
+WORKFLOW
+TASK
+PERSISTENT SMART BUBBLE
+```
+
+حسب الحاجة.
+
+---
+
+# 13. Bubble Aggregate
+
+أكمل Smart Bubble ككيان Runtime حقيقي.
+
+يجب أن تكون قابلة لـ:
+
+```text
+create
+open
+expand
+interact
+mutate
+persist
+resume
+share
+publish
+version
+evolve
+archive
+```
+
+بحسب النوع والصلاحيات.
+
+---
+
+# 14. Bubble Renderer
+
+ابنِ Renderer عامًا للويب والموبايل.
+
+لا:
+
+```text
+CarsScreen
+JobsScreen
+RestaurantScreen
+```
+
+كمنطق توليدي أساسي.
+
+المطلوب:
+
+```text
+Runtime Schema
++
+State
++
+View
++
+Role
++
+Permissions
++
+Actions
+↓
+Rendered Bubble
+```
+
+---
+
+# 15. Bubble sizes
+
+يجب أن تستطيع نفس الفقاعة العرض في:
+
+```text
+compact
+expanded
+full-screen
+public-facing
+owner-facing
+```
+
+دون تغيير هويتها.
+
+---
+
+# 16. Conversation ↔ Bubble continuity
+
+من Main Chat:
+
+> أضف منتجًا إلى متجري.
+
+وبعد التنفيذ:
+
+Bubble تتحدث.
+
+ومن Bubble:
+
+> اسأل جاسم عن هذه المنصة.
+
+يعود إلى نفس Intelligence.
+
+---
+
+# 17. Bubble Evolution
+
+أكمل:
+
+```text
+ChangeSet
+Migration Preview
+Validation
+Approval
+Version
+Apply
+Verify
+Rollback
+```
+
+للتعديلات البنيوية المهمة.
+
+---
+
+# 18. Capability Runtime
+
+أكمل Trusted Capability Layer بالكامل.
+
+كل تنفيذ يجب أن يمر:
+
+```text
+Registered Capability
+↓
+Validated Inputs
+↓
+Authorization
+↓
+Policy
+↓
+Approval
+↓
+Provider
+↓
+Receipt
+↓
+Verifier
+```
+
+---
+
+# 19. Model Provider الحقيقي
+
+اربط Model Provider فعليًا عبر Model Gateway.
+
+لا تربط Core مباشرة بمزود واحد.
+
+يجب أن يكون Provider قابلًا للتبديل.
+
+---
+
+# 20. LLM ليست منفذًا
+
+تعامل مع النموذج كـ:
+
+```text
+untrusted intelligent planner
+```
+
+وليس Runtime executor.
+
+---
+
+# 21. DAG Execution Engine
+
+أكمل Execution Graph الحقيقي:
+
+```text
+dependencies
+parallel execution
+joins
+branches
+input gates
+approval gates
+retry
+resume
+replan
+```
+
+---
+
+# 22. Independent Verifier
+
+أنشئ Verifier مستقلًا.
+
+لا تقل إن Action نجحت لمجرد أن Executor أعاد:
+
+```text
+success
+```
+
+يجب التحقق من النتيجة الفعلية حيث يمكن.
+
+---
+
+# 23. Recovery
+
+أكمل:
+
+```text
+retry
+repair
+resume
+replan
+compensation
+```
+
+بشكل عام.
+
+---
+
+# 24. Long-running Runtime
+
+جاسم يجب أن يستطيع مستقبلًا دعم:
+
+```text
+wait
+schedule
+monitor
+watch
+notify
+resume on event
+```
+
+بشكل Durable.
+
+لا تعتمد على HTTP Request مفتوح.
+
+---
+
+# 25. Worker / Queue architecture
+
+إذا كانت المهام طويلة الأمد تحتاج Worker:
+
+ابنِ abstraction صحيحة لذلك.
+
+لا تجعل API server وحده مسؤولًا عن كل التنفيذ طويل الأمد.
+
+---
+
+# 26. Events
+
+استخدم Event System كأساس لتحديث:
+
+```text
+tasks
+bubbles
+worlds
+web
+mobile
+background work
+```
+
+---
+
+# 27. Realtime
+
+بعد صحة Runtime، وفر Transport مناسبًا مثل:
+
+```text
+SSE
+WebSocket
+```
+
+مع fallback مناسب إذا لزم.
+
+لا تجعل الـBusiness Logic يعتمد على نوع Transport.
+
+---
+
+# 28. Multi-user Smart Bubbles
+
+أكمل:
+
+```text
+owner
+member
+customer
+provider
+moderator
+custom roles
+```
+
+مع Permission enforcement على الخادم.
+
+---
+
+# 29. Public / Commercial bubbles
+
+صمم الفقاعة بحيث يمكن أن تكون:
+
+```text
+private
+shared
+invite-only
+public
+commercial
+```
+
+حسب Policy.
+
+---
+
+# 30. Cross-Bubble Intelligence
+
+لا تجعل Architecture تمنع:
+
+> خذ المنتجات من فقاعة المخزون وضعها في المتجر.
+
+> اربط الطلبات بفقاعة التوصيل.
+
+> اجمع مبيعات فقاعتين.
+
+دعم:
+
+```text
+bubble references
+controlled data sharing
+cross-bubble workflows
+event subscriptions
+```
+
+بشكل آمن.
+
+---
+
+# 31. Memory Architecture
+
+افصل:
+
+```text
+Conversation Memory
+User Memory
+Bubble/World Memory
+Task State
+Runtime State
+Event History
+```
+
+---
+
+# 32. Transactions
+
+ابنِ Transaction abstraction عامة قبل ربط الدفع التجاري.
+
+مثل:
+
+```text
+intent
+authorization
+execute
+receipt
+verify
+settle
+refund/compensate
+```
+
+---
+
+# 33. Commercial primitives
+
+بعد اكتمال Core يمكن دعم:
+
+```text
+commission
+subscription
+success fee
+transaction fee
+CPC
+CPA
+featured placement
+service fee
+```
+
+كسياسات عامة.
+
+لا تبنِ Monetization مختلفًا لكل Domain.
+
+---
+
+# 34. Capability Lab
+
+بعد اكتمال Runtime الأساسي:
+
+جهز Capability Evolution Pipeline:
+
+```text
+missing capability
+↓
+proposal
+↓
+sandbox
+↓
+implementation
+↓
+tests
+↓
+security
+↓
+generalization
+↓
+approval
+↓
+canary
+↓
+signed registration
+```
+
+ممنوع تعديل Production Core مباشرة بواسطة LLM.
+
+---
+
+# 35. Web must be complete
+
+`artifacts/jasim` يجب أن يصبح Client كاملًا لجاسم.
+
+اختبر:
+
+```text
+new chat
+history
+persistent conversation
+smart bubbles
+bubble expansion
+bubble mutation
+bubble reference resolution
+approvals
+execution
+realtime updates
+resume
+```
+
+---
+
+# 36. Mobile must be complete
+
+`artifacts/jasim-mobile` يجب ألا يبقى مجرد Expo Go demo.
+
+أكمل نفس تجربة جاسم الأساسية:
+
+```text
+main chat
+conversation history
+smart bubbles
+expanded bubbles
+bubble mutation
+approvals
+runtime events
+resume
+secure session
+```
+
+---
+
+# 37. Expo development
+
+يمكن الاستمرار باستخدام:
+
+```text
+Expo
+Expo Router
+Metro
+```
+
+إذا كانت هي البنية الحالية المناسبة.
+
+لكن Expo Go هي أداة تطوير فقط.
+
+---
+
+# 38. iOS standalone
+
+Definition of Done يجب أن يتضمن نجاح Build مستقل لـiOS وفق إعدادات المشروع المتاحة.
+
+مثل:
+
+```text
+bundle identifier
+app config
+production API
+permissions
+assets
+version/build number
+release configuration
+```
+
+ولا تدّع App Store Ready إذا كانت بيانات Apple أو signing غير متوفرة.
+
+---
+
+# 39. Android standalone
+
+ونفس الشيء:
+
+```text
+package
+versionCode
+release configuration
+production API
+permissions
+standalone Android build
+```
+
+---
+
+# 40. لا تنشئ Business Logic خاصة بالموبايل
+
+Mobile Renderer فقط يترجم Runtime Schema إلى UI مناسب للهاتف.
+
+العقل والمنطق يبقيان Server-side.
+
+---
+
+# 41. Offline / bad network
+
+اختبر سلوكًا صحيحًا عند:
+
+```text
+offline
+connection loss
+retry
+app background
+app resume
+```
+
+دون Fake Success.
+
+---
+
+# 42. Session testing
+
+اختبر:
+
+```text
+valid token
+expired token
+tampered token
+logout
+app restart
+secure store
+```
+
+---
+
+# 43. Generalization Regression أثناء التطوير
+
+لا تنتظر النهاية.
+
+أنشئ مجموعة 8 Unseen Scenarios الآن.
+
+أعد تشغيلها بعد كل طبقة معمارية رئيسية.
+
+---
+
+# 44. Final Generalization Lab
+
+بعد اكتمال Core:
+
+شغّل:
+
+```text
+30+ unseen scenarios
+Arabic + English
+```
+
+عبر Model Provider الحقيقي.
+
+---
+
+# 45. الاختبار لا يقتصر على Prompt
+
+لكل سيناريو قيّم:
+
+```text
+Understanding
+Output Selection
+Bubble Modeling
+World Modeling
+Planning
+Capability Mapping
+Execution
+Verification
+Evolution
+UI Projection
+Persistence
+```
+
+---
+
+# 46. لا تعتبر BLOCKED دائمًا فشلًا
+
+إذا فهم المطلوب لكن Capability الخارجية غير متوفرة:
+
+```text
+Reasoning = PASS
+Execution Coverage = BLOCKED
+```
+
+هذا سلوك صحيح.
+
+---
+
+# 47. Security testing
+
+اختبر:
+
+```text
+IDOR
+cross-bubble access
+capability injection
+approval bypass
+idempotency bypass
+arbitrary execution
+receipt tampering
+secret leakage
+mass assignment
+```
+
+---
+
+# 48. Restart testing
+
+أعد تشغيل Server أثناء:
+
+```text
+awaiting input
+awaiting approval
+workflow execution
+retryable failure
+scheduled work
+```
+
+ثم تحقق من Resume.
+
+---
+
+# 49. Architecture verification
+
+قبل إعلان Completion:
+
+استخدم Agent مختلفًا عن Agents التنفيذ.
+
+اطلب منه محاولة كسر المعمارية.
+
+---
+
+# 50. لا تبنِ Domains لإنجاح الاختبارات
+
+إذا فشل سيناريو جديد:
+
+لا تكتب:
+
+```text
+NewDomainHandler
+```
+
+حدد:
+
+```text
+missing primitive
+missing capability
+planner weakness
+schema weakness
+renderer weakness
+```
+
+وأصلح العمومية.
+
+---
+
+# 51. لا تتوقف عند Typecheck
+
+ممنوع اعتبار التالي إثباتًا كافيًا:
+
+```text
+typecheck PASS
+build PASS
+Expo opens
+```
+
+يجب تشغيل النظام الحقيقي End-to-End.
+
+---
+
+# 52. اختبار قبول Bubble أساسي
+
+المستخدم:
+
+> أنشئ لي منصة أبيع فيها منتجاتي.
+
+جاسم ينشئ Smart Bubble persistent.
+
+ثم:
+
+> أضف آيفون 16 بسعر 300.
+
+ثم:
+
+> أضف سماعة بـ40.
+
+ثم:
+
+> خفض الآيفون إلى 280.
+
+ثم:
+
+> اخف السماعة.
+
+ثم:
+
+> أضف سياسة شحن مجاني للطلبات فوق 500.
+
+ثم:
+
+> أضف تقييمًا للمنتجات.
+
+ثم:
+
+> أعلن عن فقاعتي بميزانية 50.
+
+يجب أن تعمل كل خطوة المتاحة عبر نفس Bubble.
+
+أي Capability غير متوفرة تتوقف فقط عندها بـ:
+
+```text
+blocked
+```
+
+دون إفساد باقي Runtime.
+
+---
+
+# 53. اختبار عدم تحويل كل شيء إلى Bubble دائمة
+
+المستخدم:
+
+> ما ناتج 42 × 18؟
+
+لا تنشئ منصة.
+
+---
+
+# 54. اختبار Result Bubbles
+
+المستخدم:
+
+> أعطني أفضل الخيارات المناسبة لهذا الشرط.
+
+يمكن إنشاء Result Bubbles مؤقتة إذا كانت الأنسب.
+
+---
+
+# 55. اختبار عالم غير معروف
+
+المستخدم:
+
+> أريد نظامًا يتبادل فيه الموظفون مناوباتهم، لكن الليلية تحتاج موافقة المشرف.
+
+يجب تركيب:
+
+```text
+actors
+schedule
+requests
+matching
+policy
+approval
+workflow
+```
+
+دون Domain Handler.
+
+---
+
+# 56. Production configuration
+
+افصل:
+
+```text
+development
+preview
+production
+```
+
+ولا تجعل التطبيق النهائي يعتمد على:
+
+```text
+localhost
+Metro-only URLs
+Expo Go host
+temporary Replit preview URLs
+```
+
+---
+
+# 57. Environment verification
+
+تحقق من كل:
+
+```text
+API URL
+Model Provider
+Database
+Secrets
+Realtime endpoint
+Web origin
+Mobile production endpoint
+```
+
+---
+
+# 58. لا تدّع توفر Secrets غير الموجودة
+
+إذا احتجت مني:
+
+```text
+Model API key
+Apple credentials
+Google Play credentials
+payment provider
+external connector
+```
+
+حدد المطلوب بدقة.
+
+لكن أنجز كل ما يمكن إنجازه بدونها.
+
+---
+
+# 59. لا توقف العمل بسبب Provider خارجي غير متوفر
+
+إذا Capability تحتاج Secret خارجي:
+
+نفذ:
+
+```text
+contracts
+adapter
+policy
+tests with controlled local fake only where explicitly labeled TEST
+```
+
+لكن في التقارير اكتب:
+
+```text
+EXTERNAL PRODUCTION EXECUTION NOT VERIFIED
+```
+
+ولا تعتبرها REAL.
+
+---
+
+# 60. Architecture Completion
+
+قبل نهاية المشروع أريد أن تكون الطبقات واضحة ومتصلة:
+
+```text
+Conversation Runtime
+Context / Memory
+Reference Resolution
+Model Gateway
+Output Router
+Task DNA
+Planner
+Smart Bubble Manager
+World Runtime
+DAG
+Capabilities
+Policy
+Approvals
+Providers
+Execution
+Receipts
+Verifier
+Recovery
+Events
+Persistence
+Realtime
+UI Projection
+Web Renderer
+Mobile Renderer
+```
+
+---
+
+# 61. No duplicate architectures
+
+لا تنشئ نسخة ثانية من أي طبقة إذا كانت الحالية قابلة للتطوير.
+
+طبق:
+
+> KEEP → CONNECT → GENERALIZE → REPLACE ONLY WHEN NECESSARY
+
+---
+
+# 62. Agents
+
+وزع التنفيذ بين Agents متخصصة.
+
+لكن كل Agent لها Scope وOwnership واضح.
+
+ثم استخدم Verification Agents مستقلة.
+
+---
+
+# 63. التنفيذ يجب أن يكون مرحليًا
+
+نفذ تقريبًا:
+
+```text
+PHASE 1
+Architecture contracts + migrations
+
+PHASE 2
+Conversation Runtime
+
+PHASE 3
+Output Router
+
+PHASE 4
+Smart Bubble Aggregate + World binding
+
+PHASE 5
+Bubble Reference Resolution
+
+PHASE 6
+Bubble Evolution
+
+PHASE 7
+Bubble Renderer Web + Mobile
+
+PHASE 8
+Execution DAG
+
+PHASE 9
+Verifier + Recovery
+
+PHASE 10
+Realtime + Durable Work
+
+PHASE 11
+Multi-user + Cross-Bubble
+
+PHASE 12
+Transactions / Commercial primitives
+
+PHASE 13
+Capability Lab architecture
+
+PHASE 14
+Generalization + security + recovery testing
+
+PHASE 15
+Standalone iOS + Android production build verification
+```
+
+عدل الترتيب فقط بسبب Dependency حقيقية مثبتة.
+
+---
+
+# 64. لا تتوقف بعد كل Task لتطلب مني قرارًا غير ضروري
+
+إذا الرؤية والعقد واضحان:
+
+تابع مراحل التنفيذ حسب Dependency.
+
+توقف فقط إذا واجهت:
+
+```text
+irreversible architectural ambiguity
+missing external credential
+dangerous production mutation
+requirement contradiction
+```
+
+وإلا استمر في الإصلاح والاختبار.
+
+---
+
+# 65. لا تعلن اكتمال مرحلة مع Tests وهمية
+
+أريد:
+
+```text
+real API
+real DB
+real runtime
+real web client
+real mobile client contract
+```
+
+وحيثما تستخدم Test Double اذكر ذلك صراحة.
+
+---
+
+# 66. Definition of Done — Web
+
+```text
+Web standalone runtime works
+Production build works
+Conversation persistence works
+Smart bubbles work
+Bubble modification works
+Execution truth works
+```
+
+---
+
+# 67. Definition of Done — Mobile
+
+ليس:
+
+```text
+Expo Go opens
+```
+
+بل:
+
+```text
+Mobile production bundle/build succeeds
+No dependence on Expo Go runtime
+Production API configuration works
+Session storage works
+Main Chat works
+Smart Bubbles work
+Bubble operations work
+```
+
+على الأقل ضمن الأدلة التي تسمح بها البيئة.
+
+---
+
+# 68. Definition of Done — JASIM CORE
+
+لا تقل:
+
+```text
+JASIM COMPLETE
+```
+
+إلا إذا:
+
+1. Final architecture is implemented.
+2. Conversation Runtime is persistent.
+3. Output Router works.
+4. Smart Bubble Aggregate works.
+5. Bubble/World binding works.
+6. Bubble reference resolution works.
+7. Conversational bubble mutation works.
+8. World/Bubble evolution works.
+9. Schema-driven renderer works.
+10. Trusted Capabilities work.
+11. DAG works.
+12. Verifier works.
+13. Recovery/resume works.
+14. Event runtime works.
+15. Web works.
+16. Mobile works.
+17. Generalization tests run.
+18. Security tests pass.
+19. No hidden Domain dependency exists.
+20. Unsupported execution stays honestly blocked.
+
+---
+
+# 69. Final reports
+
+أنشئ في النهاية:
+
+```text
+docs/JASIM_FINAL_COMPLETION_REPORT.md
+docs/JASIM_FINAL_ARCHITECTURE_REPORT.md
+docs/JASIM_SMART_BUBBLE_RUNTIME_REPORT.md
+docs/JASIM_WEB_MOBILE_PARITY_REPORT.md
+docs/JASIM_GENERALIZATION_TEST_REPORT.md
+docs/JASIM_PRODUCTION_READINESS_REPORT.md
+```
+
+---
+
+# 70. في Production Readiness Report افصل
+
+```text
+CORE READY
+WEB READY
+IOS BUILD READY
+ANDROID BUILD READY
+EXTERNAL PROVIDERS READY
+COMMERCIAL READY
+```
+
+ولا تجمعها في كلمة PASS واحدة.
+
+---
+
+# 71. أهم قاعدة حول Expo
+
+اكتب في تقريرك بوضوح:
+
+```text
+Expo Go = development/testing environment
+Standalone Expo/React Native application = product
+```
+
+لا تعتبر تشغيل Expo Go دليل نشر.
+
+---
+
+# 72. الهدف النهائي
+
+في النهاية أريد مستخدمًا يفتح جاسم سواء على:
+
+```text
+Web
+iPhone
+Android
+```
+
+ويرى نفس فلسفة المنتج:
+
+```text
+Main intelligent conversation
++
+living Smart Generative Bubbles
+```
+
+يقول لجاسم:
+
+> منصتي التي فيها الإلكترونيات أضف فيها منتجًا جديدًا.
+
+أو:
+
+> الفقاعة التي فيها خدمة التصميم خفّض سعرها.
+
+أو:
+
+> أعلن عن متجر الأجهزة.
+
+أو:
+
+> أضف نظام عضويات.
+
+أو:
+
+> اجعل هذه العملية تحتاج موافقتي.
+
+ويفهم جاسم المقصود ويعدل نفس Bubble/World بطريقة آمنة وعامة.
+
+دون أن يطلب المطور إضافة Domain جديد.
+
+---
+
+# FINAL DIRECTIVE
+
+ابدأ الآن:
+
+> JASIM FINAL IMPLEMENTATION PROGRAM
+
+لا تبنِ Demo.
+
+لا تبنِ Expo Go-only version.
+
+لا تبنِ نسخة Mobile مصغرة من جاسم.
+
+لا تبنِ Domains ثابتة.
+
+ابنِ **جاسم كاملًا** فوق المعمارية النهائية المعتمدة.
+
+استفد من كل ما يعمل بالفعل.
+
+أكمل الفجوات.
+
+شغّل الاختبارات الحقيقية.
+
+أصلح الفشل.
+
+أعد الاختبارات.
+
+ثم أعطني الأدلة الدقيقة على ما أصبح:
+
+```text
+REAL
+PARTIAL
+BLOCKED_BY_EXTERNAL_DEPENDENCY
+NOT_COMPLETE
+```
+
+ولا تستخدم كلمة `COMPLETE` إلا بعد عبور Definition of Done أعلاه.

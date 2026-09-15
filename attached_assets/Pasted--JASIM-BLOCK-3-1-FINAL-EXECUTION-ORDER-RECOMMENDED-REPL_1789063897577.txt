@@ -1,0 +1,2086 @@
+# JASIM — BLOCK 3.1 FINAL EXECUTION ORDER
+
+RECOMMENDED REPLIT MODE: MAX
+
+# CHAT-NATIVE UNIVERSAL DISCOVERY
+
+# + SEARCH → ACTION
+
+# + CONVERSATIONAL COMMERCE
+
+# + GENERATIVE WORLD CONTINUITY
+
+# + LIVE RUNTIME WIRING
+
+IMPLEMENT FROM THE ACCEPTED CANONICAL MAPPING.
+
+Current accepted state:
+
+BLOCK_0   = CLOSED / PASS
+BLOCK_1   = CLOSED / PASS
+BLOCK_1_1 = CLOSED / PASS
+BLOCK_2   = CLOSED / PASS
+BLOCK_3   = CLOSED / PASS
+
+BLOCK_3_1_CANONICAL_MAPPING = COMPLETE
+BLOCK_3_1_CURRENT_VERDICT = PARTIAL
+BLOCK_3_1_IMPLEMENTATION_READY = YES
+
+Canonical mapping:
+
+.local/tasks/block3-1-canonical-mapping.md
+
+Read that report first.
+
+Do NOT redo the mapping.
+
+Do NOT reopen previous Blocks unless a direct regression is proven.
+
+Do NOT create domain-specific architecture.
+
+Do NOT start the final Smart Generative Interface.
+
+Do NOT start Final Production Closure.
+
+Do NOT deploy.
+
+Do NOT connect real payment money.
+
+Do NOT connect a new paid production web-search provider.
+
+The goal is to close the generic wiring gaps already proven by the mapping.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+0. ACCEPTED GAPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The mapping found five principal generic gaps:
+
+1. Unified Source Planner
+2. Internal Offering search + hard constraints
+3. NormalizedCandidate / ResultSet / durable result identity
+4. Search → Action bridge
+5. Live runtime wiring:
+
+   * Block 3 commerce has no caller from live conversation
+   * resumeNode boot seam not connected
+   * mobile chat uses local setTimeout simulation instead of runtime.*
+
+Do NOT broaden scope beyond these gaps unless required to make the same generic flow coherent.
+
+The mapping estimates approximately:
+
+NEW_GENERIC_PRIMITIVES = 4
+NEW_TABLES = 4–7
+NEW_EXTERNAL_SDKS = 0
+
+These are estimates, not quotas.
+
+Reuse existing structures wherever possible.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. FINAL PRODUCT INVARIANT
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+JASIM must operate as:
+
+USER
+↓
+ONE CONVERSATION
+↓
+GOAL / INTENT
+↓
+REFERENCE RESOLUTION
+↓
+SOURCE / CAPABILITY PLANNING
+↓
+DISCOVERY / ANALYSIS / EXECUTION
+↓
+POLICY / APPROVAL
+↓
+TRUSTED RUNTIME
+↓
+VERIFICATION
+↓
+DURABLE CONTINUATION
+
+The user primarily says:
+
+"جاسم، أريد..."
+
+The user must not need to know which:
+
+app
+marketplace
+provider
+website
+agent
+workflow
+screen
+
+should perform the task.
+
+Permanent rule:
+
+CONVERSATION FIRST
+UI WHEN USEFUL
+EXECUTION WHEN AUTHORIZED
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. DO NOT CHANGE JASIM INTO DOMAIN SOFTWARE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FORBIDDEN:
+
+CarAgent
+JobAgent
+FoodAgent
+DeliveryAgent
+HotelAgent
+ProcurementAgent
+
+CarsMarketplace
+JobsMarketplace
+DeliveryMarketplace
+
+CarSearchEngine
+JobSearchEngine
+ProductSearchEngine
+
+TransportWorldGenerator
+WebsiteBuilderAgent
+
+domain-specific Result types
+
+domain-specific search→action bridges
+
+domain-specific commerce handlers
+
+domain-specific React components solely to make acceptance examples pass
+
+Examples are tests.
+
+They are NOT architecture.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. INTERNAL DISCOVERY — CANONICAL SOURCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Build the minimum generic internal discovery layer required by the mapping.
+
+The searchable truth is NOT the Smart Bubble.
+
+Permanent:
+
+SMART_BUBBLE != SEARCH_INDEX
+
+Correct:
+
+Canonical entity
++
+visibility
++
+authorization
++
+lifecycle
++
+discoverability
+↓
+internal discovery
+↓
+optional UI projection
+
+At minimum internal discovery must support canonical economic supply such as:
+
+Offering
+Resource-derived Offering
+Service Offering
+Capacity Offering
+Opportunity where appropriately discoverable
+Generated World public Offering
+
+Do not expose raw private World state.
+
+Example:
+
+User A owns:
+
+Toyota
+visibility/private ownership state
+
+This alone must NOT become globally searchable.
+
+User A says:
+
+"بع سيارتي."
+
+JASIM creates/publishes an authorized Offering.
+
+Now:
+
+PUBLIC
++
+ACTIVE
++
+discoverable
+
+may enter internal discovery.
+
+User B:
+
+"أبي تويوتا أقل من 9000."
+
+may discover that Offering.
+
+Required:
+
+PRIVATE_DATA_DISCOVERY_LEAKS = 0
+
+SHARED_GRANT_DISCOVERY_VIOLATIONS = 0
+
+CROSS_OWNER_PRIVATE_DISCOVERY = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. INTERNAL SEARCH STRATEGY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT treat pg_trgm and pgvector as equivalent alternatives.
+
+Implement a staged provider-neutral retrieval pipeline.
+
+Required baseline:
+
+STRUCTURED SQL FILTERS
++
+PostgreSQL Full Text Search where appropriate
++
+pg_trgm fuzzy lexical matching where useful
+
+Hard filters MUST run before final semantic ranking.
+
+Possible semantic enrichment:
+
+existing generic semantic/LLM capability
+
+and/or
+
+existing generic embeddings infrastructure
+
+If generic embeddings already exist and pgvector is justified:
+
+it may be reused/extended.
+
+Do NOT add a new embedding vendor dependency solely for Block 3.1.
+
+Do NOT make pgvector a prerequisite for basic internal discovery.
+
+If semantic vector enrichment requires a provider not configured:
+
+the enrichment may truthfully be unavailable while lexical/structured discovery remains functional.
+
+However overall matching must still use the strongest existing generic semantic machinery available in the repository.
+
+Arabic and English query normalization must use existing language/general text facilities where possible.
+
+Do not create ArabicDomainSearch or EnglishSearchEngine.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. HARD CONSTRAINTS FIRST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is mandatory.
+
+Example:
+
+User:
+
+"أبي لابتوب ألعاب تحت 400 د.ك."
+
+Hard:
+
+price <= 400 KWD
+
+Possible semantic preferences:
+
+gaming
+lightweight
+good battery
+
+Pipeline:
+
+retrieve candidate set
+↓
+authorization
+↓
+hard constraints
+↓
+availability/lifecycle
+↓
+semantic relevance
+↓
+trust/freshness
+↓
+ranking
+
+A 700 KWD item MUST NOT win because semantic relevance is high.
+
+Support generic structured constraints including when available:
+
+Money
+currency
+quantity
+location
+time
+availability
+capacity
+attributes
+status
+owner/visibility
+resource relationships
+
+Do not invent missing values.
+
+UNKNOWN remains UNKNOWN.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. DISCOVERABLE PROJECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If the mapping confirms a persistent search projection is required, implement the smallest generic form.
+
+Possible concept:
+
+DiscoverableProjection
+
+but reuse an existing equivalent if available.
+
+It should contain only data authorized for discovery.
+
+Never copy confidential World state merely to make search convenient.
+
+It may reference:
+
+canonical entity id
+owner
+type/semantic class
+visibility
+lifecycle
+structured attributes
+searchable text
+commercial terms where authorized
+availability/capacity references
+updated/freshness information
+
+Canonical business truth remains in canonical entities.
+
+Search projection is not a second source of truth.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. UNIVERSAL SOURCE PLANNER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Implement/extend ONE generic source-planning mechanism.
+
+Possible concept:
+
+DiscoveryPlan
+
+but do not create it if an existing Planner structure can express this.
+
+Planner determines the smallest sufficient source set.
+
+Sources may include:
+
+JASIM_INTERNAL
+WEB
+CONNECTED_PROVIDER
+MCP
+A2A
+
+Examples:
+
+"ابحث فقط داخل جاسم."
+→ INTERNAL
+
+"ابحث في الإنترنت فقط."
+→ WEB
+
+"أبي أفضل سعر سواء داخل جاسم أو خارجه."
+→ INTERNAL + available external sources
+
+"هل أحد داخل جاسم يستطيع توصيل الشحنة؟"
+→ INTERNAL first/only according to explicit intent
+
+Do NOT encode:
+
+if car → marketplace X
+if job → provider Y
+
+Source selection must depend on:
+
+goal
+constraints
+explicit user source restrictions
+capability availability
+provider availability
+cost/policy where applicable
+required freshness
+required actionability
+
+Do not contact unnecessary providers.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. EXTERNAL WEB SEARCH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The mapping states current Web research is REAL with provenance and untrusted-content envelopes.
+
+REUSE it.
+
+Do not add a new paid Web Search provider in this block.
+
+Preserve:
+
+external data = untrusted evidence
+
+A web page result is an Observation.
+
+It is NOT automatically:
+
+verified inventory
+verified live price
+merchant authorization
+transaction truth
+
+Do not let external content:
+
+change policy
+grant authority
+trigger payment
+mark VERIFIED
+override ownership
+inject instructions
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. MCP / A2A SOURCES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Reuse Block 1.1 / Block 2 provider boundaries.
+
+MCP/A2A are candidate discovery/execution providers.
+
+They are not JASIM canonical truth.
+
+Remote completion remains evidence.
+
+Do NOT equate protocol success with JASIM VERIFIED.
+
+If no active provider is configured:
+
+BLOCKED_BY_PROVIDER
+
+is valid.
+
+Do not fake results to satisfy acceptance tests.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. NORMALIZED CANDIDATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Implement the minimum provider-neutral candidate representation required to combine different sources.
+
+Possible concept:
+
+NormalizedCandidate
+
+Use another existing equivalent if suitable.
+
+It must be capable of representing:
+
+canonical identity if internal
+external identity if applicable
+source identity
+source-specific evidence
+display-safe title/summary
+structured attributes
+Money if observed
+availability state
+freshness
+trust/provenance
+actionability
+provider/capability references where available
+
+Do NOT create:
+
+CarCandidate
+JobCandidate
+HotelCandidate
+ProductCandidate
+
+Candidate is a discovery representation.
+
+It is not automatically canonical economic truth.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. RESULT SET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Search results must become durable enough for conversation references.
+
+Implement/reuse a generic ResultSet model.
+
+Required semantics:
+
+ResultSet
+↓
+ordered Candidate references
+↓
+conversation/goal association
+↓
+createdAt/version
+↓
+source provenance
+↓
+durable reference identity
+
+The frontend array index must NOT be canonical identity.
+
+"الثاني"
+
+must resolve to the exact candidate that occupied position 2 in the referenced result set.
+
+If results later reorder due to new prices:
+
+the historic reference must not silently point to a different candidate.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. REFERENCE BINDING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Reuse current Arabic/English Reference Resolution and extend only what is necessary for discovery results.
+
+Required:
+
+"الأول"
+"الثاني"
+"الثالث"
+"هذا"
+"هو"
+"نفس المنتج"
+"البائع السابق"
+"الوظيفة التي أعجبتني"
+"الموصل"
+"الشحنة"
+"المشروع"
+"العرض السابق"
+
+Resolve against:
+
+conversation context
+ResultSet
+active Run
+active Transaction
+active World
+relevant canonical entities
+
+Reference binding must survive when appropriate:
+
+next message
+page reload
+server restart
+Web → Mobile
+durable task continuation
+
+If ambiguous:
+
+ASK.
+
+Do not guess.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. MIXED-SOURCE RESULT IDENTITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mandatory proof:
+
+Result #1 = JASIM internal Offering
+Result #2 = Web observation
+Result #3 = MCP candidate
+
+User says:
+
+"قارن الأول والثالث."
+
+Then:
+
+"راقب الأول."
+
+Then:
+
+"احجز/اشتر الأول."
+
+The exact identity and provenance must remain correct.
+
+No source substitution.
+
+No merchant substitution.
+
+No candidate substitution.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. SEARCH → ACTION BRIDGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Implement one generic bridge from discovery result to possible action.
+
+Target:
+
+Candidate
+↓
+resolve canonical/external identity
+↓
+determine available semantic capability
+↓
+Capability Fabric
+↓
+Provider Resolver
+↓
+Proposal
+↓
+Policy
+↓
+Approval where required
+↓
+Trusted Executor
+↓
+Receipt
+↓
+Verifier / Reconciliation
+
+Search must not execute consequential actions itself.
+
+Permanent:
+
+DISCOVERED
+!=
+SELECTED
+!=
+AUTHORIZED
+!=
+EXECUTED
+!=
+VERIFIED
+
+Examples:
+
+search result
+→ compare
+
+search result
+→ monitor
+
+search result
+→ contact
+
+search result
+→ book
+
+search result
+→ negotiate
+
+search result
+→ buy
+
+only if an actual general capability/provider exists.
+
+If result is informational web-only:
+
+do not invent executable action.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. CONNECT BLOCK 3 COMMERCE TO LIVE CONVERSATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is P0.
+
+The mapping states:
+
+Block 3 commerce passes its tests but currently has no live caller from the conversation path.
+
+Fix this generically.
+
+Do NOT implement a second payment path.
+
+Do NOT call PSP directly from chat.
+
+Conversation must eventually reach the SAME Block 3 stack:
+
+Conversation
+↓
+Intent
+↓
+Reference Resolution
+↓
+selected Offering / transaction context
+↓
+TransactionIntent
+↓
+PaymentIntent
+↓
+Financial authority / approval
+↓
+Trusted Executor
+↓
+provider binding
+↓
+receipt
+↓
+verifier
+↓
+economic state
+
+Example:
+
+User:
+
+"ادفع."
+
+must resolve WHAT payment the user means.
+
+The word "ادفع" must never itself authorize arbitrary payment.
+
+All Block 3 invariants remain active.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. COMPLETE PURCHASE → DELIVERY COMPOSITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use this as a major integration acceptance test.
+
+Do NOT create DeliveryAgent.
+
+Scenario:
+
+Seller:
+
+"اعرض هذا الآيفون للبيع بـ350 د.ك."
+
+→ public Offering
+
+Courier:
+
+"أبي أشتغل توصيل من 5 إلى 11 في حولي والسالمية والجابرية."
+
+→ Actor
+→ service/capability Offering
+→ Availability
+→ Capacity
+→ Service Area
+
+Buyer:
+
+"أبي آيفون 256 جديد تحت 380 ويوصل اليوم."
+
+JASIM:
+
+discovery
+→ internal/external candidates
+→ hard constraints
+→ results
+
+Buyer:
+
+"خذ الأول."
+
+→ exact result reference
+
+System creates transaction context.
+
+Delivery Need is derived.
+
+JASIM searches compatible delivery capacity.
+
+Courier receives Opportunity.
+
+Courier:
+
+"موافق."
+
+→ exact Opportunity
+→ Reservation
+→ Assignment
+
+Seller receives notification.
+
+Buyer:
+
+"ادفع."
+
+→ Block 3 payment runtime
+
+Seller:
+
+"جهزته."
+
+→ Event
+
+Courier receives pickup notification.
+
+Courier:
+
+"أنا في الطريق."
+
+No fabricated GPS.
+
+Courier:
+
+"وصلت للمحل."
+
+Pickup proof/confirmation according to available generic mechanism.
+
+Seller confirms handoff.
+
+Order:
+
+OUT_FOR_DELIVERY
+
+Buyer:
+
+"وين طلبي؟"
+
+Resolve active delivery.
+
+Only real LocationObservation may produce map/ETA.
+
+Courier arrives.
+
+Delivery confirmation is verified using available generic proof.
+
+Economic outcome is recorded.
+
+Required:
+
+same primitives must work for another deliverable resource without code changes.
+
+After first scenario passes, test at least:
+
+documents
+furniture or parts
+B2B shipment
+
+without domain patches.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. EVENT / NOTIFICATION CONTINUITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Reuse existing Block 2 event and notification system.
+
+Examples:
+
+Offering matched
+→ interested party notification
+
+Order paid
+→ seller notification
+
+Order ready
+→ courier notification
+
+Courier accepts
+→ buyer/seller state update
+
+Delivery completed
+→ economic event
+
+No DeliveryNotificationEngine.
+
+No commerce-specific event bus.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. RESUME NODE — CONNECT THE DEAD SEAM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The mapping reports that resumeNode exists but is never connected during boot.
+
+Trace this carefully.
+
+Connect the existing durable DAG resume mechanism into the real boot/recovery lifecycle.
+
+Do NOT create another recovery system.
+
+Required proof:
+
+create a durable goal/run
+↓
+reach resumable waiting state
+↓
+restart server/process
+↓
+boot
+↓
+existing resume mechanism discovers/resumes correctly
+↓
+no duplicate execution
+
+Test both:
+
+waiting input/event continuation
+
+and
+
+a durable discovery/action workflow where applicable.
+
+No blind external financial retry.
+
+Preserve Blocks 0/2/3 reconciliation invariants.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. MOBILE CHAT — REMOVE SIMULATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The mapping reports mobile chat currently uses a local setTimeout simulation.
+
+Remove the simulation from the active production path.
+
+Wire mobile chat to the SAME server runtime used by Web.
+
+Required:
+
+Mobile message
+↓
+server conversation
+↓
+same Conversation ID / canonical state
+↓
+same intent/planner/runtime
+↓
+same persisted message/result
+↓
+same Run/World/Transaction truth
+
+No separate mobile brain.
+
+No mobile mock response.
+
+Web and Mobile must see the same durable truth according to user authorization.
+
+If offline UX exists, distinguish:
+
+queued/local UI state
+
+from:
+
+server-confirmed canonical state.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. GENERATED WORLD PARTICIPATION IN DISCOVERY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Generated Worlds already exist conversationally according to the mapping.
+
+Now prove that public economic supply they intentionally publish can participate in the SAME internal discovery system.
+
+Example:
+
+Generated maintenance business
+↓
+publishes maintenance Offering
+↓
+User B:
+"أبي فني صيانة"
+↓
+generic internal discovery
+↓
+World Offering can appear
+
+Do NOT index the private World wholesale.
+
+Only authorized discoverable projections.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. WORLD MUTATION CONTINUITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Preserve existing:
+
+Natural Language
+↓
+Reference Resolution
+↓
+World
+↓
+ChangeSet
+↓
+Approval
+↓
+Version
+↓
+projection
+
+Prove continuity with Block 3 economics:
+
+User:
+
+"ابن لي منصة نقل موظفين."
+
+Then:
+
+"أضف اشتراكًا شهريًا."
+
+Then:
+
+"أول أسبوع مجاني."
+
+Then:
+
+"أي عقد فوق 500 يحتاج موافقتي."
+
+Then:
+
+"غير الاشتراك إلى 30."
+
+Then:
+
+"أوقف الاشتراك المجاني."
+
+All must mutate SAME World.
+
+No new application per command.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. ADAPTIVE CLARIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Reuse current awaiting_input mechanism.
+
+JASIM must ask the smallest blocking question.
+
+Example:
+
+"بع سيارتي."
+
+If exactly one candidate:
+resolve it.
+
+If multiple:
+ask which.
+
+If no price:
+research/recommend if possible.
+
+Recommendation != owner approval.
+
+Do NOT ask a giant static form if progressive resolution is sufficient.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. USER CAN CONTROL SYSTEM BY CONVERSATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prove general natural-language mutations.
+
+Examples:
+
+"أضف خدمة تنظيف."
+
+"احذف الخطة المجانية."
+
+"غير السعر إلى 25."
+
+"أوقف استقبال الطلبات الجمعة."
+
+"انشر هذا العرض."
+
+"اخفه."
+
+"أضف محمد للفريق."
+
+"شيل منه صلاحية الحذف."
+
+"أي عملية فوق 1000 تحتاج موافقتي."
+
+"بدل العمولة إلى اشتراك."
+
+"لا تشتري، فقط نبهني."
+
+These must resolve to generic:
+
+DATA
+STRUCTURAL
+POLICY
+WORKFLOW
+VIEW
+PERMISSION
+COMMERCIAL
+
+or existing equivalents.
+
+No per-domain CRUD.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. SAME DOMAIN / DIFFERENT INTENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mandatory architecture test:
+
+CAR:
+
+"كم سعر هذه السيارة؟"
+→ analysis
+
+"ابحث لي عن سيارة."
+→ discovery
+
+"بع سيارتي."
+→ publication/action
+
+"راقب سعرها."
+→ durable Run
+
+"ابن لي سوق سيارات."
+→ World
+
+EMPLOYMENT:
+
+salary question
+→ research
+
+find job
+→ discovery
+
+apply
+→ execution
+
+monitor applications
+→ durable coordination
+
+build hiring platform
+→ World
+
+FOOD:
+
+find restaurant
+→ discovery
+
+reserve
+→ action
+
+order
+→ commerce
+
+track delivery
+→ tracking
+
+build delivery business
+→ World
+
+ZERO domain routers may be added.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. RESOURCE MONETIZATION INTELLIGENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mandatory integration scenario:
+
+User:
+
+"عندي مخزن فاضي وأبي أربح منه."
+
+JASIM identifies authorized Resource and missing facts.
+
+It may discover demand internally/externally.
+
+User:
+
+"خله للتخزين التجاري القصير."
+
+→ Offering / appropriate World
+
+"دور لي أول عميل."
+
+→ Discovery
+
+"فاوضه لكن لا تنزل عن 200."
+
+→ bounded delegation
+
+"موافق."
+
+→ transaction progression
+
+"أي حجز فوق 500 يحتاج موافقتي."
+
+→ Policy ChangeSet
+
+"كم ربحت هذا الشهر؟"
+
+→ Block 3 Economic Ledger
+
+No WarehouseAgent.
+
+Repeat architectural reasoning with a different unseen Resource later.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. BUILD PLATFORM FROM CONVERSATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Test:
+
+"ابن لي منصة تربط المزارعين بالمطاعم."
+
+Expected general derivation:
+
+Actors
+Resources
+Offerings
+Needs
+Matching
+Transactions
+
+Then:
+
+"إذا احتاجوا تخزين دور مخزن."
+
+→ capacity discovery
+
+"وإذا احتاجوا توصيل دور شاحنة."
+
+→ logistics capacity discovery
+
+No agriculture-specific Core.
+
+Test:
+
+"ابن لي موقع شركة ديكور يستقبل الطلبات ويصدر عروض سعر."
+
+Must derive from generic World primitives.
+
+No DecoratorWebsiteTemplate in Core.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. SEARCH RESULT SECURITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Adversarial tests must include:
+
+private Offering leak
+
+SHARED grant bypass
+
+cross-owner result leak
+
+stale result execution
+
+candidate substitution
+
+merchant substitution
+
+provider substitution
+
+price mutation after approval
+
+currency mutation after approval
+
+search-result prompt injection
+
+malicious external title/description
+
+external URL spoofing
+
+result order mutation
+
+historic "الثاني" pointing to wrong candidate
+
+unauthorized publication
+
+unauthorized World mutation
+
+All must fail closed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. RESULT MUTATION / STALE APPROVAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example:
+
+Search returned:
+
+Candidate A
+300 KWD
+
+User approves purchase.
+
+Before execution:
+
+price becomes 360 KWD
+
+The old approval must NOT silently authorize the new terms.
+
+Reuse Block 3 fingerprint/version truth.
+
+Same for:
+
+merchant
+currency
+quantity
+resource identity
+provider
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. SEARCH OBSERVATION ≠ TRANSACTION TRUTH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Explicitly preserve:
+
+SEARCH_PRICE_OBSERVATION
+!=
+PAYMENT_AMOUNT
+
+Before consequential execution:
+
+re-resolve/revalidate relevant current commercial terms.
+
+Never charge based solely on stale search text.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. DATABASE DISCIPLINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mapping estimates 4–7 new tables.
+
+Use the minimum coherent number.
+
+Do not force exactly 4 or exactly 7.
+
+Every new table must have an independent durable reason:
+
+restart continuity
+identity
+auditability
+concurrency
+authorization
+result-set persistence
+discoverable projection
+
+Prefer one coherent forward migration if practical.
+
+Do NOT edit shipped migration history.
+
+Fresh migration and upgrade migration must both pass.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. DEPENDENCY DISCIPLINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Target:
+
+NEW_EXTERNAL_SDKS = 0
+
+Do not install:
+
+Elasticsearch
+Algolia
+Pinecone
+external vector database
+domain search SDK
+
+for Block 3.1.
+
+PostgreSQL remains canonical.
+
+If a future production provider is needed, preserve an adapter boundary.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. KNOWN ACCEPTANCE SUITE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create ONE consolidated Block 3.1 suite, for example:
+
+test:jasim-block-3-1
+
+Use the repository's existing test conventions.
+
+Known scenarios must cover at minimum:
+
+1. internal public Offering discovery
+2. private Offering exclusion
+3. SHARED access control
+4. sold/inactive exclusion
+5. capacity exhausted exclusion
+6. hard price constraint
+7. quantity constraint
+8. fuzzy textual retrieval
+9. source planning internal-only
+10. source planning external-only
+11. mixed source
+12. provenance preservation
+13. candidate normalization
+14. mixed-source ResultSet
+15. "الثاني" durable reference
+16. reload reference
+17. restart reference
+18. stale result identity
+19. search → compare
+20. search → monitor
+21. search → booking/action
+22. search → purchase
+23. stale price approval rejection
+24. provider substitution rejection
+25. generated World public Offering discovery
+26. conversation → Block 3 commerce
+27. resumeNode restart proof
+28. Web runtime conversation
+29. Mobile runtime conversation
+30. Web/Mobile canonical continuity
+31. adaptive clarification
+32. World conversational mutation
+33. resource monetization
+34. generated subscription mutation
+35. multi-party purchase → delivery
+36. delivery capacity reservation
+37. notification composition
+38. tracking without fake location
+39. non-commercial research
+40. same-domain/different-intent routing
+
+Use real PostgreSQL wherever persistence/isolation/concurrency matters.
+
+Mocks alone are not enough.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. FULL KNOWN ATLAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Also validate the 40 known goals defined in:
+
+.local/tasks/block3-1-canonical-mapping.md
+
+Do not rewrite architecture per example.
+
+Allowed truthful outcomes for provider-dependent steps include:
+
+COMPOSED
+BLOCKED_BY_PROVIDER
+BLOCKED_BY_RESOURCE
+REQUIRES_HUMAN
+REQUIRES_OWNER_DECISION
+REQUIRES_REGULATORY_REVIEW
+INSUFFICIENT_INFORMATION
+INSUFFICIENT_TRUST
+
+A truthful BLOCKED result may be PASS for generality.
+
+Fake success is FAIL.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. ARCHITECTURE FREEZE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When known acceptance is complete:
+
+FREEZE BLOCK 3.1 ARCHITECTURE.
+
+Record the freeze point.
+
+After the freeze:
+
+do not add:
+
+domain router
+domain Agent
+domain search engine
+domain marketplace
+domain World generator
+domain action bridge
+domain result type
+
+to make unseen tests pass.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. >=25 UNSEEN CHAT-NATIVE GOALS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Generate and execute at least 25 truly unseen goals AFTER architecture freeze.
+
+They must not be paraphrases of the known examples.
+
+They should combine unfamiliar:
+
+assets/resources
+services
+commercial structures
+internal discovery
+external discovery
+multi-party coordination
+monitoring
+world generation
+world mutation
+bounded autonomy
+non-commercial research
+subscriptions
+capacity
+transactions
+tracking
+
+For each report:
+
+GOAL
+EXPECTED SEMANTIC DECOMPOSITION
+ACTUAL COMPOSITION
+RESULT
+GAP CLASSIFICATION if any
+DOMAIN PATCH REQUIRED = YES/NO
+
+Required:
+
+UNSEEN_GOALS >= 25
+
+DOMAIN_SPECIFIC_PATCHES_AFTER_FREEZE = 0
+
+If an unseen example fails because a general primitive is actually missing:
+
+do NOT patch the domain.
+
+Classify the general gap.
+
+Block 3.1 remains PARTIAL until resolved generically and architecture is re-frozen.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. PREVIOUS BLOCK REGRESSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+During implementation use focused tests.
+
+Do NOT continuously rerun every historical suite.
+
+At final gate ONCE run:
+
+Block 3.1 consolidated suite
+
+affected Block 3 commerce/payment/economics regression
+
+affected Block 2:
+events
+notifications
+tracking
+reservation
+delegation
+durable execution
+
+affected Block 1.1:
+provider resolution
+
+affected Block 1:
+semantic capability composition
+
+affected Block 0:
+trusted execution
+approval
+verifier
+reconciliation
+
+canonical TypeScript
+
+Web production build
+
+Mobile typecheck
+
+fresh migrations
+
+upgrade migrations
+
+Do NOT run Phase 12.
+
+Do NOT deploy.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. REQUIRED ARCHITECTURAL COUNTERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+All must be reported truthfully:
+
+DOMAIN_SPECIFIC_SEARCH_ENGINES
+DOMAIN_SPECIFIC_MARKETPLACES_IN_CORE
+DOMAIN_SPECIFIC_CHAT_AGENTS
+DOMAIN_SPECIFIC_WORLD_GENERATORS
+DOMAIN_SPECIFIC_OUTPUT_ROUTERS
+DOMAIN_SPECIFIC_SEARCH_ACTION_BRIDGES
+DOMAIN_SPECIFIC_RESULT_TYPES
+
+Expected target:
+
+0 for all.
+
+Also report:
+
+NEW_GENERIC_PRIMITIVES
+NEW_TABLES
+NEW_MIGRATIONS
+NEW_EXTERNAL_SDKS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. FINAL PRODUCT PROOFS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prove these separately:
+
+CONVERSATION_IS_PRIMARY_INTERFACE
+
+REFERENCE_RESOLUTION
+
+DURABLE_REFERENCE_IDENTITY
+
+MULTI_TURN_GOAL_CONTINUITY
+
+DURABLE_GOAL_CONTINUITY
+
+INTERNAL_JASIM_DISCOVERY
+
+GENERATED_WORLD_DISCOVERY
+
+UNIVERSAL_SOURCE_PLANNING
+
+MIXED_SOURCE_NORMALIZATION
+
+SOURCE_PROVENANCE
+
+HARD_CONSTRAINTS_BEFORE_SEMANTIC_RANKING
+
+SEARCH_TO_ACTION_CONTINUITY
+
+CONVERSATION_TO_BLOCK3_COMMERCE
+
+DURABLE_DAG_RESUME
+
+WEB_MOBILE_RUNTIME_PARITY
+
+CHAT_NATIVE_COMMERCE
+
+CHAT_NATIVE_EMPLOYMENT
+
+CHAT_NATIVE_PROCUREMENT
+
+CHAT_NATIVE_LOCAL_SERVICES
+
+CHAT_NATIVE_RESOURCE_MONETIZATION
+
+MULTI_PARTY_PURCHASE_TO_DELIVERY
+
+GENERATED_WORLD_FROM_CONVERSATION
+
+WORLD_MUTATION_FROM_CONVERSATION
+
+SMALLEST_SUFFICIENT_OUTPUT_ROUTING
+
+NON_COMMERCIAL_GOALS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. FINAL UI REMAINS DEFERRED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT build the final UI.
+
+Do NOT import the Soap Glass prototype.
+
+Do NOT implement final floating bubbles.
+
+Do NOT spend time polishing visuals.
+
+A primitive temporary UI is acceptable for proving runtime wiring.
+
+Final UI comes AFTER Block 3.1.
+
+Future UI architecture remains:
+
+CONVERSATION
++
+ADAPTIVE GENERATIVE SURFACES
++
+PERSISTENT LIVING OBJECTS
+
+But:
+
+SMART_GENERATIVE_INTERFACE_REQUIRED_TO_PROVE_BLOCK_3_1 = NO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. FINAL PRODUCTION CLOSURE REMAINS DEFERRED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT:
+
+select/connect final production PSP
+
+connect real payout provider
+
+charge real money
+
+activate production merchant credentials
+
+choose new paid search vendor
+
+ship App Store
+
+ship Google Play
+
+deploy production
+
+Those belong to Final Production Closure.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+41. FINAL REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create exactly:
+
+.local/tasks/block3-1-report.md
+
+Required sections:
+
+A. Executive Verdict
+
+B. Implementation Delta From Mapping
+
+C. Conversation Runtime Wiring
+
+D. Internal Discoverability
+
+E. Visibility / Authorization
+
+F. Internal Search Strategy
+
+G. Hard Constraints
+
+H. Universal Source Planner
+
+I. External / MCP / A2A Sources
+
+J. Normalized Candidate
+
+K. ResultSet / Durable Identity
+
+L. Reference Resolution
+
+M. Mixed-Source Discovery
+
+N. Search → Action Bridge
+
+O. Conversation → Block 3 Commerce
+
+P. Durable Resume / Recovery
+
+Q. Mobile Runtime Integration
+
+R. Web/Mobile Canonical Continuity
+
+S. Generated World Discoverability
+
+T. World Mutation Continuity
+
+U. Multi-Party Purchase → Delivery
+
+V. Adaptive Clarification
+
+W. Security / Trust
+
+X. Known Acceptance Atlas
+
+Y. Architecture Freeze
+
+Z. Unseen Goals
+
+AA. Database / Migration
+
+AB. Regression
+
+AC. Deferred Production Boundaries
+
+AD. Final Counters
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+42. REQUIRED FINAL COUNTERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+End report with exactly these fields:
+
+JASIM_BLOCK_3_1 =
+PASS / PARTIAL / FAIL
+
+BLOCK_0_REMAINS_CLOSED =
+YES / NO
+
+BLOCK_1_REMAINS_CLOSED =
+YES / NO
+
+BLOCK_1_1_REMAINS_CLOSED =
+YES / NO
+
+BLOCK_2_REMAINS_CLOSED =
+YES / NO
+
+BLOCK_3_REMAINS_CLOSED =
+YES / NO
+
+CONVERSATION_IS_PRIMARY_INTERFACE =
+PASS / FAIL
+
+REFERENCE_RESOLUTION =
+PASS / FAIL
+
+DURABLE_REFERENCE_IDENTITY =
+PASS / FAIL
+
+MULTI_TURN_GOAL_CONTINUITY =
+PASS / FAIL
+
+DURABLE_GOAL_CONTINUITY =
+PASS / FAIL
+
+INTERNAL_JASIM_DISCOVERY =
+PASS / FAIL
+
+PUBLIC_OFFERINGS_DISCOVERABLE =
+YES / NO
+
+PRIVATE_DATA_DISCOVERY_LEAKS = <number>
+
+SHARED_GRANT_DISCOVERY_VIOLATIONS = <number>
+
+GENERATED_WORLD_PUBLIC_OFFERINGS_DISCOVERABLE =
+YES / NO
+
+UNIVERSAL_SOURCE_PLANNER =
+PASS / FAIL
+
+INTERNAL_ONLY_DISCOVERY =
+PASS / FAIL
+
+EXTERNAL_ONLY_DISCOVERY =
+PASS / FAIL / BLOCKED_BY_PROVIDER
+
+MIXED_SOURCE_DISCOVERY =
+PASS / FAIL / BLOCKED_BY_PROVIDER
+
+HARD_CONSTRAINTS_BEFORE_SEMANTIC_RANKING =
+YES / NO
+
+SOURCE_PROVENANCE_PRESERVED =
+YES / NO
+
+MIXED_SOURCE_NORMALIZATION =
+PASS / FAIL
+
+MIXED_SOURCE_REFERENCE_RESOLUTION =
+PASS / FAIL
+
+SEARCH_TO_ACTION_CONTINUITY =
+PASS / FAIL
+
+CONVERSATION_TO_BLOCK3_COMMERCE =
+PASS / FAIL
+
+DURABLE_DAG_RESUME =
+PASS / FAIL
+
+MOBILE_CHAT_USES_REAL_RUNTIME =
+YES / NO
+
+MOBILE_CHAT_SIMULATION_ACTIVE =
+YES / NO
+
+WEB_MOBILE_CANONICAL_CONTINUITY =
+PASS / FAIL
+
+GENERATED_WORLD_FROM_CONVERSATION =
+PASS / FAIL
+
+WORLD_MUTATION_FROM_CONVERSATION =
+PASS / FAIL
+
+CHAT_NATIVE_COMMERCE =
+PASS / FAIL
+
+CHAT_NATIVE_EMPLOYMENT =
+PASS / FAIL
+
+CHAT_NATIVE_PROCUREMENT =
+PASS / FAIL
+
+CHAT_NATIVE_LOCAL_SERVICES =
+PASS / FAIL
+
+CHAT_NATIVE_RESOURCE_MONETIZATION =
+PASS / FAIL
+
+MULTI_PARTY_PURCHASE_TO_DELIVERY =
+PASS / FAIL
+
+TRACKING_FABRICATION_COUNT = <number>
+
+DOMAIN_SPECIFIC_SEARCH_ENGINES = <number>
+
+DOMAIN_SPECIFIC_MARKETPLACES_IN_CORE = <number>
+
+DOMAIN_SPECIFIC_CHAT_AGENTS = <number>
+
+DOMAIN_SPECIFIC_WORLD_GENERATORS = <number>
+
+DOMAIN_SPECIFIC_OUTPUT_ROUTERS = <number>
+
+DOMAIN_SPECIFIC_SEARCH_ACTION_BRIDGES = <number>
+
+DOMAIN_SPECIFIC_RESULT_TYPES = <number>
+
+NEW_GENERIC_PRIMITIVES = <number>
+
+NEW_TABLES = <number>
+
+NEW_MIGRATIONS = <number>
+
+NEW_EXTERNAL_SDKS = <number>
+
+KNOWN_CHAT_NATIVE_SCENARIOS = <passed>/<total>
+
+ARCHITECTURE_FROZEN_BEFORE_UNSEEN =
+YES / NO
+
+UNSEEN_CHAT_NATIVE_GOALS = <passed>/<total>
+
+UNSEEN_GOALS_TOTAL = <number>
+
+DOMAIN_SPECIFIC_PATCHES_AFTER_FREEZE = <number>
+
+BLOCK_3_1_SUITE = <passed>/<total>
+
+BLOCK_3_AFFECTED_REGRESSION =
+PASS / FAIL
+
+BLOCK_2_AFFECTED_REGRESSION =
+PASS / FAIL
+
+BLOCK_1_1_AFFECTED_REGRESSION =
+PASS / FAIL
+
+BLOCK_1_AFFECTED_REGRESSION =
+PASS / FAIL
+
+BLOCK_0_AFFECTED_REGRESSION =
+PASS / FAIL
+
+TYPESCRIPT =
+PASS / FAIL
+
+WEB_PRODUCTION_BUILD =
+PASS / FAIL
+
+MOBILE_TYPECHECK =
+PASS / FAIL
+
+FRESH_MIGRATIONS =
+PASS / FAIL
+
+UPGRADE_MIGRATIONS =
+PASS / FAIL
+
+REAL_MONEY_CHARGED =
+NO
+
+NEW_PRODUCTION_SEARCH_PROVIDER_CONNECTED =
+NO
+
+PRODUCTION_DEPLOYMENT =
+NO
+
+SMART_GENERATIVE_INTERFACE_STARTED =
+NO
+
+READY_FOR_SMART_GENERATIVE_INTERFACE =
+YES / NO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+43. PASS CONDITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Block 3.1 may PASS with some real-world external actions:
+
+BLOCKED_BY_PROVIDER
+
+provided the generic architecture is correctly composed and no fake success occurs.
+
+Block 3.1 MUST FAIL/PARTIAL if:
+
+conversation cannot reach Block 3 commerce
+
+mobile still uses simulated chat
+
+resumeNode remains disconnected
+
+public internal Offerings cannot be discovered
+
+private data leaks
+
+hard constraints occur after semantic ranking
+
+result identity is frontend-array-only
+
+"الثاني" may drift to another candidate
+
+source provenance is lost
+
+search directly executes consequential actions
+
+domain-specific architecture is added
+
+unseen goals require domain-specific patches
+
+external observations are treated as canonical transaction truth
+
+fake GPS/ETA/availability/payment success appears
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+44. FINAL QUESTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Answer:
+
+"If a user knows only WHAT they want and simply talks to JASIM,
+can ONE JASIM now discover the appropriate internal/external resources,
+preserve references and context, continue goals over time,
+move from search to authorized action, use commerce and payments safely,
+coordinate multiple parties, and create or mutate persistent Worlds
+without requiring domain-specific applications, marketplaces or agents?"
+
+Answer:
+
+YES
+PARTIAL
+NO
+
+If YES:
+
+JASIM_BLOCK_3_1 = PASS
+READY_FOR_SMART_GENERATIVE_INTERFACE = YES
+
+If PARTIAL/NO:
+
+list ONLY the remaining generic blockers.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+45. STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After producing:
+
+.local/tasks/block3-1-report.md
+
+STOP.
+
+DO NOT START THE SMART GENERATIVE INTERFACE.
+
+DO NOT START FINAL PRODUCTION CLOSURE.
+
+DO NOT DEPLOY.
+
+Return the concise final Block 3.1 verdict and test evidence only.
+
+BEGIN BLOCK 3.1 IMPLEMENTATION NOW.

@@ -1,0 +1,86 @@
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "types": [
+      "vite/client",
+      "node"
+    ],
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@contracts/*": [
+        "./contracts/*"
+      ],
+      "@db/*": [
+        "./db/*"
+      ]
+    },
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "src/core",
+    "src/lib/sonic-dna.ts",
+    "src/components/BubbleManager.tsx",
+    "src/components/FloatingBubbles.tsx",
+    "src/components/MainChat.tsx",
+    "src/components/SubChat.tsx",
+    "src/components/CameraScanner.tsx",
+    "src/components/CrossBorderCalculator.tsx",
+    "src/components/KYCVerifier.tsx",
+    "src/components/ReceiptReader.tsx",
+    "src/components/SpaceCanvas.tsx",
+    "src/components/PlatformAnalytics.tsx",
+    "src/components/SaasAnalytics.tsx",
+    "src/components/TradeDocumentViewer.tsx",
+    "src/components/MurabahaDisplay.tsx",
+    "src/components/PlatformPreview.tsx",
+    "src/components/BiometricPrompt.tsx",
+    "src/components/BubbleWindow.tsx",
+    "src/components/living",
+    "src/components/dashboard",
+    "src/components/platforms",
+    "src/components/bubbles",
+    "src/hooks/useTaskActions.ts",
+    "src/hooks/useBubbleActions.ts",
+    "src/hooks/useBiometric.ts",
+    "src/hooks/useAuth.ts",
+    "src/hooks/useJasim.ts",
+    "src/hooks/useLiving.ts",
+    "src/hooks/usePlatforms.ts",
+    "src/hooks/useSwarm.ts",
+    "src/hooks/useAgents.ts",
+    "src/hooks/useCart.ts",
+    "src/hooks/useBubbles.ts",
+    "src/hooks/useBubbleSnap.ts",
+    "src/lib/dna-breeder.ts",
+    "src/components/CVPreview.tsx",
+    "src/components/JobCard.tsx",
+    "src/components/BubbleDock.tsx",
+    "src/components/AuthLayout.tsx"
+  ]
+}

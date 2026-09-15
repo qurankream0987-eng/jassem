@@ -1,0 +1,652 @@
+# =====================================================================
+# JASIM — PHASE 12 CALIBRATION RESUME
+# RESUME ONLY — DO NOT RESTART PHASE 12
+# =====================================================================
+
+The Phase 12 architecture is already implemented and proven.
+
+DO NOT rebuild ModelPolicy.
+DO NOT rerun completed calibration rows.
+DO NOT restart the evaluation from row 1.
+DO NOT start Tasks #22, #23, or #24.
+
+The ONLY remaining Phase 12 blocker is provider capacity / HTTP 429
+during the existing model calibration.
+
+Current calibration state:
+
+REMAINING_REQUIRED_ROWS = 62
+
+LUNA_AVAILABLE = YES
+TERRA_AVAILABLE = YES
+O4_MINI_AVAILABLE = YES
+SOL_AVAILABLE = YES
+
+TRUSTED_EXECUTOR_REGRESSION = PASS
+GENERIC_RESULT_CONTRACT = PASS
+MODEL_POLICY = PASS
+T0/T1/T2/T3 = PASS
+PHASE_7 = PASS
+
+Resume the EXISTING:
+
+calibrate:jasim-models
+
+run from its persisted checkpoint.
+
+
+================================================
+1. NEVER REPEAT COMPLETED ROWS
+================================================
+
+Use the existing calibration persistence/checkpoint.
+
+Before calling any provider:
+
+check whether that exact evaluation row already has a valid completed result.
+
+If yes:
+
+SKIP_PROVIDER_CALL.
+
+Required:
+
+COMPLETED_ROWS_REUSED = YES
+
+DUPLICATE_CALIBRATION_PROVIDER_CALLS = 0
+
+
+================================================
+2. RATE-LIMIT SAFE EXECUTION
+================================================
+
+Do NOT launch the remaining 62 calls concurrently.
+
+Use low bounded concurrency.
+
+Start with:
+
+CONCURRENCY = 1
+
+Only increase to 2 if the provider remains healthy.
+
+Respect provider Retry-After / rate-limit metadata when available.
+
+Use bounded exponential backoff with jitter for HTTP 429.
+
+Do NOT retry indefinitely.
+
+Do NOT convert:
+
+HTTP 429
+
+into:
+
+MODEL_FAILURE
+QUALITY_FAILURE
+TIER_FAILURE
+
+
+Classify persistent provider-capacity failure as:
+
+INCONCLUSIVE_PROVIDER_CAPACITY
+
+
+================================================
+3. CHECKPOINT AFTER EVERY COMPLETED ROW
+================================================
+
+After every successful calibration result persist:
+
+evaluation row id
+candidate model
+tier
+quality result
+token usage
+latency
+provider request metadata
+completion state
+
+so another provider interruption never loses completed work.
+
+The calibration must be resumable repeatedly without replaying completed rows.
+
+
+================================================
+4. PRIORITIZE DECISION-VALUE
+================================================
+
+Process remaining rows in this order:
+
+A. T1 Luna vs Terra comparison
+
+B. T2 Terra vs o4-mini comparison
+
+C. T3 validation
+
+D. Routed-policy evaluation
+
+E. ALL-T3 baseline rows still missing
+
+
+Reason:
+
+T1 is the highest-volume economic decision in JASIM.
+
+But do NOT reduce or change the fixed evaluation dataset merely to create a winner.
+
+
+================================================
+5. T1 FINAL DECISION
+================================================
+
+Compare Luna and Terra using the SAME existing T1 dataset.
+
+Measure:
+
+Arabic quality
+Gulf/Kuwaiti Arabic quality
+instruction following
+structured-output reliability
+routing quality
+simple planning
+reference reasoning
+latency
+input tokens
+output tokens
+repair calls
+total estimated cost when authoritative pricing can be applied
+
+
+Use:
+
+QUALITY FLOOR FIRST
+→ COST
+→ LATENCY
+
+
+Do NOT automatically choose Luna because it is cheaper.
+
+Do NOT automatically keep Terra because it is stronger.
+
+
+If Luna satisfies the defined T1 quality floor
+and materially improves economics:
+
+select Luna.
+
+Otherwise:
+
+retain Terra.
+
+
+================================================
+6. T2 FINAL DECISION
+================================================
+
+Compare:
+
+Terra
+
+vs
+
+o4-mini
+
+on the existing T2 workload.
+
+Measure:
+
+reasoning quality
+constraint handling
+multi-step planning
+structured-output reliability
+repair frequency
+latency
+total task cost
+
+
+Choose from evidence.
+
+Do not preserve o4-mini merely because it is already configured.
+
+
+================================================
+7. T3 VALIDATION
+================================================
+
+Validate Sol only against genuine T3 workloads.
+
+Do not spend provider calls testing trivial chat on Sol.
+
+T3 should remain exceptional.
+
+
+================================================
+8. REAL ROUTED ECONOMY MEASUREMENT
+================================================
+
+Complete the missing comparison:
+
+ALL_T3_BASELINE
+
+vs
+
+ROUTED_MODEL_POLICY
+
+
+Use the SAME evaluation workload.
+
+Produce actual measured:
+
+ALL_T3_QUALITY
+
+ROUTED_QUALITY
+
+QUALITY_RETENTION_PERCENT
+
+
+ALL_T3_INPUT_TOKENS
+
+ROUTED_INPUT_TOKENS
+
+
+ALL_T3_OUTPUT_TOKENS
+
+ROUTED_OUTPUT_TOKENS
+
+
+ALL_T3_REASONING_TOKENS
+
+ROUTED_REASONING_TOKENS
+
+
+T0_SHARE
+
+T1_SHARE
+
+T2_SHARE
+
+T3_SHARE
+
+
+ESCALATION_RATE
+
+FALLBACK_RATE
+
+REPAIR_RATE
+
+
+Do not invent missing values.
+
+
+================================================
+9. COST MEASUREMENT
+================================================
+
+Current known fact:
+
+Replit AI Billing bills usage through Replit credits based on provider pricing.
+
+Use only an AUTHORITATIVE current pricing source compatible with the actual
+provider billing path.
+
+If authoritative per-model pricing can be established:
+
+calculate:
+
+ALL_T3_ESTIMATED_COST
+ROUTED_ESTIMATED_COST
+COST_REDUCTION_PERCENT
+
+
+Record:
+
+pricing source
+effective date
+currency
+model rates used
+
+
+Do NOT place pricing into JASIM Core.
+
+
+If exact current pricing still cannot be established:
+
+COST_REDUCTION_PERCENT = UNVERIFIABLE
+
+Do NOT block truthful architectural completion merely because the monetary
+conversion is unavailable, provided token/usage economics are measured.
+
+
+================================================
+10. PROMPT CACHE
+================================================
+
+Current classification:
+
+PROMPT_CACHE = SUPPORTED_NOT_OBSERVED
+
+Preserve that unless real provider evidence changes it.
+
+Do NOT generate artificial prompts merely to force a cache hit.
+
+Caching is not a hard blocker for Phase 12.
+
+
+================================================
+11. DO NOT SPEND TOKENS UNNECESSARILY
+================================================
+
+Do NOT:
+
+rerun availability probes for all models repeatedly
+
+rerun successful Phase 7 tests during calibration
+
+rerun Phase 11 after every row
+
+rerun Trusted Executor after every row
+
+run browser smoke after every row
+
+create another architecture report
+
+re-read historical JASIM documents
+
+launch duplicate agents
+
+perform additional model research unless required by an actual provider error
+
+
+During calibration:
+
+ONLY execute missing calibration rows.
+
+
+================================================
+12. AFTER THE LAST CALIBRATION ROW
+================================================
+
+Only after all required calibration rows are complete:
+
+finalize:
+
+T1 mapping
+
+T2 mapping
+
+T3 mapping
+
+
+Then run ONCE:
+
+test:jasim-model-policy
+test:jasim-model-escalation
+test:jasim-model-fallback
+test:jasim-context-economy
+test:jasim-model-usage-ledger
+test:jasim-model-economy
+
+Then rerun ONCE:
+
+test:phase7-generalization
+
+test:jasim-web-research
+test:jasim-image-generation
+test:jasim-cross-capability
+test:jasim-phase11-security
+test:jasim-phase11-restart
+
+Trusted Executor
+Attempt Ledger
+Independent Verifier
+Reconciliation
+Conversation Summary
+
+server/runtime typecheck
+mobile typecheck
+web production build
+browser smoke
+
+
+================================================
+13. PHASE 12 CLOSURE GATE
+================================================
+
+Mark:
+
+PHASE_12 = PASS
+TASK_25 = PASS
+
+only if:
+
+TRUSTED_EXECUTOR_REGRESSION = PASS
+
+GENERIC_RESULT_CONTRACT = PASS
+
+MODEL_POLICY = PASS
+
+T0 = PASS
+T1 = PASS
+T2 = PASS
+T3 = PASS
+
+T1_FINAL_SELECTION = MEASURED
+
+T2_FINAL_SELECTION = MEASURED
+
+T3_VALIDATION = PASS
+
+ALL_T3_BASELINE_MEASURED = PASS
+
+ROUTED_POLICY_MEASURED = PASS
+
+QUALITY_RETENTION_MEASURED = PASS
+
+SIMPLE_CHAT_MEDIAN_SYNC_MODEL_CALLS = 1
+
+FALLBACK_ESCALATION_SEPARATION = PASS
+
+CONTEXT_MINIMIZATION = PASS
+
+INCREMENTAL_SUMMARY = PASS
+
+MODEL_USAGE_LEDGER = PASS
+
+PHASE_7_GENERALIZATION = PASS
+
+PHASE_11_REGRESSION = PASS
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+TRUSTED_EXECUTOR_BYPASS = 0
+
+FAKE_SUCCESS = 0
+
+
+================================================
+14. QUALITY GATE
+================================================
+
+Preferred target:
+
+ROUTED_QUALITY >= approximately 95% of ALL_T3_QUALITY
+
+
+If below:
+
+do NOT simply move more everything to T3.
+
+Identify specifically:
+
+UNDER_ROUTING
+bad T1 candidate
+bad T2 candidate
+incorrect escalation threshold
+context starvation
+schema repair issue
+
+
+Fix the generic cause and rerun only affected calibration rows.
+
+
+================================================
+15. FINAL REPORT
+================================================
+
+Return:
+
+PHASE_12:
+PASS / PARTIAL / FAIL
+
+TASK_25:
+PASS / PARTIAL / FAIL
+
+
+CALIBRATION_ROWS_TOTAL:
+<number>
+
+CALIBRATION_ROWS_PREVIOUSLY_COMPLETE:
+<number>
+
+CALIBRATION_ROWS_RESUMED:
+<number>
+
+DUPLICATE_PROVIDER_CALLS:
+0 expected
+
+HTTP_429_ROWS_REMAINING:
+0 expected
+
+
+FINAL_T1_MODEL:
+<model>
+
+FINAL_T1_REASON:
+<quality/cost/latency evidence>
+
+
+FINAL_T2_MODEL:
+<model>
+
+FINAL_T2_REASON:
+<quality/cost/latency evidence>
+
+
+FINAL_T3_MODEL:
+<model>
+
+FINAL_T3_REASON:
+<evidence>
+
+
+ALL_T3_QUALITY:
+<number>
+
+ROUTED_QUALITY:
+<number>
+
+QUALITY_RETENTION_PERCENT:
+<percent>
+
+
+ALL_T3_INPUT_TOKENS:
+<number>
+
+ROUTED_INPUT_TOKENS:
+<number>
+
+
+ALL_T3_OUTPUT_TOKENS:
+<number>
+
+ROUTED_OUTPUT_TOKENS:
+<number>
+
+
+ALL_T3_ESTIMATED_COST:
+<number / UNVERIFIABLE>
+
+ROUTED_ESTIMATED_COST:
+<number / UNVERIFIABLE>
+
+COST_REDUCTION_PERCENT:
+<percent / UNVERIFIABLE>
+
+
+T0_SHARE:
+<percent>
+
+T1_SHARE:
+<percent>
+
+T2_SHARE:
+<percent>
+
+T3_SHARE:
+<percent>
+
+
+ESCALATION_RATE:
+<percent>
+
+FALLBACK_RATE:
+<percent>
+
+REPAIR_RATE:
+<percent>
+
+
+SIMPLE_CHAT_MEDIAN_SYNC_MODEL_CALLS:
+<number>
+
+
+PROMPT_CACHE:
+<status>
+
+
+PHASE_7_GENERALIZATION:
+PASS / FAIL
+
+PHASE_11_REGRESSION:
+PASS / FAIL
+
+TRUSTED_EXECUTOR:
+PASS / FAIL
+
+ATTEMPT_LEDGER:
+PASS / FAIL
+
+INDEPENDENT_VERIFIER:
+PASS / FAIL
+
+RECONCILIATION:
+PASS / FAIL
+
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS:
+0 expected
+
+FAKE_SUCCESS:
+0 expected
+
+
+READY_FOR_TASK_22:
+YES / NO
+
+
+================================================
+16. STOP
+================================================
+
+After this report:
+
+STOP.
+
+DO NOT start #22.
+DO NOT start #23.
+DO NOT start #24.
+
+Resume calibration only after provider capacity is available.
+
+BEGIN FROM THE EXISTING CHECKPOINT.

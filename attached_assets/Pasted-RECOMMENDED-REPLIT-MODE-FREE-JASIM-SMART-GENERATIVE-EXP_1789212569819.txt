@@ -1,0 +1,1504 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM SMART GENERATIVE EXPERIENCE
+# TASK 9B — PRODUCTION TRUTHFULNESS + MOCK / DEMO / FAKE SUCCESS CLOSURE
+
+MODE INTENT:
+Final focused Smart UI truthfulness closure before Power integration.
+
+Task 9A = CLOSED / PASS
+Task 9A.1 = CLOSED / PASS
+
+Current accepted baseline:
+
+TS_ERRORS_BASELINE = 11
+TS_ERRORS_FIXED = 11
+TS_ERRORS_REMAINING = 0
+
+WEB_TYPESCRIPT = PASS
+SERVER_TYPESCRIPT = PASS
+MOBILE_TYPESCRIPT = PASS
+SHARED_CONTRACT_TYPESCRIPT = PASS
+WEB_PRODUCTION_BUILD = PASS
+METRO_BUNDLE = PASS
+
+Task 9A security boundary = PASS.
+
+Tasks 1 through 8B2B remain CLOSED / PASS.
+
+DO NOT redesign JASIM.
+DO NOT add capabilities.
+DO NOT start Final Power Integration.
+DO NOT deploy.
+DO NOT reopen Blocks 0–3.1.
+
+This is the final FREE-mode Smart UI closure task.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. GOAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prove that ACTIVE JASIM Smart Generative Experience cannot mistake:
+
+mock data
+demo data
+fixtures
+placeholder values
+simulated execution
+browser-only success
+local optimistic completion
+fake progress
+fake location
+fake provider results
+fake payments
+fake verification
+
+for REAL canonical runtime truth.
+
+The required invariant is:
+
+UNKNOWN
+≠ SUCCESS
+
+SIMULATED
+≠ EXECUTED
+
+RECEIVED
+≠ VERIFIED
+
+UI CLICK
+≠ COMPLETED
+
+BROWSER RETURN
+≠ PAID
+
+MOCK
+≠ PRODUCTION DATA
+
+FIXTURE
+≠ CANONICAL TRUTH
+
+INCONCLUSIVE
+≠ SUCCESS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. ACTIVE SCOPE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Audit ACTIVE Smart Generative Experience paths only:
+
+Web Conversation
+
+Mobile Conversation
+
+PresentationRenderer
+
+MobilePresentationRenderer
+
+Workspace
+
+MobileWorkspaceSurface
+
+Living Objects
+
+Smart Bubbles
+
+generated Results
+
+Comparison
+
+Forms
+
+Approval
+
+Status
+
+Timeline
+
+Tracker
+
+Document
+
+Media
+
+World presentations
+
+Trusted actions
+
+projection refresh paths
+
+runtime responses shown to user
+
+production-facing generated UI.
+
+Do NOT perform an unrelated entire-repository cleanup.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. CLASSIFY ALL MOCK / DEMO PATHS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Search relevant active paths for concepts such as:
+
+mock
+
+demo
+
+fixture
+
+sample
+
+fake
+
+placeholder
+
+stub
+
+simulate
+
+simulated
+
+fallback
+
+hardcoded
+
+seed
+
+testData
+
+mockData
+
+dummy
+
+success:true
+
+completed
+
+verified
+
+paid
+
+progress
+
+coordinates
+
+location
+
+rating
+
+price
+
+availability
+
+tracking
+
+eta
+
+providerResult
+
+mockResponse
+
+Classify each reachable occurrence:
+
+TEST_ONLY_SAFE
+
+DEV_ONLY_SAFE
+
+EXPLICIT_DEMO_SAFE
+
+ACTIVE_PRODUCTION_SAFE_STATIC
+
+ACTIVE_PRODUCTION_FAKE_TRUTH
+
+LEGACY_OUTSIDE_SMART_UI
+
+Do not mechanically delete legitimate labels or static examples.
+
+Reachability and semantic authority matter.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. PRODUCTION RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Production Smart UI must never silently fall back to convincing fake business data.
+
+Forbidden production behavior:
+
+real search unavailable
+→ show fake products
+
+provider unavailable
+→ show sample provider results
+
+payment unavailable
+→ show paid
+
+tracking unavailable
+→ move fake driver
+
+location unavailable
+→ display synthetic location as real
+
+execution unavailable
+→ display completed
+
+verification unavailable
+→ display verified
+
+World data missing
+→ generate fake persisted entities
+
+API failure
+→ present demo content as live response
+
+If real source is unavailable:
+
+show truthful:
+
+BLOCKED
+UNAVAILABLE
+INCONCLUSIVE
+EMPTY
+ERROR
+NEEDS_CONNECTION
+
+or equivalent semantic state.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. TEST FIXTURES MAY REMAIN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT delete useful tests.
+
+Fixtures are allowed when isolated inside:
+
+unit tests
+
+integration tests
+
+explicit test harness
+
+development-only story/demo environment
+
+The requirement is:
+
+PRODUCTION_REACHABLE_TEST_FIXTURES = 0
+
+Test fixtures must not be imported into active production runtime bundles as fallback truth.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. EXPLICIT DEMO MODE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If an intentional demo/mockup environment exists:
+
+it may remain ONLY if clearly isolated.
+
+Required:
+
+explicit environment boundary
+
+visibly identified as demo/test when user-facing
+
+cannot be accidentally enabled as production fallback
+
+cannot affect canonical database truth
+
+cannot create VERIFIED/PAID/EXECUTED truth
+
+cannot share production provider secrets
+
+cannot silently activate when provider fails
+
+Report its boundary.
+
+Do NOT remove the approved visual mockup merely because it contains sample content.
+
+Marketing/design mockups are not runtime truth.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. SEARCH RESULTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Audit generated search/discovery results.
+
+Every active production result shown as real should have valid provenance from:
+
+internal canonical discovery
+
+trusted connected source/provider
+
+authorized public/external retrieval
+
+or explicitly identified user-provided data.
+
+Do not substitute fabricated:
+
+product
+
+job
+
+car
+
+service
+
+price
+
+rating
+
+availability
+
+merchant
+
+inventory
+
+when source retrieval fails.
+
+Target:
+
+FAKE_PRODUCTION_DISCOVERY_RESULTS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. PLACEHOLDER CONTENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+UI skeletons/placeholders are allowed visually while loading.
+
+But placeholders must not appear as business truth.
+
+Allowed:
+
+grey skeleton card
+
+loading title
+
+generic empty state
+
+Forbidden:
+
+fake product name + price while loading
+
+fake status trajectory
+
+fake map point
+
+fake booking
+
+fake seller
+
+fake transaction
+
+Distinguish:
+
+VISUAL_PLACEHOLDER
+
+from:
+
+SEMANTIC_DATA.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STATUS presentation must derive from canonical projection/runtime state.
+
+Search for code that locally emits:
+
+SUCCESS
+
+COMPLETED
+
+DONE
+
+VERIFIED
+
+DELIVERED
+
+PAID
+
+BOOKED
+
+EXECUTED
+
+based solely on:
+
+button press
+
+timeout
+
+animation completion
+
+HTTP 200 from unrelated endpoint
+
+browser redirect
+
+local client state
+
+Target:
+
+FAKE_SUCCESS_PATHS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. PROGRESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Never manufacture progress percentages unless runtime/provider actually supplies meaningful progress.
+
+Forbidden:
+
+setInterval → 10%, 20%, 80%, 100%
+
+time-based fake loading percentage
+
+random progress
+
+optimistic "almost complete"
+
+Allowed:
+
+indeterminate loading
+
+canonical step-based status
+
+real provider progress
+
+real completed/total counts
+
+Target:
+
+FAKE_PROGRESS_PATHS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. LOCATION / TRACKING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Audit:
+
+maps
+
+tracker
+
+courier
+
+driver
+
+delivery
+
+location
+
+coordinates
+
+ETA
+
+route.
+
+If coordinates are not trusted observations:
+
+do not draw fake live location.
+
+If ETA is not provided/calculated from trusted data:
+
+do not display fabricated ETA.
+
+If map data is absent:
+
+use status/text fallback.
+
+Target:
+
+FAKE_LOCATION_PATHS = 0
+FAKE_ETA_PATHS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. PAYMENT TRUTH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Preserve Block 3 invariants.
+
+Client/browser/provider redirect cannot independently establish:
+
+PAID
+
+CAPTURED
+
+SETTLED
+
+REFUNDED
+
+PAYOUT_COMPLETED
+
+VERIFIED
+
+Audit active Smart UI for any shortcut such as:
+
+success query parameter
+
+checkout completion screen
+
+local callback
+
+provider redirect
+
+mock payment response
+
+that sets financial truth.
+
+Required:
+
+canonical financial state
+→ projection
+→ UI
+
+Target:
+
+FAKE_PAYMENT_SUCCESS_PATHS = 0
+
+CLIENT_CAN_SET_PAID = NO
+
+CLIENT_CAN_SET_SETTLED = NO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. PROVIDER RECEIPTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not interpret:
+
+provider response received
+
+as:
+
+verified effect.
+
+Preserve:
+
+RECEIPT
+≠ VERIFICATION
+
+If verification is pending:
+
+display VERIFYING / pending equivalent.
+
+If verification cannot be established:
+
+INCONCLUSIVE.
+
+Target:
+
+RECEIPT_AS_VERIFIED_PATHS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. EXECUTION TRUTH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Trusted Dispatcher acceptance does NOT mean execution success.
+
+Preserve:
+
+AUTHORIZED
+≠ EXECUTED
+
+EXECUTED
+≠ VERIFIED
+
+Audit UI code for:
+
+dispatch succeeded
+→ completed
+
+action accepted
+→ success
+
+proposal approved
+→ effect happened
+
+Target:
+
+DISPATCH_ACCEPTED_AS_SUCCESS_PATHS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. APPROVAL TRUTH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Approval click may produce:
+
+accepted request
+
+but business effect may still:
+
+run
+fail
+block
+require verification
+become inconclusive
+
+Do not immediately render final business success after approval.
+
+Projection refresh remains authoritative.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. LIVING OBJECT TRUTH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Living Objects must never invent:
+
+progress
+
+attention
+
+status
+
+completion
+
+owner
+
+underlying process identity.
+
+All come from:
+
+LivingObjectProjection.
+
+No decorative semantic state.
+
+Target:
+
+FAKE_LIVING_OBJECT_STATE_PATHS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. WORLD TRUTH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Generated World UI must distinguish:
+
+proposed configuration
+
+preview
+
+draft
+
+canonical persisted World
+
+active external integration.
+
+Do not show:
+
+"تم إنشاء المنصة"
+
+unless canonical creation actually occurred.
+
+Do not show provider/resource integration as connected merely because configuration was generated.
+
+Target:
+
+GENERATED_WORLD_FAKE_PERSISTENCE_PATHS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. SMART BUBBLE TRUTH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Smart Bubble may be:
+
+ephemeral presentation
+persistent Bubble
+World projection
+ongoing process representation.
+
+Do not use Bubble presence itself as proof that business operation exists.
+
+Bubble presentation state is not operational truth.
+
+Audit old Bubble/demo shortcuts.
+
+Target:
+
+SMART_BUBBLE_FAKE_TRUTH_PATHS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. FALLBACKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every production fallback should be classified.
+
+Good fallbacks:
+
+safe text
+
+empty result
+
+retry
+
+blocked state
+
+unsupported presentation fallback
+
+generic card rendering
+
+network error
+
+Bad fallbacks:
+
+sample real-looking results
+
+fake successful execution
+
+cached demo state presented as current
+
+synthetic transaction
+
+mock provider
+
+Target:
+
+PRODUCTION_FAKE_DATA_FALLBACKS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. LEGACY SMART UI BYPASSES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Audit old pre-Smart-UI paths that are STILL reachable from current Conversation/Workspace.
+
+Examples:
+
+old generated Bubble renderer
+
+old task UI
+
+old direct action event
+
+old mock success card
+
+old static AI result renderer
+
+old fallback task execution
+
+Classify:
+
+ACTIVE_AND_MUST_CLOSE
+
+LEGACY_UNREACHABLE
+
+LEGACY_SEPARATE_PRODUCT_PATH
+
+Do not delete unrelated legacy feature screens automatically.
+
+Requirement:
+
+ACTIVE_LEGACY_SMART_UI_TRUTH_BYPASSES = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. DEV / PRODUCTION ENVIRONMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Audit environment gates controlling mocks.
+
+Unsafe examples:
+
+if provider fails → use mock
+
+if API missing → use fixture
+
+if !key → simulate success
+
+if development variable undefined → mock defaults on
+
+Production should fail truthfully.
+
+Mocks must require explicit non-production/test configuration.
+
+Target:
+
+MOCK_FALLBACK_ON_PROVIDER_FAILURE = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. SERVER-SIDE MOCKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Check whether active API/runtime handlers can return mock success when:
+
+provider missing
+
+credentials missing
+
+resource unavailable
+
+network unavailable
+
+Unsupported real execution should return:
+
+BLOCKED_BY_PROVIDER
+
+MISSING_CAPABILITY
+
+INCONCLUSIVE
+
+or current truthful runtime equivalent.
+
+Never transparent success.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. MOBILE / WEB PARITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Same canonical condition must not result in:
+
+Web = BLOCKED
+Mobile = SUCCESS
+
+or inverse.
+
+The shared truth boundary must remain identical.
+
+Presentation may differ.
+
+Semantics may not.
+
+Target:
+
+WEB_MOBILE_TRUTH_SEMANTIC_DIVERGENCES = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. CACHED DATA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cached real data may be shown only with existing provenance/freshness semantics.
+
+Do not relabel stale data as live.
+
+If freshness matters:
+
+preserve source timestamp/freshness state.
+
+Do not create new caching architecture.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. ARTIFACTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Generated artifact status must distinguish:
+
+generated locally
+
+uploaded
+
+attached
+
+persisted
+
+externally delivered
+
+verified received.
+
+For example:
+
+artifact created
+≠ email sent
+
+file attached
+≠ transaction completed
+
+No fake delivery.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. NOTIFICATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If active Smart UI shows:
+
+"تم الإرسال"
+
+prove notification/message side effect passed through trusted execution semantics.
+
+Do not infer from local enqueue/UI state if runtime requires verification.
+
+Preserve Block 2 notification execution rules.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. NO ECONOMIC DOMAIN PATCHES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not solve truthfulness with domain-specific code:
+
+if order...
+if car...
+if hotel...
+if payment button...
+
+Fix generic semantic/runtime boundary.
+
+Target:
+
+DOMAIN_SPECIFIC_TRUTHFULNESS_PATCHES_ADDED = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. PRODUCTION BUNDLE ISOLATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect active Web/Mobile production bundles/import graphs where practical.
+
+Ensure test fixture modules/demo providers do not become production fallback dependencies.
+
+Required:
+
+PRODUCTION_REACHABLE_TEST_FIXTURES = 0
+
+PRODUCTION_REACHABLE_MOCK_PROVIDERS = 0
+
+Explicit non-production mockup tooling may remain isolated.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. DO NOT DELETE THE VISUAL REFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+JASIM visual concept/mockup assets are design documentation.
+
+They are allowed.
+
+Do NOT classify screenshots/mockups/design fixtures as production fake runtime merely because they contain sample cars/jobs/products.
+
+They must simply remain outside canonical live runtime.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. TEST CASES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add focused tests proving at minimum:
+
+1. provider unavailable does not produce fake search results.
+
+2. empty discovery remains empty/truthful.
+
+3. loading skeleton contains no semantic fake entity.
+
+4. action click does not locally produce COMPLETED.
+
+5. dispatcher ACCEPTED does not equal business success.
+
+6. approval does not imply external effect completion.
+
+7. receipt does not imply VERIFIED.
+
+8. verification pending shows non-final state.
+
+9. INCONCLUSIVE is not converted to success.
+
+10. client cannot mark paid.
+
+11. redirect success cannot mark paid.
+
+12. client cannot mark settled.
+
+13. missing payment provider cannot simulate success.
+
+14. fake progress timer absent.
+
+15. unknown progress remains indeterminate.
+
+16. missing coordinates do not create fake map location.
+
+17. missing ETA does not fabricate ETA.
+
+18. Living Object status comes from projection.
+
+19. Living Object progress is not synthesized.
+
+20. World preview is not persisted World.
+
+21. Bubble existence does not establish execution.
+
+22. provider failure does not trigger production mock fallback.
+
+23. production cannot import active test fixture fallback.
+
+24. production cannot use mock provider fallback.
+
+25. explicit test fixture still works inside test harness.
+
+26. Web/Mobile same canonical status semantics.
+
+27. safe loading/error/empty states render.
+
+28. Status presentation regression.
+
+29. Timeline regression.
+
+30. Trusted Dispatcher regression.
+
+31. Workspace regression.
+
+32. Living Objects regression.
+
+33. Task 9A security regression.
+
+34. Task 9A.1 type-clean regression.
+
+Keep tests focused.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. STATIC AUDIT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Search relevant active paths for:
+
+mock
+demo
+fixture
+fake
+placeholder
+simulate
+success
+completed
+verified
+paid
+progress
+location
+coordinates
+eta
+fallback
+
+Do not count every textual occurrence as a defect.
+
+Trace whether it can influence production semantic truth.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. RUNTIME SMOKE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Verify real app still handles:
+
+normal safe response
+
+empty result
+
+provider unavailable/error condition where existing harness permits
+
+pending action
+
+status
+
+Workspace
+
+Living Objects
+
+without:
+
+crash
+
+fake completion
+
+mock data injection
+
+No requirement to perform real money/provider execution.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. REAL PROVIDERS ARE NOT REQUIRED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT connect:
+
+real payment provider
+
+real production search provider
+
+real courier
+
+real booking provider
+
+just to pass Task 9B.
+
+Missing real provider must remain truthfully:
+
+BLOCKED_BY_PROVIDER
+
+or appropriate existing semantic state.
+
+Task 9B verifies honesty.
+
+Not provider availability.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. PREVIOUS VISUAL EVIDENCE DEBT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Carry unchanged:
+
+MOBILE_REAL_VISUAL_SMOKE = PARTIAL
+
+VISUAL_CROSS_DEVICE_SMOKE = NOT_AVAILABLE
+
+Do NOT spend Task 9B trying to close them.
+
+They belong to Power Final Integration.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+35. DATABASE / MIGRATION / SDK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expected:
+
+NEW_DATABASE_TABLES = 0
+NEW_MIGRATIONS = 0
+NEW_EXTERNAL_SDKS = 0
+
+If new persistence appears necessary:
+
+STOP and report.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. VERIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run:
+
+Task 9B focused tests
+
+Task 9A security regression
+
+Task 9A.1 readiness/type regression
+
+affected Presentation tests
+
+Workspace tests
+
+Living Object tests
+
+Trusted Dispatcher tests
+
+Web TypeScript
+
+Server TypeScript
+
+Mobile TypeScript
+
+shared runtime-contract TypeScript
+
+Web production build
+
+Metro/static bundle
+
+git diff --check
+
+Web smoke
+
+Mobile smoke
+
+Use safe sequential DB testing where existing PostgreSQL parallel collision applies.
+
+Do NOT deploy.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+37. REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create exactly:
+
+.local/tasks/smart-ui-task-9b-truthfulness-report.md
+
+Required sections:
+
+CAUSE
+
+ACTIVE_PATHS_AUDITED
+
+MOCK_DEMO_FIXTURE_INVENTORY
+
+PRODUCTION_REACHABILITY
+
+DISCOVERY_TRUTH
+
+PLACEHOLDER_BOUNDARY
+
+STATUS_TRUTH
+
+PROGRESS_TRUTH
+
+LOCATION_ETA_TRUTH
+
+PAYMENT_TRUTH
+
+RECEIPT_VERIFICATION_BOUNDARY
+
+DISPATCH_EXECUTION_BOUNDARY
+
+APPROVAL_BOUNDARY
+
+LIVING_OBJECT_TRUTH
+
+WORLD_TRUTH
+
+SMART_BUBBLE_TRUTH
+
+FALLBACK_AUDIT
+
+LEGACY_ACTIVE_PATHS
+
+SERVER_MOCK_PATHS
+
+WEB_MOBILE_PARITY
+
+PRODUCTION_BUNDLE_ISOLATION
+
+FILES_CHANGED
+
+TESTS
+
+RUNTIME_SMOKE
+
+EVIDENCE_DEBT_CARRIED_FORWARD
+
+Final counters:
+
+SMART_UI_TASK_9B =
+PASS / PARTIAL / FAIL
+
+ACTIVE_PRODUCTION_FAKE_TRUTH_PATHS =
+<number>
+
+FAKE_PRODUCTION_DISCOVERY_RESULTS =
+<number>
+
+PRODUCTION_FAKE_DATA_FALLBACKS =
+<number>
+
+FAKE_SUCCESS_PATHS =
+<number>
+
+FAKE_PROGRESS_PATHS =
+<number>
+
+FAKE_LOCATION_PATHS =
+<number>
+
+FAKE_ETA_PATHS =
+<number>
+
+FAKE_PAYMENT_SUCCESS_PATHS =
+<number>
+
+RECEIPT_AS_VERIFIED_PATHS =
+<number>
+
+DISPATCH_ACCEPTED_AS_SUCCESS_PATHS =
+<number>
+
+FAKE_LIVING_OBJECT_STATE_PATHS =
+<number>
+
+GENERATED_WORLD_FAKE_PERSISTENCE_PATHS =
+<number>
+
+SMART_BUBBLE_FAKE_TRUTH_PATHS =
+<number>
+
+ACTIVE_LEGACY_SMART_UI_TRUTH_BYPASSES =
+<number>
+
+PRODUCTION_REACHABLE_TEST_FIXTURES =
+<number>
+
+PRODUCTION_REACHABLE_MOCK_PROVIDERS =
+<number>
+
+MOCK_FALLBACK_ON_PROVIDER_FAILURE =
+<number>
+
+WEB_MOBILE_TRUTH_SEMANTIC_DIVERGENCES =
+<number>
+
+CLIENT_CAN_SET_PAID =
+NO / YES
+
+CLIENT_CAN_SET_SETTLED =
+NO / YES
+
+DOMAIN_SPECIFIC_TRUTHFULNESS_PATCHES_ADDED =
+<number>
+
+EXPLICIT_DEMO_ENVIRONMENT_ISOLATED =
+YES / NO / NOT_PRESENT
+
+NEW_DATABASE_TABLES =
+0
+
+NEW_MIGRATIONS =
+0
+
+NEW_EXTERNAL_SDKS =
+0
+
+TASK_9A_SECURITY_REGRESSION =
+PASS / FAIL
+
+TASK_9A1_TYPESCRIPT_REGRESSION =
+PASS / FAIL
+
+TRUSTED_DISPATCHER_REGRESSION =
+PASS / FAIL
+
+WORKSPACE_REGRESSION =
+PASS / FAIL
+
+LIVING_OBJECT_REGRESSION =
+PASS / FAIL
+
+WEB_TYPESCRIPT =
+PASS / FAIL
+
+SERVER_TYPESCRIPT =
+PASS / FAIL
+
+MOBILE_TYPESCRIPT =
+PASS / FAIL
+
+SHARED_CONTRACT_TYPESCRIPT =
+PASS / FAIL
+
+WEB_PRODUCTION_BUILD =
+PASS / FAIL
+
+METRO_BUNDLE =
+PASS / FAIL
+
+WEB_SMOKE =
+PASS / FAIL
+
+MOBILE_SMOKE =
+PASS / FAIL / PARTIAL
+
+MOBILE_REAL_VISUAL_SMOKE_DEBT =
+PARTIAL
+
+VISUAL_CROSS_DEVICE_SMOKE_DEBT =
+NOT_AVAILABLE
+
+BLOCKS_0_TO_3_1_REMAIN_CLOSED =
+YES / NO
+
+READY_FOR_POWER_FINAL_INTEGRATION =
+YES / NO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+38. PASS GATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 9B may be PASS only if:
+
+ACTIVE_PRODUCTION_FAKE_TRUTH_PATHS = 0
+
+FAKE_PRODUCTION_DISCOVERY_RESULTS = 0
+
+PRODUCTION_FAKE_DATA_FALLBACKS = 0
+
+FAKE_SUCCESS_PATHS = 0
+
+FAKE_PROGRESS_PATHS = 0
+
+FAKE_LOCATION_PATHS = 0
+
+FAKE_ETA_PATHS = 0
+
+FAKE_PAYMENT_SUCCESS_PATHS = 0
+
+RECEIPT_AS_VERIFIED_PATHS = 0
+
+DISPATCH_ACCEPTED_AS_SUCCESS_PATHS = 0
+
+FAKE_LIVING_OBJECT_STATE_PATHS = 0
+
+GENERATED_WORLD_FAKE_PERSISTENCE_PATHS = 0
+
+SMART_BUBBLE_FAKE_TRUTH_PATHS = 0
+
+ACTIVE_LEGACY_SMART_UI_TRUTH_BYPASSES = 0
+
+PRODUCTION_REACHABLE_TEST_FIXTURES = 0
+
+PRODUCTION_REACHABLE_MOCK_PROVIDERS = 0
+
+MOCK_FALLBACK_ON_PROVIDER_FAILURE = 0
+
+WEB_MOBILE_TRUTH_SEMANTIC_DIVERGENCES = 0
+
+CLIENT_CAN_SET_PAID = NO
+
+CLIENT_CAN_SET_SETTLED = NO
+
+DOMAIN_SPECIFIC_TRUTHFULNESS_PATCHES_ADDED = 0
+
+and:
+
+all affected tests pass
+
+all TypeScript checks pass
+
+Web production build passes
+
+Metro/static bundle passes.
+
+Explicit isolated test/demo tooling is allowed.
+
+Missing real external providers are allowed only when represented truthfully.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+39. READY FOR POWER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+READY_FOR_POWER_FINAL_INTEGRATION = YES
+
+only if Task 9B PASS gate is satisfied.
+
+Do NOT require:
+
+real payment provider
+real production search provider
+real deployment
+full visual cross-device evidence
+
+for Task 9B.
+
+Those belong to later gates.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+40. STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Task 9B:
+
+STOP.
+
+DO NOT start any further FREE implementation task.
+
+DO NOT perform Final Integration in FREE.
+
+DO NOT deploy.
+
+DO NOT connect production payment providers.
+
+DO NOT connect real money.
+
+DO NOT modify production data.
+
+Return only:
+
+Task 9B verdict
+
+active fake-truth path count
+
+fake success count
+
+fake progress count
+
+fake location/ETA count
+
+fake payment count
+
+production fixture count
+
+production mock provider count
+
+Web/Mobile truth divergence count
+
+focused test count
+
+all typecheck/build status
+
+READY_FOR_POWER_FINAL_INTEGRATION
+
+BEGIN TASK 9B.

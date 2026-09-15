@@ -1,0 +1,1086 @@
+# JASIM TASK #14 — DURABLE DAG CORE IMPLEMENTATION
+# MINIMUM NECESSARY ARCHITECTURE — NO OVERENGINEERING
+
+اعتمد كل ما تم إنجازه سابقًا كـBaseline ولا تعِد بناءه:
+
+- Persistent Conversations
+- Persistent Messages
+- Semantic Output Router
+- Durable Runs
+- General Reference Resolution
+- Execution Proposals
+- Canonical Fingerprints
+- Policy Evaluation
+- Approval Binding
+- Approval Invalidation
+- Owner Isolation
+- Idempotency
+- No External Side Effects
+
+الهدف الحالي فقط:
+
+BUILD THE MINIMUM SAFE DURABLE DAG CORE REQUIRED FOR JASIM
+
+لا تبنِ workflow engine ضخم.
+لا تضف infrastructure مستقبلية غير مطلوبة.
+لا تعِد تحليل Architecture التي تم تثبيتها.
+لا تنشئ Task جديدة؛ استمر داخل Task #14.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE A — INSPECT BEFORE MODIFYING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ابدأ بفحص الكود الحالي فقط لتحديد:
+
+1. مكان Run aggregate الحالي.
+2. مكان Execution Proposal الحالي.
+3. Event model الحالي.
+4. DB schema الخاصة بـRuns/Tasks/Events.
+5. هل يوجد scheduler/worker abstraction جزئي بالفعل.
+6. هل يوجد queue abstraction جزئي بالفعل.
+7. كيف يعمل optimistic concurrency حاليًا.
+8. كيف يتم idempotency حاليًا.
+9. كيف تُربط Run بالConversation/Bubble/Task.
+10. كيف تحفظ runtime states.
+
+اكتب ملاحظات قصيرة فقط.
+
+لا تنشئ تقرير Architecture طويل.
+
+إذا كان component قائم ويمكن توسيعه:
+KEEP + EXTEND
+
+إذا كان غير كافٍ:
+GENERALIZE
+
+استبدله فقط إذا كان هناك سبب تقني مثبت.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE B — DAG DATABASE MODEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أضف أقل Schema ضرورية لتمثيل DAG دائمة.
+
+يفضل أن تكون هناك جداول/نماذج مفاهيمية مثل:
+
+runtime_dag_nodes
+runtime_dag_dependencies
+
+أو استخدم أسماء المشروع الحالية إن وجدت.
+
+كل DAG Node تحتاج على الأقل مفاهيم:
+
+nodeId
+runId
+ownerId
+proposalId? nullable
+capabilityId? nullable
+nodeType
+status
+attemptCount
+maxAttempts
+nextAttemptAt?
+claimedBy?
+leaseToken?
+leaseExpiresAt?
+fenceVersion / fenceToken
+startedAt?
+completedAt?
+failedAt?
+cancelledAt?
+lastErrorCode?
+lastErrorSummary?
+createdAt
+updatedAt
+version
+
+لا تضف حقولًا لمجرد "قد نحتاجها مستقبلًا".
+
+كل حقل يجب أن يخدم:
+- scheduling
+- claiming
+- retry
+- recovery
+- safety
+- auditability
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE C — DAG DEPENDENCIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+مثّل dependency كعلاقة عامة:
+
+upstreamNodeId
+downstreamNodeId
+dependencyType
+
+ابدأ فقط بـ:
+
+SUCCESS_REQUIRED
+
+إن لم توجد حاجة حقيقية الآن لأنواع أخرى.
+
+قاعدة readiness:
+
+Node تصبح READY فقط إذا:
+
+1. Run ليست cancelled.
+2. Node ليست terminal.
+3. nextAttemptAt <= now إذا كان موجودًا.
+4. جميع dependencies المطلوبة مكتملة بنجاح.
+5. لا توجد input gate غير محلولة.
+6. لا توجد approval gate غير محلولة.
+7. Capability مسموح بها لهذه المرحلة.
+
+لا تجعل frontend يقرر readiness.
+
+الحقيقة Server-side.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE D — NODE STATUS MACHINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+استخدم state machine صغيرة وواضحة.
+
+اقتراح:
+
+PENDING
+READY
+CLAIMED
+RUNNING
+WAITING
+RETRY_SCHEDULED
+COMPLETED
+FAILED
+BLOCKED
+CANCELLED
+
+لا تضف حالات كثيرة متداخلة بدون ضرورة.
+
+Transitions يجب أن تكون server validated.
+
+أمثلة:
+
+PENDING → READY
+READY → CLAIMED
+CLAIMED → RUNNING
+RUNNING → COMPLETED
+RUNNING → RETRY_SCHEDULED
+RUNNING → FAILED
+RUNNING → WAITING
+ANY_NON_TERMINAL → CANCELLED
+
+لا تسمح:
+
+COMPLETED → RUNNING
+
+إلا عبر mechanism صريح جديد لا نحتاجه الآن.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE E — ATOMIC READY NODE CLAIM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+هذه أهم نقطة في tranche.
+
+يجب أن يستطيع Worker claim عقدة واحدة ذريًا.
+
+المطلوب:
+
+1. العثور على Node READY.
+2. التأكد أنها غير claimed أو lease منتهية.
+3. تحديث:
+   - status = CLAIMED
+   - claimedBy = workerId
+   - leaseToken = random secure token
+   - leaseExpiresAt
+   - fenceVersion = fenceVersion + 1
+4. إعادة Node claimed.
+
+كل ذلك يجب أن يتم atomic.
+
+استخدم transaction أو UPDATE ... WHERE conditional أو SELECT FOR UPDATE حسب DB الحالية.
+
+اختبر:
+
+Worker A
+Worker B
+
+يحاولان claim نفس node في نفس الوقت.
+
+Expected:
+
+واحد فقط يحصل عليها.
+
+الثاني:
+NO_NODE_AVAILABLE
+أو ينتقل لعقدة أخرى.
+
+ممنوع:
+duplicate claim
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE F — LEASE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Lease تكون محددة زمنيًا.
+
+مثال:
+
+leaseExpiresAt = now + leaseDuration
+
+لا تستخدم مدة معقدة.
+
+اختر default معقول للمشروع.
+
+Worker يجب أن يملك:
+
+workerId
+leaseToken
+fenceVersion
+
+أي update أثناء التنفيذ يجب أن يتحقق من هذه القيم.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE G — HEARTBEAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أضف heartbeat minimal.
+
+Worker صاحب lease الصحيحة فقط يستطيع تمديد lease.
+
+مثال contract:
+
+heartbeat(nodeId, workerId, leaseToken, fenceVersion)
+
+إذا lease غير صالحة:
+
+رفض.
+
+إذا fenceVersion قديمة:
+
+رفض.
+
+إذا Node terminal:
+
+رفض.
+
+لا تبنِ heartbeat daemon معقدًا الآن.
+
+يكفي logic صحيح واختبار.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE H — FENCING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Fencing إلزامي.
+
+المشكلة التي يجب منعها:
+
+Worker A يأخذ Node.
+يتوقف.
+Lease تنتهي.
+Worker B يأخذ Node.
+Worker A يعود متأخرًا ويحاول كتابة success.
+
+يجب أن تفشل كتابة Worker A.
+
+استخدم:
+
+fenceVersion
+أو
+monotonic fencing token
+
+كل claim جديدة تزيد fencing token.
+
+أي completion/failure update يجب أن يطابق:
+
+current fenceVersion
++
+current leaseToken
++
+current workerId
+
+إذا mismatch:
+
+STALE_WORKER_REJECTED
+
+اختبار إلزامي.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE I — SAFE LOCAL CAPABILITY WORKER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+في هذه tranche:
+
+لا External Providers.
+
+اسمح فقط بـCapabilities محلية آمنة ومحددة مسبقًا.
+
+مثال:
+
+data.read
+data.write_internal
+entity.create_internal
+entity.update_internal
+state.transition_internal
+schedule.internal
+noop.test
+
+لكن لا تضف Domain-specific capabilities.
+
+ممنوع:
+
+sellCar
+publishFacebookAd
+bookRestaurant
+hireEmployee
+
+Worker يقرأ capabilityId من Proposal/Node.
+
+ثم:
+
+1. يتأكد أنها Registered.
+2. يتأكد أنها AllowedForLocalExecution.
+3. يعيد Authorization check.
+4. يعيد Policy check.
+5. يعيد Approval check إذا مطلوبة.
+6. يتحقق من fingerprint.
+7. يتحقق من idempotency.
+8. ينفذ local effect فقط.
+
+لا External network writes.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE J — REVALIDATION BEFORE EXECUTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+حتى لو Proposal كانت Authorized سابقًا:
+
+قبل تنفيذ Node فعليًا أعد التحقق من:
+
+- owner
+- capability registration
+- target existence
+- permissions
+- policy
+- approval status
+- approval fingerprint
+- proposal fingerprint
+- current references
+- idempotency state
+
+إذا تغير شيء:
+
+لا تنفذ.
+
+الحالة المناسبة:
+
+BLOCKED
+أو
+AWAITING_APPROVAL
+
+حسب السبب.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE K — RETRY POLICY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ابدأ retry بسيطًا.
+
+لا تبنِ adaptive retry engine.
+
+صنّف الخطأ إلى:
+
+RETRYABLE
+PERMANENT
+AUTHORIZATION
+POLICY
+INPUT
+STALE
+CANCELLED
+
+فقط RETRYABLE يمكن إعادة جدولتها.
+
+استخدم policy مثل:
+
+maxAttempts
+baseBackoff
+
+مثال:
+
+attempt 1 → +5s
+attempt 2 → +15s
+attempt 3 → +30s
+
+أو نظام أبسط مناسب.
+
+لا infinite retry.
+
+إذا maxAttempts انتهت:
+
+FAILED
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE L — RECOVERY AFTER WORKER CRASH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا Node في CLAIMED/RUNNING وlease انتهت:
+
+يجب أن تصبح قابلة للاسترداد.
+
+لا تعِدها مباشرة إذا كانت side effect غير idempotent.
+
+لهذه tranche نسمح فقط بـsafe local capabilities.
+
+الهدف:
+
+expired lease
+→ recoverable node
+→ new worker claim
+→ continue safely
+
+اختبر Restart حقيقي للAPI/Worker.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE M — CANCELLATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run cancellation يجب أن تمنع تشغيل Nodes جديدة.
+
+عند cancel Run:
+
+- nodes غير terminal تصبح CANCELLED أو لا تصبح READY.
+- worker الحالي لا يسمح له ببدء side effect جديد بعد اكتشاف cancellation.
+- إذا node انتهت قبل وصول cancellation لا تمسح truth السابقة.
+
+لا تبنِ distributed compensation الآن.
+
+Cancellation فقط.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE N — DAG COMPLETION RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run completion يجب أن تستند إلى DAG state.
+
+مثال:
+
+إذا جميع required nodes:
+COMPLETED
+
+→ Run يمكن أن تنتقل إلى completed.
+
+إذا required node:
+FAILED permanent
+
+→ Run = failed
+
+إذا:
+BLOCKED
+
+→ Run = blocked
+
+إذا:
+WAITING
+
+→ Run = waiting
+
+لا تجعل frontend يحسب ذلك.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE O — USER-READABLE STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أضف projection بسيطة للWeb/Mobile.
+
+المستخدم لا يحتاج رؤية:
+
+leaseToken
+fenceVersion
+workerId
+
+يعرض فقط:
+
+قيد الانتظار
+جاهزة للتنفيذ
+قيد التنفيذ
+بانتظار معلومات
+بانتظار موافقة
+ستتم إعادة المحاولة
+متوقفة
+فشلت
+مكتملة
+ملغاة
+
+حسب Runtime truth.
+
+لا تبنِ DAG visual editor.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE P — EVENT MODEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+استخدم Event System الحالية.
+
+أضف فقط events المطلوبة مثل:
+
+DAG_NODE_CREATED
+DAG_NODE_READY
+DAG_NODE_CLAIMED
+DAG_NODE_STARTED
+DAG_NODE_HEARTBEAT
+DAG_NODE_RETRY_SCHEDULED
+DAG_NODE_COMPLETED
+DAG_NODE_FAILED
+DAG_NODE_CANCELLED
+DAG_NODE_LEASE_EXPIRED
+DAG_NODE_STALE_WRITE_REJECTED
+
+لا تعِد بناء Event System.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE Q — TEST DAG #1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ابنِ DAG بسيطة:
+
+A → B
+
+Expected:
+
+A READY
+B PENDING
+
+Worker claims A
+A completes
+
+ثم:
+
+B READY
+
+Worker claims B
+B completes
+
+Run completed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE R — TEST DAG #2 — FAN OUT / JOIN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ابنِ:
+
+        A
+       / \
+      B   C
+       \ /
+        D
+
+Dependencies:
+
+A → B
+A → C
+B → D
+C → D
+
+Expected:
+
+A أولًا.
+
+بعد A:
+
+B وC جاهزتان.
+
+D تبقى غير جاهزة حتى B وC تكتملان.
+
+بعد B فقط:
+
+D ما زالت PENDING.
+
+بعد C:
+
+D READY.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE S — PARALLEL CLAIM TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+شغّل محاولتي claim متوازيتين على نفس Node.
+
+Expected:
+
+1 claim success
+1 claim failure/no node
+
+تحقق من:
+
+event count
+lease owner
+fence token
+
+لا duplicate execution.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE T — FENCING TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Worker A claims node.
+2. احفظ fenceVersion = 10.
+3. دع lease تنتهي.
+4. Worker B claims node.
+5. fenceVersion = 11.
+6. Worker A يحاول complete باستخدام 10.
+7. يجب الرفض.
+8. Worker B complete باستخدام 11.
+9. يجب القبول.
+
+هذا الاختبار إلزامي.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE U — RETRY TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+استخدم Local Test Capability intentionally fails first attempt.
+
+attempt 1:
+RETRYABLE_FAILURE
+
+Expected:
+
+RETRY_SCHEDULED
+
+بعد nextAttemptAt:
+
+READY
+
+attempt 2:
+SUCCESS
+
+Expected:
+
+COMPLETED
+
+لا أكثر من event واحد لكل transition.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE V — PERMANENT FAILURE TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Capability ترجع:
+
+PERMANENT_FAILURE
+
+Expected:
+
+Node FAILED
+
+لا retry.
+
+Run تنتقل للحالة الصحيحة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE W — RESTART TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Create Run + DAG.
+2. Complete A.
+3. B becomes READY.
+4. Restart API/worker process.
+5. Read DB state.
+6. B ما زالت READY.
+7. claim B.
+8. complete.
+9. Run completes.
+
+لا تعتمد على memory state.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE X — RUNNING LEASE RESTART TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Claim node.
+2. Simulate worker death.
+3. Restart runtime.
+4. انتظر lease expiry أو استخدم controlled test clock.
+5. Node recoverable.
+6. New worker claims.
+7. old worker token rejected.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE Y — CANCELLATION TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. A completed.
+2. B/C pending or ready.
+3. Cancel Run.
+4. B/C لا يتم تنفيذهما.
+5. New claims for same Run يجب ألا تُعاد.
+6. User-readable state = cancelled.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE Z — SECURITY TESTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+اختبر:
+
+- User A cannot inspect DAG B.
+- User A cannot claim node belonging to B.
+- User A cannot heartbeat B node.
+- User A cannot complete B node.
+- malformed lease token
+- stale fencing token
+- capability injection
+- unknown capability
+- __proto__
+- constructor
+- invalid state transition
+- manually forcing status=completed
+- bypassing approval
+- changing fingerprint after authorization
+
+كلها يجب أن تفشل Server-side.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STRICT TOKEN / TIME CONTROL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+مهم جدًا:
+
+لا أريد هدر توكنز أو وقت.
+
+اتبع هذه القواعد:
+
+1. لا ترسل Agentين لتحليل نفس الملفات.
+2. لا تنشئ Architecture reports جديدة إذا لا تضيف قرارًا.
+3. لا تعِد شرح Architecture التي سبق تثبيتها.
+4. لا تقرأ كل repository إذا يكفي فحص runtime files ذات الصلة.
+5. استخدم targeted search.
+6. لا تعِد تشغيل Full Regression بعد كل تعديل صغير.
+7. أثناء التطوير:
+   - شغّل targeted tests.
+8. عند نهاية tranche:
+   - شغّل Full Regression مرة واحدة.
+9. لا تنشئ 10 اختبارات تعيد نفس claim behavior.
+10. لكل invariant اختبار واحد قوي + edge case واحد فقط إذا كان ضروريًا.
+11. لا تضف dependencies جديدة إلا عند ضرورة مثبتة.
+12. لا تبنِ UI جديدة غير status projection المطلوبة.
+13. أي تحسين غير مطلوب للGate الحالي:
+    MARK AS DEFERRED.
+14. لا تبدأ Future Capability Lab.
+15. لا تبدأ Commercial Runtime.
+16. لا تبدأ Cross-Bubble features الجديدة.
+17. لا تبدأ External Providers.
+18. لا تبدأ Independent Verifier بعد.
+19. لا تبدأ Receipts بعد.
+20. لا تبدأ iOS/Android release work في هذه tranche.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NO UNNECESSARY INFRASTRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ممنوع في هذه tranche إدخال:
+
+Kafka
+RabbitMQ
+Temporal
+Airflow
+BullMQ
+Redis
+
+إلا إذا أثبت الكود الحالي أن DB-based scheduler/claim غير ممكن تقنيًا.
+
+Default:
+
+USE CURRENT DATABASE FOR DURABLE DAG + CLAIMING
+
+الهدف هو إثبات Runtime، لا بناء distributed platform مستقلة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NO DUPLICATE ABSTRACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+قبل إنشاء:
+
+Scheduler
+Worker
+Queue
+Node executor
+Retry manager
+
+ابحث هل يوجد abstraction حالية.
+
+طبق:
+
+KEEP
+→ EXTEND
+→ GENERALIZE
+→ REPLACE ONLY WHEN NECESSARY
+
+لا تنشئ:
+
+SchedulerV2
+NewWorker
+DagWorker2
+ExecutionEngineNew
+
+إذا الموجود قابل للتطوير.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LOCAL CAPABILITIES ONLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+كل capabilities في هذه tranche يجب أن تكون:
+
+LOCAL
+TRUSTED
+DETERMINISTIC ENOUGH TO TEST
+NO EXTERNAL SIDE EFFECT
+
+مثال جيد:
+
+entity.create_internal
+entity.update_internal
+runtime.state_write
+runtime.local_compute
+
+مثال ممنوع الآن:
+
+publish.social
+payment.capture
+email.send_external
+booking.confirm_external
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NO RECEIPTS YET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تنشئ Execution Receipts النهائية.
+
+استخدم existing node/event/audit state فقط.
+
+التقرير يجب أن يقول:
+
+EXECUTION RECEIPTS:
+NOT ENABLED IN THIS TRANCHE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NO VERIFIER YET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تبنِ Independent Verifier الآن.
+
+لكن لا تسمي local node success:
+
+VERIFIED
+
+استخدم:
+
+EXECUTED_LOCAL
+أو
+COMPLETED
+
+بحسب canonical model.
+
+VERIFIED محجوزة للمرحلة التالية.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NO FAKE SUCCESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+إذا capability ليست مسموحة:
+
+BLOCKED
+
+إذا provider مطلوبة:
+
+BLOCKED_EXTERNAL_PROVIDER
+
+إذا approval missing:
+
+AWAITING_APPROVAL
+
+إذا input missing:
+
+AWAITING_INPUT
+
+إذا policy denies:
+
+BLOCKED_POLICY
+
+لا fallback وهمي.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL REGRESSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+عند إغلاق tranche فقط شغّل:
+
+- schema validation
+- OpenAPI generation إذا تغير contract
+- API typecheck
+- Web typecheck
+- Mobile typecheck
+- targeted build
+- conversation persistence
+- semantic router
+- durable runs
+- reference resolution
+- execution proposal
+- fingerprint
+- approval binding
+- DAG dependency tests
+- claim concurrency
+- fencing
+- retry
+- restart durability
+- cancellation
+- ownership/security
+
+لا تعِد تشغيل اختبارات unrelated ضخمة إذا لم تتأثر.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DEFINITION OF DONE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+اعتبر هذه tranche مكتملة فقط إذا:
+
+1. DAG محفوظة في DB.
+2. dependencies تعمل.
+3. readiness محسوبة Server-side.
+4. atomic claim مثبت.
+5. lease مثبتة.
+6. heartbeat يعمل.
+7. fencing يمنع stale worker.
+8. local safe worker ينفذ capability داخلية واحدة على الأقل.
+9. approval/policy/fingerprint يعاد التحقق منها قبل execution.
+10. retryable failure تعمل.
+11. permanent failure لا تعاد.
+12. recovery بعد restart يعمل.
+13. cancellation تعمل.
+14. owner isolation PASS.
+15. no external provider calls.
+16. no execution receipts.
+17. no independent verifier.
+18. no fake success.
+19. no duplicate architecture.
+20. Full regression لهذه الطبقات PASS.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL REPORT UPDATE ONLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تنشئ تقريرًا جديدًا.
+
+حدّث التقرير الحالي للمهمة #14 فقط وأضف:
+
+DURABLE DAG:
+REAL / PARTIAL
+
+DEPENDENCY SCHEDULING:
+PASS / FAIL
+
+ATOMIC CLAIM:
+PASS / FAIL
+
+LEASE:
+PASS / FAIL
+
+HEARTBEAT:
+PASS / FAIL
+
+FENCING:
+PASS / FAIL
+
+PARALLEL CLAIM SAFETY:
+PASS / FAIL
+
+LOCAL TRUSTED WORKER:
+REAL / PARTIAL
+
+RETRY:
+PASS / FAIL
+
+RESTART RECOVERY:
+PASS / FAIL
+
+CANCELLATION:
+PASS / FAIL
+
+EXTERNAL PROVIDERS:
+NOT ENABLED
+
+EXECUTION RECEIPTS:
+NOT ENABLED
+
+INDEPENDENT VERIFIER:
+NOT ENABLED
+
+EXTERNAL SIDE EFFECTS:
+ZERO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AFTER THIS TRANCHE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بعد نجاح هذه tranche:
+
+لا تبدأ أي Feature جانبية.
+
+انتقل مباشرة إلى:
+
+1. Trusted Executor finalization
+2. Execution Receipts
+3. Independent Verifier
+4. Retry/Recovery hardening
+5. Scheduler/Event Resume
+6. ثم Providers خارجية قليلة لإثبات E2E
+
+ولا تبدأ:
+
+- Marketplace features
+- extra UI
+- advanced dashboards
+- new domains
+- commercial features
+- Capability Lab
+
+قبل اكتمال سلسلة التنفيذ الموثوق.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL DIRECTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+نحن لا نحاول بناء أكبر Workflow Engine.
+
+نحن نحاول إكمال JASIM بأسرع طريقة صحيحة.
+
+Optimize for:
+
+CORRECTNESS
+DURABILITY
+SAFETY
+COMPLETION
+
+وليس:
+
+CODE VOLUME
+ABSTRACTION COUNT
+INFRASTRUCTURE COMPLEXITY
+REPORT LENGTH
+
+نفذ أقل بنية تحقق الـinvariants المطلوبة.
+
+لا تتوقف لإعادة عرض الخطة.
+
+ابدأ Build مباشرة داخل Task #14.
+
+إذا ظهر bug:
+FIX → TEST → CONTINUE
+
+إذا ظهر تحسين غير ضروري:
+DEFER
+
+إذا ظهر blocker حقيقي فقط:
+REPORT IT
+
+الهدف التالي هو إغلاق Durable DAG Core ثم الانتقال فورًا إلى:
+Receipts + Independent Verifier.

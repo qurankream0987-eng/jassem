@@ -1,0 +1,530 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM SMART UI
+# TASK 9A.1 — TYPESCRIPT READINESS RECONCILIATION
+# EXACT 11 ERRORS ONLY
+
+MODE:
+Focused readiness repair/classification only.
+
+Task 9A security implementation = PASS.
+
+Do NOT redo Task 9A.
+Do NOT start Task 9B.
+Do NOT redesign architecture.
+Do NOT deploy.
+Do NOT reopen Blocks 0–3.1.
+
+Current situation:
+
+SMART_UI_TASK_9A_SECURITY = PASS
+READY_FOR_SMART_UI_TASK_9B = NO
+
+Reason reported:
+11 TypeScript errors remain in general Web/canonical paths outside Task 9A modified files.
+
+Reported areas include:
+- Workspace transitions
+- Runtime lifecycle
+- Vite/type boundaries
+
+The goal of this task is to determine whether these 11 errors are:
+
+A. pre-existing unrelated type debt
+B. active Smart UI integration blockers
+C. real regressions introduced by Tasks 1–9A
+D. stale/generated/test-only type boundary issues
+
+Then apply ONLY the minimum safe fixes required for readiness.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. READ FIRST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Read:
+
+.local/tasks/smart-ui-task-9a-security-report.md
+
+and the current TypeScript output that contains the 11 errors.
+
+Do not perform a new broad repository audit.
+
+Work from the exact 11 diagnostics.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. FREEZE THE ERROR SET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Capture exactly:
+
+ERROR_ID
+FILE
+LINE
+TS_CODE
+MESSAGE
+
+for all 11 current errors.
+
+Create a frozen baseline:
+
+TS_ERRORS_BASELINE = 11
+
+Do not start fixing until all 11 are classified.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. CLASSIFY EACH ERROR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For every error classify exactly one:
+
+SMART_UI_ACTIVE_BLOCKER
+
+PRE_EXISTING_BUT_NOW_REACHABLE
+
+UNRELATED_LEGACY
+
+TEST_ONLY
+
+BUILD_BOUNDARY
+
+SHARED_CONTRACT_MISMATCH
+
+RUNTIME_LIFECYCLE_MISMATCH
+
+WORKSPACE_TRANSITION_MISMATCH
+
+OTHER
+
+Include one-sentence evidence for each classification.
+
+Do not call an error unrelated merely because its file was not changed in Task 9A.
+
+Reachability matters.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. SMART UI BLOCKER RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Treat an error as a blocker if it affects an active path such as:
+
+Conversation
+Presentation
+Workspace
+Morphing
+Living Objects
+Trusted Actions
+Runtime lifecycle used by Smart UI
+shared Web/Mobile contracts
+current Web build/type boundary
+
+If active Smart UI depends on the broken type relationship, fix it now.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. UNRELATED LEGACY RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+An error may remain only if you can prove it is:
+
+outside active Smart Generative Experience reachability
+
+AND
+
+not imported into current Web/Mobile/runtime path
+
+AND
+
+not required for Task 9B verification
+
+Do not hide or suppress it.
+
+Report it separately.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. NO TYPE SUPPRESSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Forbidden fixes:
+
+@ts-ignore
+
+@ts-nocheck
+
+eslint disable used as substitute for type correctness
+
+casting everything to any
+
+unknown as X without validation
+
+loosening shared contracts merely to silence errors
+
+excluding active source files from tsconfig
+
+disabling strict mode
+
+Do not make TypeScript green by weakening safety.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. WORKSPACE TRANSITION ERRORS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For errors involving Workspace / presentation transitions:
+
+preserve the accepted architecture:
+
+shared presentation identity
+shared semanticTransition
+ENTER
+UPDATE
+MORPH
+EXIT
+NO_CHANGE
+presentationVersion
+target-specific versions
+canonical projection truth
+
+Do not create another transition model.
+
+Fix only the mismatched type/interface/import boundary.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. RUNTIME LIFECYCLE ERRORS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For lifecycle errors:
+
+do NOT rewrite Runtime.
+
+Preserve:
+
+canonical server truth
+Run/Task lifecycle
+Attempt Ledger
+approval
+execution
+verification
+reconciliation
+
+If the issue is type narrowing / union exhaustiveness / adapter mismatch:
+
+fix at the correct boundary.
+
+Do not change lifecycle semantics merely to satisfy TypeScript.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. VITE / WEB TYPE BOUNDARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If errors are caused by Vite/client/server import boundaries:
+
+fix the boundary.
+
+Do not import:
+
+server implementation
+Node-only modules
+DB modules
+secrets
+
+into Web client.
+
+Prefer:
+
+client-safe shared contract
+type-only import
+shared adapter
+appropriate local declaration
+
+only when semantically correct.
+
+Do not mask server/client leakage.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. SHARED CONTRACT RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If an error reveals divergence between:
+
+Web
+Mobile
+server
+jasim-runtime-contract
+
+preserve ONE shared semantic definition.
+
+Do not fork:
+
+WebPresentationType
+MobilePresentationType
+RuntimePresentationType
+
+unless there is a purely rendering-specific type that contains no canonical semantics.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. FIX SCOPE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Fix only:
+
+the exact 11 diagnostics
+
+plus directly necessary type fallout caused by the correct fix.
+
+If repairing one error creates new diagnostics, explain them.
+
+Do not opportunistically refactor surrounding modules.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. NO DATABASE / SDK / MIGRATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Expected:
+
+NEW_DATABASE_TABLES = 0
+NEW_MIGRATIONS = 0
+NEW_EXTERNAL_SDKS = 0
+
+If a TypeScript fix appears to require schema/database architecture:
+
+STOP.
+
+Report the exact blocker.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. VERIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After fixes/classification run:
+
+Web TypeScript
+
+Server TypeScript
+
+Mobile TypeScript
+
+shared runtime-contract TypeScript
+
+Task 9A focused security tests
+
+affected Workspace transition tests
+
+affected Runtime lifecycle tests
+
+Task 8B2A morph regression
+
+Task 8B2B Living Object regression
+
+Task 7 Dispatcher regression
+
+Web production build
+
+Metro bundle if shared contracts changed
+
+git diff --check
+
+Do not run unrelated giant historical suites.
+
+Use sequential DB tests where known PostgreSQL parallel collisions exist.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. IMPORTANT READINESS RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+READY_FOR_SMART_UI_TASK_9B may become YES only if:
+
+A)
+all active Smart UI / shared / runtime TypeScript blockers are fixed
+
+AND
+
+B)
+Web TypeScript for the active production source tree passes
+
+AND
+
+C)
+any remaining diagnostics are explicitly proven unreachable legacy/test-only debt
+
+If Web TypeScript still fails in active production source:
+
+READY_FOR_SMART_UI_TASK_9B = NO
+
+Do not override this gate.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create exactly:
+
+.local/tasks/smart-ui-task-9a1-typescript-readiness-report.md
+
+Include:
+
+BASELINE_11_ERRORS
+
+CLASSIFICATION_TABLE
+
+SMART_UI_ACTIVE_BLOCKERS
+
+WORKSPACE_TRANSITION_FINDINGS
+
+RUNTIME_LIFECYCLE_FINDINGS
+
+VITE_BOUNDARY_FINDINGS
+
+SHARED_CONTRACT_FINDINGS
+
+FIXES_APPLIED
+
+REMAINING_ERRORS
+
+FILES_CHANGED
+
+TESTS
+
+Final counters:
+
+SMART_UI_TASK_9A1 =
+PASS / PARTIAL / FAIL
+
+TS_ERRORS_BASELINE =
+11
+
+TS_ERRORS_FIXED =
+<number>
+
+TS_ERRORS_REMAINING =
+<number>
+
+SMART_UI_ACTIVE_TS_ERRORS_REMAINING =
+<number>
+
+WORKSPACE_TRANSITION_ERRORS_REMAINING =
+<number>
+
+RUNTIME_LIFECYCLE_ERRORS_REMAINING =
+<number>
+
+VITE_BOUNDARY_ERRORS_REMAINING =
+<number>
+
+UNRELATED_LEGACY_ERRORS_REMAINING =
+<number>
+
+TYPE_SUPPRESSIONS_ADDED =
+0
+
+ANY_CAST_WORKAROUNDS_ADDED =
+0
+
+SERVER_CLIENT_BOUNDARY_VIOLATIONS =
+0
+
+NEW_DATABASE_TABLES =
+0
+
+NEW_MIGRATIONS =
+0
+
+NEW_EXTERNAL_SDKS =
+0
+
+TASK_9A_SECURITY_REGRESSION =
+PASS / FAIL
+
+TASK_8B2A_MORPH_REGRESSION =
+PASS / FAIL
+
+TASK_8B2B_LIVING_OBJECT_REGRESSION =
+PASS / FAIL
+
+TASK_7_DISPATCHER_REGRESSION =
+PASS / FAIL
+
+WEB_TYPESCRIPT =
+PASS / FAIL
+
+SERVER_TYPESCRIPT =
+PASS / FAIL
+
+MOBILE_TYPESCRIPT =
+PASS / FAIL
+
+SHARED_CONTRACT_TYPESCRIPT =
+PASS / FAIL
+
+WEB_PRODUCTION_BUILD =
+PASS / FAIL
+
+METRO_BUNDLE =
+PASS / FAIL / NOT_TOUCHED
+
+READY_FOR_SMART_UI_TASK_9B =
+YES / NO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. PASS GATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PASS requires:
+
+SMART_UI_ACTIVE_TS_ERRORS_REMAINING = 0
+
+WORKSPACE_TRANSITION_ERRORS_REMAINING = 0
+
+RUNTIME_LIFECYCLE_ERRORS_REMAINING = 0
+
+VITE_BOUNDARY_ERRORS_REMAINING = 0
+
+TYPE_SUPPRESSIONS_ADDED = 0
+
+ANY_CAST_WORKAROUNDS_ADDED = 0
+
+SERVER_CLIENT_BOUNDARY_VIOLATIONS = 0
+
+WEB_TYPESCRIPT = PASS
+
+affected regressions = PASS
+
+If unrelated legacy errors genuinely remain outside production reachability,
+list them explicitly.
+
+Do not convert them into fake PASS.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Task 9A.1:
+
+STOP.
+
+DO NOT start Task 9B.
+DO NOT start Power integration.
+DO NOT deploy.
+
+Return only:
+
+Task 9A.1 verdict
+
+baseline TS error count
+
+fixed count
+
+remaining count
+
+active Smart UI remaining count
+
+Workspace transition remaining count
+
+Runtime lifecycle remaining count
+
+Vite boundary remaining count
+
+Web TypeScript status
+
+regression status
+
+READY_FOR_SMART_UI_TASK_9B
+
+BEGIN TASK 9A.1.

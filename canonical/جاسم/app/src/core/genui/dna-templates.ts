@@ -1,0 +1,241 @@
+import type { DnaTemplate, BubbleGeneValue } from './types';
+import { BubbleGene } from './types';
+
+export const DNA_TEMPLATES: DnaTemplate[] = [
+  {
+    id: 'marketplace',
+    name: 'Marketplace',
+    genes: {
+      [BubbleGene.UI]: 0.9,
+      [BubbleGene.CAPABILITY]: 0.8,
+      [BubbleGene.TRUST]: 0.9,
+      [BubbleGene.MEMORY]: 0.7,
+      [BubbleGene.REASONING]: 0.6,
+      [BubbleGene.PLANNING]: 0.7,
+      [BubbleGene.COMMUNICATION]: 0.8,
+      [BubbleGene.SECURITY]: 0.9,
+    },
+    colors: ['#3b82f6', '#1d4ed8', '#60a5fa'],
+    gradient: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+    features: ['search', 'filter', 'cart', 'checkout', 'reviews', 'escrow'],
+  },
+  {
+    id: 'social',
+    name: 'Social Network',
+    genes: {
+      [BubbleGene.UI]: 0.9,
+      [BubbleGene.CAPABILITY]: 0.7,
+      [BubbleGene.TRUST]: 0.6,
+      [BubbleGene.MEMORY]: 0.9,
+      [BubbleGene.REASONING]: 0.5,
+      [BubbleGene.PLANNING]: 0.4,
+      [BubbleGene.COMMUNICATION]: 0.9,
+      [BubbleGene.SECURITY]: 0.7,
+    },
+    colors: ['#ec4899', '#db2777', '#f472b6'],
+    gradient: 'linear-gradient(135deg, #ec4899, #db2777)',
+    features: ['profiles', 'feeds', 'messaging', 'groups', 'events'],
+  },
+  {
+    id: 'job_board',
+    name: 'Job Board',
+    genes: {
+      [BubbleGene.UI]: 0.8,
+      [BubbleGene.CAPABILITY]: 0.9,
+      [BubbleGene.TRUST]: 0.8,
+      [BubbleGene.MEMORY]: 0.8,
+      [BubbleGene.REASONING]: 0.9,
+      [BubbleGene.PLANNING]: 0.8,
+      [BubbleGene.COMMUNICATION]: 0.7,
+      [BubbleGene.SECURITY]: 0.8,
+    },
+    colors: ['#f59e0b', '#d97706', '#fbbf24'],
+    gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
+    features: ['jobs', 'resumes', 'matching', 'interviews', 'salary_comparison'],
+  },
+  {
+    id: 'transport',
+    name: 'Transport',
+    genes: {
+      [BubbleGene.UI]: 0.8,
+      [BubbleGene.CAPABILITY]: 0.9,
+      [BubbleGene.TRUST]: 0.8,
+      [BubbleGene.MEMORY]: 0.6,
+      [BubbleGene.REASONING]: 0.7,
+      [BubbleGene.PLANNING]: 0.9,
+      [BubbleGene.COMMUNICATION]: 0.8,
+      [BubbleGene.SECURITY]: 0.9,
+    },
+    colors: ['#10b981', '#059669', '#34d399'],
+    gradient: 'linear-gradient(135deg, #10b981, #059669)',
+    features: ['booking', 'tracking', 'real_time', 'payments', 'ratings'],
+  },
+  {
+    id: 'rental',
+    name: 'Rental',
+    genes: {
+      [BubbleGene.UI]: 0.9,
+      [BubbleGene.CAPABILITY]: 0.7,
+      [BubbleGene.TRUST]: 0.9,
+      [BubbleGene.MEMORY]: 0.7,
+      [BubbleGene.REASONING]: 0.6,
+      [BubbleGene.PLANNING]: 0.7,
+      [BubbleGene.COMMUNICATION]: 0.8,
+      [BubbleGene.SECURITY]: 0.9,
+    },
+    colors: ['#8b5cf6', '#7c3aed', '#a78bfa'],
+    gradient: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+    features: ['listings', 'booking', 'contracts', 'inspection', 'payments'],
+  },
+  {
+    id: 'shop_builder',
+    name: 'Shop Builder',
+    genes: {
+      [BubbleGene.UI]: 0.9,
+      [BubbleGene.CAPABILITY]: 0.8,
+      [BubbleGene.TRUST]: 0.8,
+      [BubbleGene.MEMORY]: 0.6,
+      [BubbleGene.REASONING]: 0.5,
+      [BubbleGene.PLANNING]: 0.6,
+      [BubbleGene.COMMUNICATION]: 0.7,
+      [BubbleGene.SECURITY]: 0.9,
+    },
+    colors: ['#06b6d4', '#0891b2', '#22d3ee'],
+    gradient: 'linear-gradient(135deg, #06b6d4, #0891b2)',
+    features: ['storefront', 'inventory', 'checkout', 'analytics', 'themes'],
+  },
+  {
+    id: 'freelance',
+    name: 'Freelance',
+    genes: {
+      [BubbleGene.UI]: 0.8,
+      [BubbleGene.CAPABILITY]: 0.9,
+      [BubbleGene.TRUST]: 0.8,
+      [BubbleGene.MEMORY]: 0.7,
+      [BubbleGene.REASONING]: 0.7,
+      [BubbleGene.PLANNING]: 0.8,
+      [BubbleGene.COMMUNICATION]: 0.9,
+      [BubbleGene.SECURITY]: 0.8,
+    },
+    colors: ['#6366f1', '#4f46e5', '#818cf8'],
+    gradient: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+    features: ['gigs', 'portfolios', 'milestones', 'escrow', 'skill_tests'],
+  },
+  {
+    id: 'healthcare',
+    name: 'Healthcare',
+    genes: {
+      [BubbleGene.UI]: 0.8,
+      [BubbleGene.CAPABILITY]: 0.9,
+      [BubbleGene.TRUST]: 0.9,
+      [BubbleGene.MEMORY]: 0.9,
+      [BubbleGene.REASONING]: 0.9,
+      [BubbleGene.PLANNING]: 0.8,
+      [BubbleGene.COMMUNICATION]: 0.8,
+      [BubbleGene.SECURITY]: 0.9,
+    },
+    colors: ['#f43f5e', '#e11d48', '#fb7185'],
+    gradient: 'linear-gradient(135deg, #f43f5e, #e11d48)',
+    features: ['appointments', 'records', 'prescriptions', 'telemedicine', 'insurance'],
+  },
+  {
+    id: 'travel',
+    name: 'Travel',
+    genes: {
+      [BubbleGene.UI]: 0.9,
+      [BubbleGene.CAPABILITY]: 0.8,
+      [BubbleGene.TRUST]: 0.8,
+      [BubbleGene.MEMORY]: 0.7,
+      [BubbleGene.REASONING]: 0.6,
+      [BubbleGene.PLANNING]: 0.9,
+      [BubbleGene.COMMUNICATION]: 0.8,
+      [BubbleGene.SECURITY]: 0.8,
+    },
+    colors: ['#14b8a6', '#0d9488', '#2dd4bf'],
+    gradient: 'linear-gradient(135deg, #14b8a6, #0d9488)',
+    features: ['flights', 'hotels', 'itineraries', 'packages', 'price_alerts'],
+  },
+  {
+    id: 'education',
+    name: 'Education',
+    genes: {
+      [BubbleGene.UI]: 0.8,
+      [BubbleGene.CAPABILITY]: 0.8,
+      [BubbleGene.TRUST]: 0.8,
+      [BubbleGene.MEMORY]: 0.9,
+      [BubbleGene.REASONING]: 0.8,
+      [BubbleGene.PLANNING]: 0.8,
+      [BubbleGene.COMMUNICATION]: 0.9,
+      [BubbleGene.SECURITY]: 0.8,
+    },
+    colors: ['#84cc16', '#65a30d', '#a3e635'],
+    gradient: 'linear-gradient(135deg, #84cc16, #65a30d)',
+    features: ['courses', 'quizzes', 'certificates', 'live_classes', 'gamification'],
+  },
+  {
+    id: 'event',
+    name: 'Event',
+    genes: {
+      [BubbleGene.UI]: 0.9,
+      [BubbleGene.CAPABILITY]: 0.7,
+      [BubbleGene.TRUST]: 0.7,
+      [BubbleGene.MEMORY]: 0.6,
+      [BubbleGene.REASONING]: 0.5,
+      [BubbleGene.PLANNING]: 0.9,
+      [BubbleGene.COMMUNICATION]: 0.9,
+      [BubbleGene.SECURITY]: 0.7,
+    },
+    colors: ['#d946ef', '#c026d3', '#e879f9'],
+    gradient: 'linear-gradient(135deg, #d946ef, #c026d3)',
+    features: ['venues', 'tickets', 'guests', 'scheduling', 'live_streaming'],
+  },
+  {
+    id: 'government',
+    name: 'Government',
+    genes: {
+      [BubbleGene.UI]: 0.7,
+      [BubbleGene.CAPABILITY]: 0.9,
+      [BubbleGene.TRUST]: 0.9,
+      [BubbleGene.MEMORY]: 0.9,
+      [BubbleGene.REASONING]: 0.8,
+      [BubbleGene.PLANNING]: 0.7,
+      [BubbleGene.COMMUNICATION]: 0.6,
+      [BubbleGene.SECURITY]: 0.9,
+    },
+    colors: ['#78716c', '#57534e', '#a8a29e'],
+    gradient: 'linear-gradient(135deg, #78716c, #57534e)',
+    features: ['bills', 'payments', 'documents', 'verification', 'appointments'],
+  },
+];
+
+export function getDnaTemplateById(id: string): DnaTemplate | undefined {
+  return DNA_TEMPLATES.find((t) => t.id === id);
+}
+
+export function getDnaTemplatesByCategory(category: string): DnaTemplate[] {
+  return DNA_TEMPLATES.filter((t) => t.id.includes(category) || t.name.toLowerCase().includes(category));
+}
+
+export function generateCustomDnaTemplate(name: string, seed: string): DnaTemplate {
+  const hash = seed.split('').reduce((h, c) => ((h << 5) - h) + c.charCodeAt(0), 0);
+  const genes: Record<BubbleGeneValue, number> = {
+    [BubbleGene.UI]: Math.abs((hash * 16807) % 1000) / 1000,
+    [BubbleGene.CAPABILITY]: Math.abs((hash * 48271) % 1000) / 1000,
+    [BubbleGene.TRUST]: Math.abs((hash * 69621) % 1000) / 1000,
+    [BubbleGene.MEMORY]: Math.abs((hash * 39475) % 1000) / 1000,
+    [BubbleGene.REASONING]: Math.abs((hash * 16807 * 2) % 1000) / 1000,
+    [BubbleGene.PLANNING]: Math.abs((hash * 48271 * 2) % 1000) / 1000,
+    [BubbleGene.COMMUNICATION]: Math.abs((hash * 69621 * 2) % 1000) / 1000,
+    [BubbleGene.SECURITY]: Math.abs((hash * 39475 * 2) % 1000) / 1000,
+  };
+
+  const hue = Math.abs(hash) % 360;
+  return {
+    id: `custom-${Date.now()}`,
+    name,
+    genes,
+    colors: [`hsl(${hue}, 70%, 50%)`, `hsl(${(hue + 30) % 360}, 70%, 45%)`, `hsl(${(hue + 60) % 360}, 70%, 55%)`],
+    gradient: `linear-gradient(135deg, hsl(${hue}, 70%, 50%), hsl(${(hue + 60) % 360}, 70%, 45%))`,
+    features: ['custom', 'configurable', 'adaptive'],
+  };
+}

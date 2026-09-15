@@ -1,0 +1,215 @@
+RECOMMENDED REPLIT MODE: POWER
+
+JASIM — PRODUCTION MODEL GATEWAY + AI COST CONTROL
+
+PRECONDITION:
+READY_FOR_FINAL_PRODUCTION_CLOSURE = YES
+ARCHITECTURE = FROZEN
+
+GOAL:
+Convert JASIM from development/model abstraction into a production-grade multi-model AI gateway without changing the canonical runtime architecture.
+
+DO NOT rebuild:
+Kernel
+Planner
+Runtime
+Trusted Dispatcher
+Presentation system
+Memory architecture
+
+IMPLEMENT:
+
+1. PRODUCTION MODEL GATEWAY
+
+Provider-neutral interface:
+
+ModelRequest
+ModelResponse
+ModelUsage
+ModelCost
+ModelFailure
+
+Do not couple JASIM business logic directly to one model vendor.
+
+2. MODEL ROUTING
+
+Support generic tiers such as:
+
+FAST_CHEAP
+BALANCED
+STRONG_REASONING
+
+Routing must consider:
+- task complexity
+- required tool reasoning
+- context size
+- latency
+- user plan/budget
+- previous failure/escalation
+
+Do NOT hardcode domains.
+
+3. ESCALATION
+
+Default to cheapest sufficient model.
+
+Escalate only when justified.
+
+Do not run strongest model for every message.
+
+4. TOKEN / CONTEXT CONTROL
+
+Measure:
+input tokens
+output tokens
+cached tokens if provider exposes them
+context size
+
+Prevent unlimited conversation-history replay.
+
+Reuse canonical memory/reference context.
+Do not blindly send full history.
+
+5. COST LEDGER / METERING
+
+For each model call store/emit measurable usage:
+
+provider
+model
+request class
+input tokens
+output tokens
+estimated provider cost
+user
+conversation
+run/task if applicable
+
+Do NOT mix this with financial transaction truth.
+
+This is operational cost metering.
+
+6. COST METRICS
+
+Provide:
+
+costPerConversation
+costPerModelCall
+costPerRun
+costPerUser
+costPerFreeUser
+costPerPaidUser
+costByModel
+costByProvider
+
+7. PLAN BUDGETS
+
+Support configurable internal budgets for:
+FREE
+PLUS
+PRO
+BUSINESS
+
+Do not expose raw token complexity to users unless product design explicitly wants it.
+
+8. RATE LIMITS / RUNAWAY PROTECTION
+
+Prevent:
+recursive model loops
+unbounded planner loops
+unbounded retries
+unbounded context growth
+unexpected cost explosion
+
+9. TRUTHFUL FAILURE
+
+Provider unavailable
+quota exhausted
+credentials missing
+rate limited
+model unavailable
+
+must return truthful gateway state.
+
+NO stub assistant answer.
+NO fake success.
+
+10. PROVIDER SECRETS
+
+Use production secret infrastructure.
+Never expose keys to Web/Mobile/LLM/presentation metadata/log output.
+
+11. OBSERVABILITY
+
+Measure:
+latency
+failure rate
+model escalation rate
+tokens
+cost
+provider availability.
+
+12. TESTING
+
+Test:
+cheap→cheap
+cheap→strong escalation
+budget exceeded
+provider unavailable
+rate limit
+timeout
+context limit
+no-secret leakage
+metering correctness
+no fake response fallback.
+
+NO DEPLOYMENT YET.
+NO REAL MONEY.
+
+REPORT:
+.local/tasks/jasim-production-model-gateway-report.md
+
+FINAL:
+
+PRODUCTION_MODEL_GATEWAY =
+PASS / FAIL
+
+MODEL_ROUTING =
+PASS / FAIL
+
+CHEAPEST_SUFFICIENT_ROUTING =
+PASS / FAIL
+
+MODEL_ESCALATION =
+PASS / FAIL
+
+CONTEXT_BUDGETING =
+PASS / FAIL
+
+AI_COST_METERING =
+PASS / FAIL
+
+PER_USER_COST_AVAILABLE =
+YES / NO
+
+PER_RUN_COST_AVAILABLE =
+YES / NO
+
+PLAN_BUDGETS =
+PASS / FAIL
+
+RUNAWAY_AGENT_PROTECTION =
+PASS / FAIL
+
+MODEL_GATEWAY_FAKE_SUCCESS_PATHS =
+0
+
+SECRET_LEAKS =
+0
+
+NEW_DOMAIN_ARCHITECTURE =
+0
+
+READY_FOR_REAL_DISCOVERY_PROVIDERS =
+YES / NO
+
+STOP.

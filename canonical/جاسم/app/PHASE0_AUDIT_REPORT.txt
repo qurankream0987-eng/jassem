@@ -1,0 +1,299 @@
+════════════════════════════════════════════════════════════════════════════════
+                    JASIM PHASE 0 ARCHITECTURAL AUDIT REPORT
+                         (Strict Observation — No Fixes)
+════════════════════════════════════════════════════════════════════════════════
+
+EXECUTIVE SUMMARY
+─────────────────
+JASIM is structurally designed as a General Generative Executable Agent with
+all the right components: Hybrid Intent Engine, LLM Planner, Capability Registry
+with 37 DNA primitives, DAG executor, and LLM-powered response generation.
+
+VERDICT: C+ — Architecture is sound. Execution pipeline is BROKEN at the most
+critical junction: the step executor discards ALL planner-generated inputs.
+This single bug renders the entire execution layer a no-op.
+
+════════════════════════════════════════════════════════════════════════════════
+1. GOLDEN PATH TRACE: User Message → Final Result
+════════════════════════════════════════════════════════════════════════════════
+
+  User Message
+       │
+       ▼
+  [jasim.ts] sendMessage ────► Creates task skeleton (TaskRuntime.createTask)
+       │                            Status: ✓ REAL (tRPC → DB insert)
+       ▼
+  [intent-engine.ts] classify ──► Hybrid regex + LLM fallback with
+       │                            Status: ✓ REAL (calls llmRouter.route)
+       ▼
+  [planner.ts] understand ────► IntentEngine.classify (with memory context)
+       │                            Status: ✓ REAL
+       ▼
+  [planner.ts] plan ──────────► LLM-powered dynamic DAG generation
+       │                            Status: ✓ REAL (llmRouter.route → parsePlanToDAG)
+       │                            Generates steps WITH inputs & dependencies
+       ▼
+  [planner.ts] persistPlan ───► Stores steps to DB (taskSteps table)
+       │                            Status: ✓ REAL (drizzle insert)
+       │                            Stores: name, type, inputs, dependencies
+       ▼
+  [task-runtime.ts] executePlan
+       │
+       ├──► buildDAGLevels(steps) ──► Parses DAG levels for execution order
+       │                                Status: ✗ BROKEN (see Section 3)
+       │
+       └──► executeStep(taskId, step, signal)
+                │
+                ├──► Dependency check via taskStepDependencies table
+                │        Status: ✗ BROKEN (table doesn't exist in schema)
+                │
+                └──► executeStepInternal(taskId, step)
+                         │
+                         ├──► capabilityRegistry.execute(cap.id, {}, context)
+                         │        Status: ✗ CRITICAL BUG (passes {} NOT step.inputs)
+                         │
+                         ├──► toolRuntime.invoke(tool.id, {}, context)
+                         │        Status: ✗ CRITICAL BUG (passes {} NOT step.inputs)
+                         │
+                         └──► llmRouter.process({...})  [fallback]
+                                  Status: ✗ BROKEN (method doesn't exist)
+
+  Result: ALL steps execute with EMPTY inputs. Planner output is completely
+  discarded. The system generates beautiful plans then executes them blindly.
+
+════════════════════════════════════════════════════════════════════════════════
+2. WHAT ACTUALLY WORKS (Verified)
+════════════════════════════════════════════════════════════════════════════════
+
+Component                      Status    Evidence
+─────────────────────────────────────────────────────────────────────────────
+Intent Classification          ✓ REAL    Hybrid regex + LLM fallback with
+                                          memory context injection. Calls
+                                          llmRouter.route() with full prompt.
+
+Dynamic Planning               ✓ REAL    LLM generates JSON plan with steps,
+                                          inputs, dependencies, risk levels.
+                                          Zod validation. Static fallback.
+
+Capability Registry Structure  ✓ REAL    45 strategies registered across 5
+                                          types (llm, tool, runtime, composite,
+                                          human_gate). Discover, list, execute.
+
+Plan Persistence               ✓ REAL    DAG stored as JSON in tasks.plan.
+                                          Steps stored in taskSteps with
+                                          inputs, dependencies, retry config.
+
+Frontend tRPC Connection       ✓ REAL    useJasimChat calls trpc.jasim.
+                                          sendMessage.useMutation(). Real
+                                          streaming via EventSource.
+
+Response Generation            ✓ REAL    LLM-powered with streaming fallback
+                                          to template. Contextual prompts.
+
+Security Checks                ✓ REAL    verifyAccess + rate limiting in
+                                          capability-registry.execute().
+
+════════════════════════════════════════════════════════════════════════════════
+3. WHAT IS BROKEN (Verified with Evidence)
+════════════════════════════════════════════════════════════════════════════════
+
+[CRITICAL] Bug #1: Step Inputs Are Never Passed
+───────────────────────────────────────────────────────────────────────────────
+File: api/core/task-runtime.ts
+Lines: 274, 286, 336
+
+  const capResult = await this.capabilityRegistry.execute(cap.id, {}, context);
+                                                          ^^^^
+  const result = await this.toolRuntime.invoke(tool.id, {}, context);
+                                                     ^^^^
+  const altResult = await this.capabilityRegistry.execute(alt.id, {}, context);
+                                                           ^^^^
+
+Impact: SEVERE. The planner generates step.inputs like:
+  { "goal": "Book a flight to Paris", "intentType": "book", "entities": [...] }
+
+The executor receives these inputs from the DB but passes {} to every
+single capability and tool. This means:
+- The LLM fallback in executeStepInternal receives no context
+- Tools run with no parameters
+- Capabilities execute with empty data
+
+This is NOT a missing feature. This is a broken wire in the execution loop.
+
+───────────────────────────────────────────────────────────────────────────────
+[CRITICAL] Bug #2: Dependency Table Does Not Exist
+───────────────────────────────────────────────────────────────────────────────
+File: api/core/task-runtime.ts Line 142
+File: db/schema.ts (MISSING)
+
+Code imports: import { ..., taskStepDependencies, taskEvents } from '@db/schema';
+Schema exports: NEITHER table exists in db/schema.ts
+
+executeStep queries:
+  const deps = await db.select().from(taskStepDependencies)...
+
+This will throw at runtime when any step is executed. The dependency check
+is completely non-functional.
+
+───────────────────────────────────────────────────────────────────────────────
+[CRITICAL] Bug #3: DAG Builder Uses Wrong Field for Dependencies
+───────────────────────────────────────────────────────────────────────────────
+File: api/core/task-runtime.ts Line 219
+
+buildDAGLevels looks for:
+  if (step.dependsOn) {
+    const deps = typeof step.dependsOn === 'string' ? JSON.parse(step.dependsOn) : step.dependsOn;
+    for (const depName of deps) {
+      const depStep = steps.find((s) => s.name === depName);
+
+But the planner stores:
+  dependencies: node.dependencies   // Array of STEP IDs like "step_1_understand_goal"
+
+And the fallback plan stores:
+  dependsOn: JSON.stringify(['understand_goal'])  // Array of STEP NAMES
+
+MISMATCH: The DAG builder looks for .dependsOn (step names) but the planner
+stores .dependencies (step IDs). The DB schema has .dependencies (JSON array
+of step IDs). No step will ever have .dependsOn set from the planner path.
+
+Impact: ALL steps run in parallel in a single level. DAG ordering is ignored.
+
+───────────────────────────────────────────────────────────────────────────────
+[CRITICAL] Bug #4: LLM Fallback Method Does Not Exist
+───────────────────────────────────────────────────────────────────────────────
+File: api/core/task-runtime.ts Line 296
+
+  const llmResult = await llmRouter.process({...})
+
+llm-router.ts exports: route(), streamLLM(), getAvailableModels()
+Does NOT export: process()
+
+Impact: When no capability or tool matches a step type, the fallback throws
+"llmRouter.process is not a function" instead of routing to LLM.
+
+───────────────────────────────────────────────────────────────────────────────
+[HIGH] Bug #5: TypeScript Compilation Is Falsely Reported as Clean
+───────────────────────────────────────────────────────────────────────────────
+
+Command: npx tsc --noEmit  
+Result: 0 errors (but checks 0 files because root tsconfig.json has "files": [])
+
+Command: npx tsc -p tsconfig.server.json --noEmit
+Result: 739 errors across the server codebase
+
+task-runtime.ts alone has ~20 errors including:
+- Module '"@db/schema"' has no exported member 'taskStepDependencies'
+- Module '"@db/schema"' has no exported member 'taskEvents'
+- Module '"./planner"' has no exported member 'getPlanner'
+- Type 'ExecutionContext' not found in '@contracts/jasim'
+- Type 'StepResult' not found in '@contracts/jasim'
+- 'executing' not assignable to task status enum
+- 'progress' does not exist on tasks table
+- 'errorMessage' does not exist (should be 'error')
+
+Impact: The build script (vite build && cp -r api db contracts dist/) does NOT
+type-check server code. It copies .ts files raw. Server runs via tsx which
+transpiles on-the-fly. Type safety is an illusion.
+
+───────────────────────────────────────────────────────────────────────────────
+[HIGH] Bug #6: Task Status Mismatches Schema Enum
+───────────────────────────────────────────────────────────────────────────────
+File: api/core/task-runtime.ts Lines 66, 114, 117
+
+Code uses: TASK_STATUSES.EXECUTING, TASK_STATUSES.WAITING_FOR_INPUT
+Schema enum: Check db/schema.ts for actual values.
+
+If the constants don't match the schema, DB updates will fail or be rejected.
+
+───────────────────────────────────────────────────────────────────────────────
+[MEDIUM] Bug #7: getPlanner Import Is Broken
+───────────────────────────────────────────────────────────────────────────────
+File: api/core/task-runtime.ts Line 6
+
+  import { getPlanner } from './planner';
+
+planner.ts exports: class Planner (NO getPlanner function)
+
+Impact: Dead import. Not used in task-runtime.ts. But indicates incomplete
+refactoring — the runtime was supposed to get planner instance somehow.
+
+════════════════════════════════════════════════════════════════════════════════
+4. THE GAP: Why JASIM Is NOT a General Agent (Yet)
+════════════════════════════════════════════════════════════════════════════════
+
+A TRUE General Agent Loop:
+  User Goal → Understand → Dynamic Plan → Discover Capabilities
+      → Execute → OBSERVE Result → VERIFY → If Failed: REPAIR/REPLAN
+      → Repeat until Complete
+
+JASIM's Current Broken Loop:
+  User Goal → Understand → Dynamic Plan → [PLAN DISCARDED] → Execute(Empty)
+      → No Observation → No Verification → No Repair → Complete/Fail
+
+Specific Missing Pieces:
+┌─────────────────────┬────────────────────────────────────────────────────────┐
+│ Agent Capability    │ JASIM Status                                           │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Dynamic Planning    │ ✓ Implemented (LLM-powered)                            │
+│ Input Passing       │ ✗ BROKEN — plans generated but never used              │
+│ Dependency Ordering │ ✗ BROKEN — DAG builder uses wrong field                │
+│ Observation         │ ✗ MISSING — no step output inspection                  │
+│ Verification        │ ✗ MISSING — no success/failure validation              │
+│ Repair/Replan       │ ✗ PARTIAL — retry exists but no real replanning        │
+│ Capability Discovery│ ✓ Structure exists but never invoked dynamically       │
+│ Memory Influence    │ ✓ Structure exists (learning engine)                   │
+│ Human-in-the-Loop   │ ✓ Structure exists (approval gates in planner)         │
+└─────────────────────┴────────────────────────────────────────────────────────┘
+
+════════════════════════════════════════════════════════════════════════════════
+5. MOCK/ECHO/FAKE HUNT
+════════════════════════════════════════════════════════════════════════════════
+
+File: api/core/agent-router.ts
+  simulateWorkerExecution() — Returns hardcoded echo string. NOT USED in main
+  flow (jasim.ts uses TaskRuntime directly). Harmless dead code.
+
+File: api/core/task-runtime.ts
+  buildDAGLevels fallback — Creates hardcoded 2-step plan when no DB steps
+  exist. This IS used and IS a real fallback (not a fake — it runs).
+
+File: api/routers/jasim.ts
+  generateAssistantResponse() — Has LLM path (REAL) and template fallback.
+  Template fallback is a graceful degradation, not a fake.
+
+CONCLUSION: No intentional mocks or fakes in the main execution path.
+The system genuinely tries to execute. It's just broken at the wire level.
+
+════════════════════════════════════════════════════════════════════════════════
+6. SCORECARD
+════════════════════════════════════════════════════════════════════════════════
+
+Category                          Score    Notes
+─────────────────────────────────────────────────────────────────────────────
+Intent Classification             A        Hybrid, fast, accurate, with memory
+Planning                          A-       LLM-powered, validated, fallback
+Capability Registry Structure     B+       45 strategies, discovery ready
+Execution Pipeline                F        Inputs discarded, DAG broken
+Observation/Verification          F        Not implemented
+Repair/Replanning                 D        Retry only, no dynamic replan
+Frontend Integration              B+       Real tRPC, real streaming
+Type Safety                       F        739 unchecked errors
+Security Integration              B        Checks exist but not verified dynamic
+Memory/Learning                   C+       Structure exists, wired to planner
+
+════════════════════════════════════════════════════════════════════════════════
+7. PHASE 0 CONCLUSION
+════════════════════════════════════════════════════════════════════════════════
+
+JASIM is a C+ system because:
+1. The planning brain works (Intent → Plan with inputs & dependencies)
+2. The execution body is paralyzed (inputs never reach capabilities)
+3. The type system is theater (739 errors hidden by bad tsconfig)
+
+THE SINGLE FIX THAT UNLOCKS GENERAL AGENT STATUS:
+  Change task-runtime.ts lines 274, 286, 336 from {} to step.inputs
+
+This won't make it a perfect General Agent, but it will make it a FUNCTIONAL
+one. With inputs flowing, we can then test novel tasks and iterate.
+
+════════════════════════════════════════════════════════════════════════════════

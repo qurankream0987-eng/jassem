@@ -1,0 +1,678 @@
+# JASIM — FINAL VISION LOCK
+
+## DO NOT IMPLEMENT YET — FIRST PROVE THAT THE PRODUCT VISION IS COMPLETE
+
+قبل أن تبدأ مرحلة "إنهاء جاسم"، أريد منك تثبيت وفهم الرؤية النهائية كاملة.
+
+هذه ليست مهمة إعادة تصميم ولا إعادة بناء.
+
+ولا أريد منك أن تختزل جاسم في الـTasks الموجودة حاليًا.
+
+الهدف هو التأكد أن كل التطوير القادم يخدم منتجًا واحدًا محددًا:
+
+> JASIM — Universal Generative Runtime driven by one intelligent conversation.
+
+---
+
+## 1. هوية جاسم النهائية
+
+جاسم ليس:
+
+* Chatbot فقط.
+* Marketplace.
+* SaaS Builder.
+* App Builder تقليدي.
+* Workflow Tool.
+* مجموعة Agents.
+* مجموعة Templates.
+* مجموعة مواقع مصممة مسبقًا.
+
+جاسم يجمع هذه القدرات داخل Runtime عام.
+
+التعريف الأساسي:
+
+> المستخدم يعبّر عن هدف طبيعي، وجاسم يفهم المطلوب، يركب القدرات المناسبة، ينفذ ما يستطيع تنفيذه بصدق، ويمكنه توليد عوالم وواجهات حية قابلة للاستمرار والتطور.
+
+---
+
+# 2. واجهة واحدة
+
+الواجهة الأساسية لجاسم هي:
+
+```text
+MAIN JASIM CHAT
+```
+
+يمكن وجود:
+
+```text
+New Conversation
+History
+Worlds
+Account
+Settings
+Notifications
+```
+
+لكنها Navigation مساعدة.
+
+لا تحوّل المنتج إلى Dashboard تقليدي.
+
+---
+
+# 3. المحادثة هي مركز التحكم
+
+من المحادثة يستطيع المستخدم:
+
+```text
+ask
+search
+analyze
+compare
+create
+modify
+execute
+monitor
+schedule
+buy
+sell
+hire
+publish
+manage
+build worlds
+```
+
+حسب القدرات المتوفرة والصلاحيات.
+
+---
+
+# 4. ليس كل طلب World
+
+جاسم يجب أن يقرر ديناميكيًا إن كان الناتج الأنسب:
+
+```text
+text response
+structured answer
+bubble
+collection of bubbles
+action
+workflow
+task
+persistent world
+```
+
+لا تحول كل Prompt إلى تطبيق.
+
+---
+
+# 5. Generative Bubbles
+
+Bubble هي Surface توليدية عامة.
+
+قد تمثل:
+
+```text
+entity
+result
+offer
+person
+product
+service
+listing
+request
+workflow
+approval
+transaction
+task
+world
+```
+
+ويحدد محتواها Runtime Schema والحالة والسياق.
+
+لا تبنِ Domain Bubble ثابتة.
+
+---
+
+# 6. Worlds
+
+World هو Runtime Entity مستمر.
+
+يمكن أن يحتوي:
+
+```text
+actors
+roles
+entities
+relationships
+collections
+states
+actions
+workflows
+events
+permissions
+policies
+transactions
+views
+automations
+memory
+versions
+```
+
+وقد يحتوي World على عدة Tasks.
+
+تنتهي Task ويمكن أن يستمر World سنوات.
+
+---
+
+# 7. World Intelligence
+
+العالم ليس تطبيقًا منفصلًا عن جاسم.
+
+أي World مولد يبقى متصلًا بعقل جاسم.
+
+يمكن للمستخدم من:
+
+```text
+Main Chat
+```
+
+أو من داخل:
+
+```text
+World
+```
+
+أن يطلب تعديلًا أو تنفيذًا.
+
+كلاهما يعودان إلى نفس Runtime.
+
+---
+
+# 8. World Evolution
+
+يجب أن يستطيع المستخدم لاحقًا أن يقول:
+
+```text
+أضف...
+احذف...
+غيّر...
+اجعل...
+من الآن...
+إذا حدث...
+```
+
+ويتم تعديل نفس World عبر:
+
+```text
+ChangeSet
+Validation
+Migration Preview
+Approval when required
+Version
+Apply
+Verify
+Rollback when required
+```
+
+بدون إعادة توليد النظام كله.
+
+---
+
+# 9. Generality
+
+كل الأمثلة التالية مجرد اختبارات:
+
+```text
+cars
+jobs
+restaurants
+delivery
+real estate
+repairs
+freelancers
+education
+stores
+travel
+procurement
+appointments
+inventory
+advertising
+```
+
+ممنوع أن تصبح Architecture.
+
+يجب أن ينتج السلوك من:
+
+```text
+primitives
++
+capabilities
++
+world schema
++
+workflows
++
+policies
+```
+
+---
+
+# 10. JASIM Intelligence
+
+العقل مسؤول عن:
+
+```text
+understanding
+clarification
+decomposition
+planning
+capability selection
+world modeling
+replanning
+generative presentation decisions
+```
+
+لكنه ليس مصدر الحقيقة التنفيذية.
+
+---
+
+# 11. Runtime هو مصدر الحقيقة
+
+مصادر الحقيقة هي:
+
+```text
+database state
+world state
+task state
+events
+capability receipts
+verification results
+permissions
+policies
+```
+
+وليس ما قاله LLM.
+
+---
+
+# 12. Trusted Execution
+
+لا يستطيع النموذج تنفيذ Function عشوائية.
+
+المسار الوحيد:
+
+```text
+Plan
+↓
+Registered Capability
+↓
+Policy
+↓
+Approval when needed
+↓
+Validated Inputs
+↓
+Provider
+↓
+Receipt
+↓
+Verifier
+```
+
+---
+
+# 13. Capability Philosophy
+
+القدرات يجب أن تكون عامة بقدر الإمكان.
+
+مثل:
+
+```text
+search
+extract
+compare
+rank
+match
+create
+update
+schedule
+notify
+publish
+calculate
+transact
+monitor
+```
+
+لا:
+
+```text
+sellToyota
+hireDeveloper
+bookItalianRestaurant
+```
+
+---
+
+# 14. Commercial Runtime
+
+العوالم تستطيع مستقبلًا استخدام نماذج اقتصادية عامة مثل:
+
+```text
+commission
+subscription
+success fee
+transaction fee
+CPC
+CPA
+featured placement
+service fee
+hybrid pricing
+```
+
+ولا تبنِ Monetization Engine منفصلًا لكل Domain.
+
+---
+
+# 15. Memory
+
+جاسم يحتاج فصلًا واضحًا بين:
+
+```text
+conversation memory
+user memory
+world memory
+task state
+runtime state
+event history
+```
+
+ولا تحول كل شيء إلى Prompt طويل.
+
+---
+
+# 16. Proactive/Long-running work
+
+جاسم يجب أن يستطيع دعم مهام تستمر بمرور الزمن مثل:
+
+```text
+monitor
+watch
+schedule
+notify
+wait for event
+resume
+```
+
+كجزء من Runtime، وليس Request HTTP طويلًا.
+
+---
+
+# 17. Multi-user worlds
+
+World يمكن أن يحتوي أكثر من Actor.
+
+يجب دعم:
+
+```text
+owner
+member
+customer
+provider
+moderator
+admin
+custom roles
+```
+
+لكن الأدوار نفسها يمكن أن تكون World-defined.
+
+---
+
+# 18. Permissions + Policies
+
+السلوك لا يعتمد فقط على UI.
+
+كل Action يمر Server-side عبر:
+
+```text
+identity
+ownership
+role
+permission
+policy
+risk
+approval
+```
+
+---
+
+# 19. Transactions
+
+العالم يمكن أن يحتوي Transaction عامة.
+
+لا تربط Runtime ببوابة دفع واحدة.
+
+التنفيذ الخارجي يكون Provider-based.
+
+---
+
+# 20. Generative UI
+
+المطلوب:
+
+```text
+UI = projection(
+  world schema,
+  world state,
+  user role,
+  permissions,
+  workflows,
+  available actions,
+  context
+)
+```
+
+وليس:
+
+```text
+UI = domain template
+```
+
+---
+
+# 21. التصميم
+
+حافظ على الهوية البصرية المعتمدة:
+
+```text
+Soap Glass
+Generative Bubbles
+Single Chat
+```
+
+لكن افصل Design System عن Runtime Logic.
+
+---
+
+# 22. Web + Mobile
+
+الويب والموبايل هما Clients لنفس Runtime.
+
+لا نريد عقلين.
+
+ولا World Models مختلفة.
+
+ولا Capabilities مختلفة منطقيًا.
+
+---
+
+# 23. Model Providers
+
+استخدم Model Gateway.
+
+يمكن تبديل النماذج دون تعديل Core.
+
+النموذج لا يملك أسرار Providers ولا صلاحيات Runtime.
+
+---
+
+# 24. Connectors
+
+يمكن إضافة Providers/Connectors مستقبلًا دون تعديل Planner أو Kernel كل مرة.
+
+---
+
+# 25. Unsupported actions
+
+إذا فهم جاسم المطلوب لكن Capability غير موجودة:
+
+```text
+BLOCKED
+```
+
+مع سبب صادق.
+
+هذا أفضل من Fake Success.
+
+---
+
+# 26. Self-extension مستقبلًا
+
+صمم Core بحيث يمكن لاحقًا بناء:
+
+```text
+Capability Lab
+```
+
+يسمح باقتراح Capability جديدة واختبارها في Sandbox.
+
+المسار:
+
+```text
+need detected
+↓
+proposal
+↓
+sandbox
+↓
+tests
+↓
+security
+↓
+generalization
+↓
+approval
+↓
+canary
+↓
+signed registration
+```
+
+لا يسمح للنموذج بتعديل Production Core مباشرة.
+
+---
+
+# 27. أهم قاعدة
+
+لا تقِس نجاح جاسم بعدد المجالات المكتوبة في الكود.
+
+قِسه بقدرته على التعامل مع:
+
+> طلب لم يتوقعه مطوروه مسبقًا
+
+باستخدام نفس الـCore.
+
+---
+
+# 28. المطلوب منك الآن
+
+قبل أي Full Implementation:
+
+قارن المشروع الحالي بندًا بندًا بهذه الرؤية.
+
+أنشئ:
+
+```text
+docs/JASIM_FINAL_VISION_GAP_ANALYSIS.md
+```
+
+ويتضمن:
+
+```text
+VISION ITEM
+CURRENT IMPLEMENTATION
+STATUS
+EVIDENCE
+GAP
+REQUIRED WORK
+DEPENDENCIES
+```
+
+صنف Status:
+
+```text
+COMPLETE
+PARTIAL
+MISSING
+WRONG_DIRECTION
+```
+
+---
+
+# 29. راجع أيضًا جميع وثائق جاسم السابقة
+
+لا تعامل آخر Prompt على أنه المصدر الوحيد.
+
+ادمج الرؤية المتراكمة، لكن إذا تعارض شيء قديم مع هذا المستند:
+
+> هذا المستند هو المرجع الأعلى.
+
+---
+
+# 30. لا تنفذ Features الآن
+
+في هذه الخطوة فقط:
+
+```text
+inspect
+trace
+compare
+identify gaps
+```
+
+ولا تدّع أن الرؤية مكتملة لأن أسماء الملفات موجودة.
+
+---
+
+# 31. السؤال الذي يجب أن يجيب عنه التقرير
+
+> إذا أعطينا فريقًا جديدًا هذا المشروع وهذه الوثيقة فقط، هل سيكون واضحًا لهم بدقة ما هو جاسم وما الذي لا يجب أن يتحول إليه؟
+
+إذا كانت الإجابة لا:
+
+حدد الغموض المتبقي.
+
+---
+
+# 32. FINAL VISION GATE
+
+لا نبدأ أمر "Finish JASIM" حتى يكون تقريرك قادرًا على إثبات أن الرؤية لا تحتوي تضاربًا معماريًا في:
+
+```text
+Chat
+Bubbles
+Worlds
+Tasks
+Capabilities
+Execution
+UI
+Memory
+Multi-user
+Transactions
+Evolution
+Commercial model
+Self-extension
+```
+
+بعد ذلك فقط سنعطيك أمر التنفيذ النهائي.
+
+لا تبدأ إعادة بناء المشروع في هذه المهمة.

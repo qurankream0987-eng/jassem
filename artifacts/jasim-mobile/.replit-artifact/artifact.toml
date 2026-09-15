@@ -1,0 +1,24 @@
+kind = "mobile"
+previewPath = "/jasim-mobile/"
+title = "JASIM Mobile"
+description = "تطبيق JASIM أصلي لنظامي iOS وAndroid يتيح إدخال الأهداف، متابعة حالة العالم والخطط والأحداث، وإرسال السياق والموافقة إلى محرك JASIM الحقيقي عبر عقود API المشتركة."
+version = "1.0.0"
+id = "artifacts/jasim-mobile"
+router = "expo-domain"
+
+[[services]]
+name = "expo"
+ensurePreviewReachable = "/status"
+paths = [ "/jasim-mobile/" ]
+localPort = 18542
+
+[services.development]
+run = "pnpm --filter @workspace/jasim-mobile run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/jasim-mobile", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/jasim-mobile", "run", "serve" ]
+
+[services.env]
+PORT = "18542"
+BASE_PATH = "/jasim-mobile/"

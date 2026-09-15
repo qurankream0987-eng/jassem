@@ -1,0 +1,878 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM SMART GENERATIVE EXPERIENCE
+
+# TASK 2 — UNIFIED PRESENTATION DECISION LAYER
+
+MODE INTENT:
+Focused implementation only.
+
+Task 1 is CLOSED / PASS.
+
+Accepted Task 1 result:
+
+* existing PresentationDefinition is wired into the live conversation runtime
+* validated presentations persist in assistant message metadata
+* runtime responses can return validated presentations
+* strict Zod validation exists
+* renderer-boundary validation exists
+* invalid schemas/actions/types fail closed
+* PresentationRenderer uses existing SchemaRenderer
+* plain-text rendering remains working
+* Smart Bubble rendering remains working
+* no new tables
+* no migrations
+* no SDKs/packages
+* Blocks 0–3.1 remain CLOSED
+
+Task 1 report:
+
+.local/tasks/smart-ui-task-1-report.md
+
+Canonical UI mapping:
+
+.local/tasks/jasim-smart-interface-delta-mapping.md
+
+Do NOT redo Task 1.
+
+Do NOT rebuild Presentation IR.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GOAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Implement ONE generic semantic Presentation Decision Layer that chooses:
+
+THE SMALLEST USEFUL PRESENTATION
+
+for the current semantic output / goal state.
+
+This layer decides WHAT presentation semantics are appropriate.
+
+It does NOT:
+
+render React
+
+execute business actions
+
+own canonical state
+
+route by domain
+
+create Worlds
+
+create Runs
+
+call providers
+
+execute payments
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CORE RULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CONVERSATION FIRST
+UI WHEN USEFUL
+EXECUTION WHEN AUTHORIZED
+
+The system must NOT generate rich UI merely because it can.
+
+Examples:
+
+simple factual response
+→ TEXT
+
+small structured answer
+→ TEXT / DETAIL
+
+few candidates
+→ ENTITY_LIST / ENTITY_GRID
+
+comparison request
+→ COMPARISON
+
+location-heavy result
+→ MAP + ENTITY_LIST if actual location exists
+
+date/time selection
+→ CALENDAR / FORM
+
+multiple missing structured fields
+→ FORM
+
+consequential action
+→ APPROVAL
+
+financial action
+→ CHECKOUT / APPROVAL
+
+ongoing process
+→ STATUS / TIMELINE / TRACKER
+
+persistent generated system
+→ WORLD_SUMMARY / WORKSPACE
+
+durable ongoing goal
+→ may justify LIVING_OBJECT later
+
+Task 2 decides semantic presentation.
+
+Later tasks implement Workspace and Living Objects.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ACCEPTED ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Target:
+
+Canonical / semantic runtime result
+↓
+SemanticPresentationInput
+↓
+Presentation Decision Layer
+↓
+PresentationDefinition
+↓
+Task 1 validation
+↓
+PresentationRenderer / SchemaRenderer
+
+Do not bypass Task 1 validation.
+
+Do not create another renderer.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. REUSE CURRENT FABRIC
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Inspect and reuse:
+
+presentation-fabric.ts
+
+PresentationDefinition
+
+SemanticPresentationInput
+
+Task 1 presentation validation
+
+existing presentation selection logic if any
+
+Do NOT create:
+
+presentation-engine-v2
+ui-router-v2
+domain-presentation-router
+new generative runtime
+
+If an existing function already selects presentation types:
+
+extend/refactor it rather than competing with it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. GENERIC DECISION INPUT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The decision layer should use the minimum generic inputs already available.
+
+Potential inputs may include:
+
+semantic output type
+
+result count
+
+current user intent
+
+goal state
+
+result-set presence
+
+selected entity presence
+
+required user input
+
+action risk
+
+actionability
+
+location data availability
+
+time/date requirement
+
+ongoing/durable status
+
+transaction/payment state
+
+World reference
+
+device hint only if already appropriate at this layer
+
+Do NOT depend on:
+
+fashion
+cars
+jobs
+restaurants
+hotels
+delivery
+
+or other domain names.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. SEMANTIC PRESENTATION FAMILIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use the EXISTING PresentationDefinition contract.
+
+Extend only if Task 1 contract genuinely lacks necessary generic semantics.
+
+Relevant presentation semantics may include equivalents of:
+
+TEXT
+
+DETAIL
+
+ENTITY_LIST
+
+ENTITY_GRID
+
+SEARCH_RESULTS
+
+COMPARISON
+
+TABLE
+
+FORM
+
+CHOICE
+
+CALENDAR
+
+MAP
+
+PRICE_SUMMARY
+
+APPROVAL
+
+CHECKOUT
+
+STATUS
+
+TIMELINE
+
+TRACKER
+
+DOCUMENT
+
+MEDIA
+
+WARNING
+
+RECEIPT
+
+WORLD_SUMMARY
+
+WORKSPACE
+
+ERROR_STATE
+
+EMPTY_STATE
+
+Do NOT implement all visual components in Task 2.
+
+Task 2 only chooses semantic output.
+
+If a selected semantic type has no renderer yet:
+
+return the valid semantic PresentationDefinition and let later renderer tasks implement its visual surface.
+
+Do not fake a renderer.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. SMALLEST SUFFICIENT OUTPUT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Implement this as an explicit invariant.
+
+Example A:
+
+USER:
+"كم سعر الذهب؟"
+
+Expected:
+TEXT or small DETAIL
+
+Forbidden:
+WORKSPACE
+LIVING_OBJECT
+WORLD
+GRID
+
+Example B:
+
+USER:
+"قارن الثاني والرابع."
+
+Expected:
+COMPARISON
+
+Example C:
+
+USER:
+"أريد 5 خيارات."
+
+Expected:
+SEARCH_RESULTS / ENTITY_LIST / GRID depending generic data shape
+
+Example D:
+
+Runtime requires:
+party size
+date
+time
+
+Expected:
+FORM or suitable structured input presentation
+
+Example E:
+
+consequential purchase is awaiting approval
+
+Expected:
+APPROVAL / CHECKOUT
+
+Example F:
+
+order is ongoing
+
+Expected:
+STATUS / TIMELINE / TRACKER
+
+The presentation must scale with the user's actual need.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. DO NOT CONFUSE DURABILITY WITH VISUAL RICHNESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A rich answer is not automatically durable.
+
+A durable process is not automatically a World.
+
+Examples:
+
+comparison
+→ rich UI
+→ not necessarily persistent Living Object
+
+monitoring
+→ may begin with simple UI
+→ durable process
+
+Task 2 should distinguish:
+
+presentation need
+
+from:
+
+operational durability
+
+Do NOT implement Living Objects yet.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. ACTION RISK AWARENESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Presentation decision may observe existing action/risk semantics.
+
+Examples:
+
+read-only information
+→ results/detail
+
+write action requiring structured input
+→ form/detail
+
+high-impact action requiring approval
+→ approval presentation
+
+Do NOT create a new risk system.
+
+Reuse existing action/approval metadata.
+
+Presentation Decision must NOT itself grant approval.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. TRUTHFUL DATA AVAILABILITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not select presentations that imply data which does not exist.
+
+Examples:
+
+No coordinates
+→ do NOT select Map simply because intent relates to a place.
+
+No verified tracking observations
+→ do NOT select moving Map tracker.
+
+No executable checkout capability
+→ do NOT select actionable checkout pretending purchase is available.
+
+No external result
+→ do not manufacture result cards.
+
+Presentation reflects actual semantic/runtime data only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. TEXT FALLBACK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+There must always be a safe generic fallback.
+
+If semantic content does not justify a richer presentation:
+
+TEXT
+
+If a valid presentation type cannot safely be determined:
+
+TEXT / safe error presentation
+
+Do not fail the entire conversation simply because enhanced UI is unavailable.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. DOMAIN GENERALITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Required architecture proof:
+
+The same decision logic must work for:
+
+Laptop search
+
+Vehicle search
+
+Job search
+
+Restaurant results
+
+University comparison
+
+Service provider search
+
+Document summary
+
+World summary
+
+without:
+
+if domain === "cars"
+if domain === "jobs"
+if domain === "fashion"
+
+No domain routing.
+
+Use semantic conditions such as:
+
+candidate collection
+
+comparable entities
+
+location-bearing entities
+
+required structured input
+
+approval required
+
+ongoing process
+
+etc.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. SAME DOMAIN / DIFFERENT INTENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Test that presentation depends on intent, not entity domain.
+
+Example using one generic entity type/category:
+
+Question:
+"كم سعر هذه السيارة؟"
+→ TEXT / DETAIL
+
+Search:
+"ابحث لي عن سيارة."
+→ SEARCH_RESULTS
+
+Compare:
+"قارن الثانية والرابعة."
+→ COMPARISON
+
+Approval-required action:
+"احجز موعدًا لرؤيتها."
+→ FORM / APPROVAL according to runtime state
+
+Monitoring:
+"راقب سعرها."
+→ Task 2 may produce STATUS or appropriate current semantic presentation;
+Living Object itself is later.
+
+World:
+"ابن لي سوق سيارات."
+→ WORLD_SUMMARY / WORKSPACE semantic type if existing runtime returns World semantics
+
+No CarPresentationRouter.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. DECISION EXPLAINABILITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The internal decision should be deterministic/explainable enough for tests.
+
+Do not rely solely on opaque LLM output such as:
+
+"model decided comparison"
+
+Prefer generic rules/validated semantic signals for obvious cases.
+
+LLM may help with semantic interpretation upstream.
+
+Presentation selection itself should be constrained.
+
+Example:
+
+comparison intent + >=2 referenced entities
+→ COMPARISON
+
+approval-required action
+→ APPROVAL
+
+awaiting multiple structured fields
+→ FORM
+
+simple text answer with no structured data
+→ TEXT
+
+Keep rules generic.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. PRIORITY / PRECEDENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Define a clear generic precedence when multiple presentations could apply.
+
+For example conceptually:
+
+critical blocker/error
+
+>
+
+approval required
+
+>
+
+structured user input required
+
+>
+
+active consequential transaction state
+
+>
+
+explicit comparison
+
+>
+
+explicit search/result collection
+
+>
+
+detail
+
+>
+
+text
+
+Do NOT blindly copy this order if current architecture provides a better generic precedence.
+
+But conflicts must resolve deterministically.
+
+Document final precedence in Task 2 report.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. CURRENT PRESENTATION SHOULD NOT BE DESTROYED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Preserve Task 1 and current UI paths.
+
+Plain text must continue to work.
+
+Smart Bubble must continue to work.
+
+Task 2 should add semantic selection, not prematurely delete Bubble rendering.
+
+Bubble visual role is handled in later tasks.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. DO NOT IMPLEMENT THESE YET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT implement:
+
+Active Generative Workspace
+
+UI Morphing
+
+Living Object Projection
+
+Active Objects Rail
+
+Mobile renderer redesign
+
+Trusted Action Dispatcher
+
+Raw HTML security cleanup unless directly required for Task 2 safety
+
+Soap Glass redesign
+
+final generic component library
+
+database changes
+
+migrations
+
+new packages
+
+deployment
+
+These are later tasks.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. FOCUSED TESTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add focused tests for the Presentation Decision Layer.
+
+At minimum prove:
+
+1. simple factual response → TEXT
+
+2. structured candidate collection → SEARCH_RESULTS / LIST / GRID semantic presentation
+
+3. explicit comparison with referenced candidates → COMPARISON
+
+4. multiple structured missing inputs → FORM/CHOICE semantic presentation
+
+5. approval-required action → APPROVAL
+
+6. financial approval state → CHECKOUT / APPROVAL according to existing semantics
+
+7. ongoing process → STATUS / TIMELINE / TRACKER semantic presentation
+
+8. no real location data → Map is NOT selected
+
+9. document summary → DOCUMENT or TEXT, not World
+
+10. same domain with different intents produces different semantic presentation
+
+11. two different domains with same semantic intent use the same decision path
+
+12. unknown/non-rich output safely falls back to TEXT
+
+13. invalid selected PresentationDefinition is still rejected by Task 1 validator
+
+14. plain-text regression passes
+
+15. Smart Bubble regression passes
+
+Do not write tests that assert specific domain code exists.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. NO FAKE SUCCESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not hardcode presentation decisions just for test phrases.
+
+Tests should create semantic inputs, not teach the implementation specific sentences.
+
+No:
+
+if prompt.includes("laptop")
+→ cards
+
+No:
+
+if prompt.includes("compare")
+without using existing structured semantic intent/reference state where available.
+
+Use actual semantic/runtime contracts.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. PROOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run:
+
+Task 2 focused tests
+
+Task 1 presentation validation regression
+
+affected presentation-fabric tests
+
+affected conversation runtime tests
+
+TypeScript for affected packages
+
+git diff --check
+
+Do NOT run all historical Block suites.
+
+Do NOT run Web production build unless Task 2 changes bundling/active Web compilation enough to require it.
+
+Do NOT run Mobile suite.
+
+Task 2 is server/shared presentation-decision scope.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. EXPECTED CHANGE SIZE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Keep implementation narrow.
+
+Expected:
+
+few shared/server presentation files
+
+focused tests
+
+possibly small type/schema extension
+
+Expected:
+
+NEW_DATABASE_TABLES = 0
+
+NEW_MIGRATIONS = 0
+
+NEW_EXTERNAL_SDKS = 0
+
+If implementation appears to require a database migration:
+
+STOP and report blocker instead of broadening the task.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create exactly:
+
+.local/tasks/smart-ui-task-2-report.md
+
+Report:
+
+CAUSE
+
+EXISTING_REUSED_COMPONENTS
+
+FILES_CHANGED
+
+PRESENTATION_DECISION_ARCHITECTURE
+
+DECISION_PRECEDENCE
+
+SEMANTIC_SIGNALS_USED
+
+DOMAIN_ROUTING_AUDIT
+
+TESTS
+
+Then final counters:
+
+SMART_UI_TASK_2 =
+PASS / PARTIAL / FAIL
+
+PRESENTATION_DECISION_LAYER =
+PASS / FAIL
+
+SMALLEST_SUFFICIENT_OUTPUT =
+PASS / FAIL
+
+TEXT_DECISION =
+PASS / FAIL
+
+SEARCH_RESULTS_DECISION =
+PASS / FAIL
+
+COMPARISON_DECISION =
+PASS / FAIL
+
+FORM_DECISION =
+PASS / FAIL
+
+APPROVAL_DECISION =
+PASS / FAIL
+
+STATUS_TIMELINE_DECISION =
+PASS / FAIL
+
+MAP_WITHOUT_REAL_LOCATION =
+BLOCKED / NOT_BLOCKED
+
+DOMAIN_SPECIFIC_PRESENTATION_ROUTERS_ADDED = <number>
+
+DOMAIN_SPECIFIC_DECISION_BRANCHES_ADDED = <number>
+
+TASK_1_PRESENTATION_VALIDATION_REGRESSION =
+PASS / FAIL
+
+PLAIN_TEXT_REGRESSION =
+PASS / FAIL
+
+SMART_BUBBLE_REGRESSION =
+PASS / FAIL
+
+NEW_DATABASE_TABLES =
+0
+
+NEW_MIGRATIONS =
+0
+
+NEW_EXTERNAL_SDKS =
+0
+
+BLOCKS_0_TO_3_1_REMAIN_CLOSED =
+YES / NO
+
+READY_FOR_SMART_UI_TASK_3 =
+YES / NO
+
+If NO:
+list only the exact blocker.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Task 2 passes:
+
+STOP.
+
+Do NOT begin Task 3.
+
+Do NOT build the final renderer.
+
+Do NOT build Workspace.
+
+Do NOT implement Morphing.
+
+Return only:
+
+Task 2 verdict
+
+decision layer implemented
+
+test count
+
+domain-specific branches count
+
+READY_FOR_SMART_UI_TASK_3
+
+BEGIN TASK 2.

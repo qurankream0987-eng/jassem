@@ -1,0 +1,4432 @@
+# =====================================================================
+# JASIM — BLOCK 1
+# FINAL EXECUTION ORDER
+#
+# UNIVERSAL CAPABILITY FABRIC
+# + GENERATIVE INTERACTION FABRIC
+# + ECONOMIC VALUE NETWORK
+#
+# ONE IMPLEMENTATION BLOCK
+# ONE GENERAL ARCHITECTURE
+# ONE ACCEPTANCE SUITE
+# ONE FINAL VERDICT
+#
+# BLOCK 0 IS CLOSED.
+# DO NOT REOPEN IT.
+# =====================================================================
+
+
+BEGIN:
+
+JASIM BLOCK 1
+UNIVERSAL CAPABILITY + GENERATIVE INTERACTION + ECONOMIC DISCOVERY FABRIC
+
+NOW.
+
+
+This is the implementation order corresponding to the already-approved:
+
+JASIM Block 1 Unified Architecture Brief.
+
+
+The previous architecture brief remains binding.
+
+This order converts that architecture into an implementation scope.
+
+
+=====================================================================
+0. CURRENT BASELINE
+=====================================================================
+
+Treat the following as accepted foundation:
+
+
+KERNEL_TRUST_AND_RECOVERY_CLOSURE = PASS
+
+READY_FOR_UNIVERSAL_CAPABILITY_FABRIC = YES
+
+
+Authentication is proven.
+
+Cross-owner isolation is proven.
+
+Generated execution ownership is proven.
+
+Trusted Executor is proven.
+
+Attempt Ledger is proven.
+
+Verifier is proven.
+
+Reconciliation is proven.
+
+Effect uncertainty recovery is proven.
+
+Run restart is proven.
+
+Worker lease/fencing is proven.
+
+Canonical migrations are proven.
+
+Readiness lifecycle is proven.
+
+TypeScript canonical build/check is proven.
+
+Web production build is proven.
+
+Mobile typecheck is proven.
+
+
+DO NOT reopen BLOCK 0 unless BLOCK 1 introduces an actual regression.
+
+
+=====================================================================
+1. PRIMARY OBJECTIVE
+=====================================================================
+
+The goal of BLOCK 1 is NOT:
+
+to add many features.
+
+
+The goal is:
+
+to make JASIM capable of translating open-ended user goals into
+compositions of general trusted primitives.
+
+
+After BLOCK 1, JASIM should be able to reason approximately as:
+
+
+USER GOAL
+
+→ Semantic Goal
+
+→ Desired Outcomes
+
+→ Capability Requirements
+
+→ Capability Requirement Graph
+
+→ Trusted Capability Matching
+
+→ Capability Composition
+
+→ Typed Bindings
+
+→ Feasibility / Gap Classification
+
+→ Existing Durable Runtime
+
+→ Canonical State
+
+→ Semantic Presentation
+
+→ Generic Web/Mobile Projection
+
+
+When economic value is involved:
+
+
+Actor / Entity / Resource
+
+→ Offering / Need
+
+→ Discovery
+
+→ Match
+
+→ Engagement
+
+→ Proposal
+
+→ TransactionIntent
+
+
+without requiring domain-specific Core implementation.
+
+
+=====================================================================
+2. THIS IS NOT AN APPLICATION-BUILDER TASK
+=====================================================================
+
+Do NOT interpret BLOCK 1 as:
+
+build multiple marketplaces
+
+build multiple demo apps
+
+build one dashboard per scenario
+
+build a new Agent per domain
+
+build one workflow per example.
+
+
+The following are explicitly forbidden:
+
+
+CarAgent
+
+JobAgent
+
+DriverAgent
+
+WarehouseAgent
+
+RepairAgent
+
+DebtAgent
+
+TutorAgent
+
+
+CarMarketplace
+
+JobMarketplace
+
+RepairMarketplace
+
+ColdStorageMarketplace
+
+
+PhoneListingService
+
+DriverTrackingService
+
+JobMatchingService
+
+DebtPaymentService
+
+
+DriverMapBubble
+
+PhoneCard
+
+JobCard
+
+WarehouseForm
+
+RepairDashboard
+
+
+or semantic equivalents.
+
+
+Examples are acceptance tests.
+
+They are NOT product modules.
+
+
+=====================================================================
+3. COST / TOKEN DISCIPLINE — HARD REQUIREMENT
+=====================================================================
+
+Replit resources and tokens must be treated as expensive.
+
+
+DO NOT:
+
+- reread all historical JASIM documents
+- run broad architecture discovery
+- inspect unrelated repository folders
+- launch multiple agents to study the same problem
+- rewrite working subsystems
+- produce multiple long planning documents
+- repeat Block 0 proofs
+- repeat production hardening audits
+- repeat Phase 12 model calibration
+- run paid provider calls unnecessarily
+- build domain demos
+- create separate implementations per acceptance example
+- create separate reports for Phase 1 / 2 / 3
+- create a second Runtime
+- create a second policy engine
+- create a second execution engine
+- create a second authorization layer
+- create a second artifact system
+- create a second schema system without first proving the existing one
+  is insufficient
+
+
+Required execution style:
+
+
+TARGETED ARCHITECTURE MAP
+
+→ REUSE MAPPING
+
+→ IMPLEMENT GENERIC GAPS
+
+→ ONE GENERAL TEST HARNESS
+
+→ UNSEEN GENERALIZATION TEST
+
+→ ONE FINAL REPORT
+
+
+=====================================================================
+4. INSPECTION SCOPE — ONLY THESE AREAS FIRST
+=====================================================================
+
+Do one focused inspection pass.
+
+Inspect only canonical implementations related to:
+
+
+Capability Registry
+
+Capability descriptors / definitions
+
+Planner
+
+Composer / Planner-to-DAG translation if present
+
+Run/DAG node contracts
+
+Typed input/output schemas
+
+Semantic Output Router
+
+Generative Renderer / GenUI
+
+Smart Bubble projection
+
+World / DNA schema definition system
+
+Reference Resolution
+
+Entity model
+
+Listing model if present
+
+Transaction-related models if present
+
+visibility / publication logic
+
+matching/discovery remnants if present
+
+provider adapter boundary
+
+artifact references used by entities/views
+
+existing versioning/change-set mechanisms
+
+
+Do NOT begin by reading:
+
+auth implementation
+
+worker lease internals
+
+production deployment
+
+backup
+
+mobile screens unrelated to shared renderer
+
+historical reports
+
+model benchmarks.
+
+
+=====================================================================
+5. REQUIRED FIRST OUTPUT — INTERNAL REUSE MAP
+=====================================================================
+
+Before modifying code, create a SHORT internal mapping.
+
+Do not create a large report.
+
+Conceptually:
+
+
+REQUIRED CONCEPT
+→ EXISTING CANONICAL PRIMITIVE
+→ ACTION
+
+
+Example:
+
+
+CapabilityDefinition
+→ existing CapabilityDescriptor
+→ EXTEND
+
+
+TypedBinding
+→ existing DAG binding contract
+→ REUSE
+
+
+Offering
+→ existing Listing may partially satisfy
+→ EVALUATE / EXTEND
+
+
+Semantic Schema
+→ World/DNA schemas
+→ REUSE
+
+
+Presentation IR
+→ existing GenUI definition
+→ EXTEND
+
+
+The purpose is to prevent duplicate architecture.
+
+
+Do not spend significant tokens explaining obvious mappings.
+
+
+=====================================================================
+6. REUSE-BEFORE-CREATE RULE
+=====================================================================
+
+For every new abstraction, ask in this order:
+
+
+1. Does JASIM already contain the concept?
+
+2. Can the existing concept be safely generalized?
+
+3. Can it be represented by composition of existing primitives?
+
+4. Only if not, is a new generic primitive justified?
+
+
+No parallel duplicate models.
+
+
+Especially inspect current:
+
+Entity
+Listing
+Transaction
+World/DNA
+Bubble
+Run
+Artifact
+
+
+before creating:
+
+Offering
+Need
+Proposal
+TransactionIntent
+SemanticSchema.
+
+
+=====================================================================
+# ================================================================
+# PHASE 1
+# UNIVERSAL CAPABILITY FABRIC
+# ================================================================
+=====================================================================
+
+
+=====================================================================
+7. SEMANTIC GOAL MODEL
+=====================================================================
+
+JASIM must stop treating the raw user utterance as the execution plan.
+
+
+Introduce/reuse a typed semantic representation equivalent to:
+
+
+SemanticGoal {
+    actor
+    intent
+    references
+    desiredOutcomes
+    hardConstraints
+    softPreferences
+    temporalContext?
+    locationContext?
+    economicContext?
+    riskSignals?
+}
+
+
+Do NOT create domain intent enums such as:
+
+SELL_CAR
+
+FIND_JOB
+
+BOOK_RESTAURANT
+
+
+Prefer semantic goals such as:
+
+MAKE_VALUE_AVAILABLE
+
+OBTAIN_EXTERNAL_CAPABILITY
+
+OBSERVE_ENTITY_STATE
+
+CREATE_PERSISTENT_SYSTEM
+
+COMPARE_CANDIDATES
+
+EXECUTE_EXTERNAL_EFFECT
+
+
+Use existing intent structures where possible.
+
+
+=====================================================================
+8. DESIRED OUTCOME GRAPH
+=====================================================================
+
+A Goal may require multiple outcomes.
+
+
+Example:
+
+"Sell my phone and arrange delivery."
+
+
+Possible outcome structure:
+
+
+subject structured
+
+→ Offering exists
+
+→ Offering published
+
+→ compatible demand discovered
+
+→ Engagement established
+
+→ terms agreed
+
+→ TransactionIntent exists
+
+→ Delivery Requirement exists
+
+
+The Outcome Graph describes:
+
+WHAT MUST BECOME TRUE.
+
+
+It must not yet contain provider implementation details.
+
+
+=====================================================================
+9. CAPABILITY REQUIREMENT MODEL
+=====================================================================
+
+Represent the semantic actions required to reach the outcomes.
+
+
+Examples:
+
+
+UNDERSTAND
+
+RESOLVE
+
+SEARCH
+
+DISCOVER
+
+EXTRACT
+
+STRUCTURE
+
+COMPARE
+
+MATCH
+
+RANK
+
+CREATE
+
+UPDATE
+
+DELETE
+
+PUBLISH
+
+MESSAGE
+
+NEGOTIATE
+
+PROPOSE
+
+ACCEPT
+
+REJECT
+
+BOOK
+
+RESERVE
+
+ORDER
+
+APPLY
+
+HIRE
+
+CONTRACT
+
+PAY
+
+REFUND
+
+DELIVER
+
+TRACK
+
+LOCATE
+
+SCHEDULE
+
+NOTIFY
+
+VERIFY
+
+ANALYZE
+
+CALCULATE
+
+GENERATE
+
+TRANSFORM
+
+EXECUTE
+
+OBSERVE
+
+
+This is NOT a permanently closed enum.
+
+Do not add dozens of speculative capabilities.
+
+
+=====================================================================
+10. REQUIREMENT != TRUSTED CAPABILITY
+=====================================================================
+
+This distinction is mandatory.
+
+
+The intelligence layer may produce:
+
+CapabilityRequirement:
+DEVICE_CONTROL
+
+
+But execution is allowed only if the trusted Registry contains an
+approved compatible capability.
+
+
+If no trusted primitive exists:
+
+MISSING_GENERIC_CAPABILITY
+
+
+Do NOT automatically generate/register trusted executable code.
+
+
+=====================================================================
+11. TRUSTED CAPABILITY CONTRACTS
+=====================================================================
+
+Audit the current Capability Registry.
+
+
+Extend it only where needed so each trusted capability has semantic
+metadata equivalent to:
+
+
+identity/version
+
+semantic purpose
+
+input contract
+
+output contract
+
+preconditions
+
+postconditions
+
+side-effect classification
+
+risk classification
+
+authorization requirements
+
+approval requirements
+
+idempotency semantics
+
+provider requirements
+
+resource requirements
+
+verification semantics
+
+reconciliation semantics
+
+supported input/output bindings
+
+
+Do NOT replace working descriptor formats merely because naming differs.
+
+
+=====================================================================
+12. CAPABILITY CLASSIFICATION
+=====================================================================
+
+Capabilities must support conceptual classification into:
+
+
+PURE / ANALYTICAL
+
+INTERNAL STATEFUL
+
+EXTERNAL EFFECTFUL
+
+HUMAN / AUTHORITY BOUND
+
+
+Examples:
+
+
+ANALYZE
+→ PURE
+
+
+CREATE_OFFERING
+→ INTERNAL STATEFUL
+
+
+PAY
+→ EXTERNAL EFFECTFUL
+
+
+OWNER_APPROVAL
+→ HUMAN / AUTHORITY BOUND
+
+
+Use existing safety/effect taxonomy where available.
+
+
+=====================================================================
+13. CAPABILITY REQUIREMENT GRAPH
+=====================================================================
+
+The requirements must support more than a simple list.
+
+
+Support representation of:
+
+
+dependencies
+
+branches
+
+joins
+
+conditions
+
+human gates
+
+provider requirements
+
+resource requirements
+
+
+Example:
+
+
+DISCOVER
+    ↓
+GET_PRICE
+    ↓
+price < 100?
+   /       \
+YES         NO
+↓           ↓
+ORDER     OWNER_DECISION
+
+
+Do not build a second DAG Runtime.
+
+This graph is semantic/planning IR.
+
+The existing canonical durable Run/DAG remains the execution engine.
+
+
+=====================================================================
+14. CAPABILITY MATCHING
+=====================================================================
+
+Implement/reuse matching between:
+
+
+Capability Requirement
+
+and:
+
+Registered Trusted Capability
+
+
+Do not depend only on exact capability names.
+
+
+Matching may consider:
+
+
+semantic purpose
+
+input compatibility
+
+output usefulness
+
+effect class
+
+risk
+
+provider requirements
+
+resource requirements
+
+permissions
+
+current state
+
+
+The LLM may suggest candidate matches.
+
+The Kernel/Compiler validates them.
+
+
+=====================================================================
+15. CAPABILITY COMPOSER / COMPILER
+=====================================================================
+
+The Composer is the central generality component.
+
+
+Given:
+
+
+Current State
+
+Desired Outcomes
+
+Capability Requirements
+
+Trusted Capability Registry
+
+Schemas
+
+Permissions
+
+Policies
+
+Providers
+
+Resources
+
+
+it must produce:
+
+
+the smallest valid generic composition
+
+
+or:
+
+a truthful gap.
+
+
+Prefer deterministic validation and graph compilation after semantic
+interpretation.
+
+
+Do not turn the Composer into a domain workflow lookup table.
+
+
+=====================================================================
+16. COMPOSITION SHOULD BE MINIMAL
+=====================================================================
+
+Example:
+
+"Calculate 15% of 300."
+
+
+Correct:
+
+CALCULATE
+
+
+Incorrect:
+
+Conversation
+→ Run
+→ Bubble
+→ Artifact
+→ Calculation
+
+
+Likewise:
+
+"Is this proposal accepted?"
+
+should not create a new World.
+
+
+Minimize:
+
+LLM calls
+
+Runtime objects
+
+DB writes
+
+Bubbles
+
+provider usage
+
+latency.
+
+
+=====================================================================
+17. TYPED DAG BINDINGS
+=====================================================================
+
+Critical requirement:
+
+
+Capability output must never become trusted input to another capability
+through unvalidated arbitrary text.
+
+
+Required:
+
+
+Capability A
+
+→ structured output
+
+→ schema validation
+
+→ typed binding
+
+→ Capability B
+
+
+If necessary:
+
+SEARCH
+→ EXTRACT
+→ NORMALIZE
+→ VALIDATE
+→ MATCH
+
+
+No hidden LLM conversion across effect boundaries.
+
+
+=====================================================================
+18. BINDING VALIDATION
+=====================================================================
+
+Validate:
+
+schema compatibility
+
+required fields
+
+units
+
+semantic annotations where available
+
+owner/run scope
+
+version compatibility
+
+
+If invalid:
+
+BINDING_VALIDATION_FAILED
+
+
+Do not silently coerce unsafe data.
+
+
+=====================================================================
+19. MISSING REQUIRED INPUTS
+=====================================================================
+
+Use Capability contracts to determine minimum missing information.
+
+
+Example:
+
+User:
+"Pay him 80 KWD."
+
+
+Known:
+
+amount
+currency
+
+
+Missing:
+
+payee/payment destination
+
+
+Correct:
+
+INSUFFICIENT_INFORMATION:
+payee
+
+
+Ask only for the information required for the next safe step.
+
+
+Do not ask for every optional field.
+
+
+=====================================================================
+20. GAP CLASSIFICATION
+=====================================================================
+
+Support truthful general gap semantics equivalent to:
+
+
+MISSING_GENERIC_CAPABILITY
+
+BLOCKED_BY_PROVIDER
+
+BLOCKED_BY_RESOURCE
+
+REQUIRES_HUMAN
+
+REQUIRES_OWNER_DECISION
+
+REQUIRES_REGULATORY_REVIEW
+
+INSUFFICIENT_INFORMATION
+
+INSUFFICIENT_TRUST
+
+
+Reuse existing failure taxonomy where possible.
+
+
+No missing capability should disappear from the plan.
+
+
+=====================================================================
+21. CAPABILITY REGISTRY ANTI-EXPLOSION RULE
+=====================================================================
+
+Before adding a trusted capability, ask:
+
+
+A. Is this merely a domain noun around an existing primitive?
+
+
+FIND_DRIVER
+
+probably:
+
+DISCOVER + MATCH
+
+
+B. Is this a reusable composition?
+
+
+SELL_PRODUCT
+
+probably:
+
+CREATE_OFFERING
+→ PUBLISH
+→ DISCOVER
+→ MATCH
+→ ENGAGE
+
+
+C. Is it truly a new general primitive?
+
+
+DEVICE_CONTROL
+
+may be.
+
+
+Only C may justify a new trusted primitive.
+
+
+=====================================================================
+22. COMPOSITE CAPABILITIES
+=====================================================================
+
+Reusable composite capabilities are allowed only if they are genuinely
+general across unrelated domains.
+
+
+Possible example:
+
+DISCOVER_AND_MATCH
+
+
+Bad example:
+
+FIND_BUYER_FOR_CAR
+
+
+Composite capabilities must remain expandable into underlying trusted
+primitives.
+
+
+Do not turn them into hidden domain workflows.
+
+
+=====================================================================
+23. CAPABILITY GAP OUTPUT
+=====================================================================
+
+When a primitive is truly missing, produce a structured generic gap
+description equivalent to:
+
+
+semantic purpose
+
+required inputs
+
+expected outputs
+
+effect class
+
+provider class if applicable
+
+reason existing capabilities cannot satisfy it
+
+
+Do not register or execute it automatically.
+
+
+=====================================================================
+24. DO NOT BUILD SELF-MODIFYING TRUSTED CORE
+=====================================================================
+
+BLOCK 1 does NOT include:
+
+LLM-generated trusted capability registration
+
+automatic Core mutation
+
+automatic trusted adapter creation
+
+automatic Kernel patching
+
+
+Gap discovery is enough.
+
+
+=====================================================================
+# ================================================================
+# PHASE 2
+# GENERATIVE INTERACTION FABRIC
+# ================================================================
+=====================================================================
+
+
+=====================================================================
+25. PRESENTATION MUST BE DERIVED FROM RUNTIME STATE
+=====================================================================
+
+The UI is a projection.
+
+
+Canonical State
+
++
+Semantic Result
+
++
+Interaction Need
+
++
+Permissions
+
++
+Presentation Context
+
+→ Presentation Definition
+
+→ Trusted Generic Renderer
+
+
+Do not make UI local state the business truth.
+
+
+=====================================================================
+26. REUSE EXISTING GENUI
+=====================================================================
+
+Audit existing:
+
+Semantic Output Router
+
+GenUI structures
+
+Smart Bubble projections
+
+generic components
+
+Web projection
+
+Mobile projection
+
+
+Extend these.
+
+Do NOT build "GenUI v2" unless existing contracts are demonstrably
+incapable of general composition.
+
+
+=====================================================================
+27. SMALLEST SUFFICIENT SURFACE
+=====================================================================
+
+This is a hard rule.
+
+
+Use:
+
+TEXT
+
+when text is enough.
+
+
+Use:
+
+STRUCTURED_RESULT
+
+when structured data is enough.
+
+
+Use:
+
+FORM
+
+when missing typed input is needed.
+
+
+Use:
+
+COMPARISON
+
+when user is comparing candidates.
+
+
+Use:
+
+STATUS
+
+when asking for state.
+
+
+Use:
+
+TIMELINE
+
+for history.
+
+
+Use:
+
+TRACKER
+
+for changing entity state.
+
+
+Use:
+
+MAP
+
+only when real geospatial state makes it useful.
+
+
+Use:
+
+APPROVAL
+
+when user authorization is required.
+
+
+Use:
+
+EXTERNAL_ACTION
+
+when an approved external provider experience is required.
+
+
+Use:
+
+PERSISTENT_SMART_BUBBLE
+
+only for long-lived operational interaction.
+
+
+=====================================================================
+28. TRUSTED GENERIC PRESENTATION VOCABULARY
+=====================================================================
+
+Reuse or minimally support primitives equivalent to:
+
+
+TEXT
+
+CARD
+
+LIST
+
+GRID
+
+DETAIL
+
+FORM
+
+TABLE
+
+COMPARISON
+
+STATUS
+
+PROGRESS
+
+TIMELINE
+
+TRACKER
+
+MAP
+
+MARKER
+
+ROUTE
+
+CALENDAR
+
+SCHEDULE
+
+ACTION
+
+APPROVAL
+
+EXTERNAL_ACTION
+
+PAYMENT_STATUS
+
+CHAT
+
+METRIC
+
+ARTIFACT_PREVIEW
+
+SMART_BUBBLE
+
+
+Do not create all of them if existing renderer already covers them.
+
+
+=====================================================================
+29. NO ARBITRARY REACT AS DEFAULT GENERATIVE UI
+=====================================================================
+
+Do NOT make the primary runtime strategy:
+
+
+LLM
+→ writes arbitrary React
+→ executes generated component
+
+
+Preferred:
+
+
+Semantic State
+
+→ Presentation IR
+
+→ trusted generic primitives
+
+
+If a new general interaction primitive is required:
+
+MISSING_GENERIC_PRESENTATION_PRIMITIVE
+
+
+Do not create a domain component merely to pass a test.
+
+
+=====================================================================
+30. SCHEMA-DRIVEN FORMS
+=====================================================================
+
+Dynamic semantic schemas should generate forms.
+
+
+Example phone fields:
+
+model
+condition
+storage
+price
+
+
+Example warehouse fields:
+
+capacity
+temperature range
+availability
+
+
+Example job fields:
+
+skills
+experience
+salary
+
+
+All should use the same generic form machinery.
+
+
+No:
+
+PhoneForm
+
+WarehouseForm
+
+JobForm
+
+
+The Form should distinguish:
+
+required now
+
+optional
+
+read-only
+
+verified
+
+unknown
+
+
+where semantics support it.
+
+
+=====================================================================
+31. GENERIC COMPARISON
+=====================================================================
+
+Comparison should derive comparable semantic attributes from the schema.
+
+
+It must expose:
+
+hard constraint results
+
+soft preferences
+
+unknown fields
+
+evidence/trust when relevant
+
+
+Do not reduce all comparisons to a single opaque AI percentage.
+
+
+=====================================================================
+32. GENERIC STATUS AND TIMELINE
+=====================================================================
+
+Use canonical events/state to produce Status and Timeline projections.
+
+
+No:
+
+DeliveryTimeline
+
+HiringTimeline
+
+PaymentTimeline
+
+
+as separate Core implementations.
+
+
+Timeline is a generic projection over ordered semantic events.
+
+
+=====================================================================
+33. TRACKER != MAP
+=====================================================================
+
+Tracking semantics must exist independently of map presentation.
+
+
+A Trackable Entity may have:
+
+status
+
+last observation
+
+observedAt
+
+source
+
+location description
+
+coordinates if available
+
+
+If no trusted coordinates exist:
+
+Tracker may still be useful.
+
+
+Map requires real geospatial state.
+
+
+Never fabricate:
+
+GPS
+
+route
+
+movement
+
+ETA.
+
+
+=====================================================================
+34. GENERIC MAP PROJECTION
+=====================================================================
+
+Support a provider-neutral presentation definition equivalent to:
+
+
+MapSurface {
+    viewport?
+    markers[]
+    routes[]
+    overlays?
+    selectedEntity?
+    actions?
+}
+
+
+A Marker should refer to generic entities.
+
+
+No:
+
+DriverMarker
+
+TaxiMarker
+
+WarehouseMarker
+
+
+in Core.
+
+
+Real map provider integration is BLOCK 2.
+
+
+=====================================================================
+35. ACTIONS ARE INTENTS
+=====================================================================
+
+UI actions must generate:
+
+ActionIntent
+
+MutationIntent
+
+Approval
+
+or equivalent canonical requests.
+
+
+No UI component may directly:
+
+mutate canonical business state
+
+call effectful provider adapters
+
+forge execution truth.
+
+
+CLIENT_DIRECT_EFFECT must remain 0.
+
+
+=====================================================================
+36. APPROVAL SURFACE
+=====================================================================
+
+Approval surfaces should show:
+
+what action will occur
+
+what state may change
+
+what data may become public
+
+what external effect may occur
+
+
+They may be reused for:
+
+publication
+
+proposal acceptance
+
+external actions
+
+future payment authorization
+
+destructive mutations.
+
+
+Do not build domain-specific approval screens.
+
+
+=====================================================================
+37. EXTERNAL ACTION FOUNDATION
+=====================================================================
+
+Implement or complete a generic:
+
+ExternalActionIntent
+
+and:
+
+ExternalActionSession
+
+foundation.
+
+
+This is NOT the Payment Runtime.
+
+
+It exists to safely transition the user to an approved external system.
+
+
+Examples:
+
+future payment checkout
+
+OAuth
+
+identity verification
+
+merchant checkout
+
+job application site
+
+bank authorization
+
+government portal
+
+shipping provider
+
+
+=====================================================================
+38. EXTERNAL ACTION SECURITY
+=====================================================================
+
+The trusted server must create external action sessions.
+
+
+The LLM must not generate trusted execution URLs.
+
+
+Protect against:
+
+arbitrary origins
+
+open redirects
+
+javascript: URLs
+
+data: URLs
+
+credential leakage
+
+token leakage
+
+cross-owner session reuse
+
+expired session reuse
+
+purpose confusion
+
+
+Use:
+
+HTTPS
+
+approved provider origins
+
+server state
+
+nonce/state where applicable
+
+short expiry
+
+single-use semantics when applicable.
+
+
+No paid provider integration is required in BLOCK 1.
+
+
+Use controlled local adapter/session tests.
+
+
+=====================================================================
+39. WEB / MOBILE PRESENTATION PARITY
+=====================================================================
+
+Use ONE semantic presentation contract.
+
+
+Web and Mobile may render differently.
+
+They must not receive different business truth.
+
+
+Required shared semantics for:
+
+Form
+
+Detail
+
+Comparison
+
+Status
+
+Timeline
+
+Tracker
+
+Map definition
+
+Action
+
+Approval
+
+External Action
+
+Smart Bubble
+
+
+Do not duplicate domain logic in mobile.
+
+
+=====================================================================
+40. SMART BUBBLE EVOLUTION
+=====================================================================
+
+Persistent Bubbles must remain living projections over runtime state.
+
+
+Example:
+
+User:
+"Add ratings."
+
+
+Expected:
+
+
+Reference Resolution
+
+→ existing Bubble
+
+→ MutationIntent
+
+→ ChangeSet
+
+→ policy
+
+→ state/schema mutation
+
+→ version
+
+→ projection refresh
+
+
+Do not rebuild the Bubble from zero.
+
+
+=====================================================================
+41. PRESENTATION VERSION VS CONTENT VERSION
+=====================================================================
+
+If current architecture supports this distinction, preserve it.
+
+
+Changing:
+
+business data
+
+should not necessarily equal:
+
+changing visual layout.
+
+
+Changing:
+
+cards → table
+
+should not unnecessarily rewrite domain state.
+
+
+Do not invent duplicate versioning if existing system already supports
+the concept.
+
+
+=====================================================================
+# ================================================================
+# PHASE 3
+# ECONOMIC VALUE NETWORK
+# ================================================================
+=====================================================================
+
+
+=====================================================================
+42. DO NOT BUILD A MARKETPLACE
+=====================================================================
+
+The Economic Value Network must remain more general than:
+
+products
+
+buyers
+
+sellers
+
+orders.
+
+
+It must represent value in forms including:
+
+
+product
+
+service
+
+skill
+
+time
+
+capacity
+
+access
+
+employment opportunity
+
+rental capacity
+
+delivery capacity
+
+digital output
+
+subscription
+
+generated Bubble capability
+
+barter
+
+free exchange
+
+future unknown value types.
+
+
+=====================================================================
+43. ENTITY / SUBJECT
+=====================================================================
+
+Entity represents:
+
+WHAT EXISTS.
+
+
+Examples:
+
+Person
+
+Company
+
+Phone
+
+Warehouse
+
+Machine
+
+Vehicle
+
+Generated Bubble
+
+Skill-related profile
+
+Resource
+
+
+Domain entity schemas may be generated inside Worlds.
+
+
+Core does not need a fixed table per domain.
+
+
+=====================================================================
+44. OFFERING
+=====================================================================
+
+Offering represents:
+
+WHAT VALUE AN ACTOR / ENTITY / RESOURCE MAKES AVAILABLE.
+
+
+Offering must not equal Entity.
+
+
+Example:
+
+
+Entity:
+Warehouse #82
+
+
+Offering:
+5 tons refrigerated capacity next week
+
+
+The same Entity may have multiple Offerings over time.
+
+
+=====================================================================
+45. NEED
+=====================================================================
+
+Need represents:
+
+WHAT VALUE / CAPABILITY / RESOURCE AN ACTOR REQUIRES.
+
+
+A Need is NOT a search string.
+
+
+Example:
+
+
+Need:
+refrigerated storage
+
+
+hard constraints:
+
+capacity >= 2 tons
+
+duration >= 7 days
+
+
+soft preferences:
+
+near desired location
+
+reasonable price
+
+
+Need must become structured state.
+
+
+=====================================================================
+46. OFFERING + NEED SHARED CORE
+=====================================================================
+
+Inspect the current Listing model carefully.
+
+
+If Listing already provides a good general persistence foundation:
+
+consider evolving it into a generic Economic Expression model.
+
+
+Possible conceptual architecture:
+
+
+EconomicExpressionCore
+     /          \
+Offering         Need
+
+
+Do not create Offering and Need tables that duplicate existing Listing
+semantics if unnecessary.
+
+
+But do not erase their semantic distinction merely to save a table.
+
+
+=====================================================================
+47. DYNAMIC TYPED SEMANTIC SCHEMAS
+=====================================================================
+
+Economic objects must support:
+
+
+Stable generic fields
+
++
+Versioned typed semantic attributes
+
+
+Do NOT solve generality with:
+
+data: any
+
+or arbitrary unvalidated JSON.
+
+
+Reuse World/DNA schema machinery if possible.
+
+
+Useful semantic field metadata may include:
+
+
+type
+
+semantic meaning
+
+unit
+
+constraints
+
+required/optional
+
+presentation hints
+
+provenance expectations.
+
+
+=====================================================================
+48. UNIT NORMALIZATION
+=====================================================================
+
+Matching may require semantic unit conversion.
+
+
+Example:
+
+
+Need:
+
+capacity = 2 tons
+
+
+Offering:
+
+maxLoad = 5000 kg
+
+
+The system should normalize units before constraint evaluation.
+
+
+Do not rely on LLM prose reasoning for trusted numeric matching.
+
+
+Use deterministic unit semantics where possible.
+
+
+=====================================================================
+49. AVAILABILITY FOUNDATION
+=====================================================================
+
+BLOCK 1 should model availability semantics sufficiently for matching.
+
+
+Examples:
+
+always available
+
+Tuesday
+
+next week
+
+5 units now
+
+10 units later
+
+capacity over time
+
+
+Full scheduling/concurrency enforcement is BLOCK 2.
+
+
+Do not prematurely build Scheduler here.
+
+
+=====================================================================
+50. VISIBILITY
+=====================================================================
+
+Support general visibility semantics equivalent to:
+
+
+PRIVATE
+
+UNLISTED
+
+SHARED
+
+PUBLIC
+
+
+Newly created resources should NOT become public by default.
+
+
+PRIVATE must never leak into general discovery.
+
+
+=====================================================================
+51. PUBLICATION
+=====================================================================
+
+Publication must be an authorized state transition.
+
+
+Expected flow:
+
+
+PublicationIntent
+
+→ Reference Resolution
+
+→ owner authorization
+
+→ privacy projection validation
+
+→ visibility mutation
+
+→ version
+
+→ discoverable public projection
+
+→ event
+
+
+Do not simply expose the entire internal object.
+
+
+=====================================================================
+52. PUBLIC PROJECTION
+=====================================================================
+
+A private Bubble / World may publish only a controlled projection.
+
+
+Example private World contains:
+
+
+customers
+
+orders
+
+staff notes
+
+financials
+
+private messages
+
+internal metrics
+
+
+Public service projection may expose only:
+
+
+service capability
+
+public terms
+
+availability
+
+public description
+
+public evidence
+
+engagement action
+
+
+Never expose private runtime state merely because the service is public.
+
+
+=====================================================================
+53. GENERATED BUBBLE → OFFERING
+=====================================================================
+
+A generated persistent system may become an Offering.
+
+
+Example:
+
+
+User A:
+"Build me a system connecting repair companies and customers."
+
+
+JASIM creates:
+
+private Bubble / World.
+
+
+Later:
+
+"Make this service available."
+
+
+Expected:
+
+
+SAME Bubble
+
+→ public authorized Offering projection
+
+→ eligible for discovery
+
+
+Do not build a second application.
+
+
+=====================================================================
+54. DISCOVERY
+=====================================================================
+
+Discovery is not generic text search.
+
+
+Economic discovery means:
+
+find authorized economic expressions/capabilities
+that may satisfy the user's semantic requirement.
+
+
+Discovery must apply:
+
+visibility
+
+authorization
+
+hard constraints
+
+semantic compatibility
+
+availability
+
+location where structured data exists
+
+trust/evidence where relevant.
+
+
+=====================================================================
+55. BIDIRECTIONAL DISCOVERY
+=====================================================================
+
+Support conceptually:
+
+
+Need
+→ discover Offerings
+
+
+and:
+
+
+Offering
+→ discover Needs
+
+
+Examples:
+
+
+"I need a React developer."
+
+Need → Offerings
+
+
+"I have 500 cartons of dates. Find restaurants that need them."
+
+Offering → Needs
+
+
+This is a key difference from a one-sided marketplace.
+
+
+=====================================================================
+56. DISCOVERY COST CONTROL
+=====================================================================
+
+Never use deep model reasoning across every candidate.
+
+
+Preferred pipeline:
+
+
+structured DB filtering
+
+→ cheap semantic retrieval where useful
+
+→ small candidate set
+
+→ deeper reasoning only when necessary
+
+
+Do not invoke T3 or equivalent for thousands of rows.
+
+
+Do not add Elasticsearch/vector infrastructure unless the existing scale
+and architecture genuinely require it.
+
+
+Use PostgreSQL/current search capabilities first if sufficient.
+
+
+=====================================================================
+57. MATCH
+=====================================================================
+
+Match must represent structured compatibility.
+
+
+For relevant constraints preserve states equivalent to:
+
+
+PASS
+
+SOFT_MATCH
+
+UNKNOWN
+
+FAIL
+
+
+Example:
+
+
+price <= 1500
+→ PASS
+
+
+available next week
+→ UNKNOWN
+
+
+certified
+→ UNKNOWN
+
+
+Do not fabricate missing evidence.
+
+
+=====================================================================
+58. HARD CONSTRAINTS FIRST
+=====================================================================
+
+Hard constraints must filter before semantic preference ranking.
+
+
+Example:
+
+budget <= 4000
+
+
+Candidate with price 7000 may not become top Match merely because
+semantic similarity is high.
+
+
+Correct:
+
+
+Hard Constraint Filtering
+
+→ Eligible Candidate Set
+
+→ Semantic / Preference Ranking
+
+
+=====================================================================
+59. MATCH EXPLANATION
+=====================================================================
+
+The user-facing projection should be able to explain:
+
+
+why it matches
+
+which constraints passed
+
+which are soft
+
+which are unknown
+
+which conflict
+
+what evidence supports the result.
+
+
+Avoid fake numerical precision.
+
+
+Do not rely only on:
+
+92.63% match.
+
+
+=====================================================================
+60. COMPOSITE MATCH FOUNDATION
+=====================================================================
+
+Do not architect Match as permanently:
+
+Need 1 ↔ Offering 1.
+
+
+Support representation that can later handle:
+
+
+one Need
+
+→ multiple Offerings
+
+
+Example:
+
+
+Need:
+10 tons capacity
+
+
+Offering A:
+6 tons
+
+
+Offering B:
+4 tons
+
+
+If:
+
+splitAllowed = true
+
+a composite solution may satisfy the Need.
+
+
+Do not necessarily build full operational orchestration here.
+
+But the data/contract model must not make it impossible.
+
+
+=====================================================================
+61. OPPORTUNITY
+=====================================================================
+
+Do NOT create a heavy Opportunity subsystem unless required.
+
+
+Treat Opportunity primarily as:
+
+a meaningful viable Match / derived projection.
+
+
+If current Match model can represent the state:
+
+reuse it.
+
+
+Avoid unnecessary table/model multiplication.
+
+
+=====================================================================
+62. ENGAGEMENT
+=====================================================================
+
+A Match does not automatically create a relationship.
+
+
+Engagement begins when interaction between participants becomes real.
+
+
+Examples:
+
+
+"Contact the second one."
+
+"Negotiate with this seller."
+
+"Ask this candidate for an interview."
+
+
+Represent generically:
+
+
+participants
+
+context
+
+source Need/Offering
+
+Match reference
+
+shared artifacts
+
+permissions
+
+proposal references
+
+state
+
+
+No domain-specific Engagement class.
+
+
+=====================================================================
+63. DO NOT CREATE ENGAGEMENTS FOR EVERY MATCH
+=====================================================================
+
+Showing 20 Matches should not create 20 persistent relationships.
+
+
+Create Engagement only when:
+
+the user acts
+
+policy automatically authorizes engagement
+
+or persistent interaction is otherwise justified.
+
+
+This limits DB growth and noise.
+
+
+=====================================================================
+64. PROPOSAL
+=====================================================================
+
+Proposal must be structured canonical state.
+
+
+Do not represent negotiated terms only through chat.
+
+
+Proposal should preserve:
+
+
+proposer
+
+recipients
+
+engagement
+
+typed terms
+
+version
+
+status
+
+expiry if useful
+
+
+Possible states:
+
+
+DRAFT
+
+PROPOSED
+
+COUNTERED
+
+ACCEPTED
+
+REJECTED
+
+WITHDRAWN
+
+EXPIRED
+
+
+Map these to existing canonical lifecycle semantics where possible.
+
+
+=====================================================================
+65. PROPOSAL VERSIONING
+=====================================================================
+
+Example:
+
+
+v1
+150 KWD
+
+
+v2
+140 KWD
+
+
+v3
+145 KWD
+
+
+Acceptance must reference the exact accepted version.
+
+
+Do not mutate v1 into v3.
+
+
+Do not infer accepted terms from the latest chat message.
+
+
+=====================================================================
+66. PROPOSAL TERMS ARE DYNAMIC BUT TYPED
+=====================================================================
+
+Car sale terms may contain:
+
+price
+
+delivery
+
+condition
+
+
+Employment terms may contain:
+
+salary
+
+start date
+
+work mode
+
+
+Service terms may contain:
+
+deadline
+
+deliverables
+
+revision count
+
+
+Do not create Core domain schemas.
+
+Use:
+
+stable Proposal core
+
++
+typed semantic terms schema.
+
+
+=====================================================================
+67. TRANSACTION INTENT
+=====================================================================
+
+An accepted Proposal may create:
+
+TransactionIntent
+
+
+This means:
+
+participants have reached a structured intent to execute an exchange.
+
+
+It does NOT mean execution is complete.
+
+
+Permanent:
+
+
+PROPOSAL_ACCEPTED
+!=
+PAYMENT_SETTLED
+
+
+PROPOSAL_ACCEPTED
+!=
+DELIVERY_COMPLETED
+
+
+PROPOSAL_ACCEPTED
+!=
+BOOKING_CONFIRMED
+
+
+=====================================================================
+68. TRANSACTION INTENT MUST SUPPORT NON-MONETARY VALUE
+=====================================================================
+
+Examples:
+
+
+sale
+
+service
+
+rental
+
+booking
+
+employment
+
+application
+
+subscription
+
+access
+
+B2B order
+
+barter
+
+free exchange
+
+
+Payment must not be mandatory.
+
+
+The following scenario must work:
+
+
+"I design your logo, you teach me Spanish."
+
+
+TransactionIntent exists.
+
+Payment does not.
+
+
+=====================================================================
+69. REFERENCE RESOLUTION FOR ECONOMIC STATE
+=====================================================================
+
+Make general economic objects referenceable by Conversation Intelligence.
+
+
+Examples:
+
+
+"publish the second one"
+
+"accept the 145 offer"
+
+"contact this seller"
+
+"pause my listing"
+
+"show me the buyer we spoke to"
+
+
+Reference Resolution should identify:
+
+Offering
+
+Need
+
+Match
+
+Engagement
+
+Proposal
+
+TransactionIntent
+
+
+without relying on chat text as the canonical state.
+
+
+=====================================================================
+70. MEMORY IS NOT ECONOMIC TRUTH
+=====================================================================
+
+Conversation Summary/Memory may help resolve:
+
+"the offer we discussed"
+
+
+But canonical terms must come from:
+
+Proposal
+
+TransactionIntent
+
+or other persisted state.
+
+
+Do not treat LLM memory as transaction truth.
+
+
+=====================================================================
+# ================================================================
+# BLOCK 1 ACCEPTANCE HARNESS
+# ================================================================
+=====================================================================
+
+
+=====================================================================
+71. ONE GENERAL ACCEPTANCE SUITE
+=====================================================================
+
+Create/reuse one consolidated suite conceptually named something like:
+
+
+test:jasim-universal-capability-fabric
+
+
+Do not create one separate application/test harness per domain.
+
+
+The suite must exercise the SAME architecture across unrelated domains.
+
+
+=====================================================================
+72. KNOWN KILLER TESTS
+=====================================================================
+
+At minimum test:
+
+
+K1 — SELL PHONE
+
+Expected:
+
+Entity/subject
+→ Offering
+→ schema-driven missing fields
+→ publication
+
+
+No phone-specific Core code.
+
+
+------------------------------------------------------------
+
+
+K2 — EMPLOY ME
+
+Expected:
+
+Person
+→ Offering + Need
+→ discovery
+→ Match
+→ Engagement foundation
+
+
+No JobAgent.
+
+
+------------------------------------------------------------
+
+
+K3 — HIRE REACT DEVELOPER
+
+Expected:
+
+Need
+→ hard constraints
+→ discovery
+→ Match
+
+
+Use same Match primitives as unrelated scenarios.
+
+
+------------------------------------------------------------
+
+
+K4 — COLD STORAGE
+
+Expected:
+
+capacity
+units
+availability
+Need/Offering matching
+
+
+No ColdStorage matcher.
+
+
+------------------------------------------------------------
+
+
+K5 — COMPOSITE CAPACITY
+
+Need:
+10 tons
+
+
+Offerings:
+6 + 4
+
+
+Split allowed:
+composite match possible
+
+
+Single facility required:
+match fails.
+
+
+------------------------------------------------------------
+
+
+K6 — GENERATE BUSINESS PLATFORM
+
+Request:
+
+create a platform connecting companies/customers.
+
+
+Expected:
+
+Persistent Smart Bubble / World
+
+
+No static domain template.
+
+
+------------------------------------------------------------
+
+
+K7 — PUBLISH GENERATED BUSINESS
+
+Expected:
+
+same Bubble
+→ authorized public Offering projection
+
+
+Private World remains private.
+
+
+------------------------------------------------------------
+
+
+K8 — SECOND USER DISCOVERY
+
+Second user describes Need without knowing Bubble name.
+
+
+Expected:
+
+Need
+→ Discovery
+→ Match generated Bubble capability.
+
+
+------------------------------------------------------------
+
+
+K9 — WHERE IS DRIVER
+
+Expected:
+
+Reference Resolution
+→ TRACK requirement
+→ generic Tracker/Map projection
+
+
+If location source unavailable:
+
+BLOCKED_BY_PROVIDER
+
+
+No fake coordinates.
+
+
+------------------------------------------------------------
+
+
+K10 — PAY PERSONAL OBLIGATION
+
+Expected:
+
+PAY requirement
+→ required payment data
+→ Approval/ExternalAction semantics
+
+
+No fake checkout.
+
+No fake paid status.
+
+
+------------------------------------------------------------
+
+
+K11 — SKILL EXCHANGE
+
+Logo design ↔ Spanish lessons
+
+
+Expected:
+
+TransactionIntent without Payment.
+
+
+------------------------------------------------------------
+
+
+K12 — INDUSTRIAL OVEN
+
+Expected:
+
+resource capacity + availability
+using generic Offering/Need.
+
+
+------------------------------------------------------------
+
+
+K13 — NON-ECONOMIC INVOICE ARTIFACT
+
+Expected:
+
+EXTRACT
+→ STRUCTURE
+→ ARTIFACT
+
+
+Economic Network must not activate unnecessarily.
+
+
+------------------------------------------------------------
+
+
+K14 — SHARED LAB EQUIPMENT
+
+Expected:
+
+persistent system
+resource
+availability
+Offering/Need
+Calendar projection
+
+
+Scheduler execution deferred.
+
+
+------------------------------------------------------------
+
+
+K15 — FACTORY ROBOT INCIDENT
+
+Expected:
+
+general requirement graph including:
+
+OBSERVE
+CONDITION
+DEVICE_CONTROL
+DISCOVER
+MATCH
+LOCATE
+NOTIFY
+TRACK
+WAIT/FALLBACK requirement
+
+
+If DEVICE_CONTROL absent:
+
+MISSING_GENERIC_CAPABILITY
+
+
+Do not add robot-specific implementation.
+
+
+=====================================================================
+73. SAME-PRIMITIVE TESTS
+=====================================================================
+
+Explicitly prove the SAME primitives across unrelated semantics.
+
+
+MATCH:
+
+React developer
+
+warehouse capacity
+
+repair technician
+
+
+TRACK:
+
+driver
+
+technician
+
+shipment
+
+
+CAPACITY:
+
+warehouse storage
+
+industrial oven time
+
+bus seats or equivalent
+
+
+FORM:
+
+phone
+
+warehouse capacity
+
+employment Need
+
+
+No Core patch between scenarios.
+
+
+=====================================================================
+74. FREEZE BEFORE UNSEEN TESTS
+=====================================================================
+
+After the known tests pass:
+
+FREEZE the general architecture.
+
+
+No new capabilities.
+
+No new domain handlers.
+
+No new UI components.
+
+No new routes.
+
+
+Then run unseen tests.
+
+
+This is critical.
+
+
+=====================================================================
+75. UNSEEN GENERALIZATION TEST
+=====================================================================
+
+Generate at least 10 genuinely new goals.
+
+
+Requirements:
+
+
+not present in historical documents
+
+not simple noun substitutions
+
+not trivial synonyms
+
+different domains
+
+different compositions.
+
+
+Include at least:
+
+
+one physical resource coordination
+
+one economic exchange
+
+one non-economic task
+
+one generated persistent business
+
+one multi-party workflow
+
+one tracking requirement
+
+one external provider requirement
+
+one capacity/time constraint
+
+one authority/regulatory case
+
+one strange combination of capabilities.
+
+
+=====================================================================
+76. UNSEEN TEST PASS LOGIC
+=====================================================================
+
+For each unseen goal, derive:
+
+
+Semantic Goal
+
+Desired Outcome Graph
+
+Capability Requirement Graph
+
+Capability matches
+
+Composition or Gap
+
+Economic state if relevant
+
+Presentation choice
+
+
+A test may correctly result in:
+
+
+COMPOSED
+
+
+MISSING_GENERIC_CAPABILITY
+
+
+BLOCKED_BY_PROVIDER
+
+
+BLOCKED_BY_RESOURCE
+
+
+REQUIRES_HUMAN
+
+
+REQUIRES_OWNER_DECISION
+
+
+REQUIRES_REGULATORY_REVIEW
+
+
+INSUFFICIENT_INFORMATION
+
+
+These are valid truthful outcomes.
+
+
+=====================================================================
+77. WHAT COUNTS AS GENERALIZATION FAILURE
+=====================================================================
+
+Generalization FAILS if an unseen goal requires:
+
+
+new domain service
+
+new domain router
+
+new domain workflow
+
+new domain UI component
+
+new domain capability
+
+new category-specific Match engine
+
+new domain database table
+
+
+merely to make the acceptance test green.
+
+
+Required:
+
+
+DOMAIN_SPECIFIC_FIXES_DURING_UNSEEN_TESTS = 0
+
+
+=====================================================================
+78. NO AUTO-PATCHING BETWEEN UNSEEN TESTS
+=====================================================================
+
+Do NOT:
+
+test scenario 1
+
+→ fail
+
+→ add capability
+
+→ retest
+
+→ continue
+
+
+The architecture is frozen.
+
+
+Missing primitive:
+
+report it truthfully.
+
+
+This is how we know whether JASIM is truly general.
+
+
+=====================================================================
+# ================================================================
+# SECURITY / PRIVACY / TRUST
+# ================================================================
+=====================================================================
+
+
+=====================================================================
+79. BLOCK 0 SECURITY REMAINS AUTHORITATIVE
+=====================================================================
+
+All new objects must integrate with existing:
+
+authenticated principal
+
+owner scope
+
+cross-owner isolation
+
+authorization policy
+
+Trusted Executor
+
+
+Do not create simplified authorization for economic objects.
+
+
+=====================================================================
+80. PRIVATE DISCOVERY LEAK TEST
+=====================================================================
+
+Create private:
+
+Offering
+
+Need
+
+Bubble projection
+
+
+Second user discovery must never retrieve them.
+
+
+Required:
+
+PRIVATE_DISCOVERY_LEAKS = 0
+
+
+=====================================================================
+81. UNLISTED / SHARED SEMANTICS
+=====================================================================
+
+Where supported:
+
+UNLISTED must require explicit permitted reference.
+
+SHARED must require authorization scope.
+
+
+Do not treat them as PUBLIC.
+
+
+=====================================================================
+82. PUBLIC BUBBLE PROJECTION SECURITY
+=====================================================================
+
+Second user must see only public projection.
+
+
+Test that internal Bubble/World data does not leak through:
+
+Discovery
+
+Detail
+
+Comparison
+
+Engagement initialization
+
+
+Required:
+
+PRIVATE_WORLD_FIELDS_LEAKED = 0
+
+
+=====================================================================
+83. EXTERNAL ACTION SECURITY TEST
+=====================================================================
+
+Test local controlled External Action sessions for:
+
+
+owner binding
+
+purpose binding
+
+expiry
+
+trusted origin
+
+invalid scheme rejection
+
+open redirect rejection
+
+cross-owner reuse rejection
+
+
+Required:
+
+UNTRUSTED_EXTERNAL_URL_EXECUTION = 0
+
+
+=====================================================================
+# ================================================================
+# COST EFFICIENCY DURING IMPLEMENTATION
+# ================================================================
+=====================================================================
+
+
+=====================================================================
+84. LLM USAGE RULE
+=====================================================================
+
+Use LLM reasoning at semantic boundaries.
+
+
+Prefer deterministic mechanisms for:
+
+
+schema validation
+
+typed bindings
+
+hard constraint filtering
+
+unit normalization
+
+visibility enforcement
+
+authorization
+
+state transitions
+
+capability contract validation
+
+simple ranking
+
+known presentation projection.
+
+
+Do NOT call an LLM for every graph node.
+
+
+=====================================================================
+85. MATCHING COST PIPELINE
+=====================================================================
+
+Preferred:
+
+
+large candidate set
+
+→ deterministic hard filters
+
+→ cheap semantic retrieval
+
+→ smaller candidate set
+
+→ deeper reasoning only where useful.
+
+
+Do not deep-reason across all candidates.
+
+
+=====================================================================
+86. NO MODEL CALIBRATION
+=====================================================================
+
+Do not resume:
+
+Phase 12 economic calibration.
+
+
+Current ModelPolicy remains accepted for BLOCK 1.
+
+
+=====================================================================
+87. NO PAID PROVIDER REQUIREMENT
+=====================================================================
+
+Do not require production:
+
+payment
+
+maps
+
+SMS
+
+delivery
+
+identity
+
+OAuth
+
+
+to prove BLOCK 1 architecture.
+
+
+Use provider-neutral contracts and controlled local test adapters.
+
+
+=====================================================================
+88. DATABASE CHANGE DISCIPLINE
+=====================================================================
+
+If schema changes are required:
+
+
+use as few coherent migrations as reasonably possible.
+
+
+Do not create:
+
+migration
+
+then fix migration
+
+then patch migration
+
+
+through iterative guessing.
+
+
+Use proven canonical migration infrastructure.
+
+
+Run fresh/upgrade migration regression only if BLOCK 1 changes persistent
+schema.
+
+
+=====================================================================
+89. BUILD / TEST DISCIPLINE
+=====================================================================
+
+Do not run the full historical suite repeatedly.
+
+
+During implementation:
+
+run targeted tests.
+
+
+At final gate run one grouped regression.
+
+
+=====================================================================
+# ================================================================
+# FINAL BLOCK 1 HARD GATE
+# ================================================================
+=====================================================================
+
+
+=====================================================================
+90. PHASE 1 HARD GATE
+=====================================================================
+
+Required:
+
+
+SEMANTIC_GOAL_MODEL = PASS
+
+DESIRED_OUTCOME_GRAPH = PASS
+
+CAPABILITY_REQUIREMENT_GRAPH = PASS
+
+CAPABILITY_REGISTRY_GENERAL = PASS
+
+CAPABILITY_MATCHING = PASS
+
+CAPABILITY_COMPOSITION = PASS
+
+TYPED_BINDINGS = PASS
+
+BINDING_VALIDATION = PASS
+
+COMPOSITION_VALIDATION = PASS
+
+CAPABILITY_GAP_CLASSIFICATION = PASS
+
+MISSING_CAPABILITY_TRUTHFUL = PASS
+
+MISSING_PROVIDER_TRUTHFUL = PASS
+
+MISSING_RESOURCE_TRUTHFUL = PASS
+
+HUMAN_GATE_TRUTHFUL = PASS
+
+NO_DOMAIN_CAPABILITY_ROUTING = PASS
+
+
+=====================================================================
+91. PHASE 2 HARD GATE
+=====================================================================
+
+Required:
+
+
+SEMANTIC_OUTPUT_ROUTING = PASS
+
+SMALLEST_SUFFICIENT_SURFACE = PASS
+
+GENERIC_PRESENTATION_IR = PASS
+
+SCHEMA_DRIVEN_FORM = PASS
+
+GENERIC_DETAIL = PASS
+
+GENERIC_COMPARISON = PASS
+
+GENERIC_STATUS = PASS
+
+GENERIC_TIMELINE = PASS
+
+GENERIC_TRACKER = PASS
+
+GENERIC_MAP_PROJECTION = PASS
+
+SMART_BUBBLE_PROJECTION = PASS
+
+BUBBLE_EVOLUTION = PASS
+
+ACTION_INTENT_BOUNDARY = PASS
+
+APPROVAL_SURFACE = PASS
+
+EXTERNAL_ACTION_FOUNDATION = PASS
+
+EXTERNAL_ACTION_SECURITY = PASS
+
+WEB_MOBILE_SHARED_PRESENTATION_CONTRACT = PASS
+
+
+=====================================================================
+92. PHASE 3 HARD GATE
+=====================================================================
+
+Required:
+
+
+GENERIC_ENTITY_RELATIONSHIP = PASS
+
+GENERIC_OFFERING = PASS
+
+GENERIC_NEED = PASS
+
+DYNAMIC_TYPED_SCHEMAS = PASS
+
+VISIBILITY = PASS
+
+PUBLICATION = PASS
+
+AUTHORIZED_PUBLIC_PROJECTION = PASS
+
+CROSS_USER_DISCOVERY = PASS
+
+BIDIRECTIONAL_DISCOVERY = PASS
+
+MATCHING = PASS
+
+HARD_CONSTRAINT_FILTERING = PASS
+
+UNKNOWN_CONSTRAINT_STATE = PASS
+
+COMPOSITE_MATCH_FOUNDATION = PASS
+
+ENGAGEMENT = PASS
+
+PROPOSAL_VERSIONING = PASS
+
+NEGOTIATION = PASS
+
+TRANSACTION_INTENT = PASS
+
+TRANSACTION_WITHOUT_PAYMENT = PASS
+
+GENERATED_BUBBLE_PUBLICATION = PASS
+
+SECOND_USER_DISCOVERS_GENERATED_CAPABILITY = PASS
+
+
+=====================================================================
+93. GENERALIZATION HARD GATE
+=====================================================================
+
+Required:
+
+
+KNOWN_KILLER_TESTS = PASS
+
+
+UNSEEN_GOALS_TESTED >= 10
+
+
+UNSEEN_GENERALIZATION = PASS
+
+
+DOMAIN_SPECIFIC_FIXES_DURING_UNSEEN_TESTS = 0
+
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+
+DOMAIN_SPECIFIC_HANDLERS = 0
+
+
+DOMAIN_SPECIFIC_UI_COMPONENTS = 0
+
+
+DOMAIN_SPECIFIC_ROUTES = 0
+
+
+PRIVATE_DISCOVERY_LEAKS = 0
+
+
+PRIVATE_WORLD_FIELDS_LEAKED = 0
+
+
+CROSS_OWNER_LEAKS = 0
+
+
+UNTRUSTED_EXTERNAL_URL_EXECUTION = 0
+
+
+CLIENT_DIRECT_EFFECT = 0
+
+
+FAKE_SUCCESS = 0
+
+
+=====================================================================
+94. BLOCK 0 REGRESSION
+=====================================================================
+
+Because BLOCK 1 adds new state and authorization paths, run only the
+affected security/trust regression.
+
+
+Required baseline must remain:
+
+
+AUTH = PASS
+
+CROSS_OWNER_ISOLATION = PASS
+
+TRUSTED_EXECUTOR = PASS
+
+ATTEMPT_LEDGER = PASS
+
+VERIFIER = PASS
+
+RECONCILIATION = PASS
+
+RUN_RESTART = PASS
+
+
+Do not rerun unrelated historical production audits.
+
+
+=====================================================================
+95. BUILD REGRESSION
+=====================================================================
+
+Run at final gate:
+
+
+canonical TypeScript check
+
+Generative Runtime check
+
+Web production build
+
+Mobile typecheck
+
+
+If persistence schema changed:
+
+canonical migration verification.
+
+
+Do not run native signing/build pipelines.
+
+
+=====================================================================
+# ================================================================
+# EXPLICITLY DEFERRED TO BLOCK 2
+# ================================================================
+=====================================================================
+
+
+96. DO NOT IMPLEMENT IN BLOCK 1:
+
+
+production realtime location
+
+GPS provider
+
+Map provider integration
+
+route/ETA provider
+
+scheduler engine expansion
+
+recurring scheduling
+
+durable wait production UX
+
+notification delivery providers
+
+operational multi-role teams
+
+complex team permissions UI
+
+booking concurrency
+
+delivery provider
+
+driver marketplace
+
+fleet operations
+
+production SMS/push/email connector execution
+
+real-world dispatch orchestration
+
+
+Block 1 may represent these as requirements.
+
+It must not fake them.
+
+
+=====================================================================
+# ================================================================
+# EXPLICITLY DEFERRED TO BLOCK 3
+# ================================================================
+=====================================================================
+
+
+97. DO NOT IMPLEMENT IN BLOCK 1:
+
+
+real payment runtime
+
+payment authorization/capture
+
+settlement
+
+payout
+
+refund
+
+escrow
+
+milestone release
+
+platform commission
+
+billing
+
+subscriptions
+
+entitlements
+
+quotas
+
+commercial revenue accounting
+
+final economic calibration
+
+final production deployment gate
+
+backup/restore launch proof.
+
+
+Block 1 may represent:
+
+Payment Requirement
+
+TransactionIntent
+
+External Action foundation
+
+
+but not real money execution.
+
+
+=====================================================================
+# ================================================================
+# FINAL REPORT
+# ================================================================
+=====================================================================
+
+
+98. RETURN ONE REPORT ONLY.
+
+
+Do not generate multiple long architecture reports.
+
+
+Return:
+
+
+JASIM_BLOCK_1:
+PASS / PARTIAL / FAIL
+
+
+================================================
+PHASE 1 — UNIVERSAL CAPABILITY FABRIC
+================================================
+
+SEMANTIC_GOAL_MODEL:
+PASS / FAIL
+
+DESIRED_OUTCOME_GRAPH:
+PASS / FAIL
+
+CAPABILITY_REQUIREMENT_GRAPH:
+PASS / FAIL
+
+CAPABILITY_REGISTRY_GENERAL:
+PASS / FAIL
+
+CAPABILITY_MATCHING:
+PASS / FAIL
+
+CAPABILITY_COMPOSITION:
+PASS / FAIL
+
+TYPED_BINDINGS:
+PASS / FAIL
+
+BINDING_VALIDATION:
+PASS / FAIL
+
+COMPOSITION_VALIDATION:
+PASS / FAIL
+
+CAPABILITY_GAP_CLASSIFICATION:
+PASS / FAIL
+
+MISSING_CAPABILITY_TRUTHFUL:
+PASS / FAIL
+
+MISSING_PROVIDER_TRUTHFUL:
+PASS / FAIL
+
+MISSING_RESOURCE_TRUTHFUL:
+PASS / FAIL
+
+HUMAN_GATE_TRUTHFUL:
+PASS / FAIL
+
+DOMAIN_SPECIFIC_CAPABILITIES_ADDED:
+<number>
+
+
+================================================
+PHASE 2 — GENERATIVE INTERACTION
+================================================
+
+SEMANTIC_OUTPUT_ROUTING:
+PASS / FAIL
+
+SMALLEST_SUFFICIENT_SURFACE:
+PASS / FAIL
+
+GENERIC_PRESENTATION_IR:
+PASS / FAIL
+
+SCHEMA_DRIVEN_FORM:
+PASS / FAIL
+
+GENERIC_DETAIL:
+PASS / FAIL
+
+GENERIC_COMPARISON:
+PASS / FAIL
+
+GENERIC_STATUS:
+PASS / FAIL
+
+GENERIC_TIMELINE:
+PASS / FAIL
+
+GENERIC_TRACKER:
+PASS / FAIL
+
+GENERIC_MAP_PROJECTION:
+PASS / FAIL
+
+SMART_BUBBLE_PROJECTION:
+PASS / FAIL
+
+BUBBLE_EVOLUTION:
+PASS / FAIL
+
+ACTION_INTENT_BOUNDARY:
+PASS / FAIL
+
+APPROVAL_SURFACE:
+PASS / FAIL
+
+EXTERNAL_ACTION_FOUNDATION:
+PASS / FAIL
+
+EXTERNAL_ACTION_SECURITY:
+PASS / FAIL
+
+WEB_MOBILE_SHARED_PRESENTATION_CONTRACT:
+PASS / PARTIAL / FAIL
+
+DOMAIN_SPECIFIC_UI_COMPONENTS:
+<number>
+
+DOMAIN_SPECIFIC_ROUTES:
+<number>
+
+
+================================================
+PHASE 3 — ECONOMIC VALUE NETWORK
+================================================
+
+GENERIC_ENTITY_RELATIONSHIP:
+PASS / FAIL
+
+GENERIC_OFFERING:
+PASS / FAIL
+
+GENERIC_NEED:
+PASS / FAIL
+
+DYNAMIC_TYPED_SCHEMAS:
+PASS / FAIL
+
+VISIBILITY:
+PASS / FAIL
+
+PUBLICATION:
+PASS / FAIL
+
+AUTHORIZED_PUBLIC_PROJECTION:
+PASS / FAIL
+
+CROSS_USER_DISCOVERY:
+PASS / FAIL
+
+BIDIRECTIONAL_DISCOVERY:
+PASS / FAIL
+
+MATCHING:
+PASS / FAIL
+
+HARD_CONSTRAINT_FILTERING:
+PASS / FAIL
+
+UNKNOWN_CONSTRAINT_STATE:
+PASS / FAIL
+
+COMPOSITE_MATCH_FOUNDATION:
+PASS / FAIL
+
+ENGAGEMENT:
+PASS / FAIL
+
+PROPOSAL_VERSIONING:
+PASS / FAIL
+
+NEGOTIATION:
+PASS / FAIL
+
+TRANSACTION_INTENT:
+PASS / FAIL
+
+TRANSACTION_WITHOUT_PAYMENT:
+PASS / FAIL
+
+GENERATED_BUBBLE_PUBLICATION:
+PASS / FAIL
+
+SECOND_USER_DISCOVERS_GENERATED_CAPABILITY:
+PASS / FAIL
+
+
+================================================
+KNOWN ACCEPTANCE SCENARIOS
+================================================
+
+SELL_PHONE:
+PASS / FAIL
+
+EMPLOY_ME:
+PASS / FAIL
+
+HIRE_REACT_DEVELOPER:
+PASS / FAIL
+
+COLD_STORAGE:
+PASS / FAIL
+
+COMPOSITE_CAPACITY:
+PASS / FAIL
+
+GENERATE_BUSINESS:
+PASS / FAIL
+
+PUBLISH_GENERATED_BUSINESS:
+PASS / FAIL
+
+SECOND_USER_DISCOVERY:
+PASS / FAIL
+
+WHERE_IS_DRIVER:
+PASS / TRUTHFULLY_BLOCKED / FAIL
+
+PAY_PERSONAL_OBLIGATION:
+PASS / TRUTHFULLY_BLOCKED / FAIL
+
+SKILL_EXCHANGE:
+PASS / FAIL
+
+INDUSTRIAL_OVEN:
+PASS / FAIL
+
+NON_ECONOMIC_ARTIFACT:
+PASS / FAIL
+
+SHARED_LAB_EQUIPMENT:
+PASS / FAIL
+
+FACTORY_ROBOT_INCIDENT:
+PASS / TRUTHFUL_GENERIC_GAP / FAIL
+
+
+================================================
+UNSEEN GENERALIZATION
+================================================
+
+UNSEEN_GOALS_TESTED:
+<number>
+
+UNSEEN_GOALS_HANDLED_BY_EXISTING_COMPOSITION:
+<number>
+
+UNSEEN_GOALS_BLOCKED_BY_PROVIDER:
+<number>
+
+UNSEEN_GOALS_BLOCKED_BY_RESOURCE:
+<number>
+
+UNSEEN_GOALS_REQUIRING_HUMAN:
+<number>
+
+UNSEEN_GOALS_REQUIRING_OWNER_DECISION:
+<number>
+
+UNSEEN_GOALS_REQUIRING_REGULATORY_REVIEW:
+<number>
+
+UNSEEN_GOALS_REQUIRING_GENERIC_CAPABILITY_GAP:
+<number>
+
+DOMAIN_SPECIFIC_FIXES_DURING_UNSEEN_TESTS:
+<number>
+
+
+================================================
+SECURITY / TRUTH
+================================================
+
+PRIVATE_DISCOVERY_LEAKS:
+<number>
+
+PRIVATE_WORLD_FIELDS_LEAKED:
+<number>
+
+CROSS_OWNER_LEAKS:
+<number>
+
+UNTRUSTED_EXTERNAL_URL_EXECUTION:
+<number>
+
+CLIENT_DIRECT_EFFECT:
+<number>
+
+FAKE_SUCCESS:
+<number>
+
+
+================================================
+REGRESSION
+================================================
+
+AUTH:
+PASS / FAIL
+
+CROSS_OWNER_ISOLATION:
+PASS / FAIL
+
+TRUSTED_EXECUTOR:
+PASS / FAIL
+
+ATTEMPT_LEDGER:
+PASS / FAIL
+
+INDEPENDENT_VERIFIER:
+PASS / FAIL
+
+RECONCILIATION:
+PASS / FAIL
+
+RUN_RESTART:
+PASS / FAIL
+
+FULL_CANONICAL_TYPECHECK:
+PASS / FAIL
+
+GENERATIVE_RUNTIME_CHECK:
+PASS / FAIL
+
+WEB_PRODUCTION_BUILD:
+PASS / FAIL
+
+MOBILE_TYPECHECK:
+PASS / FAIL
+
+DATABASE_MIGRATIONS:
+PASS / REUSED_PASS / FAIL
+
+
+================================================
+GENERALITY COUNTERS
+================================================
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS:
+<number>
+
+DOMAIN_SPECIFIC_HANDLERS:
+<number>
+
+DOMAIN_SPECIFIC_CAPABILITIES:
+<number>
+
+DOMAIN_SPECIFIC_UI_COMPONENTS:
+<number>
+
+DOMAIN_SPECIFIC_ROUTES:
+<number>
+
+NEW_PARALLEL_RUNTIME_SYSTEMS:
+<number>
+
+NEW_PARALLEL_SCHEMA_SYSTEMS:
+<number>
+
+NEW_PARALLEL_AUTH_SYSTEMS:
+<number>
+
+
+All expected:
+0
+
+
+================================================
+DEFERRED
+================================================
+
+PRODUCTION_REALTIME_LOCATION:
+DEFERRED_BLOCK_2
+
+PRODUCTION_MAP_PROVIDER:
+DEFERRED_BLOCK_2
+
+SCHEDULER_EXPANSION:
+DEFERRED_BLOCK_2
+
+PRODUCTION_NOTIFICATIONS:
+DEFERRED_BLOCK_2
+
+DELIVERY_EXECUTION:
+DEFERRED_BLOCK_2
+
+BOOKING_CONCURRENCY:
+DEFERRED_BLOCK_2
+
+MULTI_ROLE_OPERATIONS:
+DEFERRED_BLOCK_2
+
+
+PAYMENT_RUNTIME:
+DEFERRED_BLOCK_3
+
+SETTLEMENT:
+DEFERRED_BLOCK_3
+
+REFUNDS:
+DEFERRED_BLOCK_3
+
+PAYOUTS:
+DEFERRED_BLOCK_3
+
+COMMISSIONS:
+DEFERRED_BLOCK_3
+
+BILLING:
+DEFERRED_BLOCK_3
+
+SUBSCRIPTIONS:
+DEFERRED_BLOCK_3
+
+ENTITLEMENTS:
+DEFERRED_BLOCK_3
+
+MODEL_POLICY_ECONOMIC_CALIBRATION:
+PARTIAL_DEFERRED
+
+PRODUCTION_DEPLOYMENT:
+DEFERRED_FINAL_GATE
+
+BACKUP_RESTORE_PROOF:
+DEFERRED_FINAL_GATE
+
+
+================================================
+FINAL DECISION
+================================================
+
+READY_FOR_BLOCK_2:
+YES / NO
+
+
+If NO:
+
+BLOCK_1_REMAINING_GENERALITY_BLOCKERS:
+1.
+2.
+3.
+
+
+If YES:
+
+NEXT_RECOMMENDED_STEP:
+
+JASIM BLOCK 2
+REAL-WORLD EXECUTION FABRIC
+
+
+OWNER_ACTION_REQUIRED_NOW:
+NONE
+
+
+=====================================================================
+99. PASS DECISION
+=====================================================================
+
+Do NOT mark BLOCK 1 PASS merely because code compiles.
+
+
+BLOCK 1 is PASS only if:
+
+
+the same generic capability system
+
++
+
+the same typed schema system
+
++
+
+the same economic primitives
+
++
+
+the same presentation primitives
+
+
+handle the known examples AND unseen goals
+
+
+without domain-specific Core patches.
+
+
+A truthful:
+
+MISSING_GENERIC_CAPABILITY
+
+may be a successful result.
+
+
+A hardcoded domain handler is not.
+
+
+=====================================================================
+100. STOP CONDITION
+=====================================================================
+
+After producing the BLOCK 1 report:
+
+STOP.
+
+
+Do NOT:
+
+start BLOCK 2
+
+add realtime providers
+
+add Maps
+
+add Scheduler
+
+add production Notifications
+
+add Delivery execution
+
+add Payment runtime
+
+add Billing
+
+resume Phase 12
+
+deploy production
+
+or create new commercial features.
+
+
+Wait for review.
+
+
+BEGIN JASIM BLOCK 1 NOW.

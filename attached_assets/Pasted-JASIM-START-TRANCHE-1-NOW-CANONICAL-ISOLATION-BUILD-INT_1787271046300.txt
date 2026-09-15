@@ -1,0 +1,330 @@
+JASIM — START TRANCHE 1 NOW
+CANONICAL ISOLATION + BUILD INTEGRITY
+
+اعتمد Truth Audit الأخير كـsource of truth.
+
+الحكم النهائي واضح:
+
+CURRENT ARCHITECTURE CAN REACH FINAL JASIM.
+DO NOT REBUILD THE CANONICAL RUNTIME.
+
+ابدأ الآن مباشرة بـ:
+
+TRANCHE 1 — ISOLATE LEGACY / REMOVE SHADOW EXECUTION PATHS
+
+الهدف:
+
+ONE CANONICAL JASIM RUNTIME
+ONE CANONICAL SCHEMA
+ONE CANONICAL ROUTER PATH
+ONE ACTIVE EXECUTION PATH
+
+ولا ننتقل إلى أي Generative Feature جديدة قبل إثبات ذلك.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. PRESERVE LOCKED COMPONENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ممنوع إعادة بناء:
+
+api/runtime/jasim-runtime.ts
+schema-runtime.ts canonical tables
+Bubble lifecycle
+Bubble presentation CAS
+Proposal fingerprinting
+Approval binding
+DAG
+leases
+heartbeat
+fencing
+retry
+cancellation
+owner isolation
+semantic Output Router
+resolveRuntimeReferences
+RuntimeWorldDefinition
+
+هذه طبقات مثبتة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. IDENTIFY ALL ACTIVE LEGACY PATHS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+راجع:
+
+api/core/*
+api/routers/bubble.ts
+api/routers/task.ts
+api/routers/conversation.ts
+artifacts/api-server/src/lib/jasim-runtime.ts
+old contracts
+old DB schema imports
+
+حدد لكل واحد:
+
+ACTIVE_REQUEST_PATH
+LEGACY_ONLY
+SHADOW_RUNTIME
+SAFE_TO_WRAP
+SAFE_TO_REMOVE
+
+لا تحذف قبل إثبات البديل.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. REMOVE SHADOW RUNTIME EXECUTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+المشكلة الحرجة:
+
+artifacts/api-server/src/lib/jasim-runtime.ts
+
+يستخدم نفس canonical DB tables.
+
+هذا غير مقبول.
+
+يجب أن تكون النتيجة:
+
+ONE RUNTIME OWNER
+
+إذا artifact يحتاج البقاء كواجهة أو compatibility layer:
+
+حوّله إلى thin wrapper على canonical runtime.
+
+ممنوع أن يحتوي:
+
+parallel state logic
+parallel Bubble logic
+parallel Run logic
+parallel Proposal logic
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. LEGACY ROUTERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+راجع routers القديمة.
+
+إذا يمكن تحويلها إلى compatibility wrappers:
+
+OLD ROUTE
+↓
+CANONICAL RUNTIME FUNCTION
+
+افعل ذلك مؤقتًا.
+
+إذا لا يوجد مستخدم فعلي لها:
+deprecate/remove safely.
+
+لا تسمح لها باستخدام:
+
+old bubbles table
+old tasks table
+
+إذا canonical equivalents موجودة.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. LEGACY CORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+api/core/* يحتوي معظم أخطاء TypeScript.
+
+لا تصلح 1323 خطأ واحدًا واحدًا عشوائيًا.
+
+حدد أولًا:
+
+USED_BY_CANONICAL
+USED_ONLY_BY_LEGACY
+REUSABLE_PRIMITIVE
+OBSOLETE
+
+إذا component قديم مفيد مثل:
+
+Memory
+Cytoplasm primitive
+Context Builder
+Reconciliation
+Connectors
+
+استخرج المنطق المفيد.
+
+لكن لا تبقِ legacy core نشطة كـruntime ثانية.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. CONTRACTS CLEANUP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أصلح contracts/index.ts re-exports.
+
+لا تجعل Web يستهلك:
+
+@contracts/jasim old
++
+@workspace/jasim-bubble-contract
+
+لنفس المفاهيم.
+
+الهدف:
+
+ONE CANONICAL CONTRACT SOURCE
+
+مع migration تدريجي آمن.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. WEB CONTRACT MIGRATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Home.tsx وSchemaRenderer يجب ألا يخلطا:
+
+legacy BubbleSchema
+مع
+canonical RuntimeWorldDefinition
+
+ابدأ إزالة التداخل.
+
+لا تبنِ Renderer جديدة الآن.
+
+اجعل الحالية تعتمد canonical contracts.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. TASK SCHEMA PROOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أصلح broad PostgreSQL proof.
+
+لا تستخدم old tasks table إذا canonical runtime يستخدم:
+
+jasimRuntimeTasks
+
+أثبت:
+
+Task without persistent World = PASS
+
+ولا تعيد Task → mandatory World.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. TYPECHECK GATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بعد isolation:
+
+شغّل canonical typecheck.
+
+الهدف:
+
+0 canonical TypeScript errors
+
+إذا بقيت أخطاء في legacy code الذي أصبح غير active:
+افصل legacy package من canonical compilation بشكل موثق بدل ترقيعها.
+
+لكن لا تخفِ أخطاء active canonical code.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. ACTIVE CALL PATH PROOF
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+أثبت:
+
+Web
+→ Canonical Router
+→ Canonical jasim-runtime.ts
+→ Canonical schema-runtime
+→ PostgreSQL
+
+Mobile
+→ Canonical Router
+→ same Runtime
+→ same DB
+
+ولا:
+
+Web/Mobile
+→ shadow artifacts runtime
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. NO FEATURE DEVELOPMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+في هذه tranche لا تبدأ:
+
+NL Bubble Mutation
+Content versioning
+Memory
+Trusted Executor
+Receipts
+Verifier
+Providers
+Payments
+
+نظف runtime ownership أولًا.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. REQUIRED EXIT GATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+لا تغلق Tranche 1 حتى:
+
+SHADOW RUNTIME ACTIVE:
+NO
+
+LEGACY ROUTERS USING OLD TABLES:
+NO
+
+CANONICAL RUNTIME OWNER:
+ONE
+
+CANONICAL CONTRACT OWNER:
+ONE
+
+CANONICAL TYPECHECK:
+PASS
+
+TYPESCRIPT ERRORS:
+0 in active canonical code
+
+BROAD POSTGRESQL PROOF:
+PASS
+
+TASK WITHOUT WORLD:
+PASS
+
+RUN WITHOUT BUBBLE:
+PASS
+
+BUBBLE WITHOUT WORLD:
+PASS
+
+PERSISTENT BUBBLE WITH WORLD:
+PASS
+
+460+ VITEST:
+PASS
+
+WEB CALL PATH:
+CANONICAL
+
+MOBILE CALL PATH:
+CANONICAL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. AFTER PASS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+بعد نجاح هذه tranche مباشرة:
+
+انتقل إلى Tranche 2:
+
+Existing-Bubble Generative Mutation
+
+ولا تطلب مني موافقة جديدة.
+
+هناك سنغلق:
+
+"متجري الذي فيه الآيفون خفض سعره"
+
+→ reference resolution
+→ mutation intent
+→ ChangeSet
+→ preview
+→ content version
+→ projection refresh
+
+ابدأ الآن.

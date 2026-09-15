@@ -1,0 +1,2095 @@
+# =====================================================================
+# JASIM — TASK #24
+# FINAL PRODUCTION READINESS
+#
+# INTEGRATED SYSTEM AUDIT / PROOF / HARDENING
+#
+# IMPORTANT:
+# DO NOT ADD NEW PRODUCT FEATURES.
+# DO NOT REDESIGN JASIM.
+# DO NOT REOPEN TASK #22 OR TASK #26.
+# DO NOT MODIFY MODEL POLICY UNLESS A REAL PRODUCTION BUG REQUIRES IT.
+# =====================================================================
+
+
+Task #24 is now authorized.
+
+This is the FINAL integrated production-readiness phase.
+
+The objective is NOT:
+
+to add more features,
+to invent new architecture,
+to improve examples,
+or to rewrite JASIM.
+
+The objective is:
+
+PROVE THAT THE CURRENT CANONICAL JASIM SYSTEM
+CAN OPERATE SAFELY, DURABLY, SECURELY,
+AND HONESTLY IN PRODUCTION.
+
+
+=====================================================================
+0. CURRENT VERIFIED FOUNDATION
+=====================================================================
+
+Preserve the following as proven unless regression testing disproves it:
+
+ONE canonical Runtime
+
+ONE canonical PostgreSQL state truth
+
+ModelPolicy T0/T1/T2/T3
+
+provider fallback separated from intelligence escalation
+
+Conversation Summary
+
+Memory
+
+Reference Resolution
+
+Persistent Smart Bubbles
+
+optional Worlds
+
+generic MutationIntent
+
+generic ChangeSet
+
+contentVersion
+
+presentationVersion
+
+Runs / DAG
+
+Trusted Executor
+
+Attempt Ledger
+
+Receipts
+
+Independent Verifier
+
+Reconciliation
+
+Web Research
+
+SourceReferences
+
+untrusted external-content boundary
+
+Image Generation
+
+RuntimeArtifact
+
+Private App Storage
+
+Artifact verification
+
+Task #22:
+Artifact → Existing Smart Bubble
+
+Task #26:
+Research
+→ Evidence
+→ Findings
+→ Image
+→ Artifact
+→ Immutable Lineage
+
+Cross-owner isolation
+
+Web
+
+Mobile shared contracts
+
+Restart persistence
+
+Fake success = 0
+
+
+Current known partial item:
+
+PHASE_12_MODEL_CALIBRATION = PARTIAL
+
+due provider quota/capacity during economic calibration.
+
+Do NOT pretend this is closed.
+
+
+=====================================================================
+1. TASK #24 PRINCIPLE
+=====================================================================
+
+Task #24 is a PRODUCTION AUDIT.
+
+For every subsystem classify:
+
+PASS
+
+PARTIAL
+
+BLOCKED_BY_PROVIDER
+
+BLOCKED_BY_EXTERNAL_CONFIGURATION
+
+BLOCKED_BY_OWNER_ACTION
+
+FAIL
+
+
+Do not silently repair major architecture while auditing.
+
+If a small generic defect is discovered:
+
+fix it minimally
+→ rerun affected proof
+→ report it.
+
+If a major missing primitive is discovered:
+
+record it.
+
+Do NOT build an example-specific workaround.
+
+
+=====================================================================
+2. NO NEW DOMAIN CODE
+=====================================================================
+
+Task #24 must not introduce:
+
+domain handlers
+
+domain routers
+
+domain tables
+
+domain agents
+
+domain-specific Bubble components
+
+
+Required:
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS = 0
+
+
+=====================================================================
+3. AUTHENTICATION / SESSION SECURITY
+=====================================================================
+
+Audit all canonical Web and Mobile runtime paths.
+
+Prove:
+
+anonymous user cannot access private state
+
+expired/invalid session rejected
+
+forged owner ID rejected
+
+client cannot choose another owner
+
+session identity is resolved server-side
+
+privileged endpoints require auth
+
+artifact preview requires authorization
+
+lineage query requires authorization
+
+Bubble mutation requires authorization
+
+Run access requires authorization
+
+
+Test:
+
+VALID_SESSION = PASS
+
+INVALID_SESSION = BLOCKED
+
+EXPIRED_SESSION = BLOCKED
+
+FORGED_OWNER = BLOCKED
+
+
+=====================================================================
+4. CROSS-OWNER ISOLATION — FULL GRAPH
+=====================================================================
+
+Run a full owner-isolation matrix across:
+
+Conversation
+
+Memory
+
+Bubble
+
+World
+
+Run
+
+Task
+
+Attempt
+
+Receipt
+
+Artifact
+
+Artifact preview
+
+Artifact lineage
+
+ResearchResult
+
+SourceReference
+
+Findings
+
+Mutation
+
+ChangeSet
+
+
+User B must not:
+
+read
+write
+mutate
+execute
+reference
+preview
+or infer private User A resources.
+
+
+Required:
+
+CROSS_OWNER_PRIVATE_READS = 0
+
+CROSS_OWNER_PRIVATE_WRITES = 0
+
+CROSS_OWNER_PRIVATE_EXECUTIONS = 0
+
+
+Errors must not leak sensitive metadata.
+
+
+=====================================================================
+5. GENERATED DNA / WORLD SAFETY
+=====================================================================
+
+Generated World/DNA remains UNTRUSTED input.
+
+Prove it cannot:
+
+write arbitrary DB tables
+
+invoke arbitrary provider adapters
+
+read environment secrets
+
+bypass ownership
+
+change Kernel transitions
+
+self-authorize an approval
+
+grant itself permissions
+
+execute direct external effects
+
+modify another Bubble/World
+
+
+Required:
+
+GENERATED_DNA_KERNEL_BYPASS = 0
+
+
+=====================================================================
+6. TRUSTED EXECUTION CHAIN
+=====================================================================
+
+Re-prove:
+
+Intent
+→ Proposal
+→ Capability Validation
+→ Policy
+→ Approval where required
+→ Fingerprint / fencing validation
+→ Trusted Executor
+→ Attempt
+→ Receipt
+→ Independent Verifier
+→ Runtime state transition
+
+
+Required invariants:
+
+AUTHORIZED != EXECUTED
+
+EXECUTED != VERIFIED
+
+RECEIPT != VERIFICATION
+
+INCONCLUSIVE != SUCCESS
+
+
+No direct provider invocation from:
+
+UI
+
+Bubble renderer
+
+Generated DNA
+
+web content
+
+untrusted LLM output
+
+
+Required:
+
+TRUSTED_EXECUTOR_BYPASS = 0
+
+DIRECT_PROVIDER_BYPASS = 0
+
+
+=====================================================================
+7. ATTEMPT IMMUTABILITY
+=====================================================================
+
+Re-prove:
+
+failed attempt remains immutable
+
+retry creates a new attempt
+
+attempt ID differs
+
+fence/version differs where applicable
+
+old receipt is not overwritten
+
+successful retry does not rewrite failure history
+
+
+Required:
+
+ATTEMPT_LEDGER_IMMUTABLE = PASS
+
+
+=====================================================================
+8. IDEMPOTENCY
+=====================================================================
+
+Audit effectful paths:
+
+Bubble mutations
+
+Artifact attachment
+
+image generation
+
+cross-capability composition
+
+other real providers
+
+
+Infrastructure replay must not cause duplicate external effects.
+
+New user intent must remain distinguishable from retry.
+
+
+Required:
+
+DUPLICATE_EFFECTS_FROM_RETRY = 0
+
+
+=====================================================================
+9. RECONCILIATION
+=====================================================================
+
+Test uncertain provider outcomes.
+
+When provider outcome is unknown:
+
+do NOT blindly retry.
+
+Use reconciliation / provider lookup where possible.
+
+
+Prove:
+
+UNKNOWN_EXTERNAL_RESULT
+→ INCONCLUSIVE
+→ reconciliation
+
+
+Required:
+
+BLIND_EFFECTFUL_RETRY = 0
+
+
+=====================================================================
+10. FAILURE TAXONOMY
+=====================================================================
+
+Verify current classifications stay distinct:
+
+FAILED
+
+INCONCLUSIVE
+
+PROVIDER_CAPACITY
+
+EMPTY_COMPLETION
+
+BLOCKED_BY_PROVIDER
+
+BLOCKED_BY_POLICY
+
+BLOCKED_BY_RESOURCE
+
+REQUIRES_HUMAN
+
+REQUIRES_OWNER_DECISION
+
+
+Do NOT collapse every external failure into:
+
+FAILED
+
+or:
+
+SUCCESS.
+
+
+Required:
+
+FAKE_SUCCESS = 0
+
+
+=====================================================================
+11. MODEL POLICY PRODUCTION AUDIT
+=====================================================================
+
+Do NOT restart the incomplete economic calibration during Task #24.
+
+Audit only operational correctness of the CURRENT provisional mapping.
+
+Prove:
+
+T0 deterministic paths work without LLM
+
+T1 normal chat works
+
+T2 advanced path works when selected
+
+T3 deep-generation path works when selected
+
+provider fallback stays same-tier
+
+model escalation has explicit reason
+
+T3 has no execution privilege
+
+ModelBudget is enforced
+
+usage records persist
+
+
+Required:
+
+MODEL_POLICY_OPERATIONAL = PASS
+
+MODEL_CALIBRATION_STATUS = PARTIAL
+
+
+Do not claim economic optimization is final.
+
+
+=====================================================================
+12. MODEL FAILURE SAFETY
+=====================================================================
+
+Simulate / prove:
+
+provider timeout
+
+429
+
+empty completion
+
+invalid structured output
+
+schema failure
+
+fallback provider unavailable
+
+budget exhausted
+
+
+Expected:
+
+controlled state
+
+no application crash
+
+no fake success
+
+no unauthorized tier escalation
+
+bounded retry
+
+
+=====================================================================
+13. MODEL USAGE LEDGER
+=====================================================================
+
+Verify usage records persist:
+
+purpose
+
+tier
+
+provider
+
+model
+
+tokens
+
+latency
+
+fallback
+
+escalation
+
+error
+
+prompt version
+
+
+No:
+
+API keys
+
+full secrets
+
+sensitive prompts unless existing policy explicitly allows them
+
+
+Required:
+
+MODEL_LEDGER_SECRET_LEAK = 0
+
+
+=====================================================================
+14. CONTEXT / MEMORY SECURITY
+=====================================================================
+
+Prove context selection does not accidentally include:
+
+another owner’s memory
+
+another owner’s Bubble
+
+another conversation’s private data
+
+unrelated SourceReferences
+
+
+Required:
+
+CROSS_OWNER_CONTEXT_LEAK = 0
+
+
+Also preserve:
+
+incremental summary
+
+bounded recent turns
+
+bounded memories
+
+bounded evidence
+
+
+=====================================================================
+15. WEB RESEARCH PRODUCTION AUDIT
+=====================================================================
+
+Test:
+
+real search success
+
+provider failure
+
+source persistence
+
+SourceReference ownership
+
+restart persistence
+
+prompt-injection boundary
+
+malicious page content
+
+bounded evidence
+
+no hidden provider credentials
+
+
+Required:
+
+RAW_WEB_CONTENT_AUTHORITY = 0
+
+
+External content stays:
+
+UNTRUSTED_EXTERNAL_CONTENT
+
+
+=====================================================================
+16. IMAGE GENERATION PRODUCTION AUDIT
+=====================================================================
+
+Prove:
+
+real generation
+
+attempt
+
+receipt
+
+verification
+
+private storage
+
+hash
+
+MIME/type validation
+
+owner binding
+
+protected preview
+
+restart
+
+safe failure
+
+
+No temporary provider URL becomes canonical state.
+
+
+Required:
+
+TEMP_PROVIDER_URL_IN_DURABLE_STATE = 0
+
+
+=====================================================================
+17. APP STORAGE — REAL DEPLOYMENT CHECK
+=====================================================================
+
+Important:
+
+Do not validate App Storage only in development preview.
+
+Verify the production-compatible Replit storage path/configuration.
+
+Check:
+
+upload
+
+read
+
+protected preview
+
+restart
+
+deployment environment
+
+authentication to storage sidecar/service
+
+missing object behavior
+
+
+Do not expose:
+
+bucket secrets
+
+storage credentials
+
+internal sidecar details
+
+
+Required:
+
+PRODUCTION_STORAGE_PATH = PASS / BLOCKED_BY_DEPLOYMENT_CONFIGURATION
+
+
+=====================================================================
+18. ARTIFACT LINEAGE
+=====================================================================
+
+Re-prove Task #26 lineage:
+
+Artifact
+→ generation
+→ findings
+→ source references
+→ original research
+
+
+Required:
+
+LINEAGE_OWNER_PROTECTED = PASS
+
+LINEAGE_IMMUTABLE = PASS
+
+LINEAGE_RESTART_DURABLE = PASS
+
+
+And maintain:
+
+SOURCE_PROVENANCE
+!=
+FACTUAL_TRUTH
+
+
+=====================================================================
+19. TASK #22 INTEROPERABILITY
+=====================================================================
+
+Take a verified RuntimeArtifact.
+
+Attach to existing Bubble using canonical Task #22 path.
+
+
+Prove:
+
+same Bubble
+
+correct presentation version
+
+content version not changed without semantic reason
+
+protected projection
+
+restart persistence
+
+Web/Mobile agreement
+
+
+No image-specific Bubble system.
+
+
+=====================================================================
+20. SMART BUBBLE MUTATION
+=====================================================================
+
+Test natural-language or canonical mutations covering:
+
+VIEW_MUTATION
+
+DATA_MUTATION
+
+POLICY_MUTATION
+
+WORKFLOW_MUTATION
+
+STRUCTURAL_MUTATION
+
+PERMISSION_MUTATION
+
+where current runtime genuinely supports them.
+
+
+Do not fabricate unsupported mutation classes merely for coverage.
+
+
+Prove:
+
+same Bubble identity
+
+version correctness
+
+stale ChangeSet protection
+
+atomicity
+
+event persistence
+
+
+=====================================================================
+21. CONCURRENT MUTATION / CAS
+=====================================================================
+
+Simulate two valid mutations against same Bubble version.
+
+
+Expected:
+
+one valid apply
+
+other receives stale/conflict response
+
+no silent last-write-wins corruption
+
+
+Required:
+
+LOST_UPDATE = 0
+
+
+=====================================================================
+22. WORLD / BUBBLE RESTART
+=====================================================================
+
+Use persisted real state.
+
+Restart API/runtime.
+
+Prove same:
+
+Bubble ID
+
+World ID
+
+versions
+
+policies
+
+views
+
+entities
+
+Runs
+
+Artifact refs
+
+lineage
+
+memory references
+
+
+Do NOT regenerate from prompts.
+
+
+=====================================================================
+23. RUN / DAG RESTART
+=====================================================================
+
+Test Run containing multiple nodes.
+
+Restart between nodes.
+
+Expected:
+
+completed nodes remain completed
+
+pending node resumes safely
+
+attempt history preserved
+
+no duplicate completed side effect
+
+Run status remains truthful
+
+
+Required:
+
+RUN_RESTART = PASS
+
+
+=====================================================================
+24. GRACEFUL SHUTDOWN
+=====================================================================
+
+Audit runtime shutdown.
+
+On process termination:
+
+stop accepting unsafe new work
+
+finish/mark in-flight internal state safely
+
+release/expire leases correctly
+
+flush/persist necessary state
+
+do not corrupt attempt status
+
+
+After restart:
+
+recover deterministically.
+
+
+=====================================================================
+25. DATABASE MIGRATIONS
+=====================================================================
+
+Audit canonical Drizzle migrations.
+
+Test:
+
+fresh database
+
+existing database upgrade
+
+restart after migration
+
+partial migration failure handling where feasible
+
+
+Required:
+
+DIRECT_PRODUCTION_SCHEMA_HACKS = 0
+
+DESTRUCTIVE_UNSAFE_MIGRATIONS = 0
+
+
+Do not use ad-hoc direct production SQL.
+
+
+=====================================================================
+26. BACKUP / RESTORE
+=====================================================================
+
+Determine actual current production backup strategy.
+
+Prove or truthfully classify:
+
+PostgreSQL backup
+
+artifact storage persistence
+
+restore procedure
+
+migration compatibility
+
+
+If no tested restore exists:
+
+BACKUP = PARTIAL
+
+RESTORE_PROOF = MISSING
+
+
+Do not call production ready if critical durable state has no recoverable strategy.
+
+
+=====================================================================
+27. HEALTH / READINESS
+=====================================================================
+
+Audit service health endpoints / equivalent.
+
+Separate:
+
+process alive
+
+from:
+
+ready to serve real requests
+
+
+Readiness should reflect critical dependencies appropriately.
+
+
+Check:
+
+DB
+
+runtime initialization
+
+required configuration
+
+storage
+
+provider dependencies where appropriate
+
+
+Do not make optional provider outage necessarily kill entire JASIM if degraded operation is safe.
+
+
+=====================================================================
+28. OBSERVABILITY
+=====================================================================
+
+Verify production logging includes enough to diagnose:
+
+Run ID
+
+Attempt ID
+
+owner-safe correlation
+
+provider
+
+error category
+
+latency
+
+state transition
+
+
+Must NOT log:
+
+passwords
+
+API keys
+
+authorization headers
+
+full private source contents
+
+private artifact bytes
+
+
+Required:
+
+SECRET_LOG_LEAK = 0
+
+
+=====================================================================
+29. ERROR HANDLING
+=====================================================================
+
+Test malformed inputs:
+
+invalid IDs
+
+missing Run
+
+missing Bubble
+
+missing Artifact
+
+stale versions
+
+bad enum
+
+invalid structured payload
+
+provider malformed response
+
+
+Expected:
+
+controlled 4xx/5xx semantics
+
+safe error UI
+
+no blank page
+
+no raw stack trace to user
+
+
+=====================================================================
+30. WEB PRODUCTION
+=====================================================================
+
+Run full production build.
+
+Test real browser:
+
+login/session
+
+normal chat
+
+Run lifecycle
+
+Bubble display
+
+artifact preview
+
+Task #22 attach flow
+
+Task #26 provenance display
+
+safe failure states
+
+refresh
+
+deep link where supported
+
+
+Required:
+
+WEB_PRODUCTION_BUILD = PASS
+
+WEB_BROWSER_SMOKE = PASS
+
+CONSOLE_APPLICATION_ERRORS = 0
+
+
+=====================================================================
+31. MOBILE PRODUCTION CLOSURE
+=====================================================================
+
+Task #26 reported:
+
+MOBILE_SHARED_CONTRACT = PARTIAL
+
+
+Task #24 must determine exactly why.
+
+
+Classify:
+
+A. server/data contract is complete but automated native visual proof unavailable
+
+or
+
+B. actual mobile functionality is incomplete
+
+
+Test real Expo/native path as far as current environment allows:
+
+auth/session
+
+conversation
+
+Run lifecycle
+
+artifact protected preview
+
+Task #22 artifact attach
+
+Task #26 source/provenance rendering
+
+retry/failure state
+
+restart/app relaunch persistence
+
+
+Required report:
+
+MOBILE_SHARED_CONTRACT = PASS / PARTIAL / FAIL
+
+MOBILE_FUNCTIONAL_GAP = YES / NO
+
+MOBILE_AUTOMATION_LIMITATION = YES / NO
+
+
+Do not fake native UI proof.
+
+
+=====================================================================
+32. IOS / ANDROID BUILD
+=====================================================================
+
+Run canonical builds/checks for:
+
+iOS
+
+Android
+
+
+Do not rely only on TypeScript.
+
+Verify build configuration and runtime environment dependencies.
+
+
+If signing/store credentials are externally required:
+
+BLOCKED_BY_EXTERNAL_CONFIGURATION
+
+
+not application FAIL.
+
+
+=====================================================================
+33. PWA / SERVICE WORKER
+=====================================================================
+
+Re-check production Service Worker.
+
+Task #11 previously fixed invalid TS syntax.
+
+Prove:
+
+registers
+
+updates safely
+
+does not serve incompatible stale runtime assets
+
+does not cache private protected artifact responses insecurely
+
+
+Required:
+
+PRIVATE_API_CACHE_LEAK = 0
+
+
+=====================================================================
+34. SECURITY HEADERS / WEB HARDENING
+=====================================================================
+
+Audit relevant production web headers/config:
+
+CSP where feasible
+
+frame protection
+
+content-type protection
+
+referrer policy
+
+secure cookies/session configuration if applicable
+
+CORS
+
+HTTPS assumptions
+
+
+Do not add policies blindly if they break current runtime.
+
+Report exact state.
+
+
+=====================================================================
+35. RATE LIMITING / ABUSE
+=====================================================================
+
+Audit externally expensive endpoints:
+
+model calls
+
+web research
+
+image generation
+
+artifact operations
+
+mutation operations
+
+
+Ensure a user cannot trivially:
+
+spam provider calls
+
+create uncontrolled concurrent Runs
+
+consume another user’s quota
+
+bypass ModelBudget
+
+
+Do not confuse internal ModelBudget with commercial plan quotas.
+
+Commercial quotas are Phase 13.
+
+
+=====================================================================
+36. RESOURCE EXHAUSTION
+=====================================================================
+
+Test or reason with evidence about:
+
+large conversation
+
+large evidence list
+
+large artifact metadata
+
+many Run nodes
+
+repeated retries
+
+concurrent mutations
+
+
+Bound sizes appropriately.
+
+
+No unbounded raw web-page ingestion.
+
+
+=====================================================================
+37. PRODUCTION CONFIGURATION
+=====================================================================
+
+Audit required environment variables/config.
+
+For each classify:
+
+REQUIRED
+
+OPTIONAL
+
+DEVELOPMENT_ONLY
+
+
+Do not print secret values.
+
+
+Report:
+
+MISSING_REQUIRED_PRODUCTION_CONFIGS
+
+
+Do not silently fall back to insecure development behavior in production.
+
+
+=====================================================================
+38. PROVIDER DEGRADED MODE
+=====================================================================
+
+JASIM should continue functioning where reasonable when one provider is down.
+
+Examples:
+
+Image provider unavailable
+→ chat and existing Bubble should still work.
+
+Search unavailable
+→ existing persisted Bubble should still work.
+
+Model provider partially rate-limited
+→ deterministic/runtime state should remain usable.
+
+
+Prove no single optional provider crashes whole application.
+
+
+=====================================================================
+39. PRODUCTION DEPLOYMENT SMOKE
+=====================================================================
+
+If an actual Replit Deployment environment is available:
+
+test there, not only dev preview.
+
+
+Verify:
+
+API
+
+Web
+
+DB
+
+storage
+
+auth/session
+
+one non-effectful conversation
+
+one existing Bubble read
+
+protected Artifact read
+
+
+Avoid spending provider quota unnecessarily.
+
+
+If actual deployment is unavailable:
+
+classify:
+
+PRODUCTION_DEPLOYMENT_SMOKE =
+BLOCKED_BY_EXTERNAL_CONFIGURATION
+
+
+Do not fake it from preview.
+
+
+=====================================================================
+40. PHASE 12 BLOCKER
+=====================================================================
+
+Do NOT change:
+
+PHASE_12 = PARTIAL
+
+
+unless the previously incomplete calibration genuinely completes.
+
+
+Current production-readiness report must explicitly state:
+
+MODEL_POLICY_IMPLEMENTATION = PASS
+
+MODEL_POLICY_ECONOMIC_CALIBRATION = PARTIAL
+
+
+The unresolved Phase 12 calibration must appear in final launch blockers.
+
+
+=====================================================================
+41. COMMERCIAL RUNTIME
+=====================================================================
+
+Commercial Runtime has NOT been implemented yet.
+
+Do not implement it in Task #24.
+
+
+Classify:
+
+ENTITLEMENTS = MISSING / future Phase 13
+
+PLAN_QUOTAS = MISSING / future Phase 13
+
+BILLING = MISSING / future Phase 13
+
+PAYMENTS = provider/future phase
+
+
+Important:
+
+Commercial Runtime absence does NOT necessarily prevent private/internal technical deployment.
+
+But it prevents claiming full commercial product readiness if monetization is required.
+
+
+=====================================================================
+42. REAL-WORLD CAPABILITY GAPS
+=====================================================================
+
+Report current state for generic providers such as:
+
+Maps/location
+
+Notifications/push/SMS
+
+Payments
+
+Identity verification
+
+
+Do NOT implement them now.
+
+
+Classify:
+
+REAL
+
+PARTIAL
+
+BLOCKED_BY_PROVIDER
+
+MISSING
+
+
+This is important for truthful product capability.
+
+
+=====================================================================
+43. RECURRENT SCHEDULER
+=====================================================================
+
+Audit whether current canonical Runtime truly supports:
+
+recurring schedules
+
+durable waits
+
+resume after restart
+
+scheduled Run creation
+
+
+Do not infer from DAG restart alone.
+
+
+Classify:
+
+SCHEDULER =
+REAL / PARTIAL / MISSING
+
+
+If missing:
+
+record as product/runtime gap.
+
+Do not implement it inside Task #24 unless a tiny generic fix completes an already-existing scheduler.
+
+
+=====================================================================
+44. CROSS-USER DISCOVERY
+=====================================================================
+
+Audit whether current system supports:
+
+Bubble visibility:
+PRIVATE / UNLISTED / PUBLIC / SHARED
+
+server-side publishing policy
+
+cross-user discovery
+
+natural-language matching to public/shared Bubbles
+
+correct role projection
+
+
+Do not confuse:
+
+cross-owner isolation
+
+with:
+
+authorized cross-user discovery.
+
+
+Classify:
+
+CROSS_USER_DISCOVERY =
+REAL / PARTIAL / MISSING
+
+
+Do not build it in Task #24.
+
+
+=====================================================================
+45. MULTI-ROLE SAME BUBBLE
+=====================================================================
+
+Audit:
+
+owner
+
+member/customer
+
+operator/worker
+
+
+same Bubble identity
+
+different permissions
+
+different actions
+
+different projections
+
+
+Classify:
+
+MULTI_ROLE_BUBBLE =
+REAL / PARTIAL / MISSING
+
+
+Do not create domain roles solely for proof.
+
+
+=====================================================================
+46. GENERATIVE UI GENERALITY
+=====================================================================
+
+Audit whether current Generic Renderer can materially render different structures
+without domain-specific React pages.
+
+
+Use existing generic test Worlds/Bubbles.
+
+Do not add domain components.
+
+
+Classify:
+
+GENERATIVE_UI_GENERALITY =
+PASS / PARTIAL / FAIL
+
+
+=====================================================================
+47. BUSINESS ASSISTANCE
+=====================================================================
+
+Audit existing intelligence ability to reason from current World structure into:
+
+business model suggestions
+
+required assumptions
+
+unit economics inputs
+
+owner decisions
+
+
+Do not invent prices.
+
+
+Classify:
+
+BUSINESS_ASSISTANCE =
+PASS / PARTIAL / MISSING
+
+
+This is diagnosis only.
+
+
+=====================================================================
+48. GENERALIZATION REGRESSION
+=====================================================================
+
+Rerun Phase 7 Generalization.
+
+Use unseen/randomized examples.
+
+Required:
+
+DOMAIN_SPECIFIC_HANDLER_REQUIRED = 0
+
+FAKE_SUCCESS = 0
+
+
+Do NOT alter Core to fit the examples.
+
+
+=====================================================================
+49. TASK #26 REGRESSION
+=====================================================================
+
+Re-run real or persisted-valid proof of:
+
+Research
+→ selected sources
+→ evidence
+→ findings
+→ image
+→ artifact
+→ lineage
+
+
+Avoid unnecessary provider calls if durable proof data is sufficient.
+
+
+Required:
+
+CROSS_CAPABILITY_COMPOSITION = PASS
+
+
+=====================================================================
+50. TASK #22 REGRESSION
+=====================================================================
+
+Re-prove:
+
+Artifact
+→ existing Bubble
+→ VIEW_MUTATION
+→ protected projection
+
+
+Required:
+
+ARTIFACT_BUBBLE_COMPOSITION = PASS
+
+
+=====================================================================
+51. HARD PRODUCTION GATES
+=====================================================================
+
+The report must distinguish:
+
+TECHNICALLY_DEPLOYABLE
+
+from:
+
+FULL_PRODUCT_READY
+
+from:
+
+FULL_COMMERCIAL_READY
+
+
+These are not the same.
+
+
+Example:
+
+TECHNICALLY_DEPLOYABLE = YES
+
+FULL_PRODUCT_READY = NO
+
+FULL_COMMERCIAL_READY = NO
+
+
+may be a correct truthful answer.
+
+
+=====================================================================
+52. CRITICAL LAUNCH BLOCKERS
+=====================================================================
+
+A blocker should be CRITICAL only if it affects:
+
+data integrity
+
+authorization
+
+execution safety
+
+durability
+
+critical production configuration
+
+mandatory core path
+
+unrecoverable state
+
+known severe security issue
+
+
+Do not label missing optional providers as a core runtime failure.
+
+
+=====================================================================
+53. FINAL REPORT
+=====================================================================
+
+Return a concise but evidence-based report:
+
+
+TASK_24:
+PASS / PARTIAL / FAIL
+
+
+================================================
+CORE
+================================================
+
+CANONICAL_RUNTIME:
+PASS / FAIL
+
+DATABASE_STATE_TRUTH:
+PASS / FAIL
+
+AUTH:
+PASS / FAIL
+
+CROSS_OWNER_ISOLATION:
+PASS / FAIL
+
+GENERATED_DNA_KERNEL_SAFETY:
+PASS / FAIL
+
+
+================================================
+EXECUTION
+================================================
+
+TRUSTED_EXECUTOR:
+PASS / FAIL
+
+ATTEMPT_LEDGER:
+PASS / FAIL
+
+IDEMPOTENCY:
+PASS / FAIL
+
+INDEPENDENT_VERIFIER:
+PASS / FAIL
+
+RECONCILIATION:
+PASS / FAIL
+
+FAKE_SUCCESS:
+<number>
+
+
+================================================
+MODELS
+================================================
+
+MODEL_POLICY_IMPLEMENTATION:
+PASS / FAIL
+
+MODEL_POLICY_ECONOMIC_CALIBRATION:
+PASS / PARTIAL / FAIL
+
+T0:
+PASS / FAIL
+
+T1:
+PASS / FAIL
+
+T2:
+PASS / FAIL
+
+T3:
+PASS / FAIL
+
+FALLBACK_ESCALATION_SEPARATION:
+PASS / FAIL
+
+MODEL_USAGE_LEDGER:
+PASS / FAIL
+
+
+================================================
+CAPABILITIES
+================================================
+
+WEB_RESEARCH:
+PASS / FAIL
+
+IMAGE_GENERATION:
+PASS / FAIL
+
+ARTIFACT_STORAGE:
+PASS / FAIL
+
+ARTIFACT_LINEAGE:
+PASS / FAIL
+
+CROSS_CAPABILITY_COMPOSITION:
+PASS / FAIL
+
+ARTIFACT_BUBBLE_COMPOSITION:
+PASS / FAIL
+
+
+================================================
+DURABILITY
+================================================
+
+RESTART_DURABILITY:
+PASS / FAIL
+
+RUN_RESTART:
+PASS / FAIL
+
+BUBBLE_WORLD_RESTART:
+PASS / FAIL
+
+DATABASE_MIGRATIONS:
+PASS / FAIL
+
+BACKUP:
+PASS / PARTIAL / FAIL
+
+RESTORE_PROOF:
+PASS / MISSING / FAIL
+
+
+================================================
+WEB
+================================================
+
+WEB_PRODUCTION_BUILD:
+PASS / FAIL
+
+WEB_BROWSER_SMOKE:
+PASS / FAIL
+
+SERVICE_WORKER:
+PASS / FAIL
+
+WEB_SECURITY:
+PASS / PARTIAL / FAIL
+
+
+================================================
+MOBILE
+================================================
+
+MOBILE_TYPECHECK:
+PASS / FAIL
+
+IOS_BUILD:
+PASS / FAIL / BLOCKED_BY_EXTERNAL_CONFIGURATION
+
+ANDROID_BUILD:
+PASS / FAIL / BLOCKED_BY_EXTERNAL_CONFIGURATION
+
+MOBILE_SHARED_CONTRACT:
+PASS / PARTIAL / FAIL
+
+MOBILE_FUNCTIONAL_GAP:
+YES / NO
+
+MOBILE_AUTOMATION_LIMITATION:
+YES / NO
+
+
+================================================
+OPERATIONS
+================================================
+
+HEALTH_READINESS:
+PASS / PARTIAL / FAIL
+
+GRACEFUL_SHUTDOWN:
+PASS / PARTIAL / FAIL
+
+OBSERVABILITY:
+PASS / PARTIAL / FAIL
+
+RATE_LIMITING:
+PASS / PARTIAL / FAIL
+
+PRODUCTION_DEPLOYMENT_SMOKE:
+PASS / BLOCKED_BY_EXTERNAL_CONFIGURATION / FAIL
+
+
+================================================
+GENERAL PRODUCT RUNTIME
+================================================
+
+SCHEDULER:
+REAL / PARTIAL / MISSING
+
+CROSS_USER_DISCOVERY:
+REAL / PARTIAL / MISSING
+
+MULTI_ROLE_BUBBLE:
+REAL / PARTIAL / MISSING
+
+GENERATIVE_UI_GENERALITY:
+PASS / PARTIAL / FAIL
+
+BUSINESS_ASSISTANCE:
+PASS / PARTIAL / MISSING
+
+
+================================================
+EXTERNAL PROVIDERS
+================================================
+
+MAPS:
+REAL / PARTIAL / BLOCKED_BY_PROVIDER / MISSING
+
+NOTIFICATIONS:
+REAL / PARTIAL / BLOCKED_BY_PROVIDER / MISSING
+
+PAYMENTS:
+REAL / PARTIAL / BLOCKED_BY_PROVIDER / MISSING
+
+IDENTITY_VERIFICATION:
+REAL / PARTIAL / BLOCKED_BY_PROVIDER / MISSING
+
+
+================================================
+COMMERCIAL
+================================================
+
+ENTITLEMENTS:
+REAL / MISSING
+
+PLAN_QUOTAS:
+REAL / MISSING
+
+BILLING:
+REAL / MISSING
+
+COMMERCIAL_RUNTIME:
+REAL / PARTIAL / MISSING
+
+
+================================================
+GENERALIZATION
+================================================
+
+PHASE_7_GENERALIZATION:
+PASS / FAIL
+
+DOMAIN_SPECIFIC_CORE_ADDITIONS:
+<number>
+
+DOMAIN_SPECIFIC_HANDLER_REQUIRED:
+<number>
+
+
+================================================
+SECURITY COUNTERS
+================================================
+
+TRUSTED_EXECUTOR_BYPASS:
+<number>
+
+DIRECT_PROVIDER_BYPASS:
+<number>
+
+CROSS_OWNER_PRIVATE_READS:
+<number>
+
+CROSS_OWNER_PRIVATE_WRITES:
+<number>
+
+GENERATED_DNA_KERNEL_BYPASS:
+<number>
+
+SECRET_LOG_LEAK:
+<number>
+
+PRIVATE_API_CACHE_LEAK:
+<number>
+
+FAKE_SUCCESS:
+<number>
+
+
+================================================
+READINESS
+================================================
+
+TECHNICALLY_DEPLOYABLE:
+YES / NO
+
+FULL_PRODUCT_READY:
+YES / NO
+
+FULL_COMMERCIAL_READY:
+YES / NO
+
+
+CRITICAL_LAUNCH_BLOCKERS:
+1.
+2.
+3.
+or NONE
+
+
+NON_CRITICAL_PRODUCT_GAPS:
+1.
+2.
+3.
+...
+
+
+PHASE_12_BLOCKER:
+<exact status>
+
+
+READY_FOR_PHASE_13_COMMERCIAL_RUNTIME:
+YES / NO
+
+
+OWNER_ACTION_REQUIRED:
+NONE
+or exact external actions only
+
+
+=====================================================================
+54. FINAL RULE
+=====================================================================
+
+Do not mark FULL_PRODUCT_READY merely because builds pass.
+
+Do not mark FULL_COMMERCIAL_READY without commercial runtime.
+
+Do not mark Phase 12 complete without actual calibration evidence.
+
+Do not hide missing Scheduler, discovery, multi-role, Maps, Payments,
+Notifications, or Mobile gaps.
+
+Truth is more important than a green report.
+
+
+STOP after the Task #24 report.
+
+Do NOT automatically start Phase 13.
+
+BEGIN TASK #24 FINAL PRODUCTION READINESS NOW.

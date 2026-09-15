@@ -1,0 +1,44 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "j_ph8pbIhBB4JFzFxYsfa"
+uri = "file://.local/tasks/smart-ui-task-8b-1-readiness-report.md"
+type = "text"
+title = "Smart UI Task 8B1.1 readiness report"
+description = "Database, projection, Mobile startup, visual smoke, tests, and scope counters for the Mobile Runtime Readiness Gate."
+logical_id = "5a5ed20a-324e-4888-aa91-ad12e5b730f2"
+content_hash = "sha256:c5021b9370ad93b11c4fe4e37881db7a602ab9c2ed414f79d1dcbc87d7a2f5cf"
+size = 7975
+mtime_ms = 1789198611129
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:600fb984-f544-4a77-98d5-6fc37cffc0bc/5a5ed20a-324e-4888-aa91-ad12e5b730f2/2680774e-e111-4b6b-a94f-ef40aac6261a"
+storage_version_token = "1789198619786254"
+content_type = "text/markdown"
+
+[[outputs]]
+id = "8mZAqmS-tfA6dkmLHIe5b"
+uri = "file://.local/tasks/smart-ui-task-8b2a-report.md"
+type = "text"
+title = "Smart UI Task 8B2A report"
+description = "Native Mobile visual morphing, continuity architecture, focused tests, regression results, and truthful visual smoke status."
+logical_id = "594580c8-4f0d-496e-a9e8-0e44bd8ee834"
+content_hash = "sha256:55338be5534d533fc7088b8e1bc063a298644247eaa6b7d3109efd725daf0251"
+size = 9754
+mtime_ms = 1789199139621
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:600fb984-f544-4a77-98d5-6fc37cffc0bc/594580c8-4f0d-496e-a9e8-0e44bd8ee834/ccc9048b-6794-4a17-979f-ee3df812829b"
+storage_version_token = "1789199170341259"
+content_type = "text/markdown"
+
+[[outputs]]
+id = "KgUvRZbm-vfLU0TJcw_oG"
+uri = "file://.local/tasks/smart-ui-task-8b2b-report.md"
+type = "text"
+title = "Smart UI Task 8B2B report"
+description = "Mobile Living Objects, trusted OPEN_REFERENCE integration, cross-device semantic parity, focused tests, and truthful smoke status."
+logical_id = "e7331477-99a5-43fe-947b-7ab7bed67f5b"
+content_hash = "sha256:a40c6dfe89a092720080da7cb9b8a8ecefa834d85539198888e19bbce7979b66"
+size = 10908
+mtime_ms = 1789209001325
+storage_uri = "gcs://replit-rams-assets-pike/rams/assets/repl:600fb984-f544-4a77-98d5-6fc37cffc0bc/e7331477-99a5-43fe-947b-7ab7bed67f5b/13d37182-651e-4912-a332-1c6a95672a0b"
+storage_version_token = "1789209035385845"
+content_type = "text/markdown"

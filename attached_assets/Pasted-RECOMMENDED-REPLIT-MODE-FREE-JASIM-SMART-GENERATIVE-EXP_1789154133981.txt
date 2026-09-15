@@ -1,0 +1,1340 @@
+RECOMMENDED REPLIT MODE: FREE
+
+# JASIM SMART GENERATIVE EXPERIENCE
+
+# TASK 3 — GENERIC SCHEMA RENDERER PRIMITIVES
+
+MODE INTENT:
+Focused implementation only.
+
+Task 1 = CLOSED / PASS
+Task 2 = CLOSED / PASS
+
+Accepted current state:
+
+Task 1:
+
+* PresentationDefinition wired into live runtime
+* Presentation IR runtime validated
+* invalid presentation/actions fail closed
+* PresentationRenderer uses existing SchemaRenderer
+* plain text and Smart Bubble regressions preserved
+
+Task 2:
+
+* one unified semantic Presentation Decision Layer
+* deterministic smallest-sufficient-output selection
+* no domain-specific presentation routers
+* no domain-specific decision branches
+* no MAP without trusted coordinates
+* existing validation remains authoritative
+
+Reports:
+
+.local/tasks/smart-ui-task-1-report.md
+.local/tasks/smart-ui-task-2-report.md
+.local/tasks/jasim-smart-interface-delta-mapping.md
+
+Do NOT redo Tasks 1 or 2.
+
+Do NOT create Workspace yet.
+
+Do NOT implement Morphing yet.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. GOAL
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Extend/reuse the existing:
+
+SchemaRenderer
+
+PresentationRenderer
+
+presentation-fabric.ts
+
+current trusted component registry / equivalent
+
+so that generic PresentationDefinition types can render through a small reusable library of SAFE GENERIC UI PRIMITIVES.
+
+The goal is NOT visual perfection.
+
+The goal is:
+
+SEMANTIC PRESENTATION
+↓
+TRUSTED GENERIC COMPONENT
+↓
+SAFE RENDERING
+
+without domain-specific UI.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. CORE ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The accepted live path is now:
+
+Runtime
+↓
+SemanticPresentationInput
+↓
+Presentation Decision Layer
+↓
+PresentationDefinition
+↓
+Task 1 Runtime Validation
+↓
+PresentationRenderer
+↓
+SchemaRenderer
+↓
+TRUSTED GENERIC PRIMITIVES
+
+Task 3 owns only the last layer.
+
+Do not change:
+
+Planner
+
+Goal Engine
+
+Discovery
+
+Payments
+
+World Runtime
+
+Reference Resolution
+
+Presentation Decision semantics
+
+unless a tiny compatibility fix is directly necessary.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. GENERIC PRIMITIVE PHILOSOPHY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Build/reuse semantic primitives such as:
+
+Text
+
+Heading
+
+EntityCard
+
+EntityList
+
+EntityGrid
+
+Detail
+
+Comparison
+
+Table
+
+Form
+
+Field
+
+Choice
+
+Calendar
+
+MapShell / MapPlaceholder semantics only if actual map implementation already exists
+
+PriceSummary
+
+Approval
+
+CheckoutSummary
+
+Status
+
+Progress
+
+Timeline
+
+Tracker
+
+Document
+
+Media
+
+Warning
+
+Receipt
+
+ActionBar
+
+EmptyState
+
+ErrorState
+
+Do NOT create domain components such as:
+
+CarCard
+
+JobCard
+
+HotelCard
+
+RestaurantCard
+
+LaptopCard
+
+CourierCard
+
+UniversityCard
+
+TransportCard
+
+Do NOT create domain dashboards.
+
+A generic EntityCard must be capable of displaying different entity classes through structured fields.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. REUSE BEFORE CREATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Before adding components, inspect the active existing component library.
+
+For each needed semantic primitive:
+
+1. Find existing reusable equivalent.
+2. Reuse if correct.
+3. Extend if close.
+4. Generalize if currently domain-limited.
+5. Create new only if genuinely missing.
+
+Do not duplicate components merely to get cleaner names.
+
+If existing components already cover:
+
+Card
+List
+Grid
+Table
+Form
+Timeline
+Status
+Approval
+
+use them.
+
+The focused delta mapping reported:
+
+REUSABLE_GENERIC_UI_PRIMITIVES = 19
+MISSING_GENERIC_UI_PRIMITIVES = 8
+
+Use that report as the baseline.
+
+Do NOT assume all 8 need new React components.
+
+Some may only require adapter/registry wiring.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. TRUSTED COMPONENT REGISTRY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SchemaRenderer must resolve presentation types through a trusted allowlisted registry or equivalent safe mapping.
+
+Conceptually:
+
+PresentationType
+↓
+Trusted Component Registry
+↓
+Known Component
+
+Example:
+
+TEXT
+→ TextPrimitive
+
+SEARCH_RESULTS
+→ EntityCollectionPrimitive
+
+COMPARISON
+→ ComparisonPrimitive
+
+FORM
+→ FormPrimitive
+
+APPROVAL
+→ ApprovalPrimitive
+
+STATUS
+→ StatusPrimitive
+
+Unknown types must fail closed or use a safe fallback.
+
+Never allow:
+
+componentName from provider
+→ dynamic import
+
+or:
+
+componentName from LLM
+→ arbitrary React component
+
+Target:
+
+UNTRUSTED_COMPONENT_INJECTION_PATHS = 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. ENTITY CARD MUST BE GENERIC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+EntityCard must render semantic structured data.
+
+Possible fields:
+
+title
+
+subtitle
+
+description
+
+image
+
+badges
+
+key/value attributes
+
+money
+
+availability
+
+source/provenance
+
+status
+
+actions
+
+metadata allowed for display
+
+Do not assume:
+
+brand
+
+mileage
+
+salary
+
+bedrooms
+
+processor
+
+cuisine
+
+These may appear as generic attribute rows.
+
+Example:
+
+Vehicle:
+
+Year: 2024
+Mileage: 12,000 km
+Price: 8,400 KWD
+
+Job:
+
+Location: Remote
+Experience: 2 years
+Salary: 900 KWD
+
+Laptop:
+
+RAM: 32 GB
+GPU: ...
+Price: 399 KWD
+
+Same component architecture.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. ENTITY COLLECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Build/reuse one generic collection presentation capable of:
+
+LIST
+
+GRID
+
+SEARCH_RESULTS
+
+The semantic PresentationDefinition may provide:
+
+items
+
+title
+
+summary
+
+layout preference
+
+primary fields
+
+secondary fields
+
+actions
+
+The renderer may choose:
+
+list
+
+grid
+
+cards
+
+based on validated presentation semantics.
+
+Do not add domain-specific list implementations.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. COMPARISON PRIMITIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Implement/reuse a generic Comparison renderer.
+
+Input should conceptually contain:
+
+entities
+
+comparison attributes
+
+attribute labels
+
+values
+
+optional preference/ranking hints
+
+actions
+
+No domain knowledge inside component.
+
+Example:
+
+Comparison receives:
+
+attributes:
+
+* price
+* ram
+* gpu
+
+or:
+
+* salary
+* location
+* experience
+
+It simply renders the semantic structure safely.
+
+Do not hardcode comparison criteria by domain.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. DETAIL PRIMITIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Generic Detail surface should support:
+
+title
+
+media
+
+summary
+
+structured attributes
+
+status
+
+provenance
+
+available actions
+
+related entities where supported
+
+It should work for:
+
+product-like entity
+
+service
+
+job
+
+resource
+
+opportunity
+
+document
+
+generated World summary
+
+without domain component forks.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. FORM / FIELD PRIMITIVES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 2 can now select FORM.
+
+Task 3 must render a generic structured Form safely.
+
+Support existing validated field types where available, such as:
+
+text
+
+number
+
+money
+
+date
+
+time
+
+datetime
+
+choice
+
+multi-choice
+
+boolean
+
+textarea
+
+location reference if already supported
+
+Do not invent new business validation.
+
+Use validation constraints already present in PresentationDefinition or server contracts.
+
+Form submission must NOT execute business operations directly.
+
+For Task 3:
+
+Form may emit a typed presentation action/event.
+
+Trusted Action Dispatcher will be finalized in Task 7.
+
+Do not implement Task 7 prematurely.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. CHOICE PRIMITIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Support focused clarification choices.
+
+Example:
+
+"أي سيارة تقصد؟"
+
+[الأولى]
+[الثانية]
+[الثالثة]
+
+Choice values must carry trusted stable references from validated presentation data.
+
+Do not depend on visual array index alone.
+
+Do not reconstruct canonical identity from label text.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. APPROVAL PRIMITIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Render existing approval semantics generically.
+
+Display available validated fields such as:
+
+action summary
+
+target
+
+amount
+
+currency
+
+counterparty/provider
+
+material terms
+
+warnings
+
+impact
+
+confirm
+
+cancel
+
+Do not implement approval authority in React.
+
+The button only emits the existing typed action.
+
+Existing server approval truth remains authoritative.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. CHECKOUT SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 3 may render checkout presentation.
+
+Do not build payment execution logic.
+
+Generic CheckoutSummary may display:
+
+items
+
+subtotal
+
+fees
+
+delivery
+
+tax if canonical data exists
+
+total
+
+currency
+
+payment state
+
+approval action
+
+Do NOT:
+
+calculate canonical financial totals client-side when server totals exist
+
+invent missing fee values
+
+mark payment successful
+
+call provider directly
+
+Block 3 remains authoritative.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. STATUS / PROGRESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create/reuse generic Status and Progress primitives.
+
+They should support:
+
+status label
+
+summary
+
+progress value if genuinely known
+
+attention state
+
+next action
+
+updated time if supplied
+
+Do not create fake percentages.
+
+If runtime knows only:
+
+PROCESSING
+
+render Processing.
+
+Do not invent:
+
+72% complete
+
+unless real progress exists.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. TIMELINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Generic Timeline must render actual canonical events.
+
+Input:
+
+event entries
+
+timestamp
+
+label
+
+state
+
+optional description
+
+source/provenance if required
+
+Do not create missing timeline steps client-side.
+
+The renderer is not allowed to infer that:
+
+paid
+→ shipped
+
+unless runtime emitted that event.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. TRACKER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Generic Tracker may combine:
+
+current status
+
+timeline
+
+progress
+
+location observation if available
+
+actions
+
+Do NOT implement fake map/location.
+
+No coordinates:
+
+do not render moving marker.
+
+Task 2 already prevents MAP selection without trusted coordinates.
+
+Preserve that invariant.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. DOCUMENT / MEDIA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Provide/reuse safe generic renderers for structured Document and Media presentations.
+
+Examples:
+
+document summary
+
+file preview
+
+image/media reference
+
+download/action link when trusted
+
+Do not render arbitrary raw provider HTML.
+
+Do not treat external HTML as trusted presentation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. WARNING / ERROR / EMPTY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Generic primitives must include truthful states.
+
+Examples:
+
+WARNING
+
+ERROR_STATE
+
+EMPTY_STATE
+
+The renderer should support:
+
+human-readable message
+
+optional safe details
+
+safe retry action when provided
+
+alternative action
+
+Do not expose:
+
+stack traces
+
+SQL
+
+Zod internals
+
+provider secret payloads
+
+internal security IDs
+
+to normal users.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+19. ACTION BAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Render generic actions from validated PresentationDefinition.
+
+Possible semantic actions:
+
+view
+
+select
+
+compare
+
+monitor
+
+contact
+
+book
+
+approve
+
+cancel
+
+edit
+
+continue
+
+retry
+
+Actions must be:
+
+typed
+
+validated
+
+reference-bound
+
+Do not invent actions based on entity type.
+
+If the server presentation contains no executable Buy action:
+
+do not create Buy because the renderer thinks the entity looks like a product.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. ACTION RENDERING ONLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Task 3 does NOT implement final action dispatch.
+
+Buttons/components may call the existing safe presentation action entry point.
+
+If current components have fragmented action handling:
+
+do NOT refactor the entire action system now.
+
+Document it for Task 7.
+
+Scope here:
+
+safe action rendering
++
+typed event emission
+
+not:
+
+full Trusted Action Dispatcher.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+21. SOAP / GLASS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT perform final visual redesign.
+
+However reuse existing visual primitives when straightforward:
+
+glass card
+
+surface
+
+border
+
+radius
+
+typography
+
+button
+
+motion token
+
+spacing
+
+The generic primitives should be visually compatible with existing Soap Glass direction.
+
+Do not duplicate the visual system.
+
+Do not spend this task polishing animation.
+
+Final visual composition happens later with Workspace and Morphing.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+22. BUBBLE COMPATIBILITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Existing:
+
+RuntimeBubbleLayer
+RuntimeBubbleRenderer
+Smart Bubbles
+
+must continue working.
+
+Task 3 should NOT delete Bubble components.
+
+A semantic primitive may appear:
+
+inside conversation
+
+inside an expanded Bubble
+
+inside future Workspace
+
+inside future Bottom Sheet
+
+The primitive must not care which shell contains it.
+
+This separation is important.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+23. RENDERER MUST BE SHELL-AGNOSTIC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Generic primitive architecture should not assume:
+
+chat-only
+
+workspace-only
+
+bubble-only
+
+desktop-only
+
+mobile-only
+
+It should render semantic content independent of containing shell where possible.
+
+Later:
+
+Task 4 → Workspace
+Task 8 → Mobile adaptation
+
+will compose these primitives differently.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+24. RTL / LTR BASICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not do the full final RTL audit yet.
+
+But new generic primitives must not be structurally LTR-only.
+
+Use existing direction/context handling.
+
+Ensure obvious basics:
+
+Arabic labels do not break layout.
+
+English names inside Arabic surfaces remain usable.
+
+Money/number values are not reversed incorrectly.
+
+Tables/comparisons do not assume English-only text.
+
+Full responsive/RTL acceptance comes later.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. NO CLIENT CANONICAL TRUTH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do not introduce canonical business state into primitive components.
+
+Forbidden patterns conceptually:
+
+const [paymentStatus, setPaymentStatus] = useState("paid")
+
+const [orderState, setOrderState] = ...
+
+const [canonicalSelection, setCanonicalSelection] = ...
+
+when these should come from server projections.
+
+Local component state may contain:
+
+expanded
+
+hovered
+
+form draft
+
+temporary selected visual row
+
+pending local input
+
+But not canonical truth.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+26. SAFE FALLBACK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If a valid PresentationDefinition reaches SchemaRenderer but the specific visual primitive is not yet implemented:
+
+use a safe generic fallback.
+
+Prefer:
+
+Text / structured fallback
+
+or:
+
+safe UnsupportedPresentation message in development
+
+Do not crash the conversation.
+
+Do not use raw JSON in normal user UI.
+
+Do not silently execute unknown actions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+27. DOMAIN GENERICITY TEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prove the SAME EntityCard / EntityCollection / Comparison architecture can render at least:
+
+A. laptop-like candidate
+
+B. vehicle-like candidate
+
+C. job-like candidate
+
+D. service-like candidate
+
+without adding domain-specific component code.
+
+These can be structured test fixtures.
+
+They are presentation fixtures only.
+
+Do not pretend they are live provider data.
+
+Test fixtures are allowed when clearly used only for renderer tests.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+28. PRESENTATION TYPE COVERAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Report which semantic PresentationDefinition types are now:
+
+FULLY_RENDERED
+
+SAFE_FALLBACK_ONLY
+
+NOT_YET_NEEDED
+
+Do not fake coverage.
+
+If MAP requires a future real map component:
+
+say so.
+
+A safe fallback may be acceptable in Task 3 if the semantic layer is correct and map implementation belongs later.
+
+But core acceptance types should be real:
+
+TEXT
+
+SEARCH_RESULTS / ENTITY_COLLECTION
+
+COMPARISON
+
+DETAIL
+
+FORM
+
+CHOICE
+
+APPROVAL
+
+STATUS
+
+TIMELINE
+
+ERROR/EMPTY
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+29. FOCUSED TESTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add focused tests proving at minimum:
+
+1. TEXT renders.
+
+2. generic EntityCard renders semantic attributes.
+
+3. SEARCH_RESULTS renders collection without domain component.
+
+4. COMPARISON renders multiple generic entities.
+
+5. DETAIL renders structured entity.
+
+6. FORM renders validated fields.
+
+7. CHOICE emits stable trusted value/reference.
+
+8. APPROVAL renders summary and typed actions.
+
+9. STATUS renders truthful state.
+
+10. TIMELINE renders provided events only.
+
+11. unknown primitive fails closed or uses safe fallback.
+
+12. malformed primitive remains rejected by Task 1 validator.
+
+13. unsupported action is not rendered/executed.
+
+14. same generic card handles two unrelated domains.
+
+15. same generic comparison handles two unrelated domains.
+
+16. plain-text regression passes.
+
+17. Smart Bubble regression passes.
+
+18. Task 2 decision → Task 3 renderer integration works.
+
+Keep tests focused.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+30. DO NOT IMPLEMENT YET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT implement:
+
+Active Generative Workspace
+
+UI Morphing
+
+persistent Living Objects
+
+Active Objects Rail
+
+full Trusted Action Dispatcher
+
+Mobile generic renderer
+
+final responsive polish
+
+final Soap animation
+
+raw HTML repository-wide cleanup
+
+Final Production Closure
+
+deployment
+
+real providers
+
+real money
+
+These belong later.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+31. EXPECTED CHANGE SIZE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Keep the diff bounded.
+
+Expected areas:
+
+presentation components
+
+SchemaRenderer / PresentationRenderer
+
+trusted primitive registry
+
+small shared presentation types if necessary
+
+focused tests
+
+No database changes.
+
+Expected:
+
+NEW_DATABASE_TABLES = 0
+NEW_MIGRATIONS = 0
+NEW_EXTERNAL_SDKS = 0
+
+If you discover that this task requires schema/database architecture:
+
+STOP and report the blocker.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. VERIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run:
+
+Task 3 focused tests
+
+Task 1 validation regression
+
+Task 2 decision regression
+
+affected presentation renderer tests
+
+plain text regression
+
+Smart Bubble regression
+
+Server TypeScript
+
+Web TypeScript
+
+git diff --check
+
+Do NOT run all JASIM historical suites.
+
+Do NOT run Mobile build/typecheck unless shared type changes directly affect Mobile compilation.
+
+Do NOT deploy.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+33. REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create exactly:
+
+.local/tasks/smart-ui-task-3-report.md
+
+Required sections:
+
+CAUSE
+
+REUSED_COMPONENTS
+
+NEW_GENERIC_PRIMITIVES
+
+GENERALIZED_COMPONENTS
+
+TRUSTED_COMPONENT_REGISTRY
+
+SCHEMA_RENDERER_CHANGES
+
+ACTION_RENDERING
+
+DOMAIN_GENERICITY_PROOF
+
+PRESENTATION_TYPE_COVERAGE
+
+FILES_CHANGED
+
+TESTS
+
+Then counters:
+
+SMART_UI_TASK_3 =
+PASS / PARTIAL / FAIL
+
+GENERIC_SCHEMA_RENDERER =
+PASS / FAIL
+
+TRUSTED_COMPONENT_REGISTRY =
+PASS / FAIL
+
+TEXT_PRIMITIVE =
+PASS / FAIL
+
+ENTITY_CARD_PRIMITIVE =
+PASS / FAIL
+
+ENTITY_COLLECTION_PRIMITIVE =
+PASS / FAIL
+
+DETAIL_PRIMITIVE =
+PASS / FAIL
+
+COMPARISON_PRIMITIVE =
+PASS / FAIL
+
+FORM_PRIMITIVE =
+PASS / FAIL
+
+CHOICE_PRIMITIVE =
+PASS / FAIL
+
+APPROVAL_PRIMITIVE =
+PASS / FAIL
+
+STATUS_PRIMITIVE =
+PASS / FAIL
+
+TIMELINE_PRIMITIVE =
+PASS / FAIL
+
+ERROR_EMPTY_PRIMITIVES =
+PASS / FAIL
+
+SAFE_UNKNOWN_PRESENTATION_FALLBACK =
+PASS / FAIL
+
+DOMAIN_SPECIFIC_COMPONENTS_ADDED = <number>
+
+DOMAIN_SPECIFIC_RENDERER_BRANCHES_ADDED = <number>
+
+UNTRUSTED_COMPONENT_INJECTION_PATHS = <number>
+
+CLIENT_CANONICAL_TRUTH_ADDED = <number>
+
+TASK_1_VALIDATION_REGRESSION =
+PASS / FAIL
+
+TASK_2_DECISION_REGRESSION =
+PASS / FAIL
+
+PLAIN_TEXT_REGRESSION =
+PASS / FAIL
+
+SMART_BUBBLE_REGRESSION =
+PASS / FAIL
+
+NEW_DATABASE_TABLES =
+0
+
+NEW_MIGRATIONS =
+0
+
+NEW_EXTERNAL_SDKS =
+0
+
+BLOCKS_0_TO_3_1_REMAIN_CLOSED =
+YES / NO
+
+READY_FOR_SMART_UI_TASK_4 =
+YES / NO
+
+If NO:
+list only the exact blocker.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. STOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Task 3:
+
+STOP.
+
+Do NOT begin Workspace.
+
+Do NOT begin Morphing.
+
+Do NOT begin Living Objects.
+
+Return only:
+
+Task 3 verdict
+
+number of reusable/generalized/new primitives
+
+test count
+
+domain-specific components added
+
+READY_FOR_SMART_UI_TASK_4
+
+BEGIN TASK 3.
