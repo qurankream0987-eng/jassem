@@ -36,3 +36,4 @@
 - [Nullable tRPC projection fields](nullable-tRPC-projection-fields.md) — optional projection values can arrive as null over tRPC; validate the serialized wire shape in shared schemas.
 - [Smart UI truthfulness gates](smart-ui-truthfulness-gates.md) — completion, receipt success, and retry permission require explicit independent verification; missing state fails closed.
 - [Discovery follow-up truth](discovery-followup-truth.md) — ordinal comparisons require one canonical ResultSet; unavailable external-only search blocks explicitly.
+- [GitHub repository upload](github-repository-upload.md) — when Replit Git CLI auth is unavailable, use the connected GitHub REST client with chunked blobs and trees.
