@@ -8,6 +8,11 @@ import {
   type ModelTier,
 } from "./model-policy";
 import { recordModelUsage } from "./model-usage-ledger";
+import {
+  ModelBudgetExceededError,
+  estimateModelCost,
+  evaluateCostCeiling,
+} from "./model-cost";
 
 export const ModelProviderSchema = z.enum([
   "openai",
@@ -90,6 +95,10 @@ export class ModelGatewayPolicyError extends Error {
     this.name = "ModelGatewayPolicyError";
   }
 }
+
+// Re-exported so callers can catch every gateway failure from one module, even
+// though the budget guard itself lives with the cost model.
+export { ModelBudgetExceededError };
 
 type ProviderConfig = {
   provider: ModelProvider;
@@ -347,6 +356,31 @@ export class ModelGateway {
         firstFailure ??= selection.provider ?? "unconfigured";
         continue;
       }
+      // Pre-flight cost ceiling. It runs per candidate because a fallback may be
+      // a different, more expensive model than the primary — a ceiling checked
+      // only once at the top would let failover spend past it. A candidate that
+      // breaches the ceiling is skipped rather than aborting the whole request,
+      // so a cheaper fallback can still serve it.
+      const ceiling = evaluateCostCeiling({
+        provider: config.provider,
+        model: config.model,
+        // Falls back to the declared ModelBudget default rather than to the
+        // request's output cap: conflating an output limit with an input limit
+        // would under-estimate the input side and weaken the ceiling.
+        maxInputTokens: validated.budget?.maxInputTokens ?? ModelBudgetSchema.shape.maxInputTokens.parse(undefined),
+        maxOutputTokens: decision.maxOutputTokens,
+        maxEstimatedCost: validated.budget?.maxEstimatedCost,
+      });
+      if (!ceiling.allowed) {
+        lastError = new ModelBudgetExceededError(
+          `MODEL_BUDGET_EXCEEDED: ${config.provider}/${config.model} could cost up to ` +
+            `${ceiling.estimate.amount?.toFixed(6)} ${ceiling.estimate.currency ?? ""}`.trim() +
+            `, above the configured ceiling of ${validated.budget?.maxEstimatedCost}.`,
+        );
+        firstFailure ??= `${config.provider}/${config.model}`;
+        continue;
+      }
+
       try {
         const result = await this.generateFromConfig(config, validated, decision.timeoutMs);
         const latencyMs = Date.now() - startedAt;
@@ -362,12 +396,24 @@ export class ModelGateway {
           decisionReasons: decision.decisionReasons,
           ...result.usage,
         });
+        // Cost is derived from what the provider actually reported, never from
+        // the projection used by the ceiling above. An unknown cost stays
+        // undefined so the ledger never records a call as free.
+        const cost = estimateModelCost({
+          provider: response.provider,
+          model: response.model,
+          inputTokens: response.inputTokens,
+          cachedInputTokens: response.cachedInputTokens,
+          outputTokens: response.outputTokens,
+          reasoningTokens: response.reasoningTokens,
+        });
         await recordModelUsage({
           ...validated.usageContext,
           purpose: profile.purpose,
           tier: selectedTier,
           provider: response.provider,
           modelId: response.model,
+          estimatedCost: cost.amount,
           inputTokens: response.inputTokens,
           cachedInputTokens: response.cachedInputTokens,
           outputTokens: response.outputTokens,
@@ -390,7 +436,12 @@ export class ModelGateway {
     }
 
     const latencyMs = Date.now() - startedAt;
-    const errorCategory = lastError instanceof ModelGatewayOutputError ? "INVALID_OUTPUT" : "PROVIDER_UNAVAILABLE";
+    const errorCategory =
+      lastError instanceof ModelGatewayOutputError
+        ? "INVALID_OUTPUT"
+        : lastError instanceof ModelBudgetExceededError
+          ? "MODEL_BUDGET_EXCEEDED"
+          : "PROVIDER_UNAVAILABLE";
     await recordModelUsage({
       ...validated.usageContext,
       purpose: profile.purpose,
