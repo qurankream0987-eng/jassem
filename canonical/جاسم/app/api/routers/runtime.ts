@@ -61,6 +61,7 @@ import {
 import { getActiveWorkspaceProjection } from "../runtime/active-workspace-projection";
 import { getLivingObjectsProjection } from "../runtime/living-object-projection";
 import { resolveSubjectObservationPresentation } from "../runtime/observation-presentation";
+import { resolveObservableSubject } from "../runtime/subject-resolution";
 import { decidePresentation } from "../runtime/presentation-fabric";
 import { db } from "../queries/connection";
 import {
@@ -449,6 +450,120 @@ export const runtimeRouter = router({
           presence: resolved.presence,
           reason: resolved.assessment.reason,
           observationAgeMs: resolved.assessment.ageMs ?? null,
+          mapEligible: resolved.mapEligible,
+          presentation: decidePresentation(resolved.input),
+        };
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  /**
+   * Conversation → canonical subject → observation → presentation.
+   *
+   * This is the same generic path as `subjectObservationPresentation`, entered
+   * one step earlier: instead of naming a subject, the caller names the
+   * conversation, and the runtime resolves which observable subject that
+   * conversation is currently referring to.
+   *
+   * Nothing here interprets free text. Resolution runs over durable
+   * `reference_bindings` this owner already created, so the model — when one
+   * exists — will be able to propose a referent, never to be one. An ambiguous
+   * reference produces a clarification surface rather than a guess, because the
+   * thing being guessed at is a person's location.
+   */
+  conversationSubjectTracking: authedQuery
+    .input(
+      z.object({
+        conversationId: idParam,
+        observationType: z.string().trim().min(1).max(64).default("location"),
+        referenceKey: z.string().trim().min(1).max(128).optional(),
+        targetKind: z.string().trim().min(1).max(48).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const ownerId = ownerIdOf(ctx);
+        const resolution = await resolveObservableSubject(db, {
+          ownerId,
+          conversationId: input.conversationId,
+          observationType: input.observationType,
+          referenceKey: input.referenceKey,
+          targetKind: input.targetKind,
+        });
+
+        if (resolution.status === "NOT_FOUND") {
+          return {
+            resolution: "NOT_FOUND" as const,
+            reason: resolution.reason,
+            subject: null,
+            presence: "UNAVAILABLE" as const,
+            mapEligible: false,
+            presentation: decidePresentation({
+              interactionNeed: "show_state",
+              ongoing: true,
+              data: {
+                subjectResolution: "NOT_FOUND",
+                subjectResolutionReason: resolution.reason,
+                observationType: input.observationType,
+              },
+            }),
+          };
+        }
+
+        if (resolution.status === "AMBIGUOUS") {
+          // A clarification surface, not a choice made on the user's behalf.
+          // Only the stable reference key and the opaque subject pair are
+          // exposed — enough to pick, never enough to read a position.
+          return {
+            resolution: "AMBIGUOUS" as const,
+            reason: null,
+            subject: null,
+            presence: "UNAVAILABLE" as const,
+            mapEligible: false,
+            candidates: resolution.candidates.map((candidate) => ({
+              referenceKey: candidate.referenceKey,
+              subjectKind: candidate.subject.kind,
+              subjectId: candidate.subject.id,
+            })),
+            presentation: decidePresentation({
+              interactionNeed: "collect_input",
+              requiresStructuredInput: true,
+              data: {
+                subjectResolution: "AMBIGUOUS",
+                observationType: input.observationType,
+                candidates: resolution.candidates.map((candidate) => ({
+                  referenceKey: candidate.referenceKey,
+                  entityRef: `${candidate.subject.kind}:${candidate.subject.id}`,
+                })),
+              },
+              missingFields: [
+                {
+                  name: "referenceKey",
+                  type: "string",
+                  requiredNow: true,
+                  label: "أي مرجع تقصد؟",
+                },
+              ],
+            }),
+          };
+        }
+
+        const resolved = await resolveSubjectObservationPresentation(db, {
+          ownerId,
+          subject: resolution.subject,
+          observationType: input.observationType,
+          data: { resolvedVia: resolution.referenceKey },
+        });
+        return {
+          resolution: "RESOLVED" as const,
+          reason: resolved.assessment.reason,
+          subject: {
+            kind: resolution.subject.kind,
+            id: resolution.subject.id,
+            referenceKey: resolution.referenceKey,
+          },
+          presence: resolved.presence,
           mapEligible: resolved.mapEligible,
           presentation: decidePresentation(resolved.input),
         };
