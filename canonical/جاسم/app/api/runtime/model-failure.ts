@@ -4,7 +4,7 @@ import {
   ModelGatewayUnavailableError,
 } from "./model-gateway-errors";
 import { ModelBudgetExceededError } from "./model-cost";
-import { ModelCallBudgetScopeMissingError } from "./model-call-budget";
+import { ModelBudgetContextMissingError } from "./model-call-budget";
 import { ModelContextTooLargeError } from "./model-context-budget";
 import { ModelOutputAuthorityError, ModelPromptFenceError } from "./model-output-trust";
 
@@ -33,7 +33,7 @@ import { ModelOutputAuthorityError, ModelPromptFenceError } from "./model-output
 
 export type ModelFailureCategory =
   | "MODEL_BUDGET_EXCEEDED"
-  | "MODEL_BUDGET_SCOPE_MISSING"
+  | "MODEL_BUDGET_CONTEXT_MISSING"
   | "MODEL_CONTEXT_TOO_LARGE"
   | "MODEL_POLICY_REJECTED"
   | "MODEL_OUTPUT_AUTHORITY_REJECTED"
@@ -96,9 +96,9 @@ export function normalizeModelFailure(error: unknown): NormalizedModelFailure {
       message,
     };
   }
-  if (error instanceof ModelCallBudgetScopeMissingError) {
+  if (error instanceof ModelBudgetContextMissingError) {
     return {
-      category: "MODEL_BUDGET_SCOPE_MISSING",
+      category: "MODEL_BUDGET_CONTEXT_MISSING",
       retryable: false,
       allowFailover: false,
       message,

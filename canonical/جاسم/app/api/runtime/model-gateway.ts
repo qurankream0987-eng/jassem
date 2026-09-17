@@ -81,6 +81,12 @@ export const ModelGatewayResponseSchema = z.object({
   outputTokens: z.number().int().nonnegative().optional(),
   reasoningTokens: z.number().int().nonnegative().optional(),
   totalTokens: z.number().int().nonnegative().optional(),
+  /**
+   * Why generation stopped, normalized across providers. `length` is the one
+   * that matters: a response cut off at the token ceiling looks like a complete
+   * answer to every caller that only reads `text`.
+   */
+  finishReason: z.enum(["stop", "length", "content_filter", "tool_use", "unknown"]),
   latencyMs: z.number().int().nonnegative(),
   providerRequestId: z.string().optional(),
   fallbackUsed: z.boolean(),
@@ -274,6 +280,50 @@ function extractGeminiText(data: unknown): string {
   return typeof text === "string" ? text : "";
 }
 
+export type NormalizedFinishReason = "stop" | "length" | "content_filter" | "tool_use" | "unknown";
+
+/**
+ * Three vendors, three vocabularies for the same five outcomes. Normalizing
+ * here means no caller has to know that anthropic says `max_tokens` where
+ * openai says `length` and gemini shouts `MAX_TOKENS`.
+ *
+ * An unrecognized value maps to `"unknown"`, never to `"stop"`. Defaulting to
+ * `"stop"` would assert that generation completed normally on no evidence,
+ * which is exactly the claim this field exists to stop JASIM making.
+ */
+export function finishReasonFromProvider(
+  data: unknown,
+  provider: ModelProvider,
+): NormalizedFinishReason {
+  const raw =
+    provider === "anthropic"
+      ? (data as { stop_reason?: unknown }).stop_reason
+      : provider === "gemini"
+        ? (data as { candidates?: Array<{ finishReason?: unknown }> }).candidates?.[0]?.finishReason
+        : (data as { choices?: Array<{ finish_reason?: unknown }> }).choices?.[0]?.finish_reason;
+  if (typeof raw !== "string") return "unknown";
+  switch (raw.toLowerCase()) {
+    case "stop":
+    case "end_turn":
+    case "stop_sequence":
+      return "stop";
+    case "length":
+    case "max_tokens":
+      return "length";
+    case "content_filter":
+    case "safety":
+    case "recitation":
+    case "prohibited_content":
+      return "content_filter";
+    case "tool_calls":
+    case "tool_use":
+    case "function_call":
+      return "tool_use";
+    default:
+      return "unknown";
+  }
+}
+
 function usageFromProvider(data: unknown): {
   inputTokens?: number; cachedInputTokens?: number; outputTokens?: number;
   reasoningTokens?: number; totalTokens?: number;
@@ -305,8 +355,31 @@ function usageFromProvider(data: unknown): {
   };
 }
 
-async function responseError(response: Response, provider: ModelProvider): Promise<never> {
-  const detail = (await response.text()).slice(0, 500);
+/**
+ * Gemini authenticates by query string, so the request URL contains the
+ * credential. Nothing in JASIM logs that URL today — but "today" is the
+ * operative word, and a transport error message is composed by the runtime,
+ * not by us: a future Node or undici version may well include the URL it failed
+ * to reach.
+ *
+ * Redacting at the point where a provider error becomes a JASIM error is the
+ * cheap end of that trade. The alternative is auditing every log statement
+ * downstream forever.
+ */
+function redactCredentials(text: string, apiKey?: string): string {
+  let safe = text.replace(/([?&](?:key|api_key|apikey|access_token)=)[^&\s"']+/gi, "$1[REDACTED]");
+  if (apiKey && apiKey.length >= 8) safe = safe.split(apiKey).join("[REDACTED]");
+  return safe;
+}
+
+async function responseError(
+  response: Response,
+  provider: ModelProvider,
+  apiKey?: string,
+): Promise<never> {
+  // Providers echo the offending key back in 401 bodies. That body goes into an
+  // error message, which goes into logs.
+  const detail = redactCredentials((await response.text()).slice(0, 500), apiKey);
   // The status travels on the error object, not only inside the message. The
   // failure taxonomy has to tell 429 from 401 from 500 to decide whether a
   // retry, a failover or neither is honest — and message prose is a provider's
@@ -315,6 +388,32 @@ async function responseError(response: Response, provider: ModelProvider): Promi
     `${provider} model service returned HTTP ${response.status}${detail ? `: ${detail}` : "."}`,
     { status: response.status, retryAfterMs: parseRetryAfter(response.headers.get("retry-after")) },
   );
+}
+
+/**
+ * The usage ledger is durable telemetry, not the response path.
+ *
+ * Two bad outcomes if a write throws and nothing catches it. On the success
+ * path, a database hiccup would discard a response the provider has already
+ * billed for — losing both the money and the answer. On a failure path, the
+ * write happens inside a `catch`, so a throw would replace the provider's error
+ * with a database error and abort failover before the next candidate is tried.
+ *
+ * So a failed write never propagates. It is loud instead of silent: the row that
+ * was lost is logged with its identity, so under-counted spend is visible in the
+ * logs rather than only in the invoice. Never log the prompt, the output, or
+ * anything from `usageContext` beyond what the row already carries.
+ */
+async function recordUsageSafely(record: Parameters<typeof recordModelUsage>[0]): Promise<void> {
+  try {
+    await recordModelUsage(record);
+  } catch (error) {
+    console.error(
+      "[model-gateway] usage ledger write failed; this call is UNCOUNTED. " +
+        `provider=${record.provider} model=${record.modelId} tier=${record.tier} ` +
+        `success=${record.success} reason=${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
 }
 
 export class ModelGateway {
@@ -356,18 +455,42 @@ export class ModelGateway {
     // tell us that — four times over, once per fallback — would be spend with
     // no possible outcome. It also runs before the first budget reservation:
     // refusing to send costs nothing and should not consume an allowance.
-    const contextAssessment = enforceContextBudget({
-      segments: [validated.systemPrompt, validated.prompt],
-      declaredMaxInputTokens: validated.budget?.maxInputTokens,
-      label: `${profile.purpose} (${selectedTier})`,
-    });
+    const requestStartedAt = Date.now();
+    let contextAssessment: ReturnType<typeof enforceContextBudget>;
+    try {
+      contextAssessment = enforceContextBudget({
+        segments: [validated.systemPrompt, validated.prompt],
+        declaredMaxInputTokens: validated.budget?.maxInputTokens,
+        label: `${profile.purpose} (${selectedTier})`,
+      });
+    } catch (error) {
+      // A refusal is still an event. Left unrecorded, the one symptom of a
+      // prompt that is quietly growing past its budget would be its own
+      // absence from the ledger.
+      await recordUsageSafely({
+        ...validated.usageContext,
+        purpose: profile.purpose,
+        tier: selectedTier,
+        provider: "unavailable",
+        modelId: "unavailable",
+        latencyMs: Date.now() - requestStartedAt,
+        fallbackUsed: false,
+        escalatedFrom: decision.escalatedFrom,
+        escalationReason: profile.escalationReason,
+        success: false,
+        errorCategory: normalizeModelFailure(error).category,
+        promptVersion: validated.usageContext?.promptVersion ?? "jasim-gateway:v1",
+      });
+      throw error;
+    }
 
     const startedAt = Date.now();
     const maxRetriesPerCandidate = configuredMaxRetriesPerCandidate();
     let firstFailure: string | undefined;
     let fallbackFrom: string | undefined;
     let lastError: unknown;
-    let attemptsMade = 0;
+    /** Attempts that actually entered a provider request. Drives ledger rows. */
+    let providerAttempts = 0;
 
     for (const [index, selection] of selections.entries()) {
       let config: ProviderConfig;
@@ -421,10 +544,16 @@ export class ModelGateway {
           candidateExhaustedBudget = true;
           break;
         }
-        attemptsMade += 1;
+        providerAttempts += 1;
+        const attemptStartedAt = Date.now();
 
         try {
           const result = await this.generateFromConfig(config, validated, decision.timeoutMs);
+          // Two different latencies, both true. The ledger row measures THIS
+          // attempt, which is what a provider-performance question needs. The
+          // response carries total elapsed time including retries and backoff,
+          // which is what the caller actually waited.
+          const attemptLatencyMs = Date.now() - attemptStartedAt;
           const latencyMs = Date.now() - startedAt;
           const response = ModelGatewayResponseSchema.parse({
             text: result.text.trim(),
@@ -433,6 +562,7 @@ export class ModelGateway {
             tier: selectedTier,
             latencyMs,
             providerRequestId: result.providerRequestId,
+            finishReason: result.finishReason,
             fallbackUsed: index > 0,
             fallbackFrom: index > 0 ? fallbackFrom : undefined,
             decisionReasons: [
@@ -453,7 +583,7 @@ export class ModelGateway {
             outputTokens: response.outputTokens,
             reasoningTokens: response.reasoningTokens,
           });
-          await recordModelUsage({
+          await recordUsageSafely({
             ...validated.usageContext,
             purpose: profile.purpose,
             tier: selectedTier,
@@ -465,7 +595,7 @@ export class ModelGateway {
             outputTokens: response.outputTokens,
             reasoningTokens: response.reasoningTokens,
             totalTokens: response.totalTokens,
-            latencyMs,
+            latencyMs: attemptLatencyMs,
             providerRequestId: response.providerRequestId,
             fallbackUsed: response.fallbackUsed,
             fallbackFrom: response.fallbackFrom,
@@ -479,6 +609,26 @@ export class ModelGateway {
           lastError = error;
           fallbackFrom ??= `${config.provider}/${config.model}`;
           const failure = normalizeModelFailure(error);
+          // EVERY attempt that reached a provider gets its own ledger row.
+          // A single aggregate row per request was a cost-truth hole: a
+          // failover from A to B recorded only B's success, while A may well
+          // have generated tokens before failing and billed for them. One row
+          // per attempt makes spend countable instead of inferable.
+          await recordUsageSafely({
+            ...validated.usageContext,
+            purpose: profile.purpose,
+            tier: selectedTier,
+            provider: config.provider,
+            modelId: config.model,
+            latencyMs: Date.now() - attemptStartedAt,
+            fallbackUsed: index > 0,
+            fallbackFrom: index > 0 ? firstFailure : undefined,
+            escalatedFrom: decision.escalatedFrom,
+            escalationReason: profile.escalationReason,
+            success: false,
+            errorCategory: failure.category,
+            promptVersion: validated.usageContext?.promptVersion ?? "jasim-gateway:v1",
+          });
           if (!failure.allowFailover) {
             // Terminal for the whole request, not just this candidate: a policy
             // rejection, an authority violation or a spent budget is not a fact
@@ -496,24 +646,29 @@ export class ModelGateway {
       if (candidateExhaustedBudget) break;
     }
 
-    const latencyMs = Date.now() - startedAt;
     const failure = normalizeModelFailure(lastError);
     const errorCategory: ModelFailureCategory = failure.category;
-    await recordModelUsage({
-      ...validated.usageContext,
-      purpose: profile.purpose,
-      tier: selectedTier,
-      provider: fallbackFrom?.split("/")[0] ?? "unavailable",
-      modelId: fallbackFrom?.split("/")[1] ?? "unavailable",
-      latencyMs,
-      fallbackUsed: attemptsMade > 1,
-      fallbackFrom: firstFailure,
-      escalatedFrom: decision.escalatedFrom,
-      escalationReason: profile.escalationReason,
-      success: false,
-      errorCategory,
-      promptVersion: validated.usageContext?.promptVersion ?? "jasim-gateway:v1",
-    });
+    if (providerAttempts === 0) {
+      // Nothing was contacted — a missing credential, a cost ceiling, a refused
+      // budget. It is still recorded, because "JASIM declined to call a model"
+      // is an event worth being able to count, but with `provider` and `modelId`
+      // set to "unavailable" so it can never be mistaken for billed usage.
+      await recordUsageSafely({
+        ...validated.usageContext,
+        purpose: profile.purpose,
+        tier: selectedTier,
+        provider: "unavailable",
+        modelId: "unavailable",
+        latencyMs: Date.now() - startedAt,
+        fallbackUsed: false,
+        fallbackFrom: firstFailure,
+        escalatedFrom: decision.escalatedFrom,
+        escalationReason: profile.escalationReason,
+        success: false,
+        errorCategory,
+        promptVersion: validated.usageContext?.promptVersion ?? "jasim-gateway:v1",
+      });
+    }
     if (lastError instanceof Error) throw lastError;
     throw new ModelGatewayUnavailableError("No configured model provider completed the request.");
   }
@@ -525,6 +680,7 @@ export class ModelGateway {
   ): Promise<{
     text: string;
     providerRequestId?: string;
+    finishReason: NormalizedFinishReason;
     usage: ReturnType<typeof usageFromProvider>;
   }> {
     const signal = AbortSignal.timeout(timeoutMs);
@@ -550,7 +706,7 @@ export class ModelGateway {
             max_tokens: validated.maxTokens,
           }),
         });
-        if (!response.ok) await responseError(response, config.provider);
+        if (!response.ok) await responseError(response, config.provider, config.apiKey);
         data = await response.json();
         text = extractAnthropicText(data);
       } else if (config.provider === "gemini") {
@@ -573,7 +729,7 @@ export class ModelGateway {
             }),
           },
         );
-        if (!response.ok) await responseError(response, config.provider);
+        if (!response.ok) await responseError(response, config.provider, config.apiKey);
         data = await response.json();
         text = extractGeminiText(data);
       } else {
@@ -601,13 +757,16 @@ export class ModelGateway {
               : {}),
           }),
         });
-        if (!response.ok) await responseError(response, config.provider);
+        if (!response.ok) await responseError(response, config.provider, config.apiKey);
         data = await response.json();
         text = extractOpenAiText(data);
       }
     } catch (error) {
       if (error instanceof ModelGatewayUnavailableError) throw error;
-      const message = error instanceof Error ? error.message : String(error);
+      const message = redactCredentials(
+        error instanceof Error ? error.message : String(error),
+        config.apiKey,
+      );
       throw new ModelGatewayUnavailableError(
         `Unable to reach the ${config.provider} model service: ${message}`,
       );
@@ -618,9 +777,21 @@ export class ModelGateway {
         `The ${config.provider} model returned an empty response; no task was saved.`,
       );
     }
+    const finishReason = finishReasonFromProvider(data, config.provider);
+    if (finishReason === "length" && validated.responseFormat === "json") {
+      // Truncated JSON is not JSON. Downstream it would surface as a confusing
+      // parse error about an unexpected end of input; saying what actually
+      // happened is more useful, and it is a retryable failure rather than a
+      // malformed-model one.
+      throw new ModelGatewayOutputError(
+        `The ${config.provider} model hit its output token ceiling before finishing its JSON ` +
+          "response, so the output is truncated and was discarded.",
+      );
+    }
     return {
       text,
       providerRequestId: response.headers.get("x-request-id") ?? undefined,
+      finishReason,
       usage: usageFromProvider(data),
     };
   }

@@ -91,6 +91,34 @@ function nextTier(tier: "T1" | "T2"): "T2" | "T3" {
   return tier === "T1" ? "T2" : "T3";
 }
 
+/**
+ * WAVE 2.1 PART 13 — why `purpose: "WORLD_GENERATION"` does not, by itself,
+ * select STRONG_REASONING.
+ *
+ * Wave 2 found this surprising and it is. The reason it is correct:
+ *
+ *   `purpose` answers WHICH KIND OF WORK this is. It selects the prompt family,
+ *   the output ceiling and the ledger label. It is a category.
+ *
+ *   `worldGeneration`, `structuralMutation`, `complexity`, `novelty` and
+ *   `qualityRequirement` answer HOW HARD THIS PARTICULAR REQUEST IS. They are
+ *   properties of the instance.
+ *
+ * Routing on the category would mean "a world is expensive", which is precisely
+ * the rule JASIM should not have. Generating a world for "track my driver" is
+ * not the same problem as generating one for "coordinate a multi-party
+ * logistics network", and charging STRONG_REASONING prices for the first
+ * because of a label would break the cheapest-sufficient principle on the most
+ * frequent path.
+ *
+ * So the distinction is deliberate and stays. What was genuinely wrong was that
+ * it was undocumented, which made the redundancy look like a bug and invited
+ * someone to "fix" it by escalating on the purpose. The remaining trap — a
+ * hand-written profile that names the purpose and omits the flags — is closed
+ * by `tierFromPurpose()`, which is the supported way to build a profile and sets
+ * both together, and by a test that asserts every production call site uses
+ * flags rather than relying on the label.
+ */
 function purposeDefault(profile: ModelTaskProfile): ModelTier {
   if (profile.worldGeneration) return "T3";
   if (profile.structuralMutation && profile.complexity >= 0.7) return "T3";
@@ -185,6 +213,14 @@ export function selectModelPolicy(
   };
 }
 
+/**
+ * The supported way to build a task profile from a purpose.
+ *
+ * It exists so that the category and the instance properties cannot drift apart
+ * — see the note above `purposeDefault`. Hand-writing `{ purpose: "..." }` is
+ * legal and sometimes right, but it means opting out of these defaults
+ * deliberately rather than by omission.
+ */
 export function tierFromPurpose(purpose: ModelPurpose): ModelTaskProfile {
   return ModelTaskProfileSchema.parse({
     purpose,

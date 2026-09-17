@@ -25,7 +25,7 @@ import {
   ModelGatewayUnavailableError,
 } from "../../api/runtime/model-gateway-errors";
 import { ModelBudgetExceededError } from "../../api/runtime/model-cost";
-import { ModelCallBudgetScopeMissingError } from "../../api/runtime/model-call-budget";
+import { ModelBudgetContextMissingError } from "../../api/runtime/model-call-budget";
 import {
   cheapestSufficientTier,
   semanticTier,
@@ -274,8 +274,8 @@ describe("normalized failure taxonomy", () => {
     expect(failure.allowFailover).toBe(false);
   });
 
-  it("treats a missing scope the same way", () => {
-    const failure = normalizeModelFailure(new ModelCallBudgetScopeMissingError("no scope"));
+  it("treats a missing budget context the same way", () => {
+    const failure = normalizeModelFailure(new ModelBudgetContextMissingError("no context"));
     expect(failure.allowFailover).toBe(false);
   });
 

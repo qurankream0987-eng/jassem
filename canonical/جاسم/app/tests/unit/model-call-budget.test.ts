@@ -12,10 +12,12 @@ vi.mock("../../api/runtime/model-usage-ledger", () => ({
 
 import {
   DEFAULT_MAX_MODEL_CALLS_PER_SCOPE,
+  ModelBudgetContextMissingError,
   ModelCallBudget,
-  ModelCallBudgetScopeMissingError,
+  configuredEnforcement,
   configuredMaxModelCalls,
   currentModelCallBudget,
+  requireModelExecutionContext,
   reserveModelCall,
   runWithModelCallBudget,
 } from "../../api/runtime/model-call-budget";
@@ -129,22 +131,54 @@ describe("model call budget — a scope cannot be widened from inside", () => {
   });
 });
 
-describe("model call budget — enforcement mode", () => {
-  it("SCOPED lets unscoped code through, so scripts and migrations still work", () => {
+describe("model call budget — enforcement fails closed", () => {
+  it("an unset variable selects STRICT, not the permissive mode", () => {
+    expect(process.env.JASIM_MODEL_BUDGET_ENFORCEMENT).toBeUndefined();
+    expect(configuredEnforcement()).toBe("STRICT");
+    expect(() => reserveModelCall("PRIMARY_ATTEMPT")).toThrow(ModelBudgetContextMissingError);
+    expect(() => reserveModelCall("PRIMARY_ATTEMPT")).toThrow(/MODEL_BUDGET_CONTEXT_MISSING/);
+  });
+
+  it("a typo does not silently select the permissive mode", () => {
+    for (const value of ["scoped_", "SCOPE", "", "  ", "PERMISSIVE", "false", "0"]) {
+      process.env.JASIM_MODEL_BUDGET_ENFORCEMENT = value;
+      expect(configuredEnforcement()).toBe("STRICT");
+    }
+  });
+
+  it("relaxing it takes an explicit, exact opt-out", () => {
+    process.env.JASIM_MODEL_BUDGET_ENFORCEMENT = "SCOPED";
+    expect(configuredEnforcement()).toBe("SCOPED");
     expect(reserveModelCall("PRIMARY_ATTEMPT")).toBeUndefined();
   });
 
-  it("STRICT refuses to invoke a model outside a server-established scope", () => {
-    process.env.JASIM_MODEL_BUDGET_ENFORCEMENT = "STRICT";
-    expect(() => reserveModelCall("PRIMARY_ATTEMPT")).toThrow(ModelCallBudgetScopeMissingError);
-    expect(() => reserveModelCall("PRIMARY_ATTEMPT")).toThrow(/MODEL_BUDGET_SCOPE_MISSING/);
+  it("production ignores the variable entirely — there is no value that relaxes it", () => {
+    const savedNodeEnv = process.env.NODE_ENV;
+    try {
+      process.env.NODE_ENV = "production";
+      for (const value of ["SCOPED", "scoped", "  SCOPED  ", "off", ""]) {
+        process.env.JASIM_MODEL_BUDGET_ENFORCEMENT = value;
+        expect(configuredEnforcement()).toBe("STRICT");
+        expect(() => reserveModelCall("PRIMARY_ATTEMPT")).toThrow(ModelBudgetContextMissingError);
+      }
+    } finally {
+      if (savedNodeEnv === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = savedNodeEnv;
+    }
   });
 
-  it("STRICT still permits calls inside a scope", async () => {
-    process.env.JASIM_MODEL_BUDGET_ENFORCEMENT = "STRICT";
+  it("STRICT still permits calls inside a context", async () => {
     await runWithModelCallBudget({ origin: "TEST", label: "t", maxModelCalls: 1 }, async () => {
       expect(reserveModelCall("PRIMARY_ATTEMPT")?.remaining).toBe(0);
     });
+  });
+
+  it("requireModelExecutionContext refuses rather than returning undefined", () => {
+    // The point of the accessor: a caller cannot accidentally branch on
+    // `undefined` and treat "no context" as "no limit".
+    expect(() => requireModelExecutionContext("a planning loop")).toThrow(
+      ModelBudgetContextMissingError,
+    );
   });
 });
 
@@ -276,7 +310,25 @@ describe("model call budget — enforced inside the gateway", () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("leaves unscoped callers working under the default SCOPED mode", async () => {
+  it("refuses an unscoped caller by default, before the provider is contacted", async () => {
+    configureSingleProvider();
+    const fetchSpy = vi.fn(async () => okResponse());
+    globalThis.fetch = fetchSpy as unknown as typeof fetch;
+    const gateway = new ModelGateway();
+    await expect(
+      gateway.generate({
+        prompt: "hello",
+        systemPrompt: "system",
+        taskProfile: { purpose: "CONVERSATION" as const },
+      }),
+    ).rejects.toThrow(ModelBudgetContextMissingError);
+    // The invariant is "no model call executes without a trusted context", not
+    // "the failure is reported afterwards".
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("an explicitly relaxed non-production environment still works for scripts", async () => {
+    process.env.JASIM_MODEL_BUDGET_ENFORCEMENT = "SCOPED";
     configureSingleProvider();
     globalThis.fetch = (async () => okResponse()) as unknown as typeof fetch;
     const gateway = new ModelGateway();

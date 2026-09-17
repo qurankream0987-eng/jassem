@@ -690,10 +690,9 @@ async function callOpenAiChat(
     model: response.model,
     prompt: userPrompt,
     completion: response.text,
-    // The gateway normalizes across four provider shapes and does not surface a
-    // provider-specific stop reason. Saying "unreported" is accurate; inventing
-    // "stop" would be a claim about how generation ended that nobody made.
-    finishReason: "unreported",
+    // Normalized by the gateway across provider vocabularies. "unknown" when the
+    // provider said nothing — never silently "stop".
+    finishReason: response.finishReason,
     usage: {
       promptTokens: response.inputTokens ?? 0,
       completionTokens: response.outputTokens ?? 0,
