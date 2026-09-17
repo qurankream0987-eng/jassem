@@ -1,0 +1,9 @@
+{
+  "primitive": "STATUS",
+  "registryKind": "status",
+  "surfacePolicy": "INLINE",
+  "actions": [],
+  "dataKeys": [
+    "state"
+  ]
+}

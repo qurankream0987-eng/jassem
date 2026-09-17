@@ -2,6 +2,11 @@
  * JASIM soap-glass design tokens (approved "Soap Glass + Pop Bubbles" design).
  * The app is dark-only; values live under `light` so the shared useColors()
  * hook keeps working, and both color schemes resolve to the same palette.
+ *
+ * SOURCE OF TRUTH: `lib/jasim-design-tokens/tokens.ts`. This file is the mobile
+ * form of those tokens — React Native needs a TypeScript object where the web
+ * needs CSS custom properties — and a test in the canonical app asserts the two
+ * forms still agree, so the platforms cannot drift apart unnoticed.
  */
 
 export const fonts = {
@@ -21,7 +26,11 @@ export const palette = {
   windowInner1: '#070a14',
   windowInner2: '#050812',
   text: '#f0f4ff',
-  text2: '#94a3b8',
+  // Raised from #94a3b8. That value cleared 4.5:1 against pure black but fell
+  // under it on a lit glass surface — which is exactly where secondary text is
+  // drawn. Contrast has to hold on the real background, not the darkest one.
+  text2: '#b6c2da',
+  text3: '#8493ad',
   cyan: '#00d4ff',
   blue: '#4a9eff',
   purple: '#a855f7',

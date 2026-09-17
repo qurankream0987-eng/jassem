@@ -1,0 +1,12 @@
+{
+  "primitive": "CHOICE",
+  "registryKind": "choice",
+  "surfacePolicy": "BOTTOM_SHEET",
+  "actions": [
+    "select"
+  ],
+  "dataKeys": [
+    "candidates",
+    "resultCount"
+  ]
+}

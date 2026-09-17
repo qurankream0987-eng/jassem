@@ -68,6 +68,90 @@ function primitiveToBubbleType(
   return TRUSTED_PRESENTATION_REGISTRY[primitive];
 }
 
+
+/**
+ * Arabic titles per primitive. JASIM is Arabic-first, and the previous fallback
+ * was the literal English string "JASIM presentation" — which appeared as the
+ * heading of every generated surface, including error states.
+ *
+ * `null` means the surface carries no heading at all. A single sentence of
+ * conversation does not need a title bar announcing that it is a presentation;
+ * Part 24 asks for calm, and the calmest thing a chrome element can do is not
+ * exist.
+ */
+const PRIMITIVE_TITLE_AR: Partial<Record<PresentationPrimitive, string | null>> = {
+  TEXT: null,
+  SMART_BUBBLE: null,
+  SEARCH_RESULTS: 'النتائج',
+  ENTITY_LIST: 'العناصر',
+  LIST: 'العناصر',
+  ENTITY_GRID: 'العناصر',
+  GRID: 'العناصر',
+  COMPARISON: 'مقارنة',
+  CHOICE: 'اختر واحدًا',
+  FORM: 'بيانات مطلوبة',
+  APPROVAL: 'موافقة مطلوبة',
+  CHECKOUT: 'تأكيد مالي',
+  STATUS: 'الحالة',
+  PROGRESS: 'التقدّم',
+  TRACKER: 'التتبّع',
+  MAP: 'الموقع',
+  TIMELINE: 'المسار الزمني',
+  DOCUMENT: 'مستند',
+  RECEIPT: 'إيصال',
+  ERROR_STATE: 'تعذّر إكمال الطلب',
+  EMPTY_STATE: 'لا توجد نتائج',
+  WARNING: 'تنبيه',
+};
+
+/**
+ * Primitives that state a problem. They must never be decorated with a
+ * success-coloured trust badge.
+ *
+ * The previous renderer hardcoded `trust: { level: 'verified', verified: true }`
+ * for EVERY presentation, so a "المزود غير متاح" surface shipped with a green
+ * "Verified" chip beside it. Nothing about that was true — the presentation
+ * contract was valid, which is not the same claim as the content being
+ * verified — and it is exactly the failure Part 19 names: a blocked state
+ * wearing a success colour.
+ */
+const NON_AFFIRMATIVE_PRIMITIVES = new Set<PresentationPrimitive>([
+  'ERROR_STATE',
+  'EMPTY_STATE',
+  'WARNING',
+]);
+
+/**
+ * The decision layer emits a bounded, already-authorized option set as
+ * `data.candidates`; the choice renderer reads `data.options`. Nothing bridged
+ * the two, so every CHOICE surface rendered an empty list with a lone button —
+ * the ambiguity-to-CHOICE flow proved at the runtime level in Wave 1.2 was
+ * invisible on the web.
+ *
+ * Only the fields needed to pick are carried across. A candidate's other
+ * fields, whatever they are, stay out of the option label.
+ */
+function choiceOptions(data: Record<string, unknown>): Array<Record<string, unknown>> | undefined {
+  const candidates = data.candidates;
+  if (!Array.isArray(candidates)) return undefined;
+  return candidates.map((candidate, index) => {
+    const record = (candidate ?? {}) as Record<string, unknown>;
+    const reference =
+      typeof record.referenceKey === 'string'
+        ? record.referenceKey
+        : typeof record.entityRef === 'string'
+          ? record.entityRef
+          : String(index + 1);
+    const label =
+      typeof record.title === 'string' && record.title.trim()
+        ? record.title
+        : typeof record.label === 'string' && record.label.trim()
+          ? record.label
+          : reference;
+    return { id: reference, value: reference, label, ordinal: index + 1 };
+  });
+}
+
 function toBubbleSchema(definition: PresentationDefinition): BubbleSchema | null {
   const type = primitiveToBubbleType(definition.primitive);
   if (!type) return null;
@@ -91,7 +175,11 @@ function toBubbleSchema(definition: PresentationDefinition): BubbleSchema | null
   return {
     id: `presentation-${definition.version}-${definition.primitive.toLowerCase()}`,
     type,
-    title: definition.title || 'JASIM presentation',
+    title:
+      definition.title ||
+      (definition.primitive in PRIMITIVE_TITLE_AR
+        ? (PRIMITIVE_TITLE_AR[definition.primitive] ?? '')
+        : ''),
     layout: { width: 'full', compact: false, rtl: true },
     theme: {
       background: 'transparent',
@@ -103,6 +191,12 @@ function toBubbleSchema(definition: PresentationDefinition): BubbleSchema | null
     data: {
       ...definition.data,
       ...(fields ? { fields } : {}),
+      ...(definition.primitive === 'CHOICE' && !Array.isArray(definition.data.options)
+        ? (() => {
+            const options = choiceOptions(definition.data);
+            return options ? { options } : {};
+          })()
+        : {}),
     },
     actions: (definition.actions ?? []).map((action) => ({
       id: action.intent,
@@ -116,11 +210,20 @@ function toBubbleSchema(definition: PresentationDefinition): BubbleSchema | null
       requiresApproval: action.requiresApproval,
       metadata: action.external ? { external: true } : undefined,
     })),
-    trust: {
-      level: 'verified',
-      verified: true,
-      badges: ['runtime-presentation'],
-    },
+    trust: NON_AFFIRMATIVE_PRIMITIVES.has(definition.primitive)
+      ? {
+          // The contract was valid; the outcome was not a success. Only the
+          // former is something the renderer is entitled to assert, and
+          // `none` is the contract's word for "no claim made".
+          level: 'none' as const,
+          verified: false,
+          badges: ['runtime-presentation'],
+        }
+      : {
+          level: 'verified',
+          verified: true,
+          badges: ['runtime-presentation'],
+        },
     version: `presentation:${definition.version}`,
   };
 }
@@ -139,8 +242,12 @@ export function PresentationRenderer({
   const parsed = safeParsePresentationDefinition(presentation);
   if (!parsed.success) {
     return (
-      <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
-        This presentation was blocked because its runtime contract was invalid.
+      <div
+        data-testid="presentation-blocked"
+        data-blocked-reason="invalid-contract"
+        className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200"
+      >
+        تعذّر عرض هذا السطح: عقد التشغيل الخاص به غير صالح.
       </div>
     );
   }
@@ -148,8 +255,12 @@ export function PresentationRenderer({
   const schema = toBubbleSchema(parsed.data as PresentationDefinition);
   if (!schema) {
     return (
-      <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
-        This presentation type is not supported by the renderer.
+      <div
+        data-testid="presentation-blocked"
+        data-blocked-reason="unsupported-primitive"
+        className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200"
+      >
+        هذا النوع من الأسطح غير مدعوم في هذا العارض بعد.
       </div>
     );
   }

@@ -1,4 +1,13 @@
 import React, { useState, useCallback, useMemo } from 'react';
+import {
+  ICON_GLYPH,
+  RUNTIME_PROGRESS_COPY,
+  RUNTIME_STATE_COPY,
+  TONE_TOKEN,
+  runtimeStateCopy,
+  type RuntimeProgressKind,
+  type RuntimeStateTone,
+} from '@/lib/runtime-state-copy';
 import type { BubbleSchema } from '@contracts/jasim';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +18,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -165,88 +173,125 @@ export const SchemaRenderer: React.FC<SchemaRendererProps> = ({
     }
   };
 
+  const renderActions = () => {
+    if (!schema.actions || schema.actions.length === 0) return null;
+    return (
+      <div className="jasim-surface-actions">
+        {schema.actions.map((action) => (
+          <button
+            key={action.id}
+            type="button"
+            onClick={() => onAction?.(action.id, schema)}
+            disabled={action.disabled || isLoading}
+            className={`jasim-action jasim-action--${
+              action.type === 'custom' || action.type === 'download'
+                ? 'primary'
+                : action.type === 'cancel'
+                  ? 'cancel'
+                  : action.type === 'link'
+                    ? 'quiet'
+                    : 'secondary'
+            }`}
+          >
+            {isLoading && action.type === 'custom' ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="jasim-spinner h-4 w-4" aria-hidden="true" />
+                جارٍ التنفيذ…
+              </span>
+            ) : (
+              action.label
+            )}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  const showTrust = schema.trust.verified && schema.trust.level !== 'none';
+
+  /**
+   * Not every response deserves a pane.
+   *
+   * The previous renderer wrapped everything — including a single sentence of
+   * conversation — in a bordered, blurred, 24px-padded glass card with a
+   * heading and two badges. Five sentences produced five competing cards and
+   * the conversation stopped reading as a conversation.
+   *
+   * A plain answer is now plain: it keeps the text and drops the chrome. The
+   * pane is reserved for surfaces that are actually doing something — a choice,
+   * a form, an approval, a map. That is Part 24's "do not make every response a
+   * card", implemented as a rule rather than as advice.
+   */
+  const chromeless =
+    (schema.type === 'text' || schema.type === 'chat') && !schema.title && !schema.subtitle;
+
+  if (chromeless) {
+    return (
+      <div
+        className="jasim-surface-plain"
+        style={{ direction: schema.layout?.rtl ? 'rtl' : 'ltr' }}
+      >
+        {renderContent()}
+        {renderActions()}
+      </div>
+    );
+  }
+
   return (
     <div
-      className="rounded-2xl overflow-hidden border border-white/10"
+      className="jasim-surface"
       style={{
         background: schema.theme?.glassmorphism
-          ? 'rgba(255,255,255,0.05)'
+          ? 'var(--jasim-surface)'
           : safeThemeColor(schema.theme?.background, '#0f172a'),
-        backdropFilter: schema.theme?.glassmorphism ? 'blur(20px)' : 'none',
         direction: schema.layout?.rtl ? 'rtl' : 'ltr',
       }}
+      data-glass={schema.theme?.glassmorphism ? 'true' : 'false'}
     >
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-xl font-bold" style={{ color: safeThemeColor(schema.theme?.text, '#f8fafc') }}>
-              {schema.title}
-            </h2>
-            {schema.subtitle && (
-              <p className="text-sm mt-1" style={{ color: `${safeThemeColor(schema.theme?.text, '#f8fafc')}99` }}>
-                {schema.subtitle}
-              </p>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <div
-              className="px-2 py-1 rounded-full text-xs font-medium"
-              style={{
-                background: schema.trust.level === 'trusted' || schema.trust.level === 'system'
-                  ? 'rgba(147,51,234,0.2)'
-                  : schema.trust.level === 'verified'
-                  ? 'rgba(148,163,184,0.2)'
-                  : 'rgba(180,83,9,0.2)',
-                color: schema.trust.level === 'trusted' || schema.trust.level === 'system'
-                  ? '#c084fc'
-                  : schema.trust.level === 'verified'
-                  ? '#94a3b8'
-                  : '#fdba74',
-              }}
-            >
-              {schema.trust.level}
+      <div className="jasim-surface-body">
+        {(schema.title || schema.subtitle || showTrust) && (
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              {schema.title && (
+                <h2
+                  className="jasim-surface-title truncate"
+                  style={{ color: safeThemeColor(schema.theme?.text, '#f8fafc') }}
+                >
+                  {schema.title}
+                </h2>
+              )}
+              {schema.subtitle && (
+                <p className="jasim-surface-subtitle mt-1">{schema.subtitle}</p>
+              )}
             </div>
-            {schema.trust.verified && (
-              <div className="px-2 py-1 rounded-full text-xs bg-emerald-500/20 text-emerald-400">
-                Verified
-              </div>
+            {/*
+              One trust chip, not two. The previous header rendered the raw
+              trust level beside a separate green "Verified" pill, so a surface
+              announced its own trustworthiness twice in two visual languages.
+
+              It is also never shown for a surface that is stating a problem:
+              `showTrust` is false there, because a badge next to "the provider
+              is unavailable" is noise at best and a contradiction at worst.
+            */}
+            {showTrust && (
+              <span
+                className="jasim-trust-chip shrink-0"
+                data-trust-level={schema.trust.level}
+                title="هذا السطح صادر عن الحالة الموثوقة"
+              >
+                {schema.trust.level === 'trusted' || schema.trust.level === 'system'
+                  ? 'موثوق'
+                  : 'من الحالة الموثوقة'}
+              </span>
             )}
           </div>
-        </div>
+        )}
 
         <div className="space-y-4">
           {renderContent()}
         </div>
 
-        {schema.actions && schema.actions.length > 0 && (
-          <div className="flex gap-2 mt-6 pt-4 border-t border-white/10">
-            {schema.actions.map((action) => (
-              <button
-                key={action.id}
-                onClick={() => onAction?.(action.id, schema)}
-                disabled={action.disabled || isLoading}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                  action.type === 'custom' || action.type === 'download'
-                    ? 'bg-blue-500 text-white hover:bg-blue-600'
-                    : action.type === 'cancel'
-                    ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
-                    : action.type === 'link'
-                    ? 'text-slate-400 hover:text-white hover:bg-white/5'
-                    : 'bg-white/10 text-white hover:bg-white/20'
-                } ${action.disabled || isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                {isLoading && action.type === 'custom' ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Loading...
-                  </span>
-                ) : (
-                  action.label
-                )}
-              </button>
-            ))}
-          </div>
-        )}
+        {renderActions()}
       </div>
     </div>
   );
@@ -254,16 +299,28 @@ export const SchemaRenderer: React.FC<SchemaRendererProps> = ({
 
 // ── Loading State ────────────────────────────────────────────────────────────
 
-function renderLoading() {
+function renderLoading(kind: RuntimeProgressKind = 'RUNNING') {
+  // Indeterminate, and labelled. The previous version was a four-block skeleton
+  // grid that implied a specific shape of result was on its way — which is a
+  // claim about an outcome nobody knows yet. It also said nothing about WHAT
+  // was being waited on, so "thinking" and "waiting on an external provider"
+  // looked identical.
+  //
+  // No percentage appears here, in any state. Real measurable progress exists
+  // only for a durable Run with counted nodes; a bar anywhere else is invented.
+  const copy = RUNTIME_PROGRESS_COPY[kind];
   return (
-    <div className="space-y-4">
-      <Skeleton className="h-4 w-3/4 bg-slate-700" />
-      <Skeleton className="h-4 w-1/2 bg-slate-700" />
-      <div className="grid grid-cols-2 gap-3">
-        <Skeleton className="h-24 bg-slate-700 rounded-xl" />
-        <Skeleton className="h-24 bg-slate-700 rounded-xl" />
-      </div>
-      <Skeleton className="h-10 w-full bg-slate-700" />
+    <div
+      className="jasim-state"
+      data-tone={copy.tone}
+      role="status"
+      aria-live="polite"
+      style={{ ['--tone' as string]: TONE_TOKEN[copy.tone] }}
+    >
+      <span className="jasim-state-icon jasim-state-icon--spin" aria-hidden="true">
+        {ICON_GLYPH[copy.icon]}
+      </span>
+      <p className="jasim-state-label">{copy.label}</p>
     </div>
   );
 }
@@ -1225,20 +1282,73 @@ function renderDashboard(schema: BubbleSchema) {
   );
 }
 
+/**
+ * Freshness is the single most consequential word on a tracking surface, and it
+ * was previously rendered as the raw runtime token — `FRESH`, `STALE` — in
+ * English, in the same neutral grey as everything else. Someone glancing at a
+ * tracker had no way to tell "this is where it is" from "this is where it was".
+ */
+const FRESHNESS_COPY: Record<string, { label: string; tone: RuntimeStateTone; icon: keyof typeof ICON_GLYPH }> = {
+  FRESH: { label: 'مشاهدة حديثة', tone: 'success', icon: 'check' },
+  STALE: { label: 'مشاهدة قديمة', tone: 'stale', icon: 'clock' },
+  UNAVAILABLE: { label: 'لا تتوفّر مشاهدة', tone: 'neutral', icon: 'info' },
+};
+
+/**
+ * A raw ISO timestamp is a machine's answer to "when". `2020-01-01T00:00:00.000Z`
+ * tells a person nothing they can act on; "قبل ٦ سنوات" does. The absolute
+ * value stays available as the element's `title` for anyone who needs it.
+ */
+function relativeArabicTime(iso: string): string | undefined {
+  const parsed = Date.parse(iso);
+  if (Number.isNaN(parsed)) return undefined;
+  const seconds = Math.round((parsed - Date.now()) / 1000);
+  const units: Array<[Intl.RelativeTimeFormatUnit, number]> = [
+    ['year', 31_536_000], ['month', 2_592_000], ['day', 86_400],
+    ['hour', 3_600], ['minute', 60], ['second', 1],
+  ];
+  const formatter = new Intl.RelativeTimeFormat('ar', { numeric: 'auto' });
+  for (const [unit, size] of units) {
+    if (Math.abs(seconds) >= size || unit === 'second') {
+      return formatter.format(Math.round(seconds / size), unit);
+    }
+  }
+  return undefined;
+}
+
 function renderStatus(schema: BubbleSchema) {
-  const status = safeText(schema.data.status ?? schema.data.state, 'Status unavailable');
+  const rawStatus = safeText(schema.data.status ?? schema.data.state);
+  const freshness = rawStatus ? FRESHNESS_COPY[rawStatus.toUpperCase()] : undefined;
+  const status = freshness?.label ?? rawStatus ?? 'الحالة غير متاحة';
   const summary = safeText(schema.data.summary ?? schema.data.message ?? schema.data.description);
   const updatedAt = safeText(schema.data.updatedAt ?? schema.data.observedAt);
+  const relative = updatedAt ? relativeArabicTime(updatedAt) : undefined;
+  const tone: RuntimeStateTone = freshness?.tone ?? 'neutral';
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-sm font-medium text-white">{status}</span>
-        {updatedAt && <span className="text-[11px] text-slate-500">{updatedAt}</span>}
-      </div>
-      {summary && <p className="mt-2 text-sm leading-5 text-slate-300">{summary}</p>}
-      {safeText(schema.data.attention) && (
-        <p className="mt-3 text-xs text-amber-300">{safeText(schema.data.attention)}</p>
+    <div
+      className="jasim-state"
+      data-tone={tone}
+      style={{ ['--tone' as string]: TONE_TOKEN[tone] }}
+    >
+      {freshness && (
+        <span className="jasim-state-icon" aria-hidden="true">{ICON_GLYPH[freshness.icon]}</span>
       )}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="jasim-state-label font-medium">{status}</span>
+          {updatedAt && (
+            <span className="jasim-state-detail shrink-0" title={updatedAt}>
+              {relative ?? updatedAt}
+            </span>
+          )}
+        </div>
+        {summary && <p className="jasim-state-detail">{summary}</p>}
+        {safeText(schema.data.attention) && (
+          <p className="jasim-state-detail" style={{ color: 'var(--jasim-warning)' }}>
+            {safeText(schema.data.attention)}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
@@ -1248,9 +1358,11 @@ function renderTracker(schema: BubbleSchema) {
     <div className="space-y-3">
       {renderStatus(schema)}
       {safeText(schema.data.locationDescription) && (
-        <p className="text-xs text-slate-400">Location: {safeText(schema.data.locationDescription)}</p>
+        <p className="jasim-state-detail">الموقع: {safeText(schema.data.locationDescription)}</p>
       )}
-      {safeText(schema.data.source) && <p className="text-[11px] text-slate-500">Source: {safeText(schema.data.source)}</p>}
+      {safeText(schema.data.source) && (
+        <p className="jasim-state-detail">المصدر: {safeText(schema.data.source)}</p>
+      )}
     </div>
   );
 }
@@ -1261,24 +1373,24 @@ function renderApproval(schema: BubbleSchema) {
   return (
     <div className="rounded-xl border border-amber-400/20 bg-amber-400/5 p-4">
       <p className="text-sm font-semibold text-amber-100">
-        {safeText(schema.data.action ?? schema.data.summary, 'Approval required')}
+        {safeText(schema.data.action ?? schema.data.summary, 'إجراء يحتاج موافقتك')}
       </p>
-      {safeText(schema.data.target) && <p className="mt-2 text-sm text-slate-300">Target: {safeText(schema.data.target)}</p>}
+      {safeText(schema.data.target) && <p className="mt-2 text-sm text-slate-300">الهدف: {safeText(schema.data.target)}</p>}
       {schema.data.amount !== undefined && (
         <p className="mt-2 text-sm text-slate-200">
-          Amount: {safeText(schema.data.amount)} {safeText(schema.data.currency)}
+          المبلغ: {safeText(schema.data.amount)} {safeText(schema.data.currency)}
         </p>
       )}
       {stateChanges.length > 0 && (
-        <ul className="mt-3 list-disc space-y-1 ps-5 text-xs text-slate-300">
+        <ul className="mt-3 list-disc space-y-1 ps-5 jasim-state-detail">
           {stateChanges.map((change, index) => <li key={index}>{displayValue(change)}</li>)}
         </ul>
       )}
       {publicData.length > 0 && (
-        <p className="mt-3 text-xs text-slate-400">Visible data: {publicData.map(displayValue).join(', ')}</p>
+        <p className="mt-3 jasim-state-detail">بيانات سيراها طرف آخر: {publicData.map(displayValue).join('، ')}</p>
       )}
       {safeText(schema.data.externalEffect) && (
-        <p className="mt-3 text-xs text-amber-200">External effect: {safeText(schema.data.externalEffect)}</p>
+        <p className="mt-3 jasim-state-detail" style={{ color: 'var(--jasim-warning)' }}>أثر خارجي: {safeText(schema.data.externalEffect)}</p>
       )}
     </div>
   );
@@ -1357,13 +1469,41 @@ function renderWarning(schema: BubbleSchema) {
 }
 
 function renderStateMessage(schema: BubbleSchema, kind: 'error' | 'empty') {
-  const message = safeText(
+  // The runtime's own reason code, when it sent one. `reason` is where the
+  // decision layer puts BLOCKED_BY_PROVIDER, MODEL_GATEWAY_UNAVAILABLE and the
+  // rest; translating it beats showing the raw code AND beats replacing every
+  // distinct situation with one apologetic sentence.
+  const copy =
+    runtimeStateCopy(schema.data.reason) ??
+    runtimeStateCopy(schema.data.code) ??
+    (kind === 'empty' ? RUNTIME_STATE_COPY.EMPTY : undefined);
+
+  const label = copy?.label ?? safeText(
     schema.data.message ?? schema.data.summary ?? schema.data.description,
-    kind === 'error' ? 'This result could not be displayed.' : 'No results available.',
+    kind === 'error' ? 'تعذّر إكمال هذا الطلب.' : 'لا توجد نتائج.',
   );
+  // A message the runtime actually sent is shown alongside the translated
+  // label rather than instead of it: the label says what class of thing
+  // happened, the detail says what the runtime said about this instance.
+  const detail = copy ? safeText(schema.data.message ?? schema.data.summary) : undefined;
+  const tone = copy?.tone ?? (kind === 'error' ? 'danger' : 'neutral');
+  const icon = copy?.icon ?? (kind === 'error' ? 'alert' : 'info');
+
   return (
-    <div className={`rounded-xl border p-4 ${kind === 'error' ? 'border-red-400/20 bg-red-400/10' : 'border-white/10 bg-white/5'}`}>
-      <p className={`text-sm ${kind === 'error' ? 'text-red-100' : 'text-slate-300'}`}>{message}</p>
+    <div
+      className="jasim-state"
+      data-tone={tone}
+      role={kind === 'error' ? 'alert' : undefined}
+      style={{ ['--tone' as string]: TONE_TOKEN[tone] }}
+    >
+      {/* The glyph and the words carry the state. Colour is the third signal,
+          never the only one — Part 17. */}
+      <span className="jasim-state-icon" aria-hidden="true">{ICON_GLYPH[icon]}</span>
+      <div className="min-w-0">
+        <p className="jasim-state-label">{label}</p>
+        {detail && detail !== label && <p className="jasim-state-detail">{detail}</p>}
+        {copy?.guidance && <p className="jasim-state-detail">{copy.guidance}</p>}
+      </div>
     </div>
   );
 }
@@ -1371,10 +1511,10 @@ function renderStateMessage(schema: BubbleSchema, kind: 'error' | 'empty') {
 function renderReceipt(schema: BubbleSchema) {
   return (
     <article className="rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-4">
-      <h3 className="font-semibold text-white">{safeText(schema.data.title ?? schema.title, 'Receipt')}</h3>
+      <h3 className="font-semibold text-white">{safeText(schema.data.title ?? schema.title, 'إيصال')}</h3>
       {safeText(schema.data.summary) && <p className="mt-2 text-sm text-slate-300">{safeText(schema.data.summary)}</p>}
       {schema.data.total !== undefined && (
-        <p className="mt-3 text-sm text-emerald-100">Total: {safeText(schema.data.total)} {safeText(schema.data.currency)}</p>
+        <p className="mt-3 text-sm text-emerald-100">الإجمالي: {safeText(schema.data.total)} {safeText(schema.data.currency)}</p>
       )}
     </article>
   );

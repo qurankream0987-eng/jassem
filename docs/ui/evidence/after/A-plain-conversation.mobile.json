@@ -1,0 +1,9 @@
+{
+  "primitive": "TEXT",
+  "registryKind": "text",
+  "surfacePolicy": "INLINE",
+  "actions": [],
+  "dataKeys": [
+    "text"
+  ]
+}

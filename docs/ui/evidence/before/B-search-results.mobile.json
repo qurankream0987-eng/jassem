@@ -1,0 +1,10 @@
+{
+  "primitive": "SEARCH_RESULTS",
+  "registryKind": "collection",
+  "surfacePolicy": "INLINE",
+  "actions": [],
+  "dataKeys": [
+    "candidates",
+    "resultCount"
+  ]
+}

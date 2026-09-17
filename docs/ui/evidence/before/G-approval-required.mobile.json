@@ -1,0 +1,15 @@
+{
+  "primitive": "APPROVAL",
+  "registryKind": "approval",
+  "surfacePolicy": "BOTTOM_SHEET",
+  "actions": [
+    "approve",
+    "reject"
+  ],
+  "dataKeys": [
+    "action",
+    "externalEffect",
+    "publicData",
+    "stateChanges"
+  ]
+}

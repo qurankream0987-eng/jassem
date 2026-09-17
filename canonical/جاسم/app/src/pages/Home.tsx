@@ -39,13 +39,17 @@ export default function Home() {
     transition: transitionRuntimeBubble,
   } = useRuntimeBubbles();
 
-  // Check mobile on mount
-  useState(() => {
+  // This was written as `useState(() => { ... })`, which treats the whole body
+  // as a lazy initialiser: the listener was never registered and the cleanup
+  // function was stored as state. `isMobile` was therefore computed once and
+  // never again, so rotating a device or resizing a window left the layout in
+  // whatever mode it started in.
+  useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
-  });
+  }, []);
 
   const {
     messages,
@@ -262,7 +266,7 @@ export default function Home() {
   const handleDeleteConversation = useCallback(
     (id: string) => {
       deleteConversation(id);
-      toast.success('Conversation deleted');
+      toast.success('تم حذف المحادثة.');
     },
     [deleteConversation]
   );
@@ -297,19 +301,23 @@ export default function Home() {
       '[data-testid="active-generative-workspace"]',
     );
     if (!workspace) {
-      toast.info('Open a conversation to restore this context.');
+      toast.info('افتح محادثة لاستعادة هذا السياق.');
       return;
     }
     workspace.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     workspace.querySelector<HTMLElement>('h2[tabindex="-1"]')?.focus({ preventScroll: true });
-    toast.info(`Focused ${object.title}`);
+    toast.info(`تم التركيز على «${object.title}».`);
   }, [dispatch]);
 
   return (
-    <div className="h-screen w-screen bg-slate-950 flex overflow-hidden">
+    // JASIM is Arabic-first. The document direction belongs at the root, not
+    // sprinkled onto individual components — sixteen `dir="rtl"` attributes on
+    // leaf nodes left the layout itself (sidebar side, message alignment,
+    // scrollbars) running left-to-right underneath them.
+    <div dir="rtl" lang="ar" className="flex h-[100dvh] w-full overflow-hidden bg-[var(--jasim-bg)]">
       {/* Sidebar */}
       {(!isMobile || sidebarOpen) && (
-        <div className={`${isMobile ? 'absolute inset-y-0 left-0 z-50' : 'relative'}`}>
+        <div className={`${isMobile ? 'absolute inset-y-0 start-0 z-50' : 'relative'}`}>
           <ChatSidebar
             conversations={conversations}
             currentConversationId={currentConversation?.id}
@@ -332,7 +340,7 @@ export default function Home() {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-slate-950/80 backdrop-blur-sm">
+        <div className="flex items-center justify-between border-b border-[var(--jasim-border)] bg-[var(--jasim-bg)]/80 px-4 py-2 backdrop-blur-sm">
           <div className="flex items-center gap-2">
             {!sidebarOpen && (
               <button
@@ -344,22 +352,21 @@ export default function Home() {
                 </svg>
               </button>
             )}
-            <span className="text-sm font-medium text-slate-300 truncate max-w-[200px]">
-              {currentConversation?.title || 'New Conversation'}
+            <span className="max-w-[200px] truncate text-sm font-medium text-[var(--jasim-text-secondary)]">
+              {currentConversation?.title || 'محادثة جديدة'}
             </span>
           </div>
 
           <div className="flex items-center gap-1">
             {messages.length > 0 && (
               <button
+                type="button"
                 onClick={clearMessages}
-                className="px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition"
+                className="jasim-action jasim-action--quiet"
               >
-                Clear
+                مسح
               </button>
             )}
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] text-slate-500 ml-1">Online</span>
           </div>
         </div>
 
@@ -373,12 +380,21 @@ export default function Home() {
               onSendMessage={handleSendMessage}
               onBubbleClick={handleBubbleClick}
               onActionClick={handleActionClick}
-              placeholder="Ask JASIM anything..."
+              placeholder="اكتب ما تريد أن يحدث…"
               showSuggestions={true}
               disabled={false}
             />
           </div>
-          <div className="flex min-h-0 w-full shrink-0 flex-col gap-2 lg:w-[min(62vw,47rem)] lg:flex-row">
+          {/*
+            Conversation-first, as a proportion rather than as an intention.
+            This column used to claim 62vw, which left the conversation with
+            roughly a third of a desktop screen while the workspace and the
+            Living Objects rail took the rest. The generated
+            surface is the RESULT of the conversation; it should not outrank it.
+            The conversation now keeps the majority of the width and the rail is
+            a genuine rail rather than a second panel.
+          */}
+          <div className="flex min-h-0 w-full shrink-0 flex-col gap-2 lg:w-[min(38vw,32rem)] lg:flex-row">
             <ActiveGenerativeWorkspace
               conversationId={currentConversation?.id}
               onPresentationAction={(intent, context) => {
@@ -387,11 +403,11 @@ export default function Home() {
               onPresentationSubmit={(data, schema, context) => {
                 void dispatchWorkspaceSubmit(data, schema, context);
               }}
-              className="order-2 max-h-[42dvh] w-full border-t border-white/10 p-2 lg:order-1 lg:max-h-none lg:min-w-0 lg:flex-1 lg:border-t-0 lg:p-3"
+              className="order-2 max-h-[38dvh] w-full border-t border-[var(--jasim-border)] p-2 lg:order-1 lg:max-h-none lg:min-w-0 lg:flex-1 lg:border-t-0 lg:p-3"
             />
             <ActiveObjectsRail
               onOpen={handleLivingObjectOpen}
-              className="order-1 max-h-[18dvh] w-full overflow-hidden lg:order-2 lg:max-h-none lg:w-[min(22vw,16rem)]"
+              className="order-1 max-h-[14dvh] w-full overflow-hidden lg:order-2 lg:max-h-none lg:w-[min(13vw,11rem)]"
             />
           </div>
         </div>

@@ -230,7 +230,11 @@ describe('Smart UI Task 6B — Active Objects Rail', () => {
     expect(html).toContain('<button');
     expect(html).toContain('focus-visible:ring-2');
     expect(source).toContain('ms-auto');
-    expect(homeSource).toContain('lg:w-[min(22vw,16rem)]');
+    // UI-1 narrowed this rail from 22vw/16rem. Living Objects are meant to be
+    // visually secondary, and at the old width they read as a second panel
+    // beside the workspace rather than as a rail beside the conversation.
+    // The assertion still pins a narrow desktop layout hook — just a narrower one.
+    expect(homeSource).toContain('lg:w-[min(13vw,11rem)]');
     expect(source).not.toMatch(/position:\s*(left|right)/u);
   });
 

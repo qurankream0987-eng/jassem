@@ -157,7 +157,8 @@ describe('Smart UI Task 4B — Active Generative Workspace', () => {
       <PresentationRenderer presentation={{ primitive: 'UNSAFE_RUNTIME_COMPONENT', data: {} }} />,
     );
 
-    expect(html).toContain('presentation was blocked');
+    // UI-1: the notice is Arabic now; the marker is what this test was checking.
+    expect(html).toContain('data-testid="presentation-blocked"');
     expect(html).not.toContain('UNSAFE_RUNTIME_COMPONENT');
     expect(html).not.toContain('ZodError');
   });

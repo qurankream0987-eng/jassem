@@ -65,6 +65,12 @@ export const MOBILE_PRESENTATION_REGISTRY: Partial<
   EMPTY_STATE: 'state',
   RECEIPT: 'document',
   WORLD_SUMMARY: 'entity',
+  // A Living Object. `decidePresentation` emits SMART_BUBBLE for any persistent
+  // operation (`interactionNeed: "operate_persistent"`), and the web registry
+  // has always mapped it — so until now a durable monitor rendered on the web
+  // and fell through to "unsupported" on mobile, which is where people actually
+  // watch long-running things.
+  SMART_BUBBLE: 'entity',
 };
 
 export function resolveMobilePresentationPolicy(

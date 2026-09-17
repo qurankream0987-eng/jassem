@@ -1,0 +1,10 @@
+{
+  "primitive": "ERROR_STATE",
+  "registryKind": "state",
+  "surfacePolicy": "INLINE",
+  "actions": [],
+  "dataKeys": [
+    "message",
+    "reason"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "primitive": "EMPTY_STATE",
+  "registryKind": "state",
+  "surfacePolicy": "INLINE",
+  "actions": [],
+  "dataKeys": [
+    "message"
+  ]
+}

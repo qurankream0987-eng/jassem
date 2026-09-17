@@ -6,19 +6,82 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+/* ──────────────────────────────────────────────────────────────────────────
+ * JASIM semantic design tokens.
+ *
+ * GENERATED FROM lib/jasim-design-tokens/tokens.ts — do not edit by hand.
+ * `tests/unit/ui-evolution-ui1.test.tsx` asserts this block matches
+ * `cssVariables()` exactly, so Web and Mobile cannot drift apart silently.
+ * ────────────────────────────────────────────────────────────────────────── */
 :root {
-  --cyan: #00d4ff; --blue: #4a9eff; --purple: #a855f7; --pink: #ec4899;
-  --gold: #FFD700; --orange: #FF6B00; --green: #00c896; --text: #f0f4ff; --text2: #94a3b8;
+  --jasim-bg: #000000;
+  --jasim-bg-deep: #030610;
+  --jasim-surface: rgba(255,255,255,0.045);
+  --jasim-surface-elevated: rgba(255,255,255,0.07);
+  --jasim-surface-sunken: rgba(255,255,255,0.025);
+  --jasim-surface-opaque: #070a14;
+  --jasim-border: rgba(255,255,255,0.10);
+  --jasim-border-strong: rgba(255,255,255,0.18);
+  --jasim-border-focus: #00d4ff;
+  --jasim-text: #f0f4ff;
+  --jasim-text-secondary: #b6c2da;
+  --jasim-text-tertiary: #8493ad;
+  --jasim-text-on-accent: #010208;
+  --jasim-accent: #00d4ff;
+  --jasim-accent-secondary: #4a9eff;
+  --jasim-presence: #a855f7;
+  --jasim-success: #00c896;
+  --jasim-warning: #FFC107;
+  --jasim-danger: #ff6b6b;
+  --jasim-info: #4a9eff;
+  --jasim-blocked: #FF6B00;
+  --jasim-stale: #cbd5e1;
+  --jasim-radius-sm: 10px;
+  --jasim-radius-md: 16px;
+  --jasim-radius-lg: 22px;
+  --jasim-space-xs: 4px;
+  --jasim-space-sm: 8px;
+  --jasim-space-md: 12px;
+  --jasim-space-lg: 16px;
+  --jasim-space-xl: 24px;
+  --jasim-font-caption: 12px;
+  --jasim-font-body: 14px;
+  --jasim-font-title: 17px;
+  --jasim-font-heading: 20px;
+  --jasim-line-body: 1.75;
+  --jasim-blur-surface: 20px;
+  --jasim-blur-overlay: 40px;
+  --jasim-elevation-resting: 0 4px 24px rgba(0,0,0,0.15);
+  --jasim-elevation-raised: 0 8px 32px rgba(0,0,0,0.30);
+  --jasim-duration-instant: 120ms;
+  --jasim-duration-quick: 180ms;
+  --jasim-duration-surface: 220ms;
+  --jasim-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --jasim-ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root {
+  /* Legacy literal aliases. Still referenced by pre-UI-1 components; new code
+     uses the semantic tokens above. Kept pointing at the same values so the two
+     systems cannot disagree while the older components are migrated. */
+  --cyan: var(--jasim-accent); --blue: var(--jasim-accent-secondary);
+  --purple: var(--jasim-presence); --pink: #ec4899;
+  --gold: #FFD700; --orange: var(--jasim-blocked); --green: var(--jasim-success);
+  --text: var(--jasim-text); --text2: var(--jasim-text-secondary);
   --spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  --smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --smooth: var(--jasim-ease);
   --bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
+/* A global gesture lock used to live in this rule. It blocked pinch-zoom
+   outright, which is a hard accessibility failure for anyone who magnifies
+   text — and it was never needed: the panes that must not scroll say so
+   themselves. */
 body {
   font-family: 'Noto Sans Arabic', sans-serif;
-  background: #000; overflow: hidden;
-  height: 100vh; width: 100vw; color: var(--text);
-  touch-action: none;
+  background: var(--jasim-bg);
+  height: 100dvh; width: 100%; color: var(--jasim-text);
+  overflow: hidden;
 }
 
 #root { width: 100%; height: 100%; overflow: hidden; }
@@ -91,8 +154,7 @@ body {
 .message-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; max-width: 88%;
   animation: msgIn 0.5s cubic-bezier(0.16,1,0.3,1) forwards; opacity: 0; transform: translateY(12px); }
 @keyframes msgIn { to { opacity: 1; transform: translateY(0); } }
-.message-group.user { align-self: flex-start; margin-left: auto; }
-.message-group.ai { align-self: flex-end; margin-right: auto; }
+/* Alignment is defined once, with logical properties, in the UI-1 block below. */
 
 .message-bubble {
   padding: 14px 18px; border-radius: 22px; font-size: 14px; line-height: 1.75;
@@ -102,8 +164,8 @@ body {
   box-shadow: 0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.03);
   transition: all 0.3s; overflow: hidden;
 }
-.message-group.user .message-bubble { border-bottom-right-radius: 6px; background: rgba(0,180,255,0.04); border-color: rgba(0,180,255,0.08); }
-.message-group.ai .message-bubble { border-bottom-left-radius: 6px; background: rgba(100,50,200,0.04); border-color: rgba(150,100,255,0.08); }
+.message-group.user .message-bubble { background: rgba(0,180,255,0.04); border-color: rgba(0,180,255,0.08); }
+.message-group.ai .message-bubble { background: rgba(100,50,200,0.04); border-color: rgba(150,100,255,0.08); }
 
 .message-controls { display: flex; align-items: center; gap: 4px; margin-top: 6px; padding: 0 4px;
   opacity: 0; transform: translateY(-4px); transition: all 0.25s; }
@@ -111,7 +173,7 @@ body {
 .msg-btn { width: 28px; height: 28px; border-radius: 8px; border: none; background: transparent;
   color: var(--text2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; transition: all 0.2s; }
 .msg-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); }
-.msg-time { font-size: 10px; color: var(--text2); margin-right: auto; opacity: 0.6; }
+.msg-time { color: var(--jasim-text-tertiary); opacity: 0.85; }
 
 .chips-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; padding: 0 4px; animation: fadeUp 0.5s ease 0.3s both; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -730,4 +792,170 @@ body {
     animation-iteration-count: 1;
     transition-duration: 1ms;
   }
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * UI-1 — the generated-surface system ("Soap Glass").
+ *
+ * A JASIM surface is a translucent pane, not a solid card: thin edge, gentle
+ * blur, enough contrast that the text inside is comfortable to read. The glow
+ * is deliberately absent here and spent on focus and selection instead.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+.jasim-surface {
+  border-radius: var(--jasim-radius-lg);
+  border: 1px solid var(--jasim-border);
+  box-shadow: var(--jasim-elevation-resting);
+  overflow: hidden;
+}
+.jasim-surface[data-glass='true'] {
+  backdrop-filter: blur(var(--jasim-blur-surface)) saturate(1.4);
+  -webkit-backdrop-filter: blur(var(--jasim-blur-surface)) saturate(1.4);
+}
+/* Blur is the single most expensive thing on this screen. Where the browser
+   cannot composite it, fall back to an opaque surface rather than a
+   transparent one that would leave text over moving content. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .jasim-surface[data-glass='true'] { background: var(--jasim-surface-opaque) !important; }
+}
+
+.jasim-surface-body { padding: var(--jasim-space-lg); }
+@media (min-width: 768px) { .jasim-surface-body { padding: var(--jasim-space-xl); } }
+
+/* A plain answer is plain: no pane, no heading, no badge. */
+.jasim-surface-plain { padding: 0; }
+
+.jasim-surface-title {
+  font-size: var(--jasim-font-title);
+  font-weight: 600;
+  line-height: var(--jasim-line-body);
+  color: var(--jasim-text);
+}
+.jasim-surface-subtitle {
+  font-size: var(--jasim-font-caption);
+  color: var(--jasim-text-secondary);
+  line-height: var(--jasim-line-body);
+}
+
+/* One chip, in words, not a colour-only claim. */
+.jasim-trust-chip {
+  font-size: var(--jasim-font-caption);
+  padding: 2px var(--jasim-space-sm);
+  border-radius: var(--jasim-radius-sm);
+  border: 1px solid var(--jasim-border);
+  background: var(--jasim-surface-sunken);
+  color: var(--jasim-text-secondary);
+  white-space: nowrap;
+}
+
+.jasim-surface-actions {
+  display: flex; flex-wrap: wrap; gap: var(--jasim-space-sm);
+  margin-top: var(--jasim-space-xl);
+  padding-top: var(--jasim-space-lg);
+  border-top: 1px solid var(--jasim-border);
+}
+
+.jasim-action {
+  min-height: 44px;                 /* touch target floor */
+  padding: 0 var(--jasim-space-lg);
+  border-radius: var(--jasim-radius-sm);
+  font-size: var(--jasim-font-body);
+  font-weight: 500;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background var(--jasim-duration-quick) var(--jasim-ease),
+              border-color var(--jasim-duration-quick) var(--jasim-ease);
+}
+.jasim-action:disabled { opacity: 0.5; cursor: not-allowed; }
+.jasim-action--primary {
+  background: var(--jasim-accent); color: var(--jasim-text-on-accent); font-weight: 600;
+}
+.jasim-action--primary:hover:not(:disabled) { background: var(--jasim-accent-secondary); }
+.jasim-action--secondary {
+  background: var(--jasim-surface-elevated); color: var(--jasim-text);
+  border-color: var(--jasim-border);
+}
+.jasim-action--cancel {
+  background: transparent; color: var(--jasim-danger);
+  border-color: color-mix(in srgb, var(--jasim-danger) 35%, transparent);
+}
+.jasim-action--quiet { background: transparent; color: var(--jasim-text-secondary); }
+.jasim-action--quiet:hover:not(:disabled) { color: var(--jasim-text); background: var(--jasim-surface-sunken); }
+
+/* ── Focus ────────────────────────────────────────────────────────────────
+ * Keyboard focus was invisible before this: the reset removed outlines and
+ * nothing replaced them, so tabbing through a form on the web was untrackable.
+ * One rule, applied to everything, so it cannot be forgotten per component. */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--jasim-border-focus);
+  outline-offset: 2px;
+  border-radius: var(--jasim-radius-sm);
+}
+
+/* ── RTL ──────────────────────────────────────────────────────────────────
+ * The message rules used physical sides (`margin-left: auto`), which put the
+ * user on the right in LTR and — once the app is correctly `dir="rtl"` — on
+ * the wrong side entirely. Logical properties do the right thing in both. */
+.message-group.user { align-self: flex-end; margin-inline-start: auto; margin-inline-end: 0; }
+.message-group.ai   { align-self: flex-start; margin-inline-end: auto; margin-inline-start: 0; }
+.message-group.user .message-bubble { border-end-end-radius: 6px; border-bottom-right-radius: var(--jasim-radius-lg); }
+.message-group.ai   .message-bubble { border-end-start-radius: 6px; border-bottom-left-radius: var(--jasim-radius-lg); }
+.msg-time { margin-inline-start: auto; margin-right: 0; }
+
+/* ── Readable type floor ──────────────────────────────────────────────────
+ * 10px and 11px were used for timestamps, hints, chips and dividers. Arabic
+ * at 10px is not small, it is unreadable. 12px is the floor. */
+.bubble-hint, .date-divider span, .msg-time { font-size: var(--jasim-font-caption); }
+.chip { font-size: var(--jasim-font-caption); min-height: 36px; }
+.message-bubble { font-size: var(--jasim-font-body); line-height: var(--jasim-line-body); }
+
+/* ── Motion ───────────────────────────────────────────────────────────────
+ * Every animation in this file ran unconditionally. Honouring the system
+ * preference is not a nicety: for some people continuous motion is the
+ * difference between using the product and closing it. Transitions are
+ * collapsed rather than removed so state changes stay perceptible. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Runtime state surfaces ────────────────────────────────────────────────
+ * One layout for every state JASIM can be in: a glyph, a sentence, and an
+ * optional line about what to do. The tone token colours the edge and the
+ * glyph — it is the third signal, after the glyph and the words, never the
+ * first and never the only one. */
+.jasim-state {
+  display: flex; gap: var(--jasim-space-md); align-items: flex-start;
+  padding: var(--jasim-space-lg);
+  border-radius: var(--jasim-radius-md);
+  border: 1px solid color-mix(in srgb, var(--tone, var(--jasim-border)) 28%, transparent);
+  background: color-mix(in srgb, var(--tone, var(--jasim-text)) 8%, transparent);
+}
+.jasim-state-icon {
+  flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 999px;
+  font-size: var(--jasim-font-caption); font-weight: 700; line-height: 1;
+  color: var(--tone, var(--jasim-text-secondary));
+  border: 1px solid color-mix(in srgb, var(--tone, var(--jasim-border)) 45%, transparent);
+}
+.jasim-state-icon--spin { animation: jasim-spin 1.1s linear infinite; }
+@keyframes jasim-spin { to { transform: rotate(360deg); } }
+.jasim-spinner { animation: jasim-spin 1.1s linear infinite; }
+
+.jasim-state-label {
+  font-size: var(--jasim-font-body);
+  line-height: var(--jasim-line-body);
+  color: var(--jasim-text);
+}
+.jasim-state-detail {
+  margin-top: var(--jasim-space-xs);
+  font-size: var(--jasim-font-caption);
+  line-height: var(--jasim-line-body);
+  color: var(--jasim-text-secondary);
 }

@@ -158,25 +158,31 @@ describe("Smart UI Task 3 generic schema renderer primitives", () => {
     expect(markup).not.toContain("shipped");
   });
 
+  // UI-1: the fail-closed notice is now Arabic, like the rest of the product.
+  // These assertions moved off the English sentence and onto a stable marker,
+  // which is what they were really about — the behaviour is unchanged and the
+  // check is now immune to the next copy edit.
+  const BLOCKED = 'data-testid="presentation-blocked"';
+
   it("keeps unknown primitives fail-closed", () => {
-    expect(render({ primitive: "UNKNOWN", version: 1, data: {} })).toContain(
-      "blocked because its runtime contract was invalid",
-    );
+    expect(render({ primitive: "UNKNOWN", version: 1, data: {} })).toContain(BLOCKED);
   });
 
   it("keeps malformed definitions rejected by the Task 1 validator", () => {
-    expect(render({ primitive: "TEXT", version: 2, data: {} })).toContain(
-      "blocked because its runtime contract was invalid",
-    );
+    expect(render({ primitive: "TEXT", version: 2, data: {} })).toContain(BLOCKED);
   });
 
   it("does not render or execute unsupported actions", () => {
-    expect(render({
+    const markup = render({
       primitive: "TEXT",
       version: 1,
       data: { text: "safe" },
       actions: [{ intent: "delete_everything", label: "Delete everything" }],
-    })).toContain("blocked because its runtime contract was invalid");
+    });
+    expect(markup).toContain(BLOCKED);
+    // The point of the case: the unsupported action never reaches the DOM.
+    expect(markup).not.toContain("delete_everything");
+    expect(markup).not.toContain("Delete everything");
   });
 
   it("uses the same generic card architecture for unrelated entity shapes", () => {

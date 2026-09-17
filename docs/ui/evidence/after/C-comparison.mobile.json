@@ -1,0 +1,10 @@
+{
+  "primitive": "COMPARISON",
+  "registryKind": "comparison",
+  "surfacePolicy": "EXPANDED",
+  "actions": [],
+  "dataKeys": [
+    "candidates",
+    "items"
+  ]
+}

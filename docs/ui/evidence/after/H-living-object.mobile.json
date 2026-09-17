@@ -1,0 +1,10 @@
+{
+  "primitive": "SMART_BUBBLE",
+  "registryKind": "entity",
+  "surfacePolicy": "INLINE",
+  "actions": [],
+  "dataKeys": [
+    "attribute",
+    "title"
+  ]
+}

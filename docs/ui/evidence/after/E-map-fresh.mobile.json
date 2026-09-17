@@ -1,0 +1,9 @@
+{
+  "primitive": "TRACKER",
+  "registryKind": "timeline",
+  "surfacePolicy": "INLINE",
+  "actions": [],
+  "dataKeys": [
+    "subject"
+  ]
+}
