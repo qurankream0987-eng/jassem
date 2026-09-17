@@ -20,6 +20,7 @@ export type MobilePresentationRendererKind =
   | 'status'
   | 'timeline'
   | 'document'
+  | 'map'
   | 'state';
 
 /**
@@ -46,6 +47,12 @@ export const MOBILE_PRESENTATION_REGISTRY: Partial<
   PAYMENT_STATUS: 'status',
   TIMELINE: 'timeline',
   TRACKER: 'timeline',
+  // Spatial primitives share one semantic renderer. MARKER and ROUTE are the
+  // parts a MAP is built from, so a projection that sends either on its own
+  // still renders rather than falling through to "unsupported".
+  MAP: 'map',
+  MARKER: 'map',
+  ROUTE: 'map',
   CALENDAR: 'timeline',
   SCHEDULE: 'timeline',
   APPROVAL: 'approval',

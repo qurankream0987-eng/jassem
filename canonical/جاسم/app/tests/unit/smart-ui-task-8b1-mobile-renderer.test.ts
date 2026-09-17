@@ -23,12 +23,20 @@ describe("Smart UI Task 8B1 — native mobile semantic renderer", () => {
     expect(MOBILE_PRESENTATION_REGISTRY.ERROR_STATE).toBe("state");
     expect(MOBILE_PRESENTATION_REGISTRY.EMPTY_STATE).toBe("state");
     expect(MOBILE_PRESENTATION_REGISTRY.DOCUMENT).toBe("document");
+    // Spatial primitives gained a native renderer in the runtime-experience
+    // wave; MAP is no longer an example of an unsupported primitive.
+    expect(MOBILE_PRESENTATION_REGISTRY.MAP).toBe("map");
+    expect(MOBILE_PRESENTATION_REGISTRY.MARKER).toBe("map");
+    expect(MOBILE_PRESENTATION_REGISTRY.ROUTE).toBe("map");
   });
 
   it("fails closed for primitives without a native renderer", () => {
+    // The assertion this test exists for is the fail-closed rule itself, not
+    // the identity of whichever primitives happen to be unimplemented. These
+    // three still have no native renderer.
     expect(MOBILE_PRESENTATION_REGISTRY.WORKSPACE).toBeUndefined();
-    expect(MOBILE_PRESENTATION_REGISTRY.MAP).toBeUndefined();
     expect(MOBILE_PRESENTATION_REGISTRY.EXTERNAL_ACTION).toBeUndefined();
+    expect(MOBILE_PRESENTATION_REGISTRY.CHAT).toBeUndefined();
   });
 
   it("assigns mobile presentation policy without using domain-specific branches", () => {

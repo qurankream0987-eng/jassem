@@ -8,7 +8,15 @@ import { inspectAttr } from 'plugin-inspect-react-code'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    devServer({ entry: "api/boot.ts", exclude: [/^\/(?!api\/).*$/] }),
+    // Server-owned routes must reach the Hono app in development exactly as
+    // they do in production. `/api/*` was the only exception before, which
+    // meant `/health` fell through to the SPA and answered 200 with HTML —
+    // a readiness probe that could never report "not ready". Anything the
+    // server owns outside `/api/` has to be listed here too.
+    devServer({
+      entry: "api/boot.ts",
+      exclude: [/^\/(?!api\/|health$).*$/],
+    }),
     inspectAttr(), react()],
   server: {
     host: "0.0.0.0",

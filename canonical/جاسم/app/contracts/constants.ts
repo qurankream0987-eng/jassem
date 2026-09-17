@@ -243,6 +243,14 @@ export const EXECUTION_STATUSES = {
 
 export const Paths = {
   oauthCallback: "/api/oauth/callback",
+  /**
+   * Issues a bearer session for native clients. It takes no caller-supplied
+   * fields, so an absent body and `{}` are equivalent; any other body is
+   * rejected rather than ignored, so the contract stays explicit.
+   */
+  runtimeSession: "/api/runtime/session",
+  /** Server-owned readiness probe. Never served by the SPA. */
+  health: "/health",
 } as const;
 
 export const Session = {

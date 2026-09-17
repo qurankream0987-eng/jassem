@@ -69,7 +69,21 @@ const app = new Hono<{ Bindings: HttpBindings }>();
 
 // ── Phase M: Production Hardening ─────────────────────────────────────────────
 // Global body limit (50 MB covers multipart uploads; tRPC has a tighter cap below).
-app.use(bodyLimit({ maxSize: 50 * 1024 * 1024 }));
+//
+// One route is exempt, and only because it consumes no request body at all.
+// When a request carries a body stream but declares no content-length, the
+// limiter buffers it and rebuilds the request with `new Request(raw, init)`.
+// Under the Vite dev server — which replaces the global fetch objects — that
+// rebuild throws, so a bodyless POST to the session endpoint answered 500 in
+// development while the same request answered correctly in production. Skipping
+// a route that reads nothing removes the divergence without raising the cap for
+// any route that actually accepts input.
+const globalBodyLimit = bodyLimit({ maxSize: 50 * 1024 * 1024 });
+const BODYLESS_ROUTES: ReadonlySet<string> = new Set<string>([Paths.runtimeSession]);
+app.use(async (c, next) => {
+  if (BODYLESS_ROUTES.has(c.req.path)) return next();
+  return globalBodyLimit(c, next);
+});
 
 // Rate-limit tRPC API: 120 req/min per IP in production, 600/min in dev.
 const trpcRateLimiter = createRateLimiter({
@@ -126,8 +140,31 @@ if (!env.isProduction) {
 // Mobile session endpoint: issues a bearer token for Expo clients.
 // In development: always returns a token for the dev:local user.
 // In production: requires a valid session cookie and re-issues as a bearer token.
-app.post("/api/runtime/session", async (c) => {
+app.post(Paths.runtimeSession, async (c) => {
   try {
+    // The endpoint takes no caller-supplied fields. An absent body and `{}`
+    // are the same request, so neither may depend on how a client happens to
+    // serialize "nothing". Anything else is rejected instead of silently
+    // ignored: a client sending fields here has misunderstood the contract,
+    // and answering 200 would hide that.
+    const rawBody = (await c.req.text()).trim();
+    if (rawBody.length > 0) {
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(rawBody);
+      } catch {
+        return c.json({ error: "Request body must be empty or an empty JSON object." }, 400);
+      }
+      const isEmptyObject =
+        typeof parsed === "object" &&
+        parsed !== null &&
+        !Array.isArray(parsed) &&
+        Object.keys(parsed as Record<string, unknown>).length === 0;
+      if (!isEmptyObject) {
+        return c.json({ error: "Request body must be empty or an empty JSON object." }, 400);
+      }
+    }
+
     if (!env.isProduction) {
       // Dev mode — issue dev:local bearer token for mobile
       await upsertUser({ unionId: "dev:local", name: "JASIM Dev" });
@@ -199,7 +236,7 @@ app.all("/api/*", (c) => c.json({ error: "Not Found" }, 404));
 // ── Phase 8: Health endpoint ───────────────────────────────────────────────────
 // Returns ready only after the DB and the canonical runtime schema are verified.
 // Intentionally returns NO secrets, tokens, or internal state.
-app.get("/health", async (c) => {
+app.get(Paths.health, async (c) => {
   const readiness = await checkRuntimeReadiness();
   if (readiness.ready) {
     return c.json({ status: "ok", ts: new Date().toISOString() });

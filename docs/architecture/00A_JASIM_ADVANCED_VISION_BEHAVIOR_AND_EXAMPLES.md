@@ -998,6 +998,68 @@ If the only honest answer is *"it makes this one example pass"*, it does not bel
 
 ---
 
+## 10A. CURRENT IMPLEMENTATION vs TARGET VISION
+
+This chapter exists so that no reader mistakes an aspiration for a shipped
+capability, and so that nobody "corrects" the vision downward to match today's
+code. Both columns are true; they are simply true about different things.
+
+Verified against the source on the runtime-experience wave. Where a statement
+elsewhere in this document is looser than the code, the code wins.
+
+### 10A.1 Corrections to statements of fact
+
+| Topic | Current implementation |
+|---|---|
+| Output kinds | **Eight** literals, not nine. A persistent World is optional durable backing behind `persistent_smart_bubble`, never a ninth output kind. |
+| `PresentationAction.intent` | The server copy in `api/runtime/presentation-fabric.ts` types it as `string`, while the shared contract and **both** Zod schemas enforce the 13-value enum. Runtime validation is identical on both sides; only the TypeScript surface is looser. Treat the enum as the contract. |
+| Humans as providers | **Implemented, not aspirational.** `ProviderKind` in `capability-provider.ts` is `NATIVE \| MCP \| A2A \| AGENT_HARNESS \| COMPUTER_USE \| HUMAN`. A person is a first-class provider in the type system. |
+| Truthful failure states | `GapKind` has **nine** values, more than earlier documents listed: `MISSING_GENERIC_CAPABILITY`, `BLOCKED_BY_PROVIDER`, `BLOCKED_BY_RESOURCE`, `REQUIRES_HUMAN`, `REQUIRES_OWNER_DECISION`, `REQUIRES_REGULATORY_REVIEW`, `INSUFFICIENT_INFORMATION`, `INSUFFICIENT_TRUST`, `BINDING_VALIDATION_FAILED`. |
+| Presentation primitives | Forty exist. Web renders all of them (`WORKSPACE` maps to `null` by design); Mobile renders a subset. |
+| Observation freshness | The `observations` table has always carried `freshnessExpiresAt`. What was missing was a **presentation** policy, because a null horizon made a reading fresh forever. That policy now exists. |
+
+### 10A.2 Status of the tracking surface
+
+Earlier versions of this document described the driver/map lifecycle without
+saying whether it could actually happen. It could not: the primitives existed
+and nothing produced the input that reaches them.
+
+As of the runtime-experience wave:
+
+- A generic observation-to-presentation bridge exists
+  (`api/runtime/observation-presentation.ts`). The subject is an opaque
+  `{ kind, id }` pair and is never interpreted.
+- Coordinates reach a presentation **only** while the observation is fresh, so a
+  stale position cannot render as a live one.
+- `MAP`, `MARKER` and `ROUTE` now render natively on Mobile as well as Web.
+- The surface is reachable through an owner-scoped runtime procedure.
+
+Still **not** wired: the conversation turn itself does not yet resolve a goal to
+a trackable subject, because the Output Envelope carries no subject reference.
+Until it does, a user cannot reach a map by asking for one in chat.
+
+### 10A.3 Target vision — intentionally ahead of the code
+
+None of the following is production-complete, and none should be described as
+if it were:
+
+| Vision item | Reality today |
+|---|---|
+| **Level 7 economic opportunity** | There is **no `opportunity` table and no opportunity type**. An opportunity is a reading of an `economic_match`, never a persisted thing. This is the single weakest link between the Level 7 vision and the code. |
+| **Level 6 bounded autonomy** | Mandates, policy and approval exist and are enforced. The goal → plan → act → observe → verify → repair loop has no autonomous driver. |
+| **From intent to reality** | Blocked at the last mile by configuration, not design: no model provider, no external discovery provider, no PSP, no notification channel. |
+| **Conversational map** | The lifecycle is expressible and renderable; reaching it from a sentence is not yet wired (10A.2). |
+| **Errand composed onto an existing assignment** | The human-provider primitive exists; no route composes a new need onto an in-flight assignment. |
+| **Cross-Bubble composition** | Reserved in the architecture, unimplemented. |
+
+### 10A.4 The rule this chapter enforces
+
+> A capability is "current implementation" only when a path from a registered
+> router reaches it. Anything else is vision, and must be labelled as vision —
+> including in this document.
+
+---
+
 ## 11. ENGINEERING MOTTO
 
 ```

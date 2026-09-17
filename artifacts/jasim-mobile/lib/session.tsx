@@ -63,9 +63,14 @@ async function clearStoredToken(): Promise<void> {
 async function requestSessionToken(): Promise<string> {
   const domain = process.env.EXPO_PUBLIC_DOMAIN;
   if (!domain) throw new Error('EXPO_PUBLIC_DOMAIN is not configured.');
+  // The canonical contract takes no caller-supplied fields, and an explicit
+  // empty object is how "no input" is stated. Sending a declared, zero-field
+  // body also keeps the request shape identical across every fetch
+  // implementation, rather than depending on how one serializes "nothing".
   const response = await fetch(`https://${domain}/api/runtime/session`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
+    body: '{}',
   });
   if (!response.ok) throw new Error('تعذر إنشاء جلسة آمنة مع خادم جاسم.');
   const body = (await response.json()) as { token?: string };

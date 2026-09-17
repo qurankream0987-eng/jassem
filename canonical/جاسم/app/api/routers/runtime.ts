@@ -60,6 +60,9 @@ import {
 } from "../runtime/jasim-runtime";
 import { getActiveWorkspaceProjection } from "../runtime/active-workspace-projection";
 import { getLivingObjectsProjection } from "../runtime/living-object-projection";
+import { resolveSubjectObservationPresentation } from "../runtime/observation-presentation";
+import { decidePresentation } from "../runtime/presentation-fabric";
+import { db } from "../queries/connection";
 import {
   dispatchCanonicalTrustedAction,
 } from "../runtime/trusted-action-dispatcher";
@@ -410,6 +413,45 @@ export const runtimeRouter = router({
           ownerId: ownerIdOf(ctx),
           conversationId: input?.conversationId,
         });
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  /**
+   * Generic observation-driven tracking surface.
+   *
+   * The subject is an opaque `(kind, id)` pair and is never interpreted: a
+   * driver, a technician, a vehicle, a shipment or a resource that does not
+   * exist yet all reach the same code. The observation is read from canonical
+   * owner-scoped state, so a caller can ask *about* a subject but can never
+   * supply where it is — a client-declared position is not an observation.
+   *
+   * Coordinates survive into the presentation only while the reading is fresh,
+   * which is what stops a stale position from rendering as a live one.
+   */
+  subjectObservationPresentation: authedQuery
+    .input(
+      z.object({
+        subjectKind: z.string().trim().min(1).max(64),
+        subjectId: z.string().trim().min(1).max(64),
+        observationType: z.string().trim().min(1).max(64).default("location"),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const resolved = await resolveSubjectObservationPresentation(db, {
+          ownerId: ownerIdOf(ctx),
+          subject: { kind: input.subjectKind, id: input.subjectId },
+          observationType: input.observationType,
+        });
+        return {
+          presence: resolved.presence,
+          reason: resolved.assessment.reason,
+          observationAgeMs: resolved.assessment.ageMs ?? null,
+          mapEligible: resolved.mapEligible,
+          presentation: decidePresentation(resolved.input),
+        };
       } catch (error) {
         handleRuntimeError(error);
       }

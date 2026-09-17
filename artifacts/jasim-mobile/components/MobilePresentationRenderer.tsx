@@ -457,6 +457,53 @@ function PresentationContent({
       </View>
     );
   }
+  if (kind === 'map') {
+    // A map is drawn ONLY from coordinates the server put in the projection.
+    // Nothing here interpolates a position, smooths between points, guesses a
+    // route or computes an ETA — a convincing map built on nothing is worse
+    // than no map, because the person will act on it.
+    const markers = arrayRecords(data.markers).filter((marker) => {
+      const coordinates = marker.coordinates as Record<string, unknown> | undefined;
+      return (
+        typeof coordinates?.lat === 'number' &&
+        Number.isFinite(coordinates.lat) &&
+        typeof coordinates?.lng === 'number' &&
+        Number.isFinite(coordinates.lng)
+      );
+    });
+    if (markers.length === 0) {
+      return (
+        <View style={styles.state} testID="mobile-map-unavailable">
+          <Text style={styles.stateTitle}>لا يوجد موقع حي متاح</Text>
+          <Text style={styles.bodyText}>
+            لم يصل إلى جاسم موقع موثوق وحديث لهذا الطلب، ولن يُعرض موقع تقديري.
+          </Text>
+        </View>
+      );
+    }
+    return (
+      <View style={styles.map} testID="mobile-map">
+        {markers.map((marker, index) => {
+          const coordinates = marker.coordinates as { lat: number; lng: number };
+          const reference = textValue(marker.entityRef, `الموقع ${index + 1}`);
+          return (
+            <View key={`${reference}-${index}`} style={styles.mapMarker} testID="mobile-map-marker">
+              <View style={styles.mapMarkerDot} />
+              <View style={styles.mapMarkerBody}>
+                <Text style={styles.entityTitle}>{reference}</Text>
+                <Text style={styles.mapCoordinates}>
+                  {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
+                </Text>
+                {textValue(marker.observedAt) ? (
+                  <Text style={styles.entitySubtitle}>{textValue(marker.observedAt)}</Text>
+                ) : null}
+              </View>
+            </View>
+          );
+        })}
+      </View>
+    );
+  }
   if (kind === 'document') {
     return (
       <View style={styles.document} testID="mobile-document">
@@ -867,6 +914,31 @@ const styles = {
   },
   disabledButton: {
     opacity: 0.7,
+  },
+  map: {
+    gap: 10,
+  },
+  mapMarker: {
+    flexDirection: 'row' as const,
+    alignItems: 'flex-start' as const,
+    gap: 10,
+  },
+  mapMarkerDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginTop: 6,
+    backgroundColor: palette.cyan,
+  },
+  mapMarkerBody: {
+    flex: 1,
+    gap: 2,
+  },
+  mapCoordinates: {
+    color: palette.text2,
+    fontFamily: fonts.medium,
+    fontSize: 12,
+    textAlign: 'right' as const,
   },
   state: {
     gap: 6,
