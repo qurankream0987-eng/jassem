@@ -3,6 +3,7 @@ import type { DurableJob, DurableJobKind } from "@contracts/durable-job";
 import type { ImmutableArtifact } from "@contracts/immutable-artifact";
 import type { ImmutableArtifactStore } from "./immutable-artifact-store";
 import type { DurableJobQueue } from "./durable-job-queue";
+import { runWithModelCallBudget } from "../runtime/model-call-budget";
 
 export interface DurableJobHandlerContext {
   job: DurableJob;
@@ -75,7 +76,17 @@ export class DurableJobWorker {
         const fail = () => reject(new Error(timedOut ? "Job execution timed out" : "Job execution was cancelled"));
         if (controller.signal.aborted) fail(); else controller.signal.addEventListener("abort", fail, { once: true });
       });
-      const result = await Promise.race([handler({ job: running, payload, signal: controller.signal, artifacts: this.options.artifacts }), aborted]);
+      // Background work is the other trusted boundary where a model budget can
+      // be anchored. A job runs with no request around it, so without this a
+      // handler that loops would be the one production path able to spend
+      // without a ceiling.
+      const result = await Promise.race([
+        runWithModelCallBudget(
+          { origin: "DURABLE_JOB", label: `job ${running.kind}` },
+          () => handler({ job: running, payload, signal: controller.signal, artifacts: this.options.artifacts }),
+        ),
+        aborted,
+      ]);
       await this.options.queue.complete(running.id, claim.leaseToken, this.options.id, result);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown worker failure";

@@ -31,6 +31,7 @@ import {
   type MutationType,
 } from "@db/schema";
 import { z } from "zod";
+import { sanitizeModelStructuredOutput } from "./model-output-trust";
 import {
   ModelGatewayOutputError,
   ModelGatewayUnavailableError,
@@ -700,7 +701,22 @@ async function composeTaskWorld(
     },
     usageContext: { ownerId, conversationId, promptVersion: "world-composition:v1" },
   });
-  const artifact = validateGeneratedTaskArtifact(parseModelJson(response.text));
+  // The model's JSON is inspected for privileged claims BEFORE it is validated.
+  // `GeneratedTaskArtifactSchema` is not `.strict()`, so Zod would silently drop
+  // an injected `paid: true` — dropping it is safe, but it also means nobody
+  // ever learns the model tried. A prompt injection that lands should be loud.
+  //
+  // `id`, `requiresApproval` and `role` are declared: the prompt above asks for
+  // all three, and a plan-local step id is not a canonical row id. The free-form
+  // records are not descended into, because a world about "verified invoices"
+  // legitimately contains the word `verified` as vocabulary.
+  const artifact = validateGeneratedTaskArtifact(
+    sanitizeModelStructuredOutput(parseModelJson(response.text), {
+      label: "generated task artifact",
+      allowKeys: ["id", "requiresApproval", "role"],
+      freeFormKeys: ["attributes", "constraints", "inputs"],
+    }).value,
+  );
   return {
     id: worldId,
     version: 1,

@@ -13,6 +13,20 @@ import {
   estimateModelCost,
   evaluateCostCeiling,
 } from "./model-cost";
+import {
+  ModelGatewayOutputError,
+  ModelGatewayPolicyError,
+  ModelGatewayUnavailableError,
+  parseRetryAfter,
+} from "./model-gateway-errors";
+import { reserveModelCall, type ModelCallReason } from "./model-call-budget";
+import { enforceContextBudget } from "./model-context-budget";
+import {
+  configuredMaxRetriesPerCandidate,
+  normalizeModelFailure,
+  retryDelayMs,
+  type ModelFailureCategory,
+} from "./model-failure";
 
 export const ModelProviderSchema = z.enum([
   "openai",
@@ -36,6 +50,13 @@ export const ModelGatewayRequestSchema = z.object({
   selection: ModelSelectionSchema.optional(),
   temperature: z.number().min(0).max(2).default(0.1),
   maxTokens: z.number().int().min(1).max(16_000).default(4_000),
+  /**
+   * Every JASIM runtime path wants strict JSON, so that stays the default. A
+   * capability whose whole product is prose needs "text" — asking a provider for
+   * a JSON object and then treating the result as prose is how a chat capability
+   * starts answering in braces.
+   */
+  responseFormat: z.enum(["json", "text"]).default("json"),
   taskProfile: ModelTaskProfileSchema.optional(),
   budget: ModelBudgetSchema.partial().optional(),
   usageContext: z.object({
@@ -69,32 +90,14 @@ export const ModelGatewayResponseSchema = z.object({
 
 export type ModelGatewayResponse = z.infer<typeof ModelGatewayResponseSchema>;
 
-export class ModelGatewayUnavailableError extends Error {
-  readonly code = "MODEL_GATEWAY_UNAVAILABLE";
-
-  constructor(message: string) {
-    super(message);
-    this.name = "ModelGatewayUnavailableError";
-  }
-}
-
-export class ModelGatewayOutputError extends Error {
-  readonly code = "MODEL_GATEWAY_INVALID_OUTPUT";
-
-  constructor(message: string) {
-    super(message);
-    this.name = "ModelGatewayOutputError";
-  }
-}
-
-export class ModelGatewayPolicyError extends Error {
-  readonly code = "MODEL_POLICY_REJECTED";
-
-  constructor(message: string) {
-    super(message);
-    this.name = "ModelGatewayPolicyError";
-  }
-}
+// The error types live in `model-gateway-errors.ts` so the failure taxonomy can
+// classify them without importing this module. They are re-exported here so
+// every existing importer keeps working unchanged.
+export {
+  ModelGatewayUnavailableError,
+  ModelGatewayOutputError,
+  ModelGatewayPolicyError,
+} from "./model-gateway-errors";
 
 // Re-exported so callers can catch every gateway failure from one module, even
 // though the budget guard itself lives with the cost model.
@@ -304,8 +307,13 @@ function usageFromProvider(data: unknown): {
 
 async function responseError(response: Response, provider: ModelProvider): Promise<never> {
   const detail = (await response.text()).slice(0, 500);
+  // The status travels on the error object, not only inside the message. The
+  // failure taxonomy has to tell 429 from 401 from 500 to decide whether a
+  // retry, a failover or neither is honest — and message prose is a provider's
+  // to change without notice.
   throw new ModelGatewayUnavailableError(
     `${provider} model service returned HTTP ${response.status}${detail ? `: ${detail}` : "."}`,
+    { status: response.status, retryAfterMs: parseRetryAfter(response.headers.get("retry-after")) },
   );
 }
 
@@ -342,10 +350,24 @@ export class ModelGateway {
     const selections = validated.selection
       ? [validated.selection]
       : [tierSelection(selectedTier), ...fallbackSelections(selectedTier)];
+
+    // Context budgeting happens once, before any candidate is contacted. An
+    // oversized prompt is oversized for every model, so paying a provider to
+    // tell us that — four times over, once per fallback — would be spend with
+    // no possible outcome. It also runs before the first budget reservation:
+    // refusing to send costs nothing and should not consume an allowance.
+    const contextAssessment = enforceContextBudget({
+      segments: [validated.systemPrompt, validated.prompt],
+      declaredMaxInputTokens: validated.budget?.maxInputTokens,
+      label: `${profile.purpose} (${selectedTier})`,
+    });
+
     const startedAt = Date.now();
+    const maxRetriesPerCandidate = configuredMaxRetriesPerCandidate();
     let firstFailure: string | undefined;
     let fallbackFrom: string | undefined;
     let lastError: unknown;
+    let attemptsMade = 0;
 
     for (const [index, selection] of selections.entries()) {
       let config: ProviderConfig;
@@ -381,67 +403,102 @@ export class ModelGateway {
         continue;
       }
 
-      try {
-        const result = await this.generateFromConfig(config, validated, decision.timeoutMs);
-        const latencyMs = Date.now() - startedAt;
-        const response = ModelGatewayResponseSchema.parse({
-          text: result.text.trim(),
-          provider: config.provider,
-          model: config.model,
-          tier: selectedTier,
-          latencyMs,
-          providerRequestId: result.providerRequestId,
-          fallbackUsed: index > 0,
-          fallbackFrom: index > 0 ? fallbackFrom : undefined,
-          decisionReasons: decision.decisionReasons,
-          ...result.usage,
-        });
-        // Cost is derived from what the provider actually reported, never from
-        // the projection used by the ceiling above. An unknown cost stays
-        // undefined so the ledger never records a call as free.
-        const cost = estimateModelCost({
-          provider: response.provider,
-          model: response.model,
-          inputTokens: response.inputTokens,
-          cachedInputTokens: response.cachedInputTokens,
-          outputTokens: response.outputTokens,
-          reasoningTokens: response.reasoningTokens,
-        });
-        await recordModelUsage({
-          ...validated.usageContext,
-          purpose: profile.purpose,
-          tier: selectedTier,
-          provider: response.provider,
-          modelId: response.model,
-          estimatedCost: cost.amount,
-          inputTokens: response.inputTokens,
-          cachedInputTokens: response.cachedInputTokens,
-          outputTokens: response.outputTokens,
-          reasoningTokens: response.reasoningTokens,
-          totalTokens: response.totalTokens,
-          latencyMs,
-          providerRequestId: response.providerRequestId,
-          fallbackUsed: response.fallbackUsed,
-          fallbackFrom: response.fallbackFrom,
-          escalatedFrom: decision.escalatedFrom,
-          escalationReason: profile.escalationReason,
-          success: true,
-          promptVersion: validated.usageContext?.promptVersion ?? "jasim-gateway:v1",
-        });
-        return response;
-      } catch (error) {
-        lastError = error;
-        fallbackFrom ??= `${config.provider}/${config.model}`;
+      let candidateExhaustedBudget = false;
+      for (let attempt = 0; attempt <= maxRetriesPerCandidate; attempt += 1) {
+        const reason: ModelCallReason =
+          attempt > 0 ? "RETRY_ATTEMPT" : index > 0 ? "FALLBACK_ATTEMPT" : "PRIMARY_ATTEMPT";
+        // THE ENFORCEMENT POINT. Every provider attempt — primary, fallback and
+        // retry alike — commits a slot from the ambient server-established
+        // budget before any network call. Because the refusal happens here
+        // rather than after the request, a refused call cannot be re-attempted
+        // "through another provider": the break below leaves the candidate loop
+        // as well.
+        try {
+          reserveModelCall(reason);
+        } catch (error) {
+          lastError = error;
+          firstFailure ??= `${config.provider}/${config.model}`;
+          candidateExhaustedBudget = true;
+          break;
+        }
+        attemptsMade += 1;
+
+        try {
+          const result = await this.generateFromConfig(config, validated, decision.timeoutMs);
+          const latencyMs = Date.now() - startedAt;
+          const response = ModelGatewayResponseSchema.parse({
+            text: result.text.trim(),
+            provider: config.provider,
+            model: config.model,
+            tier: selectedTier,
+            latencyMs,
+            providerRequestId: result.providerRequestId,
+            fallbackUsed: index > 0,
+            fallbackFrom: index > 0 ? fallbackFrom : undefined,
+            decisionReasons: [
+              ...decision.decisionReasons,
+              `ESTIMATED_INPUT_TOKENS_${contextAssessment.estimatedInputTokens}`,
+              ...(attempt > 0 ? [`RETRY_${attempt}`] : []),
+            ],
+            ...result.usage,
+          });
+          // Cost is derived from what the provider actually reported, never from
+          // the projection used by the ceiling above. An unknown cost stays
+          // undefined so the ledger never records a call as free.
+          const cost = estimateModelCost({
+            provider: response.provider,
+            model: response.model,
+            inputTokens: response.inputTokens,
+            cachedInputTokens: response.cachedInputTokens,
+            outputTokens: response.outputTokens,
+            reasoningTokens: response.reasoningTokens,
+          });
+          await recordModelUsage({
+            ...validated.usageContext,
+            purpose: profile.purpose,
+            tier: selectedTier,
+            provider: response.provider,
+            modelId: response.model,
+            estimatedCost: cost.amount,
+            inputTokens: response.inputTokens,
+            cachedInputTokens: response.cachedInputTokens,
+            outputTokens: response.outputTokens,
+            reasoningTokens: response.reasoningTokens,
+            totalTokens: response.totalTokens,
+            latencyMs,
+            providerRequestId: response.providerRequestId,
+            fallbackUsed: response.fallbackUsed,
+            fallbackFrom: response.fallbackFrom,
+            escalatedFrom: decision.escalatedFrom,
+            escalationReason: profile.escalationReason,
+            success: true,
+            promptVersion: validated.usageContext?.promptVersion ?? "jasim-gateway:v1",
+          });
+          return response;
+        } catch (error) {
+          lastError = error;
+          fallbackFrom ??= `${config.provider}/${config.model}`;
+          const failure = normalizeModelFailure(error);
+          if (!failure.allowFailover) {
+            // Terminal for the whole request, not just this candidate: a policy
+            // rejection, an authority violation or a spent budget is not a fact
+            // about this provider.
+            candidateExhaustedBudget = true;
+            break;
+          }
+          if (failure.retryable && attempt < maxRetriesPerCandidate) {
+            await new Promise((resolve) => setTimeout(resolve, retryDelayMs(attempt, failure)));
+            continue;
+          }
+          break;
+        }
       }
+      if (candidateExhaustedBudget) break;
     }
 
     const latencyMs = Date.now() - startedAt;
-    const errorCategory =
-      lastError instanceof ModelGatewayOutputError
-        ? "INVALID_OUTPUT"
-        : lastError instanceof ModelBudgetExceededError
-          ? "MODEL_BUDGET_EXCEEDED"
-          : "PROVIDER_UNAVAILABLE";
+    const failure = normalizeModelFailure(lastError);
+    const errorCategory: ModelFailureCategory = failure.category;
     await recordModelUsage({
       ...validated.usageContext,
       purpose: profile.purpose,
@@ -449,7 +506,7 @@ export class ModelGateway {
       provider: fallbackFrom?.split("/")[0] ?? "unavailable",
       modelId: fallbackFrom?.split("/")[1] ?? "unavailable",
       latencyMs,
-      fallbackUsed: selections.length > 1,
+      fallbackUsed: attemptsMade > 1,
       fallbackFrom: firstFailure,
       escalatedFrom: decision.escalatedFrom,
       escalationReason: profile.escalationReason,
@@ -509,7 +566,9 @@ export class ModelGateway {
               generationConfig: {
                 temperature: validated.temperature,
                 maxOutputTokens: validated.maxTokens,
-                responseMimeType: "application/json",
+                ...(validated.responseFormat === "json"
+                  ? { responseMimeType: "application/json" }
+                  : {}),
               },
             }),
           },
@@ -537,7 +596,9 @@ export class ModelGateway {
             ...(config.provider === "openai-compatible"
               ? { max_completion_tokens: validated.maxTokens }
               : { max_tokens: validated.maxTokens }),
-            response_format: { type: "json_object" },
+            ...(validated.responseFormat === "json"
+              ? { response_format: { type: "json_object" } }
+              : {}),
           }),
         });
         if (!response.ok) await responseError(response, config.provider);

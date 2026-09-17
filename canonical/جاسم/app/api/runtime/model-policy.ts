@@ -197,3 +197,66 @@ export function tierFromPurpose(purpose: ModelPurpose): ModelTaskProfile {
     structuralMutation: purpose === "BUBBLE_MUTATION",
   });
 }
+// ── Semantic tier names ─────────────────────────────────────────────────────
+
+/**
+ * `T1`/`T2`/`T3` say where a model sits in a ladder; they do not say what the
+ * ladder is *for*, and a reader of a plan or a report cannot tell whether T2 is
+ * cheap or expensive without reading this file. The semantic names do say it,
+ * and they say it without naming a vendor or a model — the whole point of the
+ * provider-neutral contract is that JASIM asks for a capability and a
+ * deployment decides which model provides it.
+ *
+ * Both spellings denote exactly the same tier. This is an alias, not a second
+ * scale: a second scale would eventually disagree with the first.
+ */
+export const SemanticModelTierSchema = z.enum([
+  "DETERMINISTIC",
+  "FAST_CHEAP",
+  "BALANCED",
+  "STRONG_REASONING",
+]);
+export type SemanticModelTier = z.infer<typeof SemanticModelTierSchema>;
+
+const semanticByTier: Record<ModelTier, SemanticModelTier> = {
+  T0: "DETERMINISTIC",
+  T1: "FAST_CHEAP",
+  T2: "BALANCED",
+  T3: "STRONG_REASONING",
+};
+
+const tierBySemantic: Record<SemanticModelTier, ModelTier> = {
+  DETERMINISTIC: "T0",
+  FAST_CHEAP: "T1",
+  BALANCED: "T2",
+  STRONG_REASONING: "T3",
+};
+
+export function semanticTier(tier: ModelTier): SemanticModelTier {
+  return semanticByTier[tier];
+}
+
+export function tierFromSemantic(tier: SemanticModelTier): ModelTier {
+  return tierBySemantic[tier];
+}
+
+/**
+ * The cheapest tier that can be expected to satisfy the profile.
+ *
+ * `selectModelPolicy` already routes this way — every rule in it moves *up* from
+ * a purpose default and none moves down — but that intent is spread across a
+ * dozen conditions. This states it as one answer a caller or a test can read,
+ * and returns the reasons alongside it so a routing decision is never a number
+ * without a justification.
+ */
+export function cheapestSufficientTier(
+  profile: ModelTaskProfile,
+  budget?: Partial<ModelBudget>,
+): { tier: ModelTier; semantic: SemanticModelTier; reasons: string[] } {
+  const decision = selectModelPolicy(profile, budget);
+  return {
+    tier: decision.tier,
+    semantic: semanticTier(decision.tier),
+    reasons: decision.decisionReasons,
+  };
+}

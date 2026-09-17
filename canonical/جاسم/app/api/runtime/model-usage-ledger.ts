@@ -144,3 +144,85 @@ export async function summarizeModelCost(input: {
     complete: rows.length > 0 && unpricedCalls === 0,
   };
 }
+
+// ── Cost breakdown ──────────────────────────────────────────────────────────
+
+export type ModelCostDimension = "provider" | "modelId" | "tier" | "purpose";
+
+export type ModelCostBucket = ModelCostSummary & {
+  /** The dimension value this bucket aggregates, e.g. "anthropic" or "T2". */
+  key: string;
+  calls: number;
+  failedCalls: number;
+};
+
+/**
+ * Aggregates the same owner-scoped usage as `summarizeModelCost`, grouped along
+ * one dimension.
+ *
+ * Grouping is done in application code rather than SQL on purpose: the
+ * `complete` flag is not a sum, it is a claim that nothing in the bucket was
+ * unpriced, and `SUM(estimatedCost)` in Postgres would quietly treat a NULL as
+ * absent and report a confident total over partial data. The whole reason this
+ * module exists is that a cost number without its coverage is misleading.
+ *
+ * Failed calls are counted but never silently excluded: a failover storm that
+ * burned forty attempts and returned nothing still cost money, and a report that
+ * showed only successes would understate spend exactly when it matters.
+ */
+export async function breakdownModelCost(input: {
+  ownerId: string;
+  dimension: ModelCostDimension;
+  conversationId?: string;
+  runId?: string;
+}): Promise<ModelCostBucket[]> {
+  const filters = [eq(modelUsageLedger.ownerId, input.ownerId)];
+  if (input.conversationId) {
+    filters.push(eq(modelUsageLedger.conversationId, input.conversationId));
+  }
+  if (input.runId) filters.push(eq(modelUsageLedger.runId, input.runId));
+
+  const rows = await db
+    .select({
+      provider: modelUsageLedger.provider,
+      modelId: modelUsageLedger.modelId,
+      tier: modelUsageLedger.tier,
+      purpose: modelUsageLedger.purpose,
+      estimatedCost: modelUsageLedger.estimatedCost,
+      totalTokens: modelUsageLedger.totalTokens,
+      success: modelUsageLedger.success,
+    })
+    .from(modelUsageLedger)
+    .where(and(...filters));
+
+  const buckets = new Map<string, ModelCostBucket>();
+  for (const row of rows) {
+    const key = row[input.dimension];
+    const bucket = buckets.get(key) ?? {
+      key,
+      calls: 0,
+      failedCalls: 0,
+      pricedCalls: 0,
+      unpricedCalls: 0,
+      estimatedCost: undefined,
+      totalTokens: 0,
+      complete: false,
+    };
+    bucket.calls += 1;
+    if (!row.success) bucket.failedCalls += 1;
+    if (typeof row.estimatedCost === "number") {
+      bucket.pricedCalls += 1;
+      bucket.estimatedCost = (bucket.estimatedCost ?? 0) + row.estimatedCost;
+    } else {
+      bucket.unpricedCalls += 1;
+    }
+    bucket.totalTokens += row.totalTokens ?? 0;
+    buckets.set(key, bucket);
+  }
+
+  return [...buckets.values()]
+    .map((bucket) => ({ ...bucket, complete: bucket.unpricedCalls === 0 }))
+    // Largest known spend first, with unpriced buckets last rather than
+    // sorted as if they were free.
+    .sort((left, right) => (right.estimatedCost ?? -1) - (left.estimatedCost ?? -1));
+}

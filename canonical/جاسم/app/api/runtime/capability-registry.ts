@@ -8,7 +8,7 @@ import {
   CapabilityProviderRegistry,
   registerNativeProvider,
 } from "./capability-provider";
-import { ModelGatewayUnavailableError } from "./model-gateway";
+import { ModelGatewayUnavailableError, modelGateway } from "./model-gateway";
 import { db } from "../queries/connection";
 import {
   createNotificationIntent,
@@ -623,71 +623,81 @@ runtimeCapabilityRegistry.register(notifyCapability);
 // provider-unavailable state instead of treating a local stub as a result.
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * A capability that invokes a language model.
+ *
+ * It used to `fetch` the provider directly. That made it a second, ungoverned
+ * model path: no tier policy, no usage ledger, no cost estimate, and — once the
+ * call budget existed — no ceiling, so a plan step could spend without limit
+ * while every runtime path was bounded. A budget that one code path can walk
+ * around is not a budget.
+ *
+ * It now goes through `modelGateway`, which means this capability is subject to
+ * the same policy, the same ledger and the same budget as everything else. The
+ * returned shape is unchanged, because `execution-verifier.ts` verifies it.
+ */
+function allowedCapabilityModel(requested: unknown): string | undefined {
+  if (typeof requested !== "string" || !requested.trim()) return undefined;
+  // A plan step's inputs are model-authored. Letting them name a model would let
+  // an untrusted proposal pick the most expensive one available, so a requested
+  // model is honoured only when the deployment has explicitly allowed it.
+  // Otherwise the gateway's own tier policy chooses.
+  const allowlist = (process.env.JASIM_CAPABILITY_MODEL_ALLOWLIST ?? "")
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+  return allowlist.includes(requested.trim()) ? requested.trim() : undefined;
+}
+
 async function callOpenAiChat(
   inputs: Record<string, unknown>,
   context: CapabilityExecutionContext,
 ): Promise<Record<string, unknown>> {
-  const baseUrl = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
-  const apiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
-
-  if (!baseUrl || !apiKey) {
-    throw new ModelGatewayUnavailableError(
-      "OpenAI chat capability is unavailable: provider credentials are not configured.",
-    );
-  }
-
-  const model = typeof inputs.model === "string" ? inputs.model : "gpt-5.6-luna";
   const systemPrompt =
     typeof inputs.systemPrompt === "string"
       ? inputs.systemPrompt
       : "You are JASIM, a helpful generative runtime assistant. Answer concisely.";
   const userPrompt = typeof inputs.prompt === "string" ? inputs.prompt : "";
-  const maxTokens = typeof inputs.maxTokens === "number" ? inputs.maxTokens : 512;
-
-  const requestBody = {
-    model,
-    max_completion_tokens: maxTokens,
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ],
-  };
-
-  const response = await fetch(`${baseUrl}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(requestBody),
-  });
-
-  if (!response.ok) {
-    const text = await response.text().catch(() => "(unreadable)");
-    throw new Error(`OpenAI API error ${response.status}: ${text.slice(0, 200)}`);
+  if (!userPrompt.trim()) {
+    throw new ModelGatewayUnavailableError(
+      "The chat capability received no prompt; nothing was sent to a model.",
+    );
   }
+  const maxTokens = typeof inputs.maxTokens === "number" ? inputs.maxTokens : 512;
+  const requestedModel = allowedCapabilityModel(inputs.model);
 
-  const data = (await response.json()) as {
-    choices?: Array<{ message?: { content?: string }; finish_reason?: string }>;
-    usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
-  };
-
-  const completion = data.choices?.[0]?.message?.content ?? "";
-  const finishReason = data.choices?.[0]?.finish_reason ?? "unknown";
-  const usage = data.usage ?? {};
+  const response = await modelGateway.generate({
+    prompt: userPrompt,
+    systemPrompt,
+    maxTokens,
+    // Prose, not a JSON envelope: this capability's product is the completion.
+    responseFormat: "text",
+    ...(requestedModel ? { selection: { model: requestedModel } } : {}),
+    taskProfile: {
+      purpose: "CAPABILITY_EXECUTION",
+      complexity: 0.35,
+      estimatedContextSize: systemPrompt.length + userPrompt.length,
+      requiresStructuredOutput: false,
+      userFacing: true,
+    },
+    usageContext: { promptVersion: "capability-chat:v2" },
+  });
 
   return {
     kind: "openai-chat",
     taskId: context.taskId,
     stepId: context.stepId,
-    model,
+    model: response.model,
     prompt: userPrompt,
-    completion,
-    finishReason,
+    completion: response.text,
+    // The gateway normalizes across four provider shapes and does not surface a
+    // provider-specific stop reason. Saying "unreported" is accurate; inventing
+    // "stop" would be a claim about how generation ended that nobody made.
+    finishReason: "unreported",
     usage: {
-      promptTokens: usage.prompt_tokens ?? 0,
-      completionTokens: usage.completion_tokens ?? 0,
-      totalTokens: usage.total_tokens ?? 0,
+      promptTokens: response.inputTokens ?? 0,
+      completionTokens: response.outputTokens ?? 0,
+      totalTokens: response.totalTokens ?? 0,
     },
   };
 }
