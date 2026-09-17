@@ -526,9 +526,17 @@ export const runtimeRouter = router({
               subjectKind: candidate.subject.kind,
               subjectId: candidate.subject.id,
             })),
+            // A bounded set of alternatives the runtime already holds and has
+            // already authorized — so it is a selection, not data entry, and
+            // the decision layer resolves it to CHOICE. No `missingFields` is
+            // supplied precisely because nothing is missing: the answer is one
+            // of these, not a value the user has to invent.
+            //
+            // Each option carries only its stable reference key and the opaque
+            // subject pair. That is enough to pick and never enough to read a
+            // position; coordinates reach no branch of this path.
             presentation: decidePresentation({
               interactionNeed: "collect_input",
-              requiresStructuredInput: true,
               data: {
                 subjectResolution: "AMBIGUOUS",
                 observationType: input.observationType,
@@ -537,14 +545,6 @@ export const runtimeRouter = router({
                   entityRef: `${candidate.subject.kind}:${candidate.subject.id}`,
                 })),
               },
-              missingFields: [
-                {
-                  name: "referenceKey",
-                  type: "string",
-                  requiredNow: true,
-                  label: "أي مرجع تقصد؟",
-                },
-              ],
             }),
           };
         }

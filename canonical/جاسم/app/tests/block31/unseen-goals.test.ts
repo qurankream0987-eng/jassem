@@ -112,7 +112,7 @@ async function proveGoal(goal: Goal) {
   expect(found.candidates.some((candidate) => candidate.canonicalRef === expression.id)).toBe(true);
   expect(found.candidates.some((candidate) => candidate.canonicalRef === privateExpression.id)).toBe(false);
 
-  const ordinal = await resolveOrdinal(handle.db, conversationId, 1);
+  const ordinal = await resolveOrdinal(handle.db, { ownerId: BUYER, conversationId }, 1);
   expect(ordinal.status).toBe("RESOLVED");
   if (ordinal.status !== "RESOLVED") throw new Error("The frozen ordinal resolver lost candidate one.");
   await bindReference(handle.db, {
@@ -157,7 +157,9 @@ async function proveGoal(goal: Goal) {
       createdAt: tiedAt,
     },
   ]);
-  expect((await resolveThis(handle.db, conversationId)).status).toBe("AMBIGUOUS");
+  expect(
+    (await resolveThis(handle.db, { ownerId: BUYER, conversationId })).status,
+  ).toBe("AMBIGUOUS");
 
   if (goal.monitor) {
     const notice = await createNotificationIntent(handle.db, {

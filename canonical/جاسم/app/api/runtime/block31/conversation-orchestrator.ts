@@ -242,7 +242,9 @@ async function compareTurn(
     return clarification("حدد نتيجتين على الأقل للمقارنة.");
   }
   const resolutions = await Promise.all(
-    positions.map((position) => resolveOrdinal(db, input.conversationId, position)),
+    positions.map((position) =>
+      resolveOrdinal(db, { ownerId: input.ownerId, conversationId: input.conversationId }, position),
+    ),
   );
   if (resolutions.some((resolution) => resolution.status !== "RESOLVED")) {
     return clarification("تعذر ربط كل عناصر المقارنة بمجموعة نتائج واحدة مؤكدة.");
@@ -330,7 +332,11 @@ async function selectTurn(
   const values = input.envelope.intent?.inputs ?? {};
   const position = typeof values.position === "number" ? values.position : ordinal(input.content);
   if (!position) return clarification("حدد رقم النتيجة التي تريد اختيارها.");
-  const resolution = await resolveOrdinal(db, input.conversationId, position);
+  const resolution = await resolveOrdinal(
+    db,
+    { ownerId: input.ownerId, conversationId: input.conversationId },
+    position,
+  );
   if (resolution.status !== "RESOLVED") {
     return clarification(resolution.status === "AMBIGUOUS"
       ? "هناك أكثر من مجموعة نتائج حديثة؛ حدد النتيجة مع وصفها."

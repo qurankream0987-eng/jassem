@@ -239,7 +239,11 @@ describe("Block 3.1 discovery core", () => {
     const first = await runSearch("sample ordinal", { conversationId });
     expect(first.candidates).toHaveLength(2);
 
-    const ordinal = await resolveOrdinal(handle.db, conversationId, 2);
+    const ordinal = await resolveOrdinal(
+      handle.db,
+      { ownerId: requester, conversationId },
+      2,
+    );
     expect(ordinal.status).toBe("RESOLVED");
     if (ordinal.status !== "RESOLVED") throw new Error("Expected the second candidate.");
     await bindReference(handle.db, {
@@ -253,7 +257,7 @@ describe("Block 3.1 discovery core", () => {
     });
 
     await runSearch("a new unrelated search", { conversationId });
-    const historic = await resolveThis(handle.db, conversationId);
+    const historic = await resolveThis(handle.db, { ownerId: requester, conversationId });
     expect(historic.status).toBe("RESOLVED");
     if (historic.status !== "RESOLVED") throw new Error("Expected the historic binding.");
     expect(historic.value.targetId).toBe(ordinal.value.id);
@@ -283,7 +287,10 @@ describe("Block 3.1 discovery core", () => {
       },
     ]);
 
-    const resolution = await resolveThis(handle.db, "ambiguous-conversation");
+    const resolution = await resolveThis(handle.db, {
+      ownerId: requester,
+      conversationId: "ambiguous-conversation",
+    });
     expect(resolution.status).toBe("AMBIGUOUS");
     if (resolution.status === "AMBIGUOUS") expect(resolution.candidates).toHaveLength(2);
   });

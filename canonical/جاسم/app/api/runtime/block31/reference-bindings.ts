@@ -12,6 +12,24 @@ export type Resolution<T> =
   | { status: "NOT_FOUND" }
   | { status: "AMBIGUOUS"; candidates: T[] };
 
+/**
+ * Who is asking, and about which conversation.
+ *
+ * Both resolvers below used to take a bare `conversationId`, which made their
+ * safety depend entirely on every caller remembering to check ownership first.
+ * Today's callers do check, so this was never a proven cross-owner leak — but
+ * "safe because everyone has been careful so far" is not an invariant, and the
+ * next caller inherits no warning.
+ *
+ * Passing a scope object rather than two positional strings also means a bare
+ * conversation id can no longer be handed in by accident: omitting the owner is
+ * a type error rather than a silent widening.
+ */
+export type ReferenceScope = {
+  ownerId: string;
+  conversationId: string;
+};
+
 export async function bindReference(
   db: Block31Db,
   input: {
@@ -45,14 +63,22 @@ export async function bindReference(
 
 export async function resolveOrdinal(
   db: Block31Db,
-  conversationId: string,
+  scope: ReferenceScope,
   n: number,
 ): Promise<Resolution<typeof discoveryCandidates.$inferSelect>> {
   if (!Number.isInteger(n) || n < 1) return { status: "NOT_FOUND" };
+  // Candidates are reached through their result set, so scoping the set by
+  // owner scopes the ordinal. A set belonging to someone else yields nothing
+  // rather than an error, so the resolver cannot confirm that it exists.
   const sets = await db
     .select()
     .from(discoveryResultSets)
-    .where(eq(discoveryResultSets.conversationId, conversationId))
+    .where(
+      and(
+        eq(discoveryResultSets.ownerId, scope.ownerId),
+        eq(discoveryResultSets.conversationId, scope.conversationId),
+      ),
+    )
     .orderBy(desc(discoveryResultSets.createdAt))
     .limit(2);
   if (!sets.length) return { status: "NOT_FOUND" };
@@ -93,14 +119,15 @@ export async function resolveOrdinal(
 
 export async function resolveThis(
   db: Block31Db,
-  conversationId: string,
+  scope: ReferenceScope,
 ): Promise<Resolution<typeof referenceBindings.$inferSelect>> {
   const rows = await db
     .select()
     .from(referenceBindings)
     .where(
       and(
-        eq(referenceBindings.conversationId, conversationId),
+        eq(referenceBindings.ownerId, scope.ownerId),
+        eq(referenceBindings.conversationId, scope.conversationId),
         isNull(referenceBindings.supersededAt),
       ),
     )

@@ -824,6 +824,23 @@ export function decidePresentation(
     });
   }
   if (inputRequired) {
+    // Two different things ask the user for something, and the contract
+    // already distinguishes them: `missingFields` is data the runtime does not
+    // have, while `candidates` is a bounded set of alternatives it already
+    // holds and has already authorized. Asking "which of these?" with a text
+    // box is a worse question than asking it with the list.
+    //
+    // Fields win when both are present: a choice cannot substitute for values
+    // that still have to be supplied.
+    const hasMissingFields = (parsedInput.missingFields ?? []).length > 0;
+    if (!hasMissingFields && candidateData !== undefined && candidateData.length > 0) {
+      return validatePresentationDefinition({
+        primitive: "CHOICE",
+        version: 1,
+        data: { candidates: candidateData, resultCount: candidateData.length, ...parsedInput.data },
+        actions: [{ intent: "select", label: "Select" }],
+      });
+    }
     return validatePresentationDefinition({
       primitive: "FORM",
       version: 1,
