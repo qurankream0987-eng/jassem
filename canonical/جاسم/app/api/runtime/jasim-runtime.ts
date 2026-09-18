@@ -4049,6 +4049,11 @@ export async function executeRuntimeDagNode(input: {
       .set({
         finishedAt: new Date(),
         executionStatus: 'COMPLETED' as ExecutionAttemptStatus,
+        // The attempt ledger has carried a `provider` column since Phase 2 and
+        // nothing ever wrote it, so "which provider ran this?" was unanswerable
+        // after the fact even though `resolveProvider` had just decided it.
+        // Filling an existing column is not new telemetry; it is finishing a row.
+        provider: providerBinding.providerId,
         normalizedResult: outputWithLineage,
         verificationStatus: verification.status as VerificationStatus,
         verificationDetail: {
