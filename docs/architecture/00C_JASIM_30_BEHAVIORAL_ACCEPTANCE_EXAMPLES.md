@@ -3,6 +3,12 @@
 > مصدر هذه الوثيقة: مالك المنتج. أُودعت هنا لأنها **أمثلة قبول**، لا قائمة ميزات،
 > ولأن كل مرحلة في خريطة الطريق تُقاس بها. تدقيق كل مثال مقابل الكود الفعلي في
 > `docs/handoff/JASIM_30_EXAMPLES_GAP_AUDIT.md`.
+>
+> **هذه الأمثلة مُرمَّزة الآن في منظومة قياس مُجمَّدة**: `S01–S30` في
+> `tests/evals/corpus/frozen-v1.ts`، ونتائجها الحالية في
+> `docs/evaluation/JASIM_CURRENT_BASELINE.md`. الرؤية الشاملة في
+> `00D_JASIM_MASTER_PRODUCT_VISION.md`، والقرارات المُلزِمة في
+> `00E_JASIM_PRODUCT_ARCHITECTURE_DECISIONS.md`.
 
 ## الثوابت
 
