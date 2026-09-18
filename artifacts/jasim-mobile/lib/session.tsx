@@ -14,6 +14,11 @@ import {
   setCallToken,
   setRuntimeUnauthorizedHandler,
 } from '@/lib/runtime-trpc';
+import {
+  hasRuntimeEndpoint,
+  RuntimeConfigError,
+  runtimeBaseUrl,
+} from '@/lib/runtime-endpoint';
 import { palette, fonts } from '@/constants/colors';
 
 const STORAGE_KEY = 'jasim.runtime.session';
@@ -26,8 +31,13 @@ function applyToken(token: string | null) {
   setCallToken(token);
 }
 
-if (process.env.EXPO_PUBLIC_DOMAIN) {
-  setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
+// One source for the runtime's address — see `lib/runtime-endpoint.ts`.
+// Production is HTTPS unconditionally; a development build may use HTTP, and
+// only to a local address. Resolution is best-effort here: an unconfigured or
+// refused endpoint surfaces as the app's ordinary connection state rather than
+// a crash at module load.
+if (hasRuntimeEndpoint()) {
+  setBaseUrl(runtimeBaseUrl());
 }
 
 /**
@@ -61,13 +71,16 @@ async function clearStoredToken(): Promise<void> {
 }
 
 async function requestSessionToken(): Promise<string> {
-  const domain = process.env.EXPO_PUBLIC_DOMAIN;
-  if (!domain) throw new Error('EXPO_PUBLIC_DOMAIN is not configured.');
+  // The same resolver the rest of the app uses. Building `https://${domain}`
+  // here is what let the scheme rule be true in one module and absent in this
+  // one; a bearer token is the last thing that should travel over an address
+  // nobody checked.
+  const base = runtimeBaseUrl();
   // The canonical contract takes no caller-supplied fields, and an explicit
   // empty object is how "no input" is stated. Sending a declared, zero-field
   // body also keeps the request shape identical across every fetch
   // implementation, rather than depending on how one serializes "nothing".
-  const response = await fetch(`https://${domain}/api/runtime/session`, {
+  const response = await fetch(`${base}/api/runtime/session`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: '{}',
@@ -114,8 +127,15 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         setError(null);
       } catch (cause) {
         if (cancelled) return;
+        // A misconfigured endpoint is not a network failure, and telling
+        // somebody to check their connection when the build has no server
+        // address sends them to fix the one thing that is not broken.
         setError(
-          cause instanceof Error ? cause.message : 'تعذر الاتصال بخادم جاسم.',
+          cause instanceof RuntimeConfigError
+            ? cause.userMessage
+            : cause instanceof Error
+              ? cause.message
+              : 'تعذر الاتصال بخادم جاسم.',
         );
       }
     }

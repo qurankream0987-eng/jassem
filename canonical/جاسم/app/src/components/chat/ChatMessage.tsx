@@ -47,18 +47,26 @@ function getMessageRoleIcon(role: MessageRole) {
   }
 }
 
+/**
+ * Who a message is from, in the product's own language.
+ *
+ * These were English in an Arabic-first product — "You" sat above every
+ * sentence the user had just written in Arabic. The assistant keeps its proper
+ * name, «جاسم», because a name is not a word to translate; everything else is
+ * a role and reads as one.
+ */
 function getMessageRoleLabel(role: MessageRole): string {
   switch (role) {
     case MESSAGE_ROLES.ASSISTANT:
-      return 'JASIM';
+      return 'جاسم';
     case MESSAGE_ROLES.USER:
-      return 'You';
+      return 'أنت';
     case MESSAGE_ROLES.TOOL:
-      return 'Tool';
+      return 'أداة';
     case MESSAGE_ROLES.SYSTEM:
-      return 'System';
+      return 'النظام';
     default:
-      return 'Unknown';
+      return 'غير معروف';
   }
 }
 

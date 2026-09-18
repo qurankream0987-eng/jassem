@@ -87,8 +87,14 @@ export function ChatSidebar({
   }
 
   return (
+    // The width was a constant 288px (`w-72`) at every size. On a 1440px
+    // desktop that is 20% of the screen and correct; on an 834px tablet the
+    // same 288px is 34.5%, and the conversation itself — the thing the product
+    // is for — was left a 546px column beside a list of titles. Titles truncate
+    // already, so the narrower band below `lg` costs a few characters and
+    // returns ~48px to the conversation. Desktop is unchanged.
     <div
-      className="flex h-full min-h-0 w-72 flex-shrink-0 flex-col border-e border-[var(--jasim-border)] bg-[var(--jasim-surface-opaque)]/85 backdrop-blur-sm transition-all"
+      className="flex h-full min-h-0 w-60 flex-shrink-0 flex-col border-e border-[var(--jasim-border)] bg-[var(--jasim-surface-opaque)]/85 backdrop-blur-sm transition-all lg:w-72"
       dir={rtl ? 'rtl' : 'ltr'}
     >
       {/* Header */}

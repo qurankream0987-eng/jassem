@@ -179,7 +179,10 @@ export function useJasimChat(options: UseJasimChatOptions = {}): UseJasimChatRet
   }, [activeConversationId, conversationQuery.data]);
 
   const createConversation = useCallback(async (): Promise<string> => {
-    const created = await createConversationMutation.mutateAsync({ title: "محادثة جديدة" });
+    // No title. The runtime derives one from the first user message, so a
+    // client-side placeholder would be indistinguishable from a real name and
+    // would block that derivation forever.
+    const created = await createConversationMutation.mutateAsync({});
     const conversation = normalizeConversation(created);
     setCurrentConversation(conversation);
     setActiveConversationId(conversation.id);
@@ -353,7 +356,15 @@ export function useJasimChat(options: UseJasimChatOptions = {}): UseJasimChatRet
        * create client-side canonical truth.
        */
       try {
-        await utils.runtime.conversationsGet.invalidate({ conversationId });
+        await Promise.all([
+          utils.runtime.conversationsGet.invalidate({ conversationId }),
+          // The runtime names a conversation from its first user message
+          // BEFORE it calls the model, so a failed turn still produced a
+          // title. Without this the sidebar keeps showing the placeholder
+          // until a reload — and with no model configured, every turn takes
+          // this path, so it would be the only thing anyone ever saw.
+          utils.runtime.conversationsList.invalidate(),
+        ]);
       } catch {
         // If the refetch itself fails the notice is still shown; the canonical
         // message is on the server either way and appears on the next load.

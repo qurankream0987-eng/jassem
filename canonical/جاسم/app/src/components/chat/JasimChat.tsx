@@ -49,27 +49,66 @@ function TypingIndicator() {
 
 // ── Empty State ──────────────────────────────────────────────────────────────
 
+/**
+ * The first screen a person sees, at the size of the screen they are on.
+ *
+ * ─── WHAT WAS MEASURED ──────────────────────────────────────────────────────
+ *
+ * Every dimension here was a constant, so the block that is correctly
+ * proportioned on a phone became a small island on anything larger:
+ *
+ *              island width   of column    empty above / below
+ *   390×844        358px        91.8%          162 / 175   ← fine
+ *   834×1112       407px        74.6%          357 / 370
+ *   1440×900       407px        35.4%          251 / 264
+ *
+ * On desktop that is 515px of 765 — 67% of the column — left blank, with the
+ * four suggestions 407px wide sitting above a 976px composer. The mismatch is
+ * what reads as unfinished, and the 264px of nothing between the last
+ * suggestion and the composer sits exactly in the path the eye takes.
+ *
+ * ─── WHAT CHANGED ───────────────────────────────────────────────────────────
+ *
+ * Nothing was redesigned: same block, same four suggestions, same order. The
+ * fixed sizes became responsive ones, so the content grows into the column it
+ * is given instead of leaving it empty. Phone rendering is untouched — every
+ * new class is behind `sm:` or `lg:`.
+ */
 function EmptyState({ onSuggestionClick, rtl = true }: { onSuggestionClick: (prompt: string) => void; rtl?: boolean }) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-4" dir={rtl ? 'rtl' : 'ltr'}>
-      <div className="text-center max-w-md">
-        <div className="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <div className="flex-1 flex flex-col items-center px-4 py-6" dir={rtl ? 'rtl' : 'ltr'}>
+      {/*
+        Two spacers instead of `justify-center`, because on a wide desktop dead
+        centre is the wrong place. An even split left 264px of nothing between
+        the last suggestion and the composer — directly in the path from "here
+        is what I can do" to the one control that does it. Weighting the slack
+        toward the top moves that gap to ~160px while the top barely changes,
+        because the space above reads as headroom and the space below reads as
+        a hole.
+
+        Only at `lg`. Phone and tablet stay centred: an even split measured
+        fine at 162/175 on a phone, and biasing a 1112px-tall portrait screen
+        made the block look like it had sunk rather than been placed.
+      */}
+      <div className="flex-1 lg:flex-[1.8]" aria-hidden />
+      <div className="w-full text-center max-w-md md:max-w-lg lg:max-w-2xl">
+        <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center mx-auto mb-4 lg:mb-6">
+          <svg className="w-8 h-8 lg:w-10 lg:h-10 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 2L2 7l10 5 10-5-10-5z" />
             <path d="M2 17l10 5 10-5" />
             <path d="M2 12l10 5 10-5" />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold text-slate-100 mb-2">
-          {rtl ? 'مرحباً بك في جاسيم' : 'Welcome to JASIM'}
+        <h1 className="text-2xl lg:text-3xl font-bold text-slate-100 mb-2 lg:mb-3">
+          {rtl ? 'مرحباً بك في جاسم' : 'Welcome to JASIM'}
         </h1>
-        <p className="text-sm text-slate-400 mb-6">
+        <p className="text-sm lg:text-base text-slate-400 mb-6 lg:mb-8">
           {rtl
             ? 'مساعدك الذكي المتكامل. اطرح سؤالك أو اطلب مساعدة في أي مهمة.'
             : 'Your unified generative executable agent. Ask anything or request help with any task.'}
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-3">
           {[
             {
               label: rtl ? 'إنشاء نموذج' : 'Create a form',
@@ -99,13 +138,14 @@ function EmptyState({ onSuggestionClick, rtl = true }: { onSuggestionClick: (pro
             <button
               key={item.label}
               onClick={() => onSuggestionClick(item.prompt)}
-              className="px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700/50 text-sm text-slate-300 hover:bg-slate-800 hover:text-slate-100 hover:border-slate-600 transition text-left"
+              className="px-4 py-3 lg:px-5 lg:py-4 rounded-xl bg-slate-800/50 border border-slate-700/50 text-sm lg:text-base text-slate-300 hover:bg-slate-800 hover:text-slate-100 hover:border-slate-600 transition text-left"
             >
               {item.label}
             </button>
           ))}
         </div>
       </div>
+      <div className="flex-1 lg:max-h-44" aria-hidden />
     </div>
   );
 }

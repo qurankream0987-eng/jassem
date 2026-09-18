@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { Send, Paperclip, Mic, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useCoarsePointer } from "@/hooks/use-pointer-capability";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -38,6 +39,7 @@ export function ChatInput({
   // English gets an LTR field — but the resting state of an Arabic-first
   // product is Arabic.
   const [isRtl, setIsRtl] = useState(true);
+  const coarsePointer = useCoarsePointer();
   const [isRecording, setIsRecording] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -220,10 +222,19 @@ export function ChatInput({
         </Button>
       </div>
 
-      {/* Footer hint */}
-      <div className="px-4 pb-2 text-[10px] text-slate-600 text-center">
-        {isRtl ? 'Shift + Enter لسطر جديد | Enter للإرسال' : 'Shift + Enter for new line | Enter to send'}
-      </div>
+      {/*
+        Footer hint — keyboard instructions only where there is a keyboard.
+        On a touch device «Shift + Enter» is an instruction nobody can follow,
+        printed under the one control they need, so the row is not rendered at
+        all rather than replaced with a touch-flavoured substitute: a phone
+        composer needs no explanation, and an empty row is smaller than a
+        useless one.
+      */}
+      {!coarsePointer && (
+        <div className="px-4 pb-2 text-[10px] text-slate-600 text-center">
+          {isRtl ? 'Shift + Enter لسطر جديد | Enter للإرسال' : 'Shift + Enter for new line | Enter to send'}
+        </div>
+      )}
     </div>
   );
 }

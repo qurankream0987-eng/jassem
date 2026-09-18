@@ -13,6 +13,7 @@ import {
   type TrustedActionEnvelope,
   type TrustedDispatchResult,
 } from "@workspace/jasim-runtime-contract";
+import { runtimeEndpoint } from "@/lib/runtime-endpoint";
 
 type TrpcEnvelope<T> = {
   result?: { data?: { json?: T } };
@@ -46,13 +47,9 @@ export type RuntimeConversation = {
 
 export type RuntimeBubble = SmartBubbleRuntimeRecord;
 
-function endpoint(procedure: string): string {
-  const domain = process.env.EXPO_PUBLIC_DOMAIN;
-  if (!domain) {
-    throw new Error("EXPO_PUBLIC_DOMAIN is not configured.");
-  }
-  return `https://${domain}/api/trpc/${procedure}`;
-}
+// Delegated rather than rebuilt: two modules each constructing a URL is how
+// the scheme rule ended up true in one place and unenforceable in the other.
+const endpoint = runtimeEndpoint;
 
 // Current bearer token — set by the SessionProvider via setCallToken().
 // Kept in module scope so it is available synchronously for every call.

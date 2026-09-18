@@ -62,6 +62,7 @@ import {
   safePresentationExternalUrl,
   safePresentationPath,
 } from '@workspace/jasim-runtime-contract';
+import { hasRuntimeEndpoint, runtimeScheme, runtimeUrl } from '@/lib/runtime-endpoint';
 
 interface ChatMessage {
   id: string;
@@ -91,9 +92,13 @@ function safeExternalUrl(value: unknown): string | null {
 function safeGeneratedRenderUrl(value: unknown): string | null {
   const path = safePresentationPath(value, '/api/runtime/generated-image/');
   if (!path) return null;
-  const domain = process.env.EXPO_PUBLIC_DOMAIN;
-  if (!domain) return null;
-  return safeExternalUrl(`https://${domain}${path}`);
+  if (!hasRuntimeEndpoint()) return null;
+  // The origin is ours, never the payload's: presentation data may name a path
+  // under one fixed prefix and nothing else. So the allowed scheme is the one
+  // `runtimeBaseUrl` already decided — https in every production build — rather
+  // than a guessed 'https:' that breaks against a local dev runtime, or both
+  // schemes, which would be the hole this allow-list exists to close.
+  return safePresentationExternalUrl(runtimeUrl(path), [runtimeScheme()]);
 }
 
 export default function MainChatScreen() {

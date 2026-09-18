@@ -1,0 +1,96 @@
+
+=== mobile (390x844) ===
+{
+ "viewport": {
+  "w": 390,
+  "h": 844
+ },
+ "sidebar": null,
+ "conversationColumn": {
+  "w": 390,
+  "h": 716,
+  "top": 53,
+  "bottom": 769
+ },
+ "emptyIsland": {
+  "w": 358,
+  "h": 392,
+  "pctOfColumn": 91.8
+ },
+ "gapAboveIcon": 162,
+ "gapBelowGrid": 175,
+ "gridBottom": 607,
+ "composerBarTop": 782,
+ "composerBox": {
+  "w": 214,
+  "h": 43
+ },
+ "sidebarRowSample": [],
+ "h1FontPx": "24px"
+}
+
+=== tablet (834x1112) ===
+{
+ "viewport": {
+  "w": 834,
+  "h": 1112
+ },
+ "sidebar": {
+  "w": 240,
+  "pct": 28.8
+ },
+ "conversationColumn": {
+  "w": 594,
+  "h": 977,
+  "top": 37,
+  "bottom": 1014
+ },
+ "emptyIsland": {
+  "w": 512,
+  "h": 264,
+  "pctOfColumn": 86.2
+ },
+ "gapAboveIcon": 357,
+ "gapBelowGrid": 370,
+ "gridBottom": 658,
+ "composerBarTop": 1027,
+ "composerBox": {
+  "w": 418,
+  "h": 43
+ },
+ "sidebarRowSample": [],
+ "h1FontPx": "24px"
+}
+
+=== desktop (1440x900) ===
+{
+ "viewport": {
+  "w": 1440,
+  "h": 900
+ },
+ "sidebar": {
+  "w": 288,
+  "pct": 20
+ },
+ "conversationColumn": {
+  "w": 1152,
+  "h": 765,
+  "top": 37,
+  "bottom": 802
+ },
+ "emptyIsland": {
+  "w": 672,
+  "h": 336,
+  "pctOfColumn": 58.3
+ },
+ "gapAboveIcon": 269,
+ "gapBelowGrid": 173,
+ "gridBottom": 642,
+ "composerBarTop": 815,
+ "composerBox": {
+  "w": 976,
+  "h": 43
+ },
+ "sidebarRowSample": [],
+ "h1FontPx": "30px"
+}

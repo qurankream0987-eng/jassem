@@ -77,6 +77,13 @@ import {
   type VerificationResult,
 } from "./execution-verifier";
 import { gatherEffectAssertions } from "./completion-policy";
+import { deriveConversationTitle, shouldDeriveTitle } from "./conversation-title";
+import {
+  ORDINAL_CUE_SOURCE,
+  outOfRangeClarification,
+  parseOrdinalReferences,
+  resolveOrdinalPositions,
+} from "./ordinal-reference";
 import {
   planCompensation,
   recoveryOutcome,
@@ -4503,8 +4510,19 @@ export type RuntimeReferenceResolution = {
   clarification?: string;
 };
 
-const referenceCuePattern =
-  /(?:متجر|متجري|منص(?:ة|تي)|فقاع(?:ة|ه)|العالم|المهمة|العملية|العملية التي|الطلب|الإعلان|المنتج|الخدمة|السيارة|الهاتف|الجهاز|المحادثة|الرسالة|المصدر|مصدر|الصورة|صورة|السابق|السابقة|الذي|التي|هذه|هذا|ما زالت|مازال|previous|the one|that|this|latest|source|image|my store|my platform|bubble|run|task|world|message|product|service|car|phone)/i;
+/**
+ * The words that make an utterance a reference at all.
+ *
+ * This list held no ordinal, so «قارن الثاني والرابع» was `not_requested`:
+ * the runtime did not fail to resolve the reference, it never saw that one
+ * had been made. The ordinal vocabulary is appended from its own module
+ * rather than transcribed here, so the two cannot drift apart.
+ */
+const referenceCuePattern = new RegExp(
+  "(?:متجر|متجري|منص(?:ة|تي)|فقاع(?:ة|ه)|العالم|المهمة|العملية|العملية التي|الطلب|الإعلان|المنتج|الخدمة|السيارة|الهاتف|الجهاز|المحادثة|الرسالة|المصدر|مصدر|الصورة|صورة|السابق|السابقة|الذي|التي|هذه|هذا|ما زالت|مازال|previous|the one|that|this|latest|source|image|my store|my platform|bubble|run|task|world|message|product|service|car|phone)" +
+    `|${ORDINAL_CUE_SOURCE}`,
+  "iu",
+);
 
 function referenceTokens(value: string): string[] {
   return value
@@ -4647,6 +4665,15 @@ export async function resolveRuntimeReferences(input: {
     messageId?: string | null;
     score: number;
     recency: number;
+    /**
+     * Where this item stood in the list the person was shown, 1-based, and
+     * which list that was. Only items that came out of an ordered array in a
+     * single completed node carry these: a bubble or a task was never
+     * enumerated on screen, so "the third" cannot mean one.
+     */
+    enumerationKey?: string;
+    position?: number;
+    enumeratedAt?: number;
   };
   const now = Date.now();
   const candidates: Candidate[] = [];
@@ -4710,13 +4737,19 @@ export async function resolveRuntimeReferences(input: {
   for (const node of dagNodes) {
     const output = node.output as Record<string, unknown> | null;
     if (!output || typeof output !== "object") continue;
+    const nodeAt = new Date(node.completedAt ?? node.updatedAt ?? 0).getTime();
     const sourceItems = Array.isArray(output.sources) ? output.sources : [];
+    // The array index IS the position the person saw: it is the order the
+    // presentation numbered, and the order `selectBoundedEvidence` already
+    // indexes when a research answer cites «المصدر الثاني».
+    let sourcePosition = 0;
     for (const source of sourceItems) {
       if (!source || typeof source !== "object") continue;
       const item = source as Record<string, unknown>;
       const sourceId = typeof item.sourceId === "string" ? item.sourceId : null;
       const url = typeof item.url === "string" ? item.url : null;
       if (!sourceId || !url) continue;
+      sourcePosition += 1;
       add({
         type: "source",
         id: `${node.id}:${sourceId}`,
@@ -4724,15 +4757,20 @@ export async function resolveRuntimeReferences(input: {
         conversationId: null,
         score: 0,
         updatedAt: node.completedAt ?? node.updatedAt,
+        enumerationKey: `source:${node.id}`,
+        position: sourcePosition,
+        enumeratedAt: nodeAt,
       });
     }
     const imageItems = Array.isArray(output.images) ? output.images : [];
+    let imagePosition = 0;
     for (const image of imageItems) {
       if (!image || typeof image !== "object") continue;
       const item = image as Record<string, unknown>;
       const artifactId = typeof item.artifactId === "string" ? item.artifactId : null;
       const objectPath = typeof item.objectPath === "string" ? item.objectPath : null;
       if (!artifactId || !objectPath) continue;
+      imagePosition += 1;
       add({
         type: "artifact",
         id: artifactId,
@@ -4740,6 +4778,9 @@ export async function resolveRuntimeReferences(input: {
         conversationId: null,
         score: 0,
         updatedAt: node.completedAt ?? node.updatedAt,
+        enumerationKey: `artifact:${node.id}`,
+        position: imagePosition,
+        enumeratedAt: nodeAt,
       });
     }
   }
@@ -4764,6 +4805,59 @@ export async function resolveRuntimeReferences(input: {
     });
   }
 
+  // ── Ordinals: a position in what was shown, before any ranking ───────────
+  //
+  // This runs ahead of the semantic ranking on purpose. The line it replaces
+  // read «الثاني» as `ranked[1]` — the runtime's own second-best guess — which
+  // answers a different question from the one asked. A position can only be
+  // resolved against a list that was actually enumerated, so when there is no
+  // such list the ordinal simply does not apply and the ranking below runs as
+  // it always did.
+  const ordinalReferences = parseOrdinalReferences(input.content);
+  if (ordinalReferences.length > 0) {
+    const enumerations = new Map<string, Candidate[]>();
+    for (const candidate of candidates) {
+      if (!candidate.enumerationKey || !candidate.position) continue;
+      if (requestedTypes.size > 0 && !requestedTypes.has(candidate.type)) continue;
+      const bucket = enumerations.get(candidate.enumerationKey) ?? [];
+      bucket.push(candidate);
+      enumerations.set(candidate.enumerationKey, bucket);
+    }
+    const newest = [...enumerations.values()]
+      .map((bucket) => [...bucket].sort((left, right) => (left.position ?? 0) - (right.position ?? 0)))
+      .sort((left, right) => (right[0]?.enumeratedAt ?? 0) - (left[0]?.enumeratedAt ?? 0))[0];
+
+    if (newest) {
+      const resolution = resolveOrdinalPositions(ordinalReferences, newest.length);
+      if (resolution.status === "OUT_OF_RANGE") {
+        // Not `resolved` with whatever happened to be nearest. A person who
+        // asked for the fifth of three is owed the fact, not a fourth guess.
+        return {
+          status: "unresolved",
+          references: [],
+          clarification: outOfRangeClarification(resolution),
+        };
+      }
+      if (resolution.status === "RESOLVED") {
+        return {
+          status: "resolved",
+          references: resolution.positions.map((position) => {
+            const picked = newest[position - 1]!;
+            return referenceEvidence({
+              referenceType: picked.type,
+              resolvedId: picked.id,
+              method: "relationship",
+              confidence: 0.9,
+              evidence: `Position ${position} of ${newest.length} in the most recent enumerated ${picked.type} list.`,
+              conversationId: picked.conversationId,
+              messageId: picked.messageId,
+            });
+          }),
+        };
+      }
+    }
+  }
+
   const typed = candidates
     .filter((candidate) => requestedTypes.size === 0 || requestedTypes.has(candidate.type))
     .map((candidate) => ({
@@ -4776,8 +4870,10 @@ export async function resolveRuntimeReferences(input: {
     .slice(0, 5);
   if (ranked.length === 0) return { status: "unresolved", references: [] };
 
-  const requestedOrdinal = /(?:\b(?:second|two|2)\b|الثاني(?:ة)?)/i.test(lowerContent) ? 1 : 0;
-  const best = ranked[requestedOrdinal] ?? ranked[0];
+  // The ordinal branch above owns positions now. What reaches here named no
+  // position, or named one against nothing that was ever enumerated, so the
+  // best semantic match is the honest answer.
+  const best = ranked[0];
   const second = ranked[1];
   const recencyOnly = best.score === 0;
   const explicitRecencyReference = /(?:السابق|السابقة|آخر|اخر|ما زال|مازال|previous|last|latest|that one)/i.test(
@@ -4786,7 +4882,7 @@ export async function resolveRuntimeReferences(input: {
   if (recencyOnly && (requestedTypes.size === 0 || !explicitRecencyReference)) {
     return { status: "unresolved", references: [] };
   }
-  if (requestedOrdinal === 0 && second && best.score === second.score && best.score > 0) {
+  if (second && best.score === second.score && best.score > 0) {
     return {
       status: "ambiguous",
       references: ranked.slice(0, 2).map((candidate) =>
@@ -5722,6 +5818,35 @@ export async function routeRuntimeConversationTurn(input: {
     role: "user",
     content: input.content,
   });
+
+  // Name the conversation from its own first sentence, once, server-side.
+  //
+  // The sidebar used to show a column of identical «محادثة جديدة» rows because
+  // nothing ever set a title. This is a TRUNCATION of what the person actually
+  // wrote — not a summary and not an inference — so it needs no model and can
+  // never say something they did not. Best-effort: a naming failure must not
+  // cost anyone their turn.
+  try {
+    const conversation = await loadConversationRecord(input.conversationId, input.ownerId);
+    if (shouldDeriveTitle(conversation.title)) {
+      const derived = deriveConversationTitle(input.content);
+      if (derived) {
+        await db
+          .update(jasimRuntimeConversations)
+          .set({ title: derived })
+          .where(
+            and(
+              eq(jasimRuntimeConversations.id, toNumId(input.conversationId)),
+              eq(jasimRuntimeConversations.userId, toNumId(input.ownerId)),
+            ),
+          );
+      }
+    }
+  } catch (error) {
+    // Naming is a convenience; the turn is not. Never let one cost the other.
+    console.warn("[runtime] conversation title skipped —", String(error));
+  }
+
   // Phase D + Phase 5: load history, memories, and conversation summary in parallel
   const [conversationHistory, userMemories, conversationSummary] = await Promise.all([
     buildConversationHistory(input.conversationId, input.ownerId, userMessage.id),
