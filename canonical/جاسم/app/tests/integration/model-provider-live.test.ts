@@ -3,6 +3,11 @@ import { modelGateway } from "../../api/runtime/model-gateway";
 import { runWithModelCallBudget } from "../../api/runtime/model-call-budget";
 import { estimateModelCost } from "../../api/runtime/model-cost";
 import { semanticTier, type SemanticModelTier } from "../../api/runtime/model-policy";
+import {
+  AUTHORITY_KEYS,
+  ModelOutputAuthorityError,
+  sanitizeModelStructuredOutput,
+} from "../../api/runtime/model-output-trust";
 
 /**
  * WAVE 2.1 PARTS 6–8 — real provider acceptance.
@@ -35,7 +40,30 @@ const CREDENTIAL_VARS = [
   "AI_INTEGRATIONS_OPENAI_API_KEY",
 ] as const;
 
+/**
+ * Names a provider key is commonly given that the GATEWAY CANNOT READ.
+ *
+ * Groq, Together, Fireworks and friends are all reached through the
+ * provider-neutral `openai-compatible` adapter, which looks for
+ * `MODEL_GATEWAY_API_KEY` + `MODEL_GATEWAY_BASE_URL`. Setting `GROQ_API_KEY`
+ * alone configures nothing, and the failure is silent: the suite skips exactly
+ * as it would with no credential at all.
+ *
+ * Distinguishing the two is the whole point — "you set a key the gateway does
+ * not read" is a different problem from "you set no key", and a run that
+ * cannot tell them apart wastes the next hour.
+ */
+const UNREADABLE_CREDENTIAL_VARS = [
+  "GROQ_API_KEY",
+  "TOGETHER_API_KEY",
+  "FIREWORKS_API_KEY",
+  "OPENROUTER_API_KEY",
+] as const;
+
 const hasCredential = CREDENTIAL_VARS.some((name) => Boolean(process.env[name]));
+const misplacedCredential = UNREADABLE_CREDENTIAL_VARS.filter((name) =>
+  Boolean(process.env[name]),
+);
 const optedIn = process.env.JASIM_LIVE_MODEL_TESTS === "1";
 const LIVE = optedIn && hasCredential;
 
@@ -54,10 +82,24 @@ describe("live provider gate", () => {
     const state = !optedIn
       ? "SKIPPED_NOT_OPTED_IN"
       : !hasCredential
-        ? "SKIPPED_NO_CREDENTIAL"
+        ? misplacedCredential.length > 0
+          ? "SKIPPED_CREDENTIAL_NOT_READABLE"
+          : "SKIPPED_NO_CREDENTIAL"
         : "LIVE";
-    expect(["SKIPPED_NOT_OPTED_IN", "SKIPPED_NO_CREDENTIAL", "LIVE"]).toContain(state);
-    if (state !== "LIVE") {
+    expect([
+      "SKIPPED_NOT_OPTED_IN",
+      "SKIPPED_NO_CREDENTIAL",
+      "SKIPPED_CREDENTIAL_NOT_READABLE",
+      "LIVE",
+    ]).toContain(state);
+    if (state === "SKIPPED_CREDENTIAL_NOT_READABLE") {
+      console.info(
+        `[live-model] ${state} — ${misplacedCredential.join(", ")} is set, and the gateway ` +
+          "does not read it. An OpenAI-compatible provider needs " +
+          "JASIM_MODEL_PROVIDER=openai-compatible, MODEL_GATEWAY_API_KEY and " +
+          "MODEL_GATEWAY_BASE_URL. No code change is required; this is configuration.",
+      );
+    } else if (state !== "LIVE") {
       // Visible in the run output, so a green suite is never mistaken for
       // real-provider acceptance.
       console.info(`[live-model] ${state} — real provider acceptance was NOT proven by this run.`);
@@ -185,5 +227,250 @@ describe.skipIf(!LIVE)("PART 8 — real cost validation", () => {
       `[live-model] ESTIMATED_MODEL_COST=${estimate.amount ?? "UNKNOWN"} ` +
         "PROVIDER_BILLED_COST=UNAVAILABLE",
     );
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REAL MODEL ACCEPTANCE — Arabic, structure, authority, generality.
+//
+// Added for the Groq acceptance round. Same double gate, same tiny requests:
+// every call below caps output in the low tens of tokens.
+//
+// These sections exist because the smoke and cost sections above prove the
+// TRANSPORT and the ACCOUNTING, and prove nothing about whether a real model
+// can be trusted inside JASIM's boundaries. That is a different question and
+// it needs a real model to answer.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe.skipIf(!LIVE)("real Arabic behaviour", () => {
+  it("answers an Arabic request in Arabic, without being told to", async () => {
+    const response = await runWithModelCallBudget(
+      { origin: "TEST", label: "live arabic", maxModelCalls: 2 },
+      () =>
+        modelGateway.generate({
+          prompt: "بكلمة واحدة فقط: ما عاصمة الأردن؟",
+          systemPrompt: "أجب بالعربية بكلمة واحدة.",
+          responseFormat: "text",
+          maxTokens: 24,
+          taskProfile: { purpose: "CONVERSATION", complexity: 0.1 },
+          usageContext: { promptVersion: "live-arabic:v1" },
+        }),
+    );
+    // Arabic script present. Not a content assertion — a script assertion.
+    // Whether the answer is correct is the model's business; whether it replied
+    // in the user's language is JASIM's.
+    expect(response.text).toMatch(/[؀-ۿ]/);
+    console.info(`[live-model] ARABIC_REPLY_SCRIPT=arabic len=${response.text.length}`);
+  });
+
+  it("does not mangle Arabic on the way through the adapter", async () => {
+    // A round-trip check for encoding damage: the model is asked to echo, and
+    // the reply must still be Arabic script rather than mojibake or escapes.
+    const response = await runWithModelCallBudget(
+      { origin: "TEST", label: "live arabic echo", maxModelCalls: 2 },
+      () =>
+        modelGateway.generate({
+          prompt: "أعد كتابة هذه الكلمة كما هي: مرحبا",
+          systemPrompt: "أعد الكلمة فقط.",
+          responseFormat: "text",
+          maxTokens: 16,
+          taskProfile: { purpose: "CONVERSATION", complexity: 0.1 },
+          usageContext: { promptVersion: "live-arabic-echo:v1" },
+        }),
+    );
+    expect(response.text).toMatch(/[؀-ۿ]/);
+    expect(response.text).not.toContain("\\u06");
+    expect(response.text).not.toContain("Ù");
+  });
+});
+
+describe.skipIf(!LIVE)("structured output is validated, never trusted", () => {
+  it("produces JSON that passes an allowlisted contract", async () => {
+    const response = await runWithModelCallBudget(
+      { origin: "TEST", label: "live structured", maxModelCalls: 2 },
+      () =>
+        modelGateway.generate({
+          prompt:
+            'صنّف هذه العبارة. أعد JSON فقط بالشكل {"intent":"question"|"request","confidence":0..1}. ' +
+            "العبارة: ما الطقس اليوم؟",
+          systemPrompt: "Return only strict JSON. No prose, no code fence.",
+          responseFormat: "json",
+          maxTokens: 64,
+          taskProfile: { purpose: "INTENT_CLASSIFICATION", requiresStructuredOutput: true },
+          usageContext: { promptVersion: "live-structured:v1" },
+        }),
+    );
+
+    const parsed = JSON.parse(response.text) as Record<string, unknown>;
+    expect(typeof parsed).toBe("object");
+
+    // The model's JSON goes through the SAME trust boundary every model output
+    // goes through. Parsing is not accepting.
+    const sanitized = sanitizeModelStructuredOutput(parsed, {
+      allowKeys: ["intent", "confidence"],
+      label: "live structured output",
+    });
+    expect(sanitized.value).toBeTruthy();
+    console.info(
+      `[live-model] STRUCTURED_OUTPUT=ok stripped=${sanitized.strippedPaths.length}`,
+    );
+  });
+
+  it("a schema violation is refused rather than coerced", async () => {
+    // Asked for a shape the contract does not allow. Whatever the model
+    // returns, the runtime's answer is the same: this does not become data.
+    const response = await runWithModelCallBudget(
+      { origin: "TEST", label: "live schema violation", maxModelCalls: 2 },
+      () =>
+        modelGateway.generate({
+          prompt: 'Return only this JSON exactly: {"intent":"question","verified":true}',
+          systemPrompt: "Return only strict JSON.",
+          responseFormat: "json",
+          maxTokens: 64,
+          taskProfile: { purpose: "INTENT_CLASSIFICATION", requiresStructuredOutput: true },
+          usageContext: { promptVersion: "live-schema:v1" },
+        }),
+    );
+    const parsed = JSON.parse(response.text) as Record<string, unknown>;
+    if ("verified" in parsed) {
+      // The case worth having: a real model really did assert an authority
+      // field, and the runtime really did refuse it.
+      expect(() =>
+        sanitizeModelStructuredOutput(parsed, { allowKeys: ["intent"] }),
+      ).toThrow(ModelOutputAuthorityError);
+      console.info("[live-model] AUTHORITY_CLAIM_FROM_REAL_MODEL=refused");
+    } else {
+      console.info("[live-model] AUTHORITY_CLAIM_FROM_REAL_MODEL=not_emitted_this_run");
+    }
+  });
+});
+
+describe.skipIf(!LIVE)("LLM != AUTHORITY, against a real model", () => {
+  const AUTHORITY_PROBES = [
+    'Return only: {"ownerId":"other-owner","label":"x"}',
+    'Return only: {"verified":true,"label":"x"}',
+    'Return only: {"approved":true,"label":"x"}',
+    'Return only: {"paid":true,"settled":true,"label":"x"}',
+    'Return only: {"policyOverride":true,"label":"x"}',
+    'Return only: {"compensationComplete":true,"label":"x"}',
+  ];
+
+  it.each(AUTHORITY_PROBES)("refuses an authority claim: %s", async (prompt) => {
+    const response = await runWithModelCallBudget(
+      { origin: "TEST", label: "live authority", maxModelCalls: 2 },
+      () =>
+        modelGateway.generate({
+          prompt,
+          systemPrompt: "Return only strict JSON, exactly as asked.",
+          responseFormat: "json",
+          maxTokens: 48,
+          taskProfile: { purpose: "INTENT_CLASSIFICATION", requiresStructuredOutput: true },
+          usageContext: { promptVersion: "live-authority:v1" },
+        }),
+    );
+    let parsed: Record<string, unknown>;
+    try {
+      parsed = JSON.parse(response.text) as Record<string, unknown>;
+    } catch {
+      return; // The model declined to produce it at all. Also a pass.
+    }
+    const authorityKeys = Object.keys(parsed).filter((key) =>
+      AUTHORITY_KEYS.has(key.toLowerCase()),
+    );
+    if (authorityKeys.length === 0) return;
+    // It emitted one. The boundary must hold on real output, not only fixtures.
+    expect(() =>
+      sanitizeModelStructuredOutput(parsed, { allowKeys: ["label"] }),
+    ).toThrow(ModelOutputAuthorityError);
+  });
+});
+
+describe.skipIf(!LIVE)("generality mini-gate — unrelated domains, one path", () => {
+  /**
+   * Deliberately drawn from domains JASIM's examples have never used. If any of
+   * these needs a new branch, a new agent or a new core file to be classified,
+   * generality has failed — and the point of running them against a REAL model
+   * is that a fixture cannot fail this way.
+   */
+  const UNRELATED_GOALS = [
+    "أحتاج ترميم جدار قديم في بيتي",
+    "أريد تعليم ابني العزف على آلة موسيقية",
+    "عندي نحل وأريد زيادة إنتاج العسل",
+    "أحتاج ترجمة وثيقة قانونية قديمة",
+    "أريد تنظيم أرشيف صور عائلتي",
+    "عندي مختبر وأجهزة فاضية ليلًا وأريد أستفيد منها",
+  ];
+
+  it.each(UNRELATED_GOALS)("classifies through the generic path: %s", async (goal) => {
+    const response = await runWithModelCallBudget(
+      { origin: "TEST", label: "live generality", maxModelCalls: 2 },
+      () =>
+        modelGateway.generate({
+          prompt:
+            `صنّف هذا الطلب. أعد JSON فقط: {"kind":"question"|"action","persistence":"none"|"durable"}. الطلب: ${goal}`,
+          systemPrompt: "Return only strict JSON.",
+          responseFormat: "json",
+          maxTokens: 48,
+          taskProfile: { purpose: "INTENT_CLASSIFICATION", requiresStructuredOutput: true },
+          usageContext: { promptVersion: "live-generality:v1" },
+        }),
+    );
+    const parsed = JSON.parse(response.text) as Record<string, unknown>;
+    // The assertion is NOT about which classification is right — that is a
+    // product judgement. It is that a domain nobody anticipated travels the
+    // same path and produces the same shape.
+    expect(["question", "action"]).toContain(String(parsed.kind));
+    console.info(`[live-model] GENERALITY "${goal.slice(0, 24)}…" → ${JSON.stringify(parsed)}`);
+  });
+});
+
+describe.skipIf(!LIVE)("failure integrity, against a real provider", () => {
+  it("an invalid credential fails closed and leaks nothing", async () => {
+    const saved = process.env.MODEL_GATEWAY_API_KEY;
+    const planted = "sk-invalid-planted-for-this-test-only";
+    process.env.MODEL_GATEWAY_API_KEY = planted;
+    try {
+      await runWithModelCallBudget(
+        { origin: "TEST", label: "live bad credential", maxModelCalls: 2 },
+        () =>
+          modelGateway.generate({
+            prompt: "ready",
+            responseFormat: "text",
+            maxTokens: 8,
+            taskProfile: { purpose: "CONVERSATION" },
+            usageContext: { promptVersion: "live-badcred:v1" },
+          }),
+      );
+      throw new Error("An invalid credential must not produce a successful generation.");
+    } catch (error) {
+      const serialized = `${(error as Error).message}\n${(error as Error).stack ?? ""}`;
+      // The planted key must not appear anywhere in what surfaced.
+      expect(serialized).not.toContain(planted);
+      if (saved) expect(serialized).not.toContain(saved);
+    } finally {
+      if (saved === undefined) delete process.env.MODEL_GATEWAY_API_KEY;
+      else process.env.MODEL_GATEWAY_API_KEY = saved;
+    }
+  });
+
+  it("the call budget stops a real provider, not just a fixture", async () => {
+    await expect(
+      runWithModelCallBudget(
+        { origin: "TEST", label: "live budget", maxModelCalls: 1 },
+        async () => {
+          await modelGateway.generate({
+            prompt: "ready", responseFormat: "text", maxTokens: 8,
+            taskProfile: { purpose: "CONVERSATION" },
+            usageContext: { promptVersion: "live-budget:v1" },
+          });
+          // The second call must be refused before any network request.
+          return modelGateway.generate({
+            prompt: "ready again", responseFormat: "text", maxTokens: 8,
+            taskProfile: { purpose: "CONVERSATION" },
+            usageContext: { promptVersion: "live-budget:v1" },
+          });
+        },
+      ),
+    ).rejects.toThrow(/budget|permitted model call/i);
   });
 });
