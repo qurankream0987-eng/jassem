@@ -174,14 +174,21 @@ them.
 
 ---
 
-## 4. OBSERVED AND **NOT** FIXED
+## 4. OBSERVED AND **NOT** FIXED IN THIS PHASE
 
-Recorded rather than quietly dropped:
+Recorded rather than quietly dropped. Item 1 has since been fixed on its own;
+the rest still stand:
 
-1. **The user's own message is not rendered on the error path.** After a failed
-   turn the conversation shows only the system reply. Visible in
-   `after/G-after-turn.mobile.png`. This is `useJasimChat` state handling, not
-   visual, and fixing it is a behaviour change beyond a visual-acceptance phase.
+1. ~~**The user's own message is not rendered on the error path.**~~ **FIXED
+   AFTER THIS PHASE.** After a failed turn the conversation showed only the
+   system reply — visible in `after/G-after-turn.mobile.png`. Recorded here as
+   out of scope because it is `useJasimChat` state handling rather than visual;
+   it was then fixed on its own, in the Conversation Failure Integrity hotfix
+   (`1af5352`). The cause was case A exactly as suspected — the client appended
+   messages only in the success branch. See
+   `docs/handoff/JASIM_CONVERSATION_FAILURE_INTEGRITY_REPORT.md`. **The
+   `G-after-turn` images in this phase's `after/` therefore no longer show
+   current behaviour**; the message now stays on screen above the notice.
 2. **A duplicate composer hint** appears near the top of the conversation area
    at tablet width (`after/A-empty.tablet.png`, y≈123).
 3. **Scenarios C–F and I–L were not captured in the shell.** CHOICE, MAP,
