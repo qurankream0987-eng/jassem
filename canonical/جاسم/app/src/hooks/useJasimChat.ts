@@ -124,6 +124,18 @@ export function useJasimChat(options: UseJasimChatOptions = {}): UseJasimChatRet
   );
   const [messages, setMessages] = useState<Message[]>([]);
   const [bubbles, setBubbles] = useState<BubbleSchema[]>([]);
+  /**
+   * A failed turn's notice.
+   *
+   * Deliberately NOT stored in `messages`. That array is the client's copy of
+   * canonical conversation state, refilled wholesale from
+   * `runtime.conversationsGet`; anything pushed into it is either overwritten
+   * by the next refetch or — worse — starts to look like a canonical message
+   * that the server never wrote. The notice is a client-side rendering of a
+   * failure, so it lives beside the canonical list and is merged only at the
+   * point of return.
+   */
+  const [turnFailure, setTurnFailure] = useState<Message | null>(null);
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [activeRuns, setActiveRuns] = useState<ActiveRun[]>([]);
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
@@ -178,6 +190,9 @@ export function useJasimChat(options: UseJasimChatOptions = {}): UseJasimChatRet
   }, [createConversationMutation, utils]);
 
   const loadConversation = useCallback(async (id: string): Promise<void> => {
+    // The notice describes a failed turn in one conversation, not a property of
+    // the app; it must not follow the user into another conversation.
+    setTurnFailure(null);
     setActiveConversationId(id);
   }, []);
 
@@ -192,7 +207,10 @@ export function useJasimChat(options: UseJasimChatOptions = {}): UseJasimChatRet
     await utils.runtime.conversationsList.invalidate();
   }, [archiveConversationMutation, currentConversation?.id, utils]);
 
-  const clearMessages = useCallback(() => setMessages([]), []);
+  const clearMessages = useCallback(() => {
+    setMessages([]);
+    setTurnFailure(null);
+  }, []);
 
   const addAttachment = useCallback((file: File) => {
     setAttachments((current) => [
@@ -251,6 +269,8 @@ export function useJasimChat(options: UseJasimChatOptions = {}): UseJasimChatRet
     }
 
     setIsLoading(true);
+    // A new attempt supersedes the previous failure notice.
+    setTurnFailure(null);
     try {
       const result = await createTurnMutation.mutateAsync({ conversationId, content: content.trim() });
       const output = result.output as RuntimeRecord;
@@ -314,16 +334,37 @@ export function useJasimChat(options: UseJasimChatOptions = {}): UseJasimChatRet
        * raw text is kept only as a diagnostic, never as the message.
        */
       const detail = userFacingRuntimeError(error);
-      setMessages((current) => [
-        ...current,
-        {
-          id: `runtime-error-${crypto.randomUUID()}`,
-          conversationId,
-          role: MESSAGE_ROLES.SYSTEM,
-          content: detail,
-          createdAt: new Date().toISOString(),
-        },
-      ]);
+
+      /*
+       * USER_MESSAGE_ACCEPTED != MODEL_RESPONSE_SUCCEEDED.
+       *
+       * The server writes the user's message to `messages` before it calls the
+       * model, in its own committed statement with no transaction spanning the
+       * model call — so a provider failure never removes it. Canonical truth
+       * was already correct; the client simply never showed it, because
+       * `setMessages` ran only in the success branch. A person watched their
+       * sentence vanish and an error appear in its place.
+       *
+       * The repair refetches the canonical conversation rather than
+       * re-inserting the message locally. The row exists on the server with its
+       * real identity; minting a client-side copy would invent an id, risk a
+       * duplicate on retry, and put a message in the list that the server never
+       * confirmed. Refetching is both smaller and the only version that cannot
+       * create client-side canonical truth.
+       */
+      try {
+        await utils.runtime.conversationsGet.invalidate({ conversationId });
+      } catch {
+        // If the refetch itself fails the notice is still shown; the canonical
+        // message is on the server either way and appears on the next load.
+      }
+      setTurnFailure({
+        id: `runtime-error-${crypto.randomUUID()}`,
+        conversationId,
+        role: MESSAGE_ROLES.SYSTEM,
+        content: detail,
+        createdAt: new Date().toISOString(),
+      });
     } finally {
       setIsLoading(false);
     }
@@ -338,7 +379,13 @@ export function useJasimChat(options: UseJasimChatOptions = {}): UseJasimChatRet
   ]);
 
   return {
-    messages,
+    /*
+     * Canonical messages, plus the transient failure notice when there is one.
+     * Merged here rather than stored together, so a refetch can replace the
+     * canonical half without dropping the notice, and the notice can never be
+     * mistaken for a message the server wrote.
+     */
+    messages: turnFailure ? [...messages, turnFailure] : messages,
     isLoading,
     isStreaming: false,
     currentConversation,
