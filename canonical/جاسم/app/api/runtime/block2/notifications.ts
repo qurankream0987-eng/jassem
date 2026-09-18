@@ -733,3 +733,107 @@ export async function listNotificationsForRecipient(
     createdAt: row.createdAt,
   }));
 }
+// ─────────────────────────────────────────────────────────────────────────────
+// Effect readback for the completion policy
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * WHY A DELIVERED NOTIFICATION IS AN INTERNAL READBACK, AND A SENT ONE IS NOT.
+ *
+ * Only `inAppAdapter` can ever return DELIVERED, and it returns it only when
+ * `isOnline(recipientId)` was true — JASIM's own socket, JASIM's own
+ * observation. Every external adapter here (push, sms, email, webhook) tops out
+ * at PROVIDER_ACCEPTED: none of them can report delivery, because none of them
+ * knows. `deliverNotificationIntent` then clamps any unrecognised adapter
+ * outcome to INCONCLUSIVE.
+ *
+ * So the ledger's own vocabulary already separates "we saw it arrive" from "a
+ * provider took it off our hands", and the mapping below is a reading of that
+ * separation rather than a new claim. `tests/unit/completion-policy.test.ts`
+ * pins it, so an adapter that starts reporting DELIVERED without JASIM
+ * observing it cannot quietly inherit INTERNAL_READBACK.
+ */
+const DELIVERY_OBSERVED_BY_JASIM: ReadonlySet<NotificationState> = new Set(["DELIVERED", "READ"]);
+const DELIVERY_REFUSED: ReadonlySet<NotificationState> = new Set(["FAILED", "BLOCKED_BY_PROVIDER"]);
+const DELIVERY_IN_FLIGHT: ReadonlySet<NotificationState> = new Set([
+  "QUEUED",
+  "PROVIDER_ACCEPTED",
+  "SENT",
+]);
+
+/**
+ * Re-read a notification intent and say what actually became of it.
+ *
+ * This is a readback, not a pass-through: it queries the durable row by id and
+ * owner rather than trusting the value the capability returned. That matters
+ * because the capability's return value is a snapshot taken before any
+ * redelivery job ran.
+ */
+export async function resolveNotificationEffect(
+  database: Block2Db,
+  input: { ownerId: string; intentId: string },
+): Promise<
+  | {
+      state: "OCCURRED" | "NOT_OCCURRED" | "PENDING" | "UNCERTAIN";
+      source: "INTERNAL_READBACK" | "SELF_REPORTED" | "EXECUTOR_RETURN";
+      reference: string;
+      authority: string;
+      notes: string[];
+    }
+  | undefined
+> {
+  const [intent] = await database
+    .select()
+    .from(notificationIntents)
+    .where(
+      and(
+        eq(notificationIntents.id, input.intentId),
+        eq(notificationIntents.ownerId, input.ownerId),
+      ),
+    )
+    .limit(1);
+  if (!intent) {
+    return {
+      state: "UNCERTAIN",
+      source: "EXECUTOR_RETURN",
+      reference: input.intentId,
+      authority: "notification-ledger",
+      notes: ["The notification intent this attempt reported could not be read back."],
+    };
+  }
+
+  const state = intent.state;
+  const common = { reference: intent.id, authority: "notification-ledger" };
+  if (DELIVERY_OBSERVED_BY_JASIM.has(state)) {
+    return {
+      ...common,
+      state: "OCCURRED",
+      source: "INTERNAL_READBACK",
+      notes: [`The recipient's own session received the notification (${state}).`],
+    };
+  }
+  if (DELIVERY_REFUSED.has(state)) {
+    return {
+      ...common,
+      state: "NOT_OCCURRED",
+      source: "INTERNAL_READBACK",
+      notes: [`No channel delivered the notification (${state}).`],
+    };
+  }
+  if (DELIVERY_IN_FLIGHT.has(state)) {
+    return {
+      ...common,
+      state: "PENDING",
+      // A provider accepting a message is the provider's word about its own
+      // queue. It is not delivery, and it is not JASIM's observation.
+      source: state === "QUEUED" ? "INTERNAL_READBACK" : "SELF_REPORTED",
+      notes: [`The notification is accepted and in flight (${state}); delivery is unconfirmed.`],
+    };
+  }
+  return {
+    ...common,
+    state: "UNCERTAIN",
+    source: "INTERNAL_READBACK",
+    notes: [`The notification ledger cannot determine an outcome (${state}).`],
+  };
+}

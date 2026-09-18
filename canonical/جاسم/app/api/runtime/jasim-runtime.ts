@@ -72,9 +72,11 @@ import type { Block2Db } from "./block2/temporal";
 import {
   canonicalResultDigest,
   verifyProviderReceipt,
+  canonicalResultPayload,
   verifyExecutionAttempt,
   type VerificationResult,
 } from "./execution-verifier";
+import { gatherEffectAssertions } from "./completion-policy";
 import {
   isVerifiedReceipt,
   summarizeLatestVerification,
@@ -2694,7 +2696,11 @@ async function appendDagNodeEvent(input: {
     ownerId: input.ownerId,
     type: input.type,
     message: input.message,
-    payload: { nodeId: input.nodeId, ...(input.data ?? {}), effects: "none" },
+    // `effects` defaults to "none" and is now overridable, because it sits
+    // BEFORE the spread rather than after it. It used to sit after, which meant
+    // every node event — including one recording an effect awaiting
+    // confirmation — asserted that the step had no effects.
+    payload: { nodeId: input.nodeId, effects: "none", ...(input.data ?? {}) },
   });
 }
 
@@ -3985,6 +3991,36 @@ export async function executeRuntimeDagNode(input: {
       });
     }
 
+    // ── Effect verification, before the node is allowed to complete ─────────
+    //
+    // `executionStatus: 'COMPLETED'` below means one thing only: `execute`
+    // returned without throwing. That is the provider's own account of itself,
+    // and it used to be the whole basis for VERIFIED. The completion policy
+    // asks the separate question — did the effect occur — of whatever
+    // authority actually owns the answer.
+    const effectContract = registry.effectContract(capabilityId);
+    const gathered = await gatherEffectAssertions(effectContract, {
+      ownerId: input.ownerId,
+      capabilityId,
+      attemptId,
+      runId: input.runId,
+      nodeId: running.id,
+      result: canonicalResultPayload(outputWithLineage),
+    });
+    if (remoteVerificationEvidence) {
+      // A bound receipt proves the provider is talking about THIS request. It
+      // does not prove the request took effect — the same distinction
+      // `payout.ts` draws between EXECUTED and VERIFIED — so it enters as an
+      // assertion whose source no effectful policy accepts on its own.
+      gathered.assertions.push({
+        state: "OCCURRED",
+        source: "BOUND_PROVIDER_RECEIPT",
+        authority: capabilityId,
+        reference: remoteVerificationEvidence.resultDigest,
+        notes: ["The provider's receipt binds to this request's result digest."],
+      });
+    }
+
     // Phase 3: Run independent verifier BEFORE completing the node.
     const verification = verifyExecutionAttempt({
       attemptId,
@@ -3995,6 +4031,10 @@ export async function executeRuntimeDagNode(input: {
       normalizedResult: outputWithLineage,
       normalizedError: null,
       idempotencyKey,
+      completion: {
+        effectKind: effectContract.effectKind,
+        assertions: gathered.assertions,
+      },
       ...(remoteVerificationEvidence !== undefined
         ? {
             remoteEvidence: remoteVerificationEvidence,
@@ -4011,9 +4051,80 @@ export async function executeRuntimeDagNode(input: {
         executionStatus: 'COMPLETED' as ExecutionAttemptStatus,
         normalizedResult: outputWithLineage,
         verificationStatus: verification.status as VerificationStatus,
-        verificationDetail: { strategy: verification.strategy, notes: verification.notes },
+        verificationDetail: {
+          strategy: verification.strategy,
+          notes: verification.notes,
+          ...(verification.completion
+            ? {
+                completion: {
+                  effectKind: verification.completion.effectKind,
+                  decision: verification.completion.decision,
+                  reasonCode: verification.completion.reasonCode,
+                  ...(verification.completion.confirmedBy
+                    ? { confirmedBy: verification.completion.confirmedBy }
+                    : {}),
+                  ...(verification.completion.missingEvidence
+                    ? { missingEvidence: [...verification.completion.missingEvidence] }
+                    : {}),
+                  retryPermitted: verification.completion.retryPermitted,
+                  assertions: gathered.assertions.map((entry) => ({
+                    state: entry.state,
+                    source: entry.source,
+                    ...(entry.authority ? { authority: entry.authority } : {}),
+                    ...(entry.reference ? { reference: entry.reference } : {}),
+                  })),
+                  ...(gathered.declarationViolation
+                    ? { declarationViolation: gathered.declarationViolation }
+                    : {}),
+                },
+              }
+            : {}),
+        },
       })
       .where(eq(jasimRuntimeExecutionAttempts.id, attemptId));
+
+    if (gathered.declarationViolation) {
+      // A capability that tried to grade its own evidence is a security event,
+      // not a formatting quirk. It is already UNCERTAIN by this point; it is
+      // also on the record.
+      await appendDagNodeEvent({
+        runId: input.runId,
+        ownerId: input.ownerId,
+        nodeId: running.id,
+        type: "EFFECT_DECLARATION_REJECTED",
+        message: "A capability output attempted to declare its own verification authority.",
+        data: { attemptId, capabilityId, violation: gathered.declarationViolation },
+      });
+    }
+
+    if (verification.status === 'PENDING') {
+      // The step ran and produced a valid result; the effect is not confirmed.
+      //
+      // The NODE completes, because the step really did execute and the run
+      // must be allowed to reach its own end rather than stall. The ATTEMPT
+      // stays PENDING, and that is what decides the truth the user is told:
+      // `summarizeLatestVerification` lets one PENDING attempt hold the whole
+      // run back, and `isVerifiedReceipt` refuses it, so the conversation says
+      // «التحقق ما زال معلّقًا» instead of «تمّت المعالجة بنجاح».
+      //
+      // Failing the node here would be the other error — reporting that
+      // nothing happened when something may well have.
+      await appendDagNodeEvent({
+        runId: input.runId,
+        ownerId: input.ownerId,
+        nodeId: running.id,
+        type: "EFFECT_AWAITING_CONFIRMATION",
+        message: `The step executed; its effect is not yet confirmed (${verification.completion?.reasonCode ?? "unknown"}).`,
+        data: {
+          attemptId,
+          capabilityId,
+          effects: effectContract.effectKind === "NONE" ? "none" : "external",
+          effectKind: effectContract.effectKind,
+          reasonCode: verification.completion?.reasonCode ?? null,
+          retryPermitted: verification.completion?.retryPermitted ?? false,
+        },
+      });
+    }
 
     // INCONCLUSIVE: do not mark node as completed — treat as FAILED for safety.
     if (verification.status === 'INCONCLUSIVE') {
@@ -4025,6 +4136,35 @@ export async function executeRuntimeDagNode(input: {
         fenceVersion: running.fenceVersion,
         errorCode: "PERMANENT",
         summary: `Verifier returned INCONCLUSIVE: ${verification.notes.slice(0, 2).join('; ')}`,
+        now: input.now,
+      });
+    }
+
+    if (verification.status === 'FAILED') {
+      // A step whose effect definitively did not occur has not completed,
+      // whatever its return value looked like. Before the completion policy
+      // this branch was nearly unreachable — only a malformed attempt record or
+      // a wrong output `kind` produced FAILED — and an attempt marked FAILED
+      // fell through to `completeRuntimeDagNode` below, so the node completed
+      // and dependent nodes were free to build on it.
+      //
+      // Now that a refused effect reaches here, that fall-through would be the
+      // sharpest version of the bug this phase closes: the ledger saying the
+      // effect did not happen while the DAG says the step did.
+      //
+      // RETRYABLE, not PERMANENT: an effect that definitively did not occur is
+      // the one uncertain-execution case where acting again is safe, because
+      // nothing happened the first time. `maxAttempts` still bounds it, and
+      // INCONCLUSIVE above stays PERMANENT precisely because it is NOT safe to
+      // repeat something that may already have taken effect.
+      return failRuntimeDagNode({
+        ownerId: input.ownerId,
+        nodeId: running.id,
+        workerId: running.workerId,
+        leaseToken: running.leaseToken,
+        fenceVersion: running.fenceVersion,
+        errorCode: "RETRYABLE",
+        summary: `Verifier returned FAILED: ${verification.notes.slice(-2).join('; ')}`,
         now: input.now,
       });
     }
@@ -4143,6 +4283,39 @@ export async function completeRemoteRuntimeDagNode(input: {
     )
     .limit(1);
   if (!attempt) throw new RuntimeActionError("Remote execution attempt is unavailable.");
+  // A remote provider has told us its task finished. That is a REMOTE_MUTATION
+  // by default — the fail-closed resolution for a capability whose effect class
+  // is not declared — so a bound receipt moves the attempt to PENDING and only
+  // an independent readback can carry it to VERIFIED. This is the same rule
+  // `payout.ts` applies to money, applied to everything else.
+  const remoteContract = getRuntimeCapabilityRegistry().effectContract(
+    node.capabilityId ?? "unknown",
+  );
+  const remoteGathered = await gatherEffectAssertions(remoteContract, {
+    ownerId: input.ownerId,
+    capabilityId: node.capabilityId ?? "unknown",
+    attemptId: attempt.id,
+    runId: execution.runId,
+    nodeId: execution.nodeId,
+    result: canonicalResultPayload(input.output),
+  });
+  if (receiptValid && resultDigest && receiptSignature) {
+    remoteGathered.assertions.push({
+      state: "OCCURRED",
+      source: "BOUND_PROVIDER_RECEIPT",
+      authority: execution.providerId ?? "remote-provider",
+      reference: resultDigest,
+      notes: ["The provider's receipt binds to this request's result digest."],
+    });
+  } else {
+    remoteGathered.assertions.push({
+      state: "OCCURRED",
+      source: "SELF_REPORTED",
+      authority: execution.providerId ?? "remote-provider",
+      notes: ["The provider reports completion with no receipt bound to this request."],
+    });
+  }
+
   const verification = verifyExecutionAttempt({
     attemptId: attempt.id,
     runId: execution.runId,
@@ -4152,6 +4325,10 @@ export async function completeRemoteRuntimeDagNode(input: {
     normalizedResult: input.output,
     normalizedError: null,
     idempotencyKey: execution.idempotencyKey,
+    completion: {
+      effectKind: remoteContract.effectKind,
+      assertions: remoteGathered.assertions,
+    },
     remoteEvidence:
       receiptValid && resultDigest && receiptSignature
         ? { resultDigest, receiptSignature }
@@ -4165,7 +4342,20 @@ export async function completeRemoteRuntimeDagNode(input: {
       executionStatus: "COMPLETED" as ExecutionAttemptStatus,
       normalizedResult: input.output,
       verificationStatus: verification.status as VerificationStatus,
-      verificationDetail: { strategy: verification.strategy, notes: verification.notes },
+      verificationDetail: {
+        strategy: verification.strategy,
+        notes: verification.notes,
+        ...(verification.completion
+          ? {
+              completion: {
+                effectKind: verification.completion.effectKind,
+                decision: verification.completion.decision,
+                reasonCode: verification.completion.reasonCode,
+                retryPermitted: verification.completion.retryPermitted,
+              },
+            }
+          : {}),
+      },
     })
     .where(eq(jasimRuntimeExecutionAttempts.id, attempt.id));
   if (verification.status === "INCONCLUSIVE") {
@@ -8019,6 +8209,64 @@ export async function reconcileUncertainAttempt(
     resolvedExecutionStatus = 'INCONCLUSIVE';
   }
 
+  // ── The one place an effect can be carried all the way to VERIFIED ───────
+  //
+  // Reconciliation is the only path that consults an authority OUTSIDE the
+  // executor: `lookup` asks the system that owns the effect what became of it.
+  // That is `INDEPENDENT_READBACK`, the source every effectful policy accepts,
+  // and it is the reason this layer withholds VERIFIED rather than abolishing
+  // it. Without a lookup, an uncertain attempt stays uncertain — which is the
+  // truthful answer, not a limitation.
+  const reconcileContract = (capabilityRegistry ?? getRuntimeCapabilityRegistry())
+    .effectContract(attempt.capabilityId);
+  const reconcileGathered = await gatherEffectAssertions(reconcileContract, {
+    ownerId,
+    capabilityId: attempt.capabilityId,
+    attemptId,
+    runId: attempt.runId,
+    nodeId: attempt.nodeId,
+    result: canonicalResultPayload(resolvedResult),
+  });
+  if (lookupResult) {
+    reconcileGathered.assertions.push({
+      state: lookupResult.outcome === "occurred" ? "OCCURRED" : "NOT_OCCURRED",
+      source: "INDEPENDENT_READBACK",
+      authority: attempt.providerReference ?? attempt.capabilityId,
+      ...(lookupResult.outcome === "occurred" && lookupResult.providerReference
+        ? { reference: lookupResult.providerReference }
+        : {}),
+      ...(lookupResult.notes ? { notes: lookupResult.notes } : {}),
+    });
+  } else if (resolvedExecutionStatus === "COMPLETED" && node?.status === "COMPLETED") {
+    // A COMPLETED DAG node means JASIM recorded that the STEP finished. For an
+    // INTERNAL_STATE effect that is the effect itself, so reading the node back
+    // verifies it. For a message, a device or a remote mutation it is only
+    // JASIM's record of what the executor claimed — reading our own note of
+    // somebody else's word is not independent evidence, and calling it
+    // INTERNAL_READBACK here would quietly restore the conflation this whole
+    // layer exists to break.
+    reconcileGathered.assertions.push({
+      state: "OCCURRED",
+      source:
+        reconcileContract.effectKind === "INTERNAL_STATE"
+          ? "INTERNAL_READBACK"
+          : "EXECUTOR_RETURN",
+      authority: "runtime-dag",
+      notes: [
+        reconcileContract.effectKind === "INTERNAL_STATE"
+          ? "The DAG node is recorded COMPLETED in the durable state this effect belongs to."
+          : "The DAG node is recorded COMPLETED, which is JASIM's record of the executor's own claim.",
+      ],
+    });
+  } else if (resolvedExecutionStatus === "INCONCLUSIVE") {
+    reconcileGathered.assertions.push({
+      state: "UNCERTAIN",
+      source: "INTERNAL_READBACK",
+      authority: "runtime-dag",
+      notes: [`The node is ${node?.status ?? "not_found"} while this attempt is stale.`],
+    });
+  }
+
   // Run independent verifier
   const verification = verifyExecutionAttempt({
     attemptId,
@@ -8030,6 +8278,10 @@ export async function reconcileUncertainAttempt(
     normalizedError: attempt.normalizedError,
     idempotencyKey: attempt.idempotencyKey,
     providerReference: attempt.providerReference,
+    completion: {
+      effectKind: reconcileContract.effectKind,
+      assertions: reconcileGathered.assertions,
+    },
   });
 
   // Update the attempt record with reconciled state
@@ -8044,6 +8296,19 @@ export async function reconcileUncertainAttempt(
         strategy: verification.strategy,
         notes: verification.notes,
         reconciledFromNodeStatus: node?.status ?? 'not_found',
+        ...(verification.completion
+          ? {
+              completion: {
+                effectKind: verification.completion.effectKind,
+                decision: verification.completion.decision,
+                reasonCode: verification.completion.reasonCode,
+                ...(verification.completion.confirmedBy
+                  ? { confirmedBy: verification.completion.confirmedBy }
+                  : {}),
+                retryPermitted: verification.completion.retryPermitted,
+              },
+            }
+          : {}),
         ...(lookupResult
           ? {
               reconciliationLookup: lookupResult.outcome,

@@ -13,8 +13,15 @@ import { db } from "../queries/connection";
 import {
   createNotificationIntent,
   deliverNotificationIntent,
+  resolveNotificationEffect,
 } from "./block2/notifications";
 import { getBlock2Worker } from "./block2/worker";
+import {
+  effectKindFromSideEffects,
+  type EffectClaimSource,
+  type EffectKind,
+  type EffectResolver,
+} from "./completion-policy";
 
 /**
  * Trusted runtime capabilities.
@@ -74,6 +81,33 @@ export type TrustedCapability = {
   providerRequirements?: string[];
   resourceRequirements?: string[];
   authorityClass?: "human" | "owner" | "regulatory";
+  /**
+   * What CLASS of real-world effect this capability has. Omitting it is safe
+   * but never permissive: `effectKindFromSideEffects` resolves an undeclared
+   * `sideEffects: "external"` capability to REMOTE_MUTATION, the strictest kind.
+   */
+  effectKind?: EffectKind;
+  /**
+   * How much this capability's own `effect.state` declaration is worth.
+   *
+   * Fixed HERE, at registration, in trusted code — never read from the
+   * capability's output. A provider that could name its own claim source could
+   * certify itself, which would make the completion policy decorative.
+   */
+  effectEvidenceSource?: EffectClaimSource;
+  /**
+   * Trusted server code that READS THE EFFECT BACK from whatever authority owns
+   * it, after the capability has run.
+   *
+   * This is the only way VERIFIED becomes reachable for an effectful
+   * capability, and the reason the completion layer is a verifier rather than a
+   * blanket refusal. A resolver is code, registered by a human, so unlike a
+   * provider payload it is trusted to state its own claim source honestly.
+   *
+   * It must fail closed: a resolver that cannot reach its authority returns an
+   * UNCERTAIN assertion, never an optimistic one.
+   */
+  resolveEffect?: EffectResolver;
   execute: (
     inputs: Record<string, unknown>,
     context: CapabilityExecutionContext,
@@ -286,6 +320,7 @@ export class CapabilityRegistry {
   getTrustedCapability(name: string): Pick<
     TrustedCapability,
     "id" | "version" | "risk" | "sideEffects" | "inputContract" | "testOnly"
+    | "effectKind" | "effectEvidenceSource"
   > | undefined {
     const capability = this.resolveForAssignment(name);
     if (!capability) return undefined;
@@ -296,6 +331,36 @@ export class CapabilityRegistry {
       sideEffects: capability.sideEffects,
       inputContract: capability.inputContract,
       ...(capability.testOnly ? { testOnly: true } : {}),
+      // Resolved rather than passed through, so a caller reads the kind that
+      // will actually be enforced instead of an absent field it might read
+      // as "no effect".
+      effectKind: effectKindFromSideEffects(capability.sideEffects, capability.effectKind),
+      ...(capability.effectEvidenceSource
+        ? { effectEvidenceSource: capability.effectEvidenceSource }
+        : {}),
+    };
+  }
+
+  /**
+   * The effect contract for a capability the runtime is about to verify.
+   *
+   * An UNKNOWN capability id resolves to REMOTE_MUTATION with no evidence
+   * source. That is the fail-closed choice: the runtime cannot verify the
+   * effect of something it cannot identify, so it must not claim to.
+   */
+  effectContract(name: string): {
+    effectKind: EffectKind;
+    effectEvidenceSource?: EffectClaimSource;
+    resolveEffect?: EffectResolver;
+  } {
+    const capability = this.resolveForAssignment(name);
+    if (!capability) return { effectKind: "REMOTE_MUTATION" };
+    return {
+      effectKind: effectKindFromSideEffects(capability.sideEffects, capability.effectKind),
+      ...(capability.effectEvidenceSource
+        ? { effectEvidenceSource: capability.effectEvidenceSource }
+        : {}),
+      ...(capability.resolveEffect ? { resolveEffect: capability.resolveEffect } : {}),
     };
   }
 
@@ -397,8 +462,19 @@ export function hasTrustedCapability(name: string): boolean {
 export function getTrustedCapability(name: string): Pick<
   TrustedCapability,
   "id" | "version" | "risk" | "sideEffects" | "inputContract" | "testOnly"
+  | "effectKind" | "effectEvidenceSource"
 > | undefined {
   return runtimeCapabilityRegistry.getTrustedCapability(name);
+}
+
+export function capabilityEffectContract(
+  name: string,
+): {
+  effectKind: EffectKind;
+  effectEvidenceSource?: EffectClaimSource;
+  resolveEffect?: EffectResolver;
+} {
+  return runtimeCapabilityRegistry.effectContract(name);
 }
 
 export function validateTrustedCapabilityInputs(
@@ -532,6 +608,20 @@ const notifyCapability: TrustedCapability = {
   aliases: ["notification", "remind", "notify-user"],
   risk: "medium",
   sideEffects: "external",
+  // Something leaves the system towards a person. Dispatching is not
+  // delivering, and before the completion policy existed this capability
+  // reached VERIFIED while its own state said BLOCKED_BY_PROVIDER.
+  effectKind: "MESSAGE_DISPATCH",
+  // The capability's returned `state` is a snapshot taken before any
+  // redelivery ran, so it is worth no more than the executor's word.
+  effectEvidenceSource: "EXECUTOR_RETURN",
+  // The verdict comes from here: a fresh read of the durable notification
+  // ledger, owner-scoped, after the fact.
+  resolveEffect: async (context) => {
+    const intentId = context.result?.intentId;
+    if (typeof intentId !== "string" || !intentId) return undefined;
+    return resolveNotificationEffect(db, { ownerId: context.ownerId, intentId });
+  },
   inputContract: {
     requiredKeys: ["recipientId", "purpose", "title", "body"],
   },
