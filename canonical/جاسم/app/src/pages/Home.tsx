@@ -22,8 +22,16 @@ import {
 // ── Main Home Page ───────────────────────────────────────────────────────────
 
 export default function Home() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
+  /**
+   * The sidebar defaulted to open and `isMobile` to false, and the viewport
+   * check ran in an effect — so the first paint on a phone put the conversation
+   * list on top of the conversation itself, with the composer and the answer
+   * behind it. Both now start from the real viewport, so the phone never paints
+   * a covered conversation.
+   */
+  const initiallyMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const [sidebarOpen, setSidebarOpen] = useState(!initiallyMobile);
+  const [isMobile, setIsMobile] = useState(initiallyMobile);
   const utils = trpc.useUtils();
   const { dispatch } = useTrustedActionDispatcher();
   const handleTurnComplete = useCallback(
@@ -45,7 +53,16 @@ export default function Home() {
   // never again, so rotating a device or resizing a window left the layout in
   // whatever mode it started in.
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile((was) => {
+        // Crossing the breakpoint closes an overlay sidebar rather than leaving
+        // it covering the conversation at phone width.
+        if (mobile && !was) setSidebarOpen(false);
+        if (!mobile && was) setSidebarOpen(true);
+        return mobile;
+      });
+    };
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -317,7 +334,7 @@ export default function Home() {
     <div dir="rtl" lang="ar" className="flex h-[100dvh] w-full overflow-hidden bg-[var(--jasim-bg)]">
       {/* Sidebar */}
       {(!isMobile || sidebarOpen) && (
-        <div className={`${isMobile ? 'absolute inset-y-0 start-0 z-50' : 'relative'}`}>
+        <div className={`h-full ${isMobile ? 'absolute inset-y-0 start-0 z-50' : 'relative'}`}>
           <ChatSidebar
             conversations={conversations}
             currentConversationId={currentConversation?.id}
@@ -394,6 +411,14 @@ export default function Home() {
             The conversation now keeps the majority of the width and the rail is
             a genuine rail rather than a second panel.
           */}
+          {/*
+            The column is only reserved when there is a conversation for it to
+            be about. With none, `ActiveGenerativeWorkspace` returns null and
+            the rail is empty — but the column still claimed 38vw, so the
+            desktop empty state was a centred conversation with a third of the
+            screen held black beside it for nothing.
+          */}
+          {currentConversation?.id && (
           <div className="flex min-h-0 w-full shrink-0 flex-col gap-2 lg:w-[min(38vw,32rem)] lg:flex-row">
             <ActiveGenerativeWorkspace
               conversationId={currentConversation?.id}
@@ -410,6 +435,7 @@ export default function Home() {
               className="order-1 max-h-[14dvh] w-full overflow-hidden lg:order-2 lg:max-h-none lg:w-[min(13vw,11rem)]"
             />
           </div>
+          )}
         </div>
       </div>
 

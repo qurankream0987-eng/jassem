@@ -18,6 +18,13 @@ export interface JasimChatProps {
   placeholder?: string;
   showSuggestions?: boolean;
   disabled?: boolean;
+  /**
+   * Arabic-first means Arabic is the default, not the alternative.
+   * This defaulted to `false` and Home never passed it, so the entire empty
+   * state — heading, subtitle and all four suggestions — shipped in English
+   * while the composer beside it was Arabic. The translations already existed;
+   * nothing selected them.
+   */
   rtl?: boolean;
 }
 
@@ -42,7 +49,7 @@ function TypingIndicator() {
 
 // ── Empty State ──────────────────────────────────────────────────────────────
 
-function EmptyState({ onSuggestionClick, rtl = false }: { onSuggestionClick: (prompt: string) => void; rtl?: boolean }) {
+function EmptyState({ onSuggestionClick, rtl = true }: { onSuggestionClick: (prompt: string) => void; rtl?: boolean }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4" dir={rtl ? 'rtl' : 'ltr'}>
       <div className="text-center max-w-md">
@@ -115,7 +122,7 @@ export function JasimChat({
   placeholder,
   showSuggestions = true,
   disabled = false,
-  rtl = false,
+  rtl = true,
 }: JasimChatProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -135,7 +142,7 @@ export function JasimChat({
   const hasMessages = messages.length > 0;
 
   return (
-    <div className="flex flex-col h-full bg-slate-950">
+    <div className="flex h-full flex-col bg-[var(--jasim-bg)]">
       {/* Messages Area */}
       {hasMessages ? (
         <ScrollArea className="flex-1 px-4 py-2" ref={scrollRef}>

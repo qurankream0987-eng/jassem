@@ -21,31 +21,31 @@ export interface ChatSuggestionsProps {
 const DEFAULT_SUGGESTIONS: Suggestion[] = [
   {
     id: 'form',
-    label: 'Create a form',
+    label: 'إنشاء نموذج',
     prompt: 'Create a registration form with name, email, phone, and country fields.',
     icon: <FileText className="w-3.5 h-3.5" />,
   },
   {
     id: 'compare',
-    label: 'Compare options',
+    label: 'قارن الخيارات',
     prompt: 'Compare three different pricing plans with features and ratings.',
     icon: <BarChart3 className="w-3.5 h-3.5" />,
   },
   {
     id: 'gallery',
-    label: 'Show gallery',
+    label: 'عرض معرض الصور',
     prompt: 'Show me a gallery of sample product images.',
     icon: <Image className="w-3.5 h-3.5" />,
   },
   {
     id: 'search',
-    label: 'Search results',
+    label: 'نتائج بحث',
     prompt: 'Show search results for top rated services.',
     icon: <Search className="w-3.5 h-3.5" />,
   },
   {
     id: 'help',
-    label: 'What can you do?',
+    label: 'ماذا تستطيع أن تفعل؟',
     prompt: 'What can you help me with? Show me your capabilities.',
     icon: <HelpCircle className="w-3.5 h-3.5" />,
   },

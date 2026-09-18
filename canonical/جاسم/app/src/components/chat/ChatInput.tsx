@@ -34,7 +34,10 @@ export function ChatInput({
 }: ChatInputProps) {
   const [content, setContent] = useState('');
   const [files, setFiles] = useState<File[]>([]);
-  const [isRtl, setIsRtl] = useState(false);
+  // Starts Arabic. It still follows what the user types — someone writing in
+  // English gets an LTR field — but the resting state of an Arabic-first
+  // product is Arabic.
+  const [isRtl, setIsRtl] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,7 +47,10 @@ export function ChatInput({
     if (propRtl !== undefined) {
       setIsRtl(propRtl);
     } else {
-      setIsRtl(detectRtl(content));
+      // An empty field is not an English field. `detectRtl('')` is false, so
+      // the Arabic-first default was overwritten on first render and the
+      // composer hint shipped in English under an Arabic placeholder.
+      setIsRtl(content.trim().length === 0 ? true : detectRtl(content));
     }
   }, [content, propRtl]);
 
@@ -106,7 +112,7 @@ export function ChatInput({
   }, []);
 
   return (
-    <div className="border-t border-slate-800 bg-slate-950/80 backdrop-blur-xl">
+    <div className="border-t border-[var(--jasim-border)] bg-[var(--jasim-bg)]/85 backdrop-blur-xl">
       {/* File Attachments Preview */}
       {files.length > 0 && (
         <div className="flex flex-wrap gap-2 px-4 pt-3">

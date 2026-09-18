@@ -28,7 +28,7 @@ function formatConversationTime(isoString: string): string {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'Just now';
+  if (diffMins < 1) return 'الآن';
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7) return `${diffDays}d ago`;
@@ -62,7 +62,7 @@ export function ChatSidebar({
 
   if (!isOpen) {
     return (
-      <div className="flex-shrink-0 border-r border-slate-800 bg-slate-900/50 backdrop-blur-sm">
+      <div className="h-full flex-shrink-0 border-e border-[var(--jasim-border)] bg-[var(--jasim-surface-opaque)]/60 backdrop-blur-sm">
         <div className="flex flex-col items-center py-3 gap-2">
           <Button
             variant="ghost"
@@ -88,12 +88,12 @@ export function ChatSidebar({
 
   return (
     <div
-      className="flex-shrink-0 w-72 border-r border-slate-800 bg-slate-900/80 backdrop-blur-sm flex flex-col transition-all"
+      className="flex h-full min-h-0 w-72 flex-shrink-0 flex-col border-e border-[var(--jasim-border)] bg-[var(--jasim-surface-opaque)]/85 backdrop-blur-sm transition-all"
       dir={rtl ? 'rtl' : 'ltr'}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-slate-800">
-        <h2 className="text-sm font-semibold text-slate-200">Conversations</h2>
+      <div className="flex items-center justify-between p-3 border-b border-[var(--jasim-border)]">
+        <h2 className="text-sm font-semibold text-slate-200">المحادثات</h2>
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
@@ -121,7 +121,7 @@ export function ChatSidebar({
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search..."
+            placeholder="ابحث…"
             className="pl-9 h-9 bg-slate-800/50 border-slate-700 text-slate-200 placeholder-slate-500 text-xs rounded-lg focus:border-blue-500/50"
             dir={rtl ? 'rtl' : 'ltr'}
           />
@@ -172,7 +172,7 @@ export function ChatSidebar({
                           isActive ? 'text-blue-300' : 'text-slate-300'
                         }`}
                       >
-                        {conversation.title || 'New Conversation'}
+                        {conversation.title || 'محادثة جديدة'}
                       </p>
                       <p className="text-[10px] text-slate-500 mt-0.5">
                         {formatConversationTime(conversation.updatedAt)}
@@ -202,7 +202,7 @@ export function ChatSidebar({
       {/* Footer */}
       <div className="p-3 border-t border-slate-800">
         <p className="text-[10px] text-slate-600 text-center">
-          JASIM — General Generative Executable Agent
+          جاسم — قل ما تريد أن يحدث
         </p>
       </div>
     </div>

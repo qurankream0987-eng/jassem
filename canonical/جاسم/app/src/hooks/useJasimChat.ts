@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { trpc } from "@/providers/trpc";
 import type { BubbleSchema, Conversation, Message } from "@contracts/jasim";
+import { userFacingRuntimeError } from "@/lib/runtime-error-copy";
 import { MESSAGE_ROLES } from "@contracts/constants";
 
 export interface ChatAttachment {
@@ -166,7 +167,7 @@ export function useJasimChat(options: UseJasimChatOptions = {}): UseJasimChatRet
   }, [activeConversationId, conversationQuery.data]);
 
   const createConversation = useCallback(async (): Promise<string> => {
-    const created = await createConversationMutation.mutateAsync({ title: "New Conversation" });
+    const created = await createConversationMutation.mutateAsync({ title: "محادثة جديدة" });
     const conversation = normalizeConversation(created);
     setCurrentConversation(conversation);
     setActiveConversationId(conversation.id);
@@ -299,7 +300,20 @@ export function useJasimChat(options: UseJasimChatOptions = {}): UseJasimChatRet
         // A workspace refresh must not turn a completed conversation turn into an error.
       }
     } catch (error) {
-      const detail = error instanceof Error ? error.message : "Unable to process this message.";
+      /*
+       * A runtime error is not a message to the user in the language the
+       * runtime happens to speak.
+       *
+       * The raw gateway string went straight into the conversation, so a
+       * blocked turn read: "No model service is configured. Configure
+       * JASIM_MODEL_PROVIDER with its provider API key before creating a
+       * task." — English, addressed to an operator, and naming an environment
+       * variable to somebody who will never set one.
+       *
+       * The runtime's own vocabulary is translated where it is recognised; the
+       * raw text is kept only as a diagnostic, never as the message.
+       */
+      const detail = userFacingRuntimeError(error);
       setMessages((current) => [
         ...current,
         {
