@@ -22,6 +22,10 @@ import {
   type EffectKind,
   type EffectResolver,
 } from "./completion-policy";
+import {
+  resolveCompensationPolicy,
+  type CompensationPolicy,
+} from "./compensation-policy";
 
 /**
  * Trusted runtime capabilities.
@@ -108,6 +112,13 @@ export type TrustedCapability = {
    * UNCERTAIN assertion, never an optimistic one.
    */
   resolveEffect?: EffectResolver;
+  /**
+   * How a verified effect of this capability can be recovered when the larger
+   * goal later fails. Omitting it on an effectful capability resolves to
+   * IRREVERSIBLE — a truthful "a person must look at this" rather than a
+   * silent skip.
+   */
+  compensation?: CompensationPolicy;
   execute: (
     inputs: Record<string, unknown>,
     context: CapabilityExecutionContext,
@@ -352,15 +363,25 @@ export class CapabilityRegistry {
     effectKind: EffectKind;
     effectEvidenceSource?: EffectClaimSource;
     resolveEffect?: EffectResolver;
+    compensation: CompensationPolicy;
   } {
     const capability = this.resolveForAssignment(name);
-    if (!capability) return { effectKind: "REMOTE_MUTATION" };
+    if (!capability) {
+      // An unidentified capability fails closed on both axes: its effect is
+      // assumed remote, and its recovery is assumed impossible.
+      return {
+        effectKind: "REMOTE_MUTATION",
+        compensation: resolveCompensationPolicy("REMOTE_MUTATION"),
+      };
+    }
+    const effectKind = effectKindFromSideEffects(capability.sideEffects, capability.effectKind);
     return {
-      effectKind: effectKindFromSideEffects(capability.sideEffects, capability.effectKind),
+      effectKind,
       ...(capability.effectEvidenceSource
         ? { effectEvidenceSource: capability.effectEvidenceSource }
         : {}),
       ...(capability.resolveEffect ? { resolveEffect: capability.resolveEffect } : {}),
+      compensation: resolveCompensationPolicy(effectKind, capability.compensation),
     };
   }
 
@@ -473,6 +494,7 @@ export function capabilityEffectContract(
   effectKind: EffectKind;
   effectEvidenceSource?: EffectClaimSource;
   resolveEffect?: EffectResolver;
+  compensation: CompensationPolicy;
 } {
   return runtimeCapabilityRegistry.effectContract(name);
 }
@@ -615,6 +637,37 @@ const notifyCapability: TrustedCapability = {
   // The capability's returned `state` is a snapshot taken before any
   // redelivery ran, so it is worth no more than the executor's word.
   effectEvidenceSource: "EXECUTOR_RETURN",
+  /**
+   * COMPENSATION != INVERSE OPERATION, and this is the clearest case of it.
+   *
+   * You cannot unsend a message by changing a row. What recovery means here is
+   * a SECOND message telling the recipient to disregard the first — a new
+   * effect with its own delivery truth, which is why the compensating
+   * capability is `notify` itself rather than some `notify-undo`.
+   *
+   * PARTIALLY_COMPENSATABLE, not COMPENSATABLE: the correction offsets the
+   * instruction, and the recipient still read the original. Claiming full
+   * recovery would be the small lie this whole module exists to prevent.
+   */
+  compensation: {
+    reversibility: "PARTIALLY_COMPENSATABLE",
+    compensationCapabilityId: "notify",
+    residualNote:
+      "The original message was already delivered; a correction cannot unsee it.",
+    deriveInputs: (context) => {
+      const recipientId = context.sourceInputs.recipientId;
+      if (typeof recipientId !== "string" || !recipientId) return undefined;
+      const title = typeof context.sourceInputs.title === "string" ? context.sourceInputs.title : "";
+      return {
+        recipientId,
+        purpose: "correction",
+        title: "تصحيح",
+        body: `تم التراجع عن الطلب السابق${title ? `: ${title}` : ""}. يرجى تجاهل الرسالة السابقة.`,
+        // A correction is at least as urgent as the thing it corrects.
+        urgency: "high",
+      };
+    },
+  },
   // The verdict comes from here: a fresh read of the durable notification
   // ledger, owner-scoped, after the fact.
   resolveEffect: async (context) => {

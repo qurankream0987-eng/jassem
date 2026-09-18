@@ -44,6 +44,16 @@ export class ModelOutputAuthorityError extends Error {
  * and `POLICY-OVERRIDE` are one key.
  */
 export const AUTHORITY_KEYS: ReadonlySet<string> = new Set([
+  // Recovery authority. Each of these ends the recovery conversation by
+  // declaring it over, which is precisely what a model may not do.
+  "compensationcomplete",
+  "refundcomplete",
+  "effectreversed",
+  "ignorepreviouseffect",
+  "skipcompensation",
+  "compensated",
+  "reversed",
+  "rolledback",
   "ownerid",
   "userid",
   "tenantid",

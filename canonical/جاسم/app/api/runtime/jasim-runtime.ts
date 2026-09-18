@@ -78,6 +78,13 @@ import {
 } from "./execution-verifier";
 import { gatherEffectAssertions } from "./completion-policy";
 import {
+  planCompensation,
+  recoveryOutcome,
+  type CompensationPlan,
+  type ExecutedStep,
+  type RecoveryOutcome,
+} from "./compensation-policy";
+import {
   isVerifiedReceipt,
   summarizeLatestVerification,
 } from "./truthfulness";
@@ -8556,4 +8563,256 @@ export async function getOrRefreshConversationSummary(
   } catch {
     return null; // non-fatal
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COMPENSATION — recovery from partial failure
+//
+// A compensation is an ordinary Run. That single decision is what keeps this
+// from being parallel execution infrastructure: by materializing recovery as a
+// DAG in a linked Run, every compensating action inherits the immutable attempt
+// ledger, the idempotency key, the fenced lease, the completion policy,
+// independent verification and a receipt — none of which had to be rebuilt.
+//
+// It also respects a constraint rather than fighting it: `createRuntimeDag`
+// refuses a second DAG on a Run ("A durable DAG is already attached"), so
+// recovery could not have been appended to the failed Run even if that had
+// seemed convenient.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Run-level event for the compensation path. Mirrors the inline inserts used
+ *  elsewhere; kept local so this section adds no general abstraction. */
+async function appendRunEvent(input: {
+  runId: string;
+  ownerId: string;
+  type: string;
+  message: string;
+  payload: Record<string, unknown>;
+}): Promise<void> {
+  await db.insert(jasimRuntimeRunEvents).values({
+    source: "runtime",
+    runId: input.runId,
+    ownerId: input.ownerId,
+    type: input.type,
+    message: input.message,
+    payload: input.payload,
+  });
+}
+
+export type CompensationRunResult = {
+  /** Null when nothing needed compensating. */
+  compensationRunId: string | null;
+  plan: CompensationPlan;
+  outcome: RecoveryOutcome;
+  unresolved: readonly string[];
+  notes: readonly string[];
+};
+
+/** Read the failed run's verified effects out of the canonical ledger. */
+async function executedStepsForCompensation(
+  runId: string,
+  ownerId: string,
+  registry: CapabilityRegistry,
+): Promise<ExecutedStep[]> {
+  const nodes = await db
+    .select()
+    .from(jasimRuntimeDagNodes)
+    .where(and(eq(jasimRuntimeDagNodes.runId, runId), eq(jasimRuntimeDagNodes.ownerId, ownerId)));
+  if (nodes.length === 0) return [];
+
+  const dependencies = await db
+    .select()
+    .from(jasimRuntimeDagDependencies)
+    .where(
+      and(
+        eq(jasimRuntimeDagDependencies.runId, runId),
+        eq(jasimRuntimeDagDependencies.ownerId, ownerId),
+      ),
+    );
+  const attempts = await db
+    .select()
+    .from(jasimRuntimeExecutionAttempts)
+    .where(
+      and(
+        eq(jasimRuntimeExecutionAttempts.runId, runId),
+        eq(jasimRuntimeExecutionAttempts.ownerId, ownerId),
+      ),
+    )
+    .orderBy(asc(jasimRuntimeExecutionAttempts.attemptNumber));
+
+  const keyById = new Map(nodes.map((node) => [node.id, node.nodeKey]));
+  const upstream = new Map<string, string[]>();
+  for (const dependency of dependencies) {
+    const list = upstream.get(dependency.downstreamNodeId) ?? [];
+    const key = keyById.get(dependency.upstreamNodeId);
+    if (key) list.push(key);
+    upstream.set(dependency.downstreamNodeId, list);
+  }
+
+  const steps: ExecutedStep[] = [];
+  for (const node of nodes) {
+    const capabilityId = node.capabilityId ?? "unknown";
+    const contract = registry.effectContract(capabilityId);
+    // Only the NEWEST attempt describes the node's current effect. An older
+    // failed attempt must not make a later verified one look uncertain.
+    const newest = attempts
+      .filter((attempt) => attempt.nodeId === node.id)
+      .sort((a, b) => b.attemptNumber - a.attemptNumber)[0];
+    steps.push({
+      nodeKey: node.nodeKey,
+      capabilityId,
+      dependsOn: upstream.get(node.id) ?? [],
+      effectKind: contract.effectKind,
+      verificationStatus: newest
+        ? (newest.verificationStatus as ExecutedStep["verificationStatus"])
+        : "PENDING_NONE",
+      attemptId: newest?.id ?? "",
+      result: canonicalResultPayload((newest?.normalizedResult ?? null) as Record<string, unknown> | null),
+      inputs: (node.inputs ?? {}) as Record<string, unknown>,
+      policy: contract.compensation,
+    });
+  }
+  return steps;
+}
+
+/**
+ * Plan recovery for a run whose goal could not complete, and — when recovery is
+ * both possible and authorized — execute it as a linked compensation Run.
+ *
+ * Idempotent by construction: the compensation Run's idempotency key is derived
+ * from the source run id, so a worker restart, a duplicate job delivery or a
+ * reconciliation retry all converge on the same Run rather than compensating
+ * twice. `createRuntimeRun` returns the existing row for a repeated key, and
+ * each compensating node then carries its own `run:node:fenceVersion` key on
+ * top of that.
+ */
+export async function compensateFailedRun(input: {
+  runId: string;
+  ownerId: string;
+  capabilityRegistry?: CapabilityRegistry;
+  /** Execute the plan, or only compute it. Planning never has an effect. */
+  execute?: boolean;
+  workerId?: string;
+}): Promise<CompensationRunResult> {
+  const registry = input.capabilityRegistry ?? getRuntimeCapabilityRegistry();
+  const run = await getRuntimeRun(input.runId, input.ownerId);
+
+  const steps = await executedStepsForCompensation(input.runId, input.ownerId, registry);
+  const plan = planCompensation({
+    steps,
+    context: { ownerId: input.ownerId, sourceRunId: input.runId },
+  });
+
+  await appendRunEvent({
+    runId: input.runId,
+    ownerId: input.ownerId,
+    type: "COMPENSATION_PLANNED",
+    message: `Recovery planned for ${plan.executable.length} verified effect(s).`,
+    payload: {
+      effects: "none",
+      sourceRunStatus: run.status,
+      requirements: plan.requirements.map((requirement) => ({
+        node: requirement.sourceNodeKey,
+        decision: requirement.decision,
+        reasonCode: requirement.reasonCode,
+        reversibility: requirement.reversibility,
+        order: requirement.order,
+      })),
+    },
+  });
+
+  if (!input.execute || plan.executable.length === 0) {
+    const verdict = recoveryOutcome({ plan, compensationVerdicts: new Map() });
+    return { compensationRunId: null, plan, ...verdict };
+  }
+
+  // The compensation Run. Its idempotency key is the recovery's identity.
+  const compensationRun = await createRuntimeRun({
+    ownerId: input.ownerId,
+    goal: `recovery for run ${input.runId}`,
+    idempotencyKey: `compensation:${input.runId}`,
+    ...(run.conversationId ? { conversationId: run.conversationId } : {}),
+    currentState: {
+      kind: "compensation",
+      compensatesRunId: input.runId,
+      effects: "external",
+      residualRemains: plan.residualRemains,
+    },
+  });
+
+  if (compensationRun.dag.length === 0) {
+    await createRuntimeDag({
+      ownerId: input.ownerId,
+      runId: compensationRun.id,
+      // Already in safe reverse-topological order; each node is independent so
+      // a single failure does not strand the rest.
+      nodes: plan.executable.map((requirement, index) => ({
+        nodeKey: `compensate-${index}-${requirement.sourceNodeKey}`,
+        capabilityId: requirement.compensationCapabilityId!,
+        inputs: requirement.compensationInputs ?? {},
+        maxAttempts: 1,
+      })),
+      capabilityRegistry: registry,
+    });
+  }
+
+  await driveRunToCompletion(
+    compensationRun.id,
+    input.ownerId,
+    input.workerId ?? "jasim-compensation-v1",
+  );
+
+  // Read the compensation's own verdicts back through the same ledger.
+  const compensationNodes = await db
+    .select()
+    .from(jasimRuntimeDagNodes)
+    .where(
+      and(
+        eq(jasimRuntimeDagNodes.runId, compensationRun.id),
+        eq(jasimRuntimeDagNodes.ownerId, input.ownerId),
+      ),
+    );
+  const compensationAttempts = await db
+    .select()
+    .from(jasimRuntimeExecutionAttempts)
+    .where(
+      and(
+        eq(jasimRuntimeExecutionAttempts.runId, compensationRun.id),
+        eq(jasimRuntimeExecutionAttempts.ownerId, input.ownerId),
+      ),
+    );
+
+  const verdicts = new Map<string, "VERIFIED" | "PENDING" | "INCONCLUSIVE" | "FAILED">();
+  for (const [index, requirement] of plan.executable.entries()) {
+    const nodeKey = `compensate-${index}-${requirement.sourceNodeKey}`;
+    const node = compensationNodes.find((candidate) => candidate.nodeKey === nodeKey);
+    const attempt = compensationAttempts
+      .filter((candidate) => candidate.nodeId === node?.id)
+      .sort((a, b) => b.attemptNumber - a.attemptNumber)[0];
+    if (attempt) {
+      verdicts.set(
+        requirement.sourceNodeKey,
+        attempt.verificationStatus as "VERIFIED" | "PENDING" | "INCONCLUSIVE" | "FAILED",
+      );
+    }
+  }
+
+  const verdict = recoveryOutcome({ plan, compensationVerdicts: verdicts });
+
+  await appendRunEvent({
+    runId: input.runId,
+    ownerId: input.ownerId,
+    type: "COMPENSATION_SETTLED",
+    message: `Recovery outcome: ${verdict.outcome}.`,
+    payload: {
+      effects: "external",
+      compensationRunId: compensationRun.id,
+      outcome: verdict.outcome,
+      unresolved: [...verdict.unresolved],
+      // The forward history is untouched and stays true.
+      forwardEffectsPreserved: true,
+    },
+  });
+
+  return { compensationRunId: compensationRun.id, plan, ...verdict };
 }
