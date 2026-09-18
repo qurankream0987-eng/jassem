@@ -959,3 +959,134 @@ body {
   line-height: var(--jasim-line-body);
   color: var(--jasim-text-secondary);
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * UI-2 — corrections found by looking at real pixels, not at the CSS.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/* ── Mobile overflow ──────────────────────────────────────────────────────
+ * At 390px every surface ran off the start edge: titles clipped, the state
+ * glyph pushed off-screen entirely, body text cut mid-word. A flex item's
+ * default `min-width: auto` refuses to shrink below its content, and the
+ * non-wrapping trust chip set that floor — so the whole pane was wider than
+ * the phone. This is why UI-1's markup evidence could not be trusted: the
+ * structure was right and the render was broken. */
+.jasim-surface, .jasim-surface-plain, .jasim-state, .jasim-surface-body { min-width: 0; }
+.jasim-state > * { min-width: 0; }
+.jasim-surface-title, .jasim-state-label, .jasim-state-detail { overflow-wrap: anywhere; }
+.jasim-surface-title { white-space: normal; }   /* `truncate` hid Arabic titles */
+
+@media (max-width: 480px) {
+  .jasim-surface-body { padding: var(--jasim-space-md); }
+  .jasim-surface-actions { margin-top: var(--jasim-space-lg); }
+  .jasim-action { flex: 1 1 auto; }             /* full-width, thumb-reachable */
+}
+
+/* ── Nested surfaces ──────────────────────────────────────────────────────
+ * A child renders inside its parent, separated by a rule rather than by a
+ * second border, blur and shadow. A TRACKER with a MAP child was three stacked
+ * panes on a phone; it is one surface with two parts. */
+.jasim-surface-children > * > .jasim-surface,
+.jasim-surface-children > * > .jasim-surface-plain {
+  border: 0; background: transparent !important; box-shadow: none;
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+  border-radius: 0; padding: 0;
+}
+.jasim-surface-children > * > .jasim-surface > .jasim-surface-body { padding: 0; }
+.jasim-surface-children { margin-top: var(--jasim-space-lg); }
+.jasim-surface-children > * + * {
+  margin-top: var(--jasim-space-lg);
+  padding-top: var(--jasim-space-lg);
+  border-top: 1px solid var(--jasim-border);
+}
+
+/* ── Accent restraint ─────────────────────────────────────────────────────
+ * A full-saturation cyan fill was by far the brightest object on a near-black
+ * screen, for actions as ordinary as picking between two options. Illumination
+ * has to mean something; when the cheapest action is the loudest, it means
+ * nothing. The fill is now tempered and the glow is spent on focus. */
+.jasim-action--primary {
+  background: color-mix(in srgb, var(--jasim-accent) 88%, #06121a);
+}
+.jasim-action--primary:hover:not(:disabled) {
+  background: var(--jasim-accent);
+}
+
+/* A consequential action: legible, deliberate, never the most inviting thing
+   on screen. Outlined rather than filled, so approving is a decision and not a
+   reflex. */
+.jasim-action--consequential {
+  background: color-mix(in srgb, var(--jasim-warning) 12%, transparent);
+  border-color: color-mix(in srgb, var(--jasim-warning) 55%, transparent);
+  color: var(--jasim-warning);
+  font-weight: 600;
+}
+.jasim-action--consequential:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--jasim-warning) 20%, transparent);
+}
+
+/* ── Map ──────────────────────────────────────────────────────────────────
+ * No tile provider is connected. What exists is a coordinate, so a coordinate
+ * is what is shown — not a grey rectangle that looks like a map still
+ * loading. */
+.jasim-map {
+  border-radius: var(--jasim-radius-md);
+  border: 1px solid var(--jasim-border);
+  background: var(--jasim-surface-sunken);
+  padding: var(--jasim-space-lg);
+}
+.jasim-map-point {
+  font-size: var(--jasim-font-title);
+  font-variant-numeric: tabular-nums;
+  color: var(--jasim-text);
+  margin-bottom: var(--jasim-space-sm);
+}
+.jasim-map-list {
+  list-style: none; margin: 0 0 var(--jasim-space-sm); padding: 0;
+  font-size: var(--jasim-font-body); color: var(--jasim-text-secondary);
+}
+
+/* ── Choice options ───────────────────────────────────────────────────────
+ * The options looked like static rows and showed the raw reference handle
+ * (`ref-1`) as if it were content. A handle is plumbing; the ordinal is what
+ * a person refers to when they say «الثاني». */
+.jasim-choice-option {
+  display: flex; align-items: center; gap: var(--jasim-space-md);
+  width: 100%; min-height: 52px; text-align: start;
+  padding: var(--jasim-space-md) var(--jasim-space-lg);
+  border-radius: var(--jasim-radius-md);
+  border: 1px solid var(--jasim-border);
+  background: var(--jasim-surface-sunken);
+  color: var(--jasim-text); font-size: var(--jasim-font-body);
+  cursor: pointer;
+  transition: border-color var(--jasim-duration-quick) var(--jasim-ease),
+              background var(--jasim-duration-quick) var(--jasim-ease);
+}
+.jasim-choice-option:hover { border-color: var(--jasim-border-strong); background: var(--jasim-surface); }
+.jasim-choice-ordinal {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 999px;
+  font-size: var(--jasim-font-caption); font-variant-numeric: tabular-nums;
+  color: var(--jasim-accent);
+  border: 1px solid color-mix(in srgb, var(--jasim-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--jasim-accent) 10%, transparent);
+}
+.jasim-choice { display: grid; gap: var(--jasim-space-sm); }
+
+/* A single action must not stretch across the phone.
+ * The full-width rule above exists so two actions sit side by side within
+ * thumb reach. Applied to a lone button it produced a 340px cyan bar for
+ * «اختيار» — the loudest object on the screen, for the cheapest action on it,
+ * directly under two options that are themselves tappable. */
+.jasim-surface-actions > .jasim-action:only-child { flex: 0 1 auto; }
+
+/* The options ARE the choice. The footer action is a secondary affordance, so
+ * it should not wear the primary fill and out-shout the things being chosen
+ * between. */
+.jasim-choice + .jasim-surface-actions .jasim-action--primary,
+.jasim-surface-body:has(.jasim-choice) .jasim-surface-actions .jasim-action--primary {
+  background: var(--jasim-surface-elevated);
+  color: var(--jasim-text);
+  border-color: var(--jasim-border);
+  font-weight: 500;
+}

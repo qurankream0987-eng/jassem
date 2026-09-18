@@ -818,8 +818,8 @@ export function decidePresentation(
         ...parsedInput.data,
       },
       actions: [
-        { intent: "approve", label: "Approve", requiresApproval: true },
-        { intent: "reject", label: "Reject" },
+        { intent: "approve", label: "أوافق", requiresApproval: true },
+        { intent: "reject", label: "أرفض" },
       ],
     });
   }
@@ -838,7 +838,7 @@ export function decidePresentation(
         primitive: "CHOICE",
         version: 1,
         data: { candidates: candidateData, resultCount: candidateData.length, ...parsedInput.data },
-        actions: [{ intent: "select", label: "Select" }],
+        actions: [{ intent: "select", label: "اختيار" }],
       });
     }
     return validatePresentationDefinition({
@@ -947,7 +947,7 @@ export function decidePresentation(
         sessionId: parsedInput.externalAction?.sessionId,
       },
       actions: parsedInput.externalAction
-        ? [{ intent: "open_external", label: "Continue", external: true }]
+        ? [{ intent: "open_external", label: "متابعة", external: true }]
         : [],
     });
   }

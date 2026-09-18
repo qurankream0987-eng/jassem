@@ -35,6 +35,17 @@ export type UiScenario = {
 /** Coordinates for the MAP scenario. Null Island — unmistakably a fixture. */
 const FIXTURE_COORDINATES = { lat: 0, lng: 0 };
 
+/**
+ * Timestamps relative to now, not fixed dates.
+ *
+ * UI-1 pinned `2026-01-01` for the FRESH observation. Nine months later the
+ * screenshot read «مشاهدة حديثة · قبل ٩ أشهر» — the surface contradicting
+ * itself, and a reviewer judging a freshness design against a fixture that had
+ * quietly rotted. A fixture for "recent" has to keep meaning recent.
+ */
+const minutesAgo = (minutes: number) =>
+  new Date(Date.now() - minutes * 60_000).toISOString();
+
 export const UI_SCENARIOS: UiScenario[] = [
   {
     id: "A-plain-conversation",
@@ -100,7 +111,7 @@ export const UI_SCENARIOS: UiScenario[] = [
       observation: {
         status: "FRESH",
         coordinates: FIXTURE_COORDINATES,
-        observedAt: "2026-01-01T00:00:00.000Z",
+        observedAt: minutesAgo(3),
         source: "fixture",
       },
     }),
@@ -115,7 +126,7 @@ export const UI_SCENARIOS: UiScenario[] = [
       data: { subject: "الموضوع المتتبَّع" },
       observation: {
         status: "STALE",
-        observedAt: "2020-01-01T00:00:00.000Z",
+        observedAt: minutesAgo(60 * 24 * 40),
         source: "fixture",
       },
     }),

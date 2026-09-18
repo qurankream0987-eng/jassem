@@ -355,3 +355,86 @@ function listFiles(dir: string): string[] {
     return statSync(full).isDirectory() ? listFiles(full) : [full];
   });
 }
+
+// ── UI-2 — invariants established by looking at real pixels ────────────────
+
+describe("UI-2 — defects found by rendering, not by reading CSS", () => {
+  it("a tracker and its map are ONE surface, not a stack of panes", () => {
+    // A TRACKER with a MAP child rendered as separately bordered, blurred and
+    // badged panes — three of them on a phone — for a single tracking answer.
+    const markup = markupFor("E-map-fresh");
+    // Structurally: children now live INSIDE the parent's body rather than as
+    // siblings stacked after it. Visually: the stylesheet strips their border,
+    // blur, shadow and padding so the result is one pane with parts — which the
+    // screenshots in docs/ui/evidence/ui2/ show and markup cannot.
+    const bodyIndex = markup.indexOf("jasim-surface-body");
+    const childrenIndex = markup.indexOf("jasim-surface-children");
+    expect(childrenIndex).toBeGreaterThan(bodyIndex);
+    expect(INDEX_CSS).toContain(".jasim-surface-children > * > .jasim-surface");
+    expect(INDEX_CSS).toMatch(/\.jasim-surface-children[\s\S]{0,240}?backdrop-filter: none/);
+  });
+
+  it("a child does not repeat its parent's heading", () => {
+    // Parent TRACKER and child TRACKER took the same default title, so the
+    // answer read «التتبّع» twice, one under the other.
+    const markup = markupFor("E-map-fresh");
+    expect((markup.match(/التتبّع/g) ?? []).length).toBe(1);
+  });
+
+  it("the always-true trust chip is gone from every surface", () => {
+    // It appeared on all thirteen — three times on one mobile MAP — and said
+    // the same thing every time, which is the definition of decoration.
+    expect(ALL_MARKUP.filter((markup) => markup.includes("jasim-trust-chip"))).toEqual([]);
+  });
+
+  it("a fresh observation renders its ACTUAL coordinate", () => {
+    // The map read `data.coordinates` while the decision layer emits
+    // `data.markers[0].coordinates`, so a FRESH position rendered
+    // "لا يتوفّر موقع" — JASIM claiming not to know something it knew.
+    const markup = markupFor("E-map-fresh");
+    expect(markup).toContain("jasim-map-point");
+    expect(markup).toContain("0.00000, 0.00000");
+    expect(markup).not.toContain("لا يتوفّر موقع");
+  });
+
+  it("no surface renders a grey box labelled 'Map View'", () => {
+    // A frame around an absence looks exactly like a map still loading.
+    expect(ALL_MARKUP.filter((markup) => markup.includes("Map View"))).toEqual([]);
+  });
+
+  it("a surface with nothing to say renders no empty status pill", () => {
+    // `??` let an empty string through, so a parent that only holds children
+    // drew a bordered box containing nothing.
+    const markup = markupFor("E-map-fresh");
+    expect(markup).not.toMatch(/jasim-state-label"><\/p>/);
+  });
+
+  it("every user-visible action label is Arabic", () => {
+    for (const english of [">Select<", ">Approve<", ">Reject<", ">Continue<"]) {
+      expect(ALL_MARKUP.filter((markup) => markup.includes(english)), english).toEqual([]);
+    }
+    expect(markupFor("D-ambiguous-choice")).toContain("اختيار");
+    expect(markupFor("G-approval-required")).toContain("أوافق");
+  });
+
+  it("an approval does not look like an ordinary choice", () => {
+    // Both were the same filled cyan button — the muscle memory built by
+    // picking between two harmless options carried into authorising an
+    // external effect.
+    expect(markupFor("G-approval-required")).toContain("jasim-action--consequential");
+    expect(markupFor("D-ambiguous-choice")).not.toContain("jasim-action--consequential");
+  });
+
+  it("an approval says why it stopped", () => {
+    expect(markupFor("G-approval-required")).toContain("لن يُنفَّذ شيء قبل موافقتك");
+  });
+
+  it("a choice shows ordinals, never the internal reference handle", () => {
+    // `ref-1` was printed beside each label as if it were content. The ordinal
+    // is what a person says next turn; the handle travels in a data attribute.
+    const markup = markupFor("D-ambiguous-choice");
+    expect(markup).toContain("jasim-choice-ordinal");
+    expect(markup).toContain('data-reference="ref-1"');
+    expect(markup).not.toMatch(/>ref-1</);
+  });
+});

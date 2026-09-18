@@ -10,6 +10,14 @@ export interface PresentationRendererProps {
   presentation: unknown;
   onAction?: (intent: string) => void;
   onSubmit?: (data: Record<string, unknown>, schema: BubbleSchema) => void | Promise<void>;
+  /**
+   * A default heading to suppress on this surface.
+   *
+   * A TRACKER's first child is also a TRACKER, so both took the same default
+   * title and the answer read «التتبّع» twice, one under the other. A child
+   * whose heading would only repeat its parent's says nothing by having one.
+   */
+  suppressTitle?: string;
 }
 
 /**
@@ -238,6 +246,7 @@ export function PresentationRenderer({
   presentation,
   onAction,
   onSubmit,
+  suppressTitle,
 }: PresentationRendererProps) {
   const parsed = safeParsePresentationDefinition(presentation);
   if (!parsed.success) {
@@ -253,6 +262,9 @@ export function PresentationRenderer({
   }
 
   const schema = toBubbleSchema(parsed.data as PresentationDefinition);
+  if (schema && suppressTitle && schema.title === suppressTitle && !parsed.data.title) {
+    schema.title = '';
+  }
   if (!schema) {
     return (
       <div
@@ -265,21 +277,35 @@ export function PresentationRenderer({
     );
   }
 
+  const children = parsed.data.children ?? [];
   return (
     <div className="mt-3">
       <SchemaRenderer
         schema={schema}
         onAction={(actionId) => onAction?.(actionId)}
         onSubmit={onSubmit}
+        /*
+          UI-2: a child is part of its parent's answer, not a second answer.
+          A TRACKER with a MAP child used to render as two — on mobile, three —
+          separately bordered, separately blurred, separately badged glass panes
+          stacked down the screen for what is a single tracking surface. Nesting
+          the children inside the parent's body is what makes "one strong
+          primary surface" (Part 24) true rather than aspirational.
+        */
+        nested={children.length > 0 ? (
+          <div className="jasim-surface-children">
+            {children.map((child, index) => (
+              <PresentationRenderer
+                key={`${schema.id}-child-${index}`}
+                presentation={child}
+                onAction={onAction}
+                onSubmit={onSubmit}
+                suppressTitle={schema.title}
+              />
+            ))}
+          </div>
+        ) : undefined}
       />
-      {parsed.data.children?.map((child, index) => (
-        <PresentationRenderer
-          key={`${schema.id}-child-${index}`}
-          presentation={child}
-          onAction={onAction}
-          onSubmit={onSubmit}
-        />
-      ))}
     </div>
   );
 }

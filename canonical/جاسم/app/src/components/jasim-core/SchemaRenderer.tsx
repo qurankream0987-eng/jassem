@@ -29,6 +29,8 @@ interface SchemaRendererProps {
   schema: BubbleSchema;
   onAction?: (actionId: string, schema: BubbleSchema) => void;
   onSubmit?: (data: Record<string, unknown>, schema: BubbleSchema) => void | Promise<void>;
+  /** Child surfaces, rendered inside this one rather than stacked beneath it. */
+  nested?: React.ReactNode;
   isLoading?: boolean;
   error?: string | null;
 }
@@ -96,6 +98,7 @@ export const SchemaRenderer: React.FC<SchemaRendererProps> = ({
   schema,
   onAction,
   onSubmit,
+  nested,
   isLoading = false,
   error = null,
 }) => {
@@ -183,14 +186,26 @@ export const SchemaRenderer: React.FC<SchemaRendererProps> = ({
             type="button"
             onClick={() => onAction?.(action.id, schema)}
             disabled={action.disabled || isLoading}
+            /*
+              Part 12: an approval must not be visually equivalent to an
+              ordinary CHOICE. Before UI-2, «أوافق» and «اختيار» were the same
+              filled cyan button — the most inviting thing on the screen in both
+              cases — so the muscle memory built by picking between two harmless
+              options carried straight over to authorising an external effect.
+
+              A consequential action now reads as consequential: warning-toned,
+              outlined rather than filled, and never the brightest element.
+            */
             className={`jasim-action jasim-action--${
-              action.type === 'custom' || action.type === 'download'
-                ? 'primary'
-                : action.type === 'cancel'
-                  ? 'cancel'
-                  : action.type === 'link'
-                    ? 'quiet'
-                    : 'secondary'
+              action.requiresApproval
+                ? 'consequential'
+                : action.type === 'custom' || action.type === 'download'
+                  ? 'primary'
+                  : action.type === 'cancel'
+                    ? 'cancel'
+                    : action.type === 'link'
+                      ? 'quiet'
+                      : 'secondary'
             }`}
           >
             {isLoading && action.type === 'custom' ? (
@@ -207,7 +222,8 @@ export const SchemaRenderer: React.FC<SchemaRendererProps> = ({
     );
   };
 
-  const showTrust = schema.trust.verified && schema.trust.level !== 'none';
+  // UI-2: the always-true trust chip is gone (see the header below), so the
+  // header exists only when there is a real title or subtitle to show.
 
   /**
    * Not every response deserves a pane.
@@ -232,6 +248,7 @@ export const SchemaRenderer: React.FC<SchemaRendererProps> = ({
         style={{ direction: schema.layout?.rtl ? 'rtl' : 'ltr' }}
       >
         {renderContent()}
+        {nested}
         {renderActions()}
       </div>
     );
@@ -249,8 +266,8 @@ export const SchemaRenderer: React.FC<SchemaRendererProps> = ({
       data-glass={schema.theme?.glassmorphism ? 'true' : 'false'}
     >
       <div className="jasim-surface-body">
-        {(schema.title || schema.subtitle || showTrust) && (
-          <div className="mb-4 flex items-start justify-between gap-3">
+        {(schema.title || schema.subtitle) && (
+          <div className="mb-4 min-w-0">
             <div className="min-w-0">
               {schema.title && (
                 <h2
@@ -265,30 +282,25 @@ export const SchemaRenderer: React.FC<SchemaRendererProps> = ({
               )}
             </div>
             {/*
-              One trust chip, not two. The previous header rendered the raw
-              trust level beside a separate green "Verified" pill, so a surface
-              announced its own trustworthiness twice in two visual languages.
+              UI-2 REMOVED THE TRUST CHIP.
 
-              It is also never shown for a surface that is stating a problem:
-              `showTrust` is false there, because a badge next to "the provider
-              is unavailable" is noise at best and a contradiction at worst.
+              Every surface JASIM renders comes from canonical state — that is
+              the architecture, not a property of any one answer. So a chip
+              saying so appeared on every single surface and carried exactly
+              zero information, while costing a line of chrome, a border and a
+              competing element beside every title. On a mobile MAP it appeared
+              three times in one answer.
+
+              A badge that is always true is decoration. Trust is communicated
+              where it varies: a blocked state says it is blocked, a stale
+              observation says it is stale, an unverified claim says so.
             */}
-            {showTrust && (
-              <span
-                className="jasim-trust-chip shrink-0"
-                data-trust-level={schema.trust.level}
-                title="هذا السطح صادر عن الحالة الموثوقة"
-              >
-                {schema.trust.level === 'trusted' || schema.trust.level === 'system'
-                  ? 'موثوق'
-                  : 'من الحالة الموثوقة'}
-              </span>
-            )}
           </div>
         )}
 
         <div className="space-y-4">
           {renderContent()}
+          {nested}
         </div>
 
         {renderActions()}
@@ -501,30 +513,42 @@ function renderChoice(
 ) {
   const options = Array.isArray(schema.data.options) ? schema.data.options : [];
   return (
-    <div className="grid gap-2">
+    <div className="jasim-choice">
       {options
         .filter((option): option is Record<string, unknown> => Boolean(option && typeof option === 'object'))
         .map((option, index) => {
           const reference = safeText(option.ref ?? option.entityRef ?? option.value);
           if (!reference) return null;
+          const ordinal = Number(option.ordinal) || index + 1;
+          const label = safeText(option.label ?? option.title, `الخيار ${ordinal}`);
           return (
-            <Button
+            <button
               key={`${reference}-${index}`}
               type="button"
-              variant="outline"
               data-action-intent="select"
               data-reference={reference}
-              className="justify-between border-white/10 bg-white/5 text-right text-slate-200 hover:bg-white/10"
+              className="jasim-choice-option"
               onClick={() => onAction?.(`select:${reference}`, schema)}
             >
-              <span>{safeText(option.label ?? option.title, `Option ${index + 1}`)}</span>
-              <span className="text-xs text-slate-500">{reference}</span>
-            </Button>
+              {/*
+                The ordinal, not the reference key.
+
+                The old row printed `ref-1` beside the label — an internal
+                handle shown to a person as if it were content. It is plumbing,
+                and it is also the wrong thing to surface: what someone actually
+                says is «الثاني». The number is the part that has to be visible
+                for the next turn to work; the handle travels in `data-reference`
+                where the dispatcher reads it and nobody else does.
+              */}
+              <span className="jasim-choice-ordinal" aria-hidden="true">{ordinal}</span>
+              <span className="min-w-0 flex-1">{label}</span>
+            </button>
           );
         })}
     </div>
   );
 }
+
 
 // ── Comparison ───────────────────────────────────────────────────────────────
 
@@ -1227,18 +1251,71 @@ function renderGallery(schema: BubbleSchema) {
 
 function renderMap(schema: BubbleSchema) {
   const locations = (schema.data.locations as Record<string, unknown>[]) ?? [];
-  return (
-    <div className="bg-white/5 rounded-xl p-4 min-h-[200px] flex items-center justify-center">
-      <div className="text-center">
-        <p className="text-slate-400 text-sm mb-2">Map View</p>
-        <div className="space-y-1">
-          {locations.map((loc, i) => (
-            <p key={i} className="text-white text-sm">{String(loc.name)}</p>
-          ))}
+  const point = coordinatePair(schema.data);
+  const markers = Array.isArray(schema.data.markers) ? schema.data.markers : [];
+
+  /*
+    UI-2: this used to draw a 200px grey rectangle with the English words
+    "Map View" in the middle of it, whether or not any position existed.
+
+    That is the worst possible rendering of "we have no position": it looks
+    exactly like a map that has not finished loading, so a person waits for
+    something that is never coming. Part 10 forbids an empty fake map, and a
+    labelled grey box IS one.
+
+    No tile provider is connected yet, and UI-2 does not connect one. So the
+    surface renders what JASIM actually knows — the coordinate, or honestly
+    nothing — instead of a frame around an absence.
+  */
+  if (!point && locations.length === 0 && markers.length === 0) {
+    return (
+      <div className="jasim-state" data-tone="neutral" style={{ ['--tone' as string]: TONE_TOKEN.neutral }}>
+        <span className="jasim-state-icon" aria-hidden="true">{ICON_GLYPH.info}</span>
+        <div className="min-w-0">
+          <p className="jasim-state-label">لا يتوفّر موقع لعرضه</p>
+          <p className="jasim-state-detail">
+            لا توجد مشاهدة موقع صالحة الآن، فلا تُرسم خريطة.
+          </p>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="jasim-map">
+      {point && (
+        <p className="jasim-map-point" dir="ltr">
+          <span aria-hidden="true">◎</span> {point}
+        </p>
+      )}
+      {locations.length > 0 && (
+        <ul className="jasim-map-list">
+          {locations.map((location, index) => (
+            <li key={index}>{safeText(location.name ?? location.label)}</li>
+          ))}
+        </ul>
+      )}
+      <p className="jasim-state-detail">
+        عرض إحداثي فقط — لم يُوصَل مزوّد خرائط بعد.
+      </p>
     </div>
   );
+}
+
+/** Formats a coordinate pair, or nothing when either half is not a finite number. */
+function coordinatePair(data: Record<string, unknown>): string | undefined {
+  // The decision layer emits `data.markers[0].coordinates`. Reading only
+  // `data.coordinates` meant a FRESH observation WITH a position rendered
+  // "لا يتوفّر موقع لعرضه" — the most damaging possible error on this surface,
+  // because it says JASIM does not know something it does know.
+  const marker = Array.isArray(data.markers)
+    ? (data.markers[0] as Record<string, unknown> | undefined)
+    : undefined;
+  const source = (marker?.coordinates ?? data.coordinates ?? data) as Record<string, unknown>;
+  const lat = Number(source.lat ?? source.latitude);
+  const lng = Number(source.lng ?? source.longitude);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return undefined;
+  return `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
 }
 
 // ── Chat within Bubble ───────────────────────────────────────────────────────
@@ -1318,12 +1395,20 @@ function relativeArabicTime(iso: string): string | undefined {
 
 function renderStatus(schema: BubbleSchema) {
   const rawStatus = safeText(schema.data.status ?? schema.data.state);
+  const hasAnything =
+    Boolean(rawStatus) ||
+    Boolean(safeText(schema.data.summary ?? schema.data.message ?? schema.data.description));
   const freshness = rawStatus ? FRESHNESS_COPY[rawStatus.toUpperCase()] : undefined;
-  const status = freshness?.label ?? rawStatus ?? 'الحالة غير متاحة';
+  // `??` let an empty string through, so a parent surface with no status of its
+  // own rendered an empty pill: a bordered box containing nothing.
+  const status = freshness?.label || rawStatus;
   const summary = safeText(schema.data.summary ?? schema.data.message ?? schema.data.description);
   const updatedAt = safeText(schema.data.updatedAt ?? schema.data.observedAt);
   const relative = updatedAt ? relativeArabicTime(updatedAt) : undefined;
   const tone: RuntimeStateTone = freshness?.tone ?? 'neutral';
+  // A surface whose only job is to hold children has no status to show, and an
+  // empty status box is worse than none.
+  if (!hasAnything) return null;
   return (
     <div
       className="jasim-state"
@@ -1372,7 +1457,16 @@ function renderApproval(schema: BubbleSchema) {
   const publicData = Array.isArray(schema.data.publicData) ? schema.data.publicData : [];
   return (
     <div className="rounded-xl border border-amber-400/20 bg-amber-400/5 p-4">
-      <p className="text-sm font-semibold text-amber-100">
+      {/*
+        Part 12 asks an approval to say WHY it is one. Without that line the
+        surface shows a consequence list and two buttons, and the person has to
+        infer that JASIM stopped on purpose rather than that it is offering an
+        optional extra.
+      */}
+      <p className="jasim-state-detail">
+        توقّف جاسم هنا لأن هذا الإجراء له أثر خارج جاسم. لن يُنفَّذ شيء قبل موافقتك.
+      </p>
+      <p className="mt-2 text-sm font-semibold text-amber-100">
         {safeText(schema.data.action ?? schema.data.summary, 'إجراء يحتاج موافقتك')}
       </p>
       {safeText(schema.data.target) && <p className="mt-2 text-sm text-slate-300">الهدف: {safeText(schema.data.target)}</p>}
