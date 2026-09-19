@@ -44,6 +44,18 @@ export class ModelOutputAuthorityError extends Error {
  * and `POLICY-OVERRIDE` are one key.
  */
 export const AUTHORITY_KEYS: ReadonlySet<string> = new Set([
+  // Plan authority. A plan says how work would proceed. It may not declare
+  // that the work was approved, that a provider is trusted, or that an effect
+  // occurred. Mirrored as `PLAN_AUTHORITY_KEYS` in `plan-graph.ts`, which is
+  // tested against this set.
+  "planapproved",
+  "plantrusted",
+  "providertrusted",
+  "trustedprovider",
+  "skipapproval",
+  "approvalnotrequired",
+  "authorityoverride",
+  "executionverified",
   // Goal authority. A model may state what should happen; it may not declare
   // that a requirement has been waived, met, or approved. Each of these ends a
   // question the model is not entitled to close. Mirrored as
