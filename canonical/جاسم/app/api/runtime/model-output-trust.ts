@@ -44,6 +44,20 @@ export class ModelOutputAuthorityError extends Error {
  * and `POLICY-OVERRIDE` are one key.
  */
 export const AUTHORITY_KEYS: ReadonlySet<string> = new Set([
+  // Goal authority. A model may state what should happen; it may not declare
+  // that a requirement has been waived, met, or approved. Each of these ends a
+  // question the model is not entitled to close. Mirrored as
+  // `GOAL_AUTHORITY_KEYS` in `goal-spec.ts`, which is tested against this set.
+  "constraintwaived",
+  "waiveconstraint",
+  "overrideconstraint",
+  "ignoreconstraint",
+  "hardnessoverride",
+  "constraintsatisfied",
+  "goalachieved",
+  "goalcomplete",
+  "budgetapproved",
+  "approvedbyowner",
   // Recovery authority. Each of these ends the recovery conversation by
   // declaring it over, which is precisely what a model may not do.
   "compensationcomplete",
