@@ -451,7 +451,7 @@ CAPABILITIES_WITH_A_LIVE_EFFECT     = 1 / 1   (notify)
 
 MAIN_SUITE                          = 1285 / 1285 (+8 skipped: gated live-model, visual, shell)
 BLOCK_2                             = 115 / 115
-BLOCK_3                             = 203 / 203
+BLOCK_3                             = 133 / 133   (see §10a — `203` retracted)
 BLOCK_3_1                           = 70 / 70
 TYPECHECK (tsc -b)                  = PASS
 WEB_BUILD                           = PASS (6.21s)
@@ -467,11 +467,21 @@ failures and a smaller total. Every figure above was taken with
 
 Two corrections to earlier reports follow from that, and they are mine:
 
-- Earlier reports said `BLOCK_3 = 133 / 133`. The suite has 203 tests. The 133
-  was a partial collection reported as a whole one.
-- My first measurement in this phase said `198`, taken immediately after a
-  parallel run had left the proof database mid-drop. `203` is the settled
-  figure.
+- ~~Earlier reports said `BLOCK_3 = 133 / 133`. The suite has 203 tests. The 133
+  was a partial collection reported as a whole one.~~
+  **THIS CORRECTION WAS ITSELF WRONG — retracted 2026-09-19.** `BLOCK_3` is
+  **133**, and always was. Re-measured at the Wave 1 continuity audit:
+  `tests/block3/` and `vitest.block3.config.ts` are byte-identical between this
+  commit and HEAD (`git diff --stat 8bfaaeb HEAD` over both paths is empty), and
+  the suite collects **17 of 17 files** for 133 tests — not a partial
+  collection. `203` is `133` (Block 3) **plus** `70` (Block 3.1 at that time):
+  two consecutive suite totals read as one. The original `133` was correct and
+  this paragraph replaced it with a wrong number.
+- ~~My first measurement in this phase said `198`…~~ Also retracted: `198` was a
+  genuinely partial collection, but the figure it was being corrected toward
+  was the summed one. No `tests/block3` file has ever been deleted —
+  `git log --diff-filter=D` over `tests/` for the whole repository history
+  returns nothing.
 
 Nothing in `tests/block3` was changed by this phase — `git diff --stat` against
 that directory is empty. The growth in the other suites is entirely the new

@@ -28,8 +28,20 @@
  * booking is, and a new domain needs no change here.
  */
 
+import { containsCredentialShape } from "./credential-shapes";
+
 /** Maximum characters kept. Long enough to distinguish, short enough for a row. */
 const MAX_TITLE_CHARS = 48;
+
+/**
+ * The title for a conversation whose first message is credential-shaped.
+ *
+ * A fixed string, not a redaction of what was written. «محادثة خاصة» carries
+ * no fragment of the message, so nothing about the secret survives into the
+ * row — not its length, not its prefix, not the fact that a particular
+ * provider was named.
+ */
+export const PRIVATE_TITLE_FALLBACK = "محادثة خاصة";
 
 /** Where a first clause plausibly ends, in either script. */
 const CLAUSE_BREAK = /[.!?؟۔\n]|،\s|;\s/u;
@@ -58,6 +70,18 @@ export function deriveConversationTitle(text: string): string | undefined {
 
   const cleaned = text.replace(INVISIBLE, " ").replace(/\s+/gu, " ").trim();
   if (!cleaned) return undefined;
+
+  // Before anything is copied out of the message.
+  //
+  // The whole message is checked, not the clause that would become the title:
+  // «مرحبا. كلمة المرور hunter2» has a harmless first clause, and titling it
+  // «مرحبا» would be safe but would also mean the check depends on where the
+  // person happened to put a full stop. A message carrying a secret anywhere
+  // gets the fixed title.
+  //
+  // This closes the title as a second copy of a pasted credential. It does not
+  // stop the credential entering the conversation — see `credential-shapes.ts`.
+  if (containsCredentialShape(cleaned)) return PRIVATE_TITLE_FALLBACK;
 
   // The first clause, when there is one — a title is an opening, not a summary.
   const breakAt = cleaned.search(CLAUSE_BREAK);
