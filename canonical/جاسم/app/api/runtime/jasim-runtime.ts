@@ -78,7 +78,14 @@ import {
 } from "./execution-verifier";
 import { gatherEffectAssertions } from "./completion-policy";
 import { deriveConversationTitle, shouldDeriveTitle } from "./conversation-title";
-import { GoalSpecSchema, evaluateGoalSpec } from "./goal-spec";
+import { GoalSpecSchema, evaluateGoalSpec, type GoalEvaluation } from "./goal-spec";
+import {
+  PlanGraphSchema,
+  materializePlanGraph,
+  validatePlanGraph,
+  type PlanGraph,
+  type PlanValidation,
+} from "./plan-graph";
 import {
   ORDINAL_CUE_SOURCE,
   outOfRangeClarification,
@@ -5321,6 +5328,70 @@ async function createExecutionProposalsForIntent(input: {
   );
 }
 
+/**
+ * A validated plan, and what the turn is allowed to do with it.
+ *
+ * Kept next to `createExecutionProposalsForIntent` because it is the thing that
+ * function could never do: derive dependencies. The flat path stays exactly as
+ * it was and still owns policy and approval; this adds the graph beside it.
+ */
+type TurnPlanOutcome = {
+  readonly plan: PlanGraph;
+  readonly validation: PlanValidation;
+  /** Whether a durable DAG may be attached for this plan. */
+  readonly materializable: boolean;
+};
+
+function evaluateTurnPlan(input: {
+  plan: PlanGraph | undefined;
+  goal: GoalEvaluation | undefined;
+}): TurnPlanOutcome | undefined {
+  if (!input.plan) return undefined;
+  // A plan is always validated against a goal. When the model proposed no
+  // goal, it is validated against an empty one rather than against nothing —
+  // the structural checks (capabilities, cycles, bindings, authority) do not
+  // depend on constraints, and skipping them because a goal is absent would
+  // make the weakest input the least checked.
+  const goal =
+    input.goal ?? evaluateGoalSpec(GoalSpecSchema.parse({ version: 1, outcome: "—" }));
+  const validation = validatePlanGraph({ plan: input.plan, goal });
+  return {
+    plan: input.plan,
+    validation,
+    // Only an executable DAG becomes real work. NEEDS_INPUT, UNSATISFIABLE and
+    // BLOCKED each mean something different and none of them means "run it",
+    // and a plan routed away from the DAG (an identity change, a setting, a
+    // direct read) materialises to nothing by design.
+    materializable:
+      validation.readiness === "EXECUTABLE" && materializePlanGraph(input.plan).length > 0,
+  };
+}
+
+/**
+ * Attach the plan's nodes to a run as a real durable DAG.
+ *
+ * Best effort, and deliberately so: a turn is a conversation, and a planning
+ * failure must not cost the person their message. What it may never do is
+ * pretend — a failure is recorded and the run keeps whatever truthful status it
+ * already had.
+ */
+async function attachPlanGraphToRun(input: {
+  ownerId: string;
+  runId: string;
+  plan: PlanGraph;
+}): Promise<{ attached: boolean; reason?: string }> {
+  try {
+    await createRuntimeDag({
+      ownerId: input.ownerId,
+      runId: input.runId,
+      nodes: materializePlanGraph(input.plan),
+    });
+    return { attached: true };
+  } catch (error) {
+    return { attached: false, reason: String(error instanceof Error ? error.message : error) };
+  }
+}
+
 async function attachExecutionProposalsToRun(input: {
   ownerId: string;
   runId: string;
@@ -5446,6 +5517,18 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       // this field adds a capability, it does not impose a new requirement on
       // every turn.
       goalSpec: GoalSpecSchema.optional(),
+      // The plan the model proposes for that goal. Optional beside an
+      // optional goal: a turn that supplies neither behaves exactly as it
+      // did before this existed.
+      //
+      // `z.lazy` because there is a real import cycle here: plan-graph reaches
+      // the capability registry, which reaches block2/notifications, which
+      // reaches the websocket module, which reaches this file. Referencing
+      // `PlanGraphSchema` directly reads it at module-load — before plan-graph
+      // has finished initialising — and it is `undefined`. Deferring the
+      // reference to parse time is the fix; the cycle itself is pre-existing
+      // and not this phase's to unpick.
+      planGraph: z.lazy(() => PlanGraphSchema).optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -5459,6 +5542,18 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       label: z.string().trim().min(1).max(240),
       goal: z.string().trim().min(1).max(4_000),
       goalSpec: GoalSpecSchema.optional(),
+      // The plan the model proposes for that goal. Optional beside an
+      // optional goal: a turn that supplies neither behaves exactly as it
+      // did before this existed.
+      //
+      // `z.lazy` because there is a real import cycle here: plan-graph reaches
+      // the capability registry, which reaches block2/notifications, which
+      // reaches the websocket module, which reaches this file. Referencing
+      // `PlanGraphSchema` directly reads it at module-load — before plan-graph
+      // has finished initialising — and it is `undefined`. Deferring the
+      // reference to parse time is the fix; the cycle itself is pre-existing
+      // and not this phase's to unpick.
+      planGraph: z.lazy(() => PlanGraphSchema).optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -5472,6 +5567,18 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       label: z.string().trim().min(1).max(240),
       goal: z.string().trim().min(1).max(4_000),
       goalSpec: GoalSpecSchema.optional(),
+      // The plan the model proposes for that goal. Optional beside an
+      // optional goal: a turn that supplies neither behaves exactly as it
+      // did before this existed.
+      //
+      // `z.lazy` because there is a real import cycle here: plan-graph reaches
+      // the capability registry, which reaches block2/notifications, which
+      // reaches the websocket module, which reaches this file. Referencing
+      // `PlanGraphSchema` directly reads it at module-load — before plan-graph
+      // has finished initialising — and it is `undefined`. Deferring the
+      // reference to parse time is the fix; the cycle itself is pre-existing
+      // and not this phase's to unpick.
+      planGraph: z.lazy(() => PlanGraphSchema).optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -5723,7 +5830,10 @@ function validateIntentFeasibility(intent: EnvelopeExecutionIntent) {
 }
 
 function executionIntentMessage(
-  status: "blocked" | "awaiting_input",
+  // `created` joined this union when a plan could first exist: a run carrying a
+  // real dependency graph that nobody has approved yet is neither blocked nor
+  // waiting on the person for information.
+  status: "blocked" | "awaiting_input" | "created",
   resolution?: RuntimeReferenceResolution,
   proposals: RuntimeExecutionProposalResponse[] = [],
 ): string {
@@ -5922,6 +6032,11 @@ export async function routeRuntimeConversationTurn(input: {
       ? evaluateGoalSpec(envelope.goalSpec)
       : undefined;
 
+  const planOutcome = evaluateTurnPlan({
+    plan: "planGraph" in envelope ? envelope.planGraph : undefined,
+    goal: goalEvaluation,
+  });
+
   const modelMetadata = {
     outputEnvelopeVersion: envelope.version,
     decisionId: envelope.decisionId,
@@ -5939,6 +6054,20 @@ export async function routeRuntimeConversationTurn(input: {
             conflicts: goalEvaluation.conflicts,
             assumptions: goalEvaluation.goal.assumptions,
             unknowns: goalEvaluation.goal.unknowns,
+          },
+        }
+      : {}),
+    ...(planOutcome
+      ? {
+          plan: {
+            kind: planOutcome.plan.kind,
+            readiness: planOutcome.validation.readiness,
+            nodeKeys: planOutcome.plan.nodes.map((node) => node.key),
+            order: planOutcome.validation.order,
+            violations: planOutcome.validation.violations,
+            dispositions: planOutcome.validation.dispositions,
+            authority: Object.fromEntries(planOutcome.validation.authority),
+            blockers: planOutcome.plan.blockers,
           },
         }
       : {}),
@@ -6107,11 +6236,31 @@ export async function routeRuntimeConversationTurn(input: {
     // Produce an honest execution intent. Run is persisted blocked/awaiting_input only.
     // No external effects occur.
     const feasibility = validateIntentFeasibility(envelope.intent);
+    // `validateIntentFeasibility` returns `blocked` whenever nothing is
+    // missing, because before PlanGraph there was never anything to execute —
+    // the reason a conversational run was blocked was "there is no plan". A
+    // run created `blocked` cannot receive a DAG at all (`createRuntimeDag`
+    // refuses a terminal run), so a real plan would have had nowhere to go.
+    //
+    // When a plan IS executable and nothing is missing or unavailable, the run
+    // is `created`: it exists, it carries a graph, and nothing has happened to
+    // it. `createRuntimeRun` accepts only created/awaiting_input/blocked, which
+    // is the guard that caught an earlier draft trying to open the run at
+    // `awaiting_approval` — a status the proposals below assign for themselves.
+    // Every other case keeps the status it already had.
+    const planUnblocksRun =
+      Boolean(planOutcome?.materializable) &&
+      feasibility.status === "blocked" &&
+      feasibility.unavailableCapabilities.length === 0 &&
+      envelope.intent.missingInputs.length === 0;
     const runStatus =
       referenceResolution.status === "ambiguous" || referenceResolution.status === "unresolved"
         ? "awaiting_input"
-        : feasibility.status;
+        : planUnblocksRun
+          ? ("created" as const)
+          : feasibility.status;
     let run: RuntimeRunResponse | undefined;
+    let planAttachment: { attached: boolean; reason?: string } | undefined;
     if (envelope.intent.persistence === "durable") {
       run = await createRuntimeRun({
         ownerId: input.ownerId,
@@ -6134,6 +6283,16 @@ export async function routeRuntimeConversationTurn(input: {
           effects: "none",
            referenceResolution,
         },
+      });
+    }
+    // The plan becomes a real dependency graph BEFORE the proposals update the
+    // run's status, because `attachExecutionProposalsToRun` may move the run to
+    // `blocked`, and a blocked run cannot receive a DAG.
+    if (run && planOutcome?.materializable) {
+      planAttachment = await attachPlanGraphToRun({
+        ownerId: input.ownerId,
+        runId: run.id,
+        plan: planOutcome.plan,
       });
     }
     const proposals = await createExecutionProposalsForIntent({
@@ -6164,6 +6323,7 @@ export async function routeRuntimeConversationTurn(input: {
         runId: run?.id ?? null,
         proposalIds: proposals.map((proposal) => proposal.id),
         proposalStatuses: proposals.map((proposal) => proposal.status),
+        ...(planAttachment ? { planAttachment } : {}),
       },
     });
     return {
@@ -7449,7 +7609,26 @@ a requirement beyond the bare request:
   constraint is treated as SOFT no matter what you write.
 - unknowns are questions that must be answered before acting. Listing one is
   honest; inventing a value instead is not.
-- Omit goalSpec entirely rather than guessing one.`;
+- Omit goalSpec entirely rather than guessing one.
+
+PLAN GRAPH (optional, and only beside a goalSpec on the same three kinds):
+A plan states HOW the goal becomes work. Add "planGraph" only when the request
+genuinely needs more than one step, or when one step's input comes from
+another's output:
+{"version":1,"kind":"DAG|MONITORING|PERSISTENT_WORLD|DIRECT_READ|IDENTITY_CHANGE|SETTING_MUTATION","nodes":[{"key":"a-z0-9_-","capabilityId":"<one of the trusted capabilities above>","inputs":{},"dependsOn":["earlier keys"],"bindings":[{"fromNode":"an earlier key you depend on","valuePath":"result.<field>","targetKey":"<input key on this node>"}],"enforces":[<indices into goalSpec.constraints this step is responsible for>],"authority":"NONE|OWNER_APPROVAL|BUDGET_AUTHORITY|REAUTHENTICATION"}],"blockers":["what you could not work out"]}
+- kind DAG only for steps that execute. Use IDENTITY_CHANGE for signing in or
+  out, SETTING_MUTATION for changing a stored preference, DIRECT_READ for a
+  question answerable from existing data, MONITORING for a standing condition,
+  PERSISTENT_WORLD for a durable system. Those five carry NO nodes.
+- dependsOn is real: name it only when this step genuinely cannot start first.
+  Independent steps must stay independent.
+- A binding may only read from a node listed in this node's dependsOn. Never
+  write a run id or a node id — you do not have them and the runtime assigns
+  them.
+- Every HARD constraint in the goalSpec must be listed in some node's
+  "enforces" array. A plan that silently drops one is rejected.
+- Never claim a plan is approved, trusted, executed or verified.
+- Omit planGraph entirely rather than guessing one.`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
