@@ -302,10 +302,9 @@ describe("the open market is one market", () => {
     const blockers = new Set(
       market.map((scenario) => scenario.currentBlocker).filter(Boolean),
     );
-    expect([...blockers].sort()).toEqual([
-      "EXTERNAL_DISCOVERY_PROVIDER",
-      "OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH",
-    ]);
+    // One gap, and it is a PROVIDER gap: reaching outside JASIM. The exchange
+    // itself is no longer a blocker for any market category.
+    expect([...blockers].sort()).toEqual(["EXTERNAL_DISCOVERY_PROVIDER"]);
   });
 
   it("records that a claim is not a verified fact", () => {
@@ -362,16 +361,16 @@ describe("no scenario changes status silently", () => {
         REPRESENTABLE: 155,
         ROUTABLE: 155,
         PLANNABLE: 116,
-        EXECUTABLE: 24,
-        OBSERVABLE: 54,
-        VERIFIABLE: 49,
+        EXECUTABLE: 59,
+        OBSERVABLE: 61,
+        VERIFIABLE: 56,
         PRESENTABLE: 153,
         PERSISTENT: 121,
       },
-      blockedByProvider: 29,
+      blockedByProvider: 30,
       blockedByEnvironment: 2,
-      notYetImplemented: 104,
-      generalGaps: 14,
+      notYetImplemented: 69,
+      generalGaps: 13,
     });
   });
 

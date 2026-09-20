@@ -111,9 +111,10 @@ export type ProviderClass = (typeof PROVIDER_CLASSES)[number];
  * every holdout at the same time.
  */
 export const GENERAL_GAPS = [
+  // OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH was here and is closed: the
+  // exchange is reached as two ordinary capabilities a plan can name.
   "GENERAL_AGREEMENT_RUNTIME",
   "GENERAL_TRANSACTION_FULFILLMENT",
-  "OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH",
   "REALTIME_RUNTIME",
   "MONITORING_ENGINE",
   "LIVING_OBJECT_RUNTIME",
@@ -796,17 +797,17 @@ const MARKET_SCENARIOS: readonly Scenario[] = Object.freeze([
       REPRESENTABLE: "PASS",
       ROUTABLE: "PASS",
       PLANNABLE: "PASS",
-      // The primitive and its publishing exist; nothing routes a CONVERSATION
-      // into them. That is the gap, and it is one gap for all of these.
-      EXECUTABLE: "NOT_YET_IMPLEMENTED",
-      OBSERVABLE: "NOT_APPLICABLE",
-      VERIFIABLE: "NOT_APPLICABLE",
+      EXECUTABLE: "PASS",
+      // Publishing writes JASIM's own record, so JASIM's own readback is what
+      // verifies it — and does.
+      OBSERVABLE: "PASS",
+      VERIFIABLE: "PASS",
       PRESENTABLE: "PASS",
       PERSISTENT: "PASS",
     }),
-    currentBlocker: "OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH" as const,
+    currentBlocker: null,
     truthfulRuntimeState:
-      "EconomicExpression carries Need and Offering in one generic core with private constraints and a public projection; publishing, access grants and matching are implemented. No conversational turn reaches them.",
+      "`opportunity-publish` is a registered capability: a plan names it, the real executor runs it, and the expression is verified by an internal readback. Identity comes from the session and the public projection is built by the runtime.",
     domainBranchesRequired: 0 as const,
   })),
   ...MARKET_PAIRS.map(([id, goal, left, right]) => ({
@@ -823,15 +824,15 @@ const MARKET_SCENARIOS: readonly Scenario[] = Object.freeze([
       REPRESENTABLE: "PASS",
       ROUTABLE: "PASS",
       PLANNABLE: "PASS",
-      EXECUTABLE: "NOT_YET_IMPLEMENTED",
+      EXECUTABLE: "PASS",
       OBSERVABLE: "NOT_APPLICABLE",
       VERIFIABLE: "NOT_APPLICABLE",
       PRESENTABLE: "PASS",
       PERSISTENT: "PASS",
     }),
-    currentBlocker: "OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH" as const,
+    currentBlocker: null,
     truthfulRuntimeState:
-      "Deterministic matching of Need to Offering exists, including composite matches. Every pair here is the same matcher with different strings.",
+      "`opportunity-discover` matches a Need the caller owns against published Offerings, with per-constraint results and composite matches. Every pair here is the same matcher with different strings, proven through the live executor.",
     domainBranchesRequired: 0 as const,
   })),
   {
@@ -846,12 +847,15 @@ const MARKET_SCENARIOS: readonly Scenario[] = Object.freeze([
     requiresApproval: false,
     gates: gates({
       REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
-      EXECUTABLE: "NOT_YET_IMPLEMENTED", OBSERVABLE: "NOT_APPLICABLE",
-      VERIFIABLE: "NOT_APPLICABLE", PRESENTABLE: "PASS", PERSISTENT: "PASS",
+      EXECUTABLE: "PASS",
+      // Holding both is an INTERNAL_STATE effect, and JASIM's own readback is
+      // what verifies it.
+      OBSERVABLE: "PASS",
+      VERIFIABLE: "PASS", PRESENTABLE: "PASS", PERSISTENT: "PASS",
     }),
-    currentBlocker: "OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH",
+    currentBlocker: null,
     truthfulRuntimeState:
-      "Buyer and seller are contextual roles of one Actor: an owner holds Needs and Offerings on the same identity. There is no buyer account and no seller account.",
+      "Buyer and seller are contextual roles of one Actor: proven live, one owner holding a Need and an Offering at once. There is no buyer account and no seller account.",
     domainBranchesRequired: 0,
   },
   {
@@ -886,12 +890,17 @@ const MARKET_SCENARIOS: readonly Scenario[] = Object.freeze([
     requiresApproval: false,
     gates: gates({
       REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
-      EXECUTABLE: "NOT_YET_IMPLEMENTED", OBSERVABLE: "PASS", VERIFIABLE: "PASS",
+      EXECUTABLE: "PASS",
+      // Downgraded by doing the work: the verification runtime is ready, and
+      // nothing OBSERVES a seller's stock. Claiming otherwise would be the
+      // exact false confidence this catalog exists to prevent.
+      OBSERVABLE: "BLOCKED_BY_PROVIDER",
+      VERIFIABLE: "BLOCKED_BY_PROVIDER",
       PRESENTABLE: "PASS", PERSISTENT: "PASS",
     }),
-    currentBlocker: "OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH",
+    currentBlocker: null,
     truthfulRuntimeState:
-      "OPEN_MARKET != UNVERIFIED_MARKET. A seller's claim is a claim; the Effect → Observation → Verification runtime is what turns a claim into a verified fact, and it does not accept self-report.",
+      "OPEN_MARKET != UNVERIFIED_MARKET. The claim can now be published and is stored as a claim. Turning it into a verified availability needs an observation of the seller's stock, and no source produces one.",
     domainBranchesRequired: 0,
   },
 ]);
@@ -1548,26 +1557,26 @@ export const HOLDOUTS: readonly Scenario[] = Object.freeze(
       "Actor", primitive, "Resource", "Constraint", "Availability", "Economics",
       "Opportunity", "Time",
     ] as const,
-    capabilities: ["UNDERSTAND", "ROUTE", "DISCOVER", "PROPOSE", "AGREE", "OBSERVE", "VERIFY"] as const,
+    capabilities: ["UNDERSTAND", "ROUTE", "DISCOVER", "PERSIST", "OBSERVE", "VERIFY"] as const,
     providers: ["NONE"] as const,
     sideEffect: "NONE" as const,
     requiresApproval: false,
     gates: gates({
-      // What the holdout suite actually tests today.
       REPRESENTABLE: "PASS",
       ROUTABLE: "PASS",
       PLANNABLE: "PASS",
-      // Everything below waits on the same general subsystems as the named
-      // scenarios. A holdout may never score above the mechanism it needs.
-      EXECUTABLE: "NOT_YET_IMPLEMENTED",
+      // Earned, not generalised: all sixteen are published and matched through
+      // the live executor in `opportunity-exchange-turn-path.test.ts`, each
+      // with a bound that must hold and a counter-case that must not match.
+      EXECUTABLE: "PASS",
       OBSERVABLE: "PASS",
       VERIFIABLE: "PASS",
       PRESENTABLE: "PASS",
       PERSISTENT: "PASS",
     }),
-    currentBlocker: "OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH" as const,
+    currentBlocker: null,
     truthfulRuntimeState:
-      "Represented and routed with existing primitives and no new branch. Its effect, once one exists, verifies through the same observation runtime the named scenarios use.",
+      "Published and matched through the same two capabilities and the same four constraint fields as every named scenario. Negotiating one is a different scenario family and still waits on the agreement runtime.",
     domainBranchesRequired: 0 as const,
   })),
 );

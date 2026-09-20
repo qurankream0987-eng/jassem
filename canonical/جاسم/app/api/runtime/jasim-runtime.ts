@@ -6384,14 +6384,31 @@ export async function routeRuntimeConversationTurn(input: {
       : {}),
   };
 
-  const commerceResponse = await routeRuntimeConversationCommerceEnvelope({
-    ownerId: input.ownerId,
-    conversationId: input.conversationId,
-    content: input.content,
-    envelope,
-    userMessage,
-    modelMetadata,
-  });
+  // ── A PLAN OUTRANKS A KEYWORD ────────────────────────────────────────────
+  //
+  // The legacy commerce path decides by regex over the RAW TEXT: anything
+  // containing «ابحث», "search", "find" or "match" is answered by its discovery
+  // branch before the router's plan is consulted. That was harmless while
+  // nothing else could answer those turns. It stopped being harmless the
+  // moment a plan could name a capability that does the same job properly —
+  // «عندي شاحنتان فارغتان، ابحث عن شحنة» is a two-step plan, and a keyword in
+  // it is not a reason to throw the plan away.
+  //
+  // This is the semantic router's own rule applied one layer up: a keyword is
+  // a guess, a validated plan is a decision. A turn carrying no plan behaves
+  // exactly as it did before, which is why every inherited commerce path is
+  // untouched.
+  const turnCarriesPlan = Boolean(planOutcome && planOutcome.plan.nodes.length > 0);
+  const commerceResponse = turnCarriesPlan
+    ? null
+    : await routeRuntimeConversationCommerceEnvelope({
+        ownerId: input.ownerId,
+        conversationId: input.conversationId,
+        content: input.content,
+        envelope,
+        userMessage,
+        modelMetadata,
+      });
   if (commerceResponse) return commerceResponse;
 
   /**

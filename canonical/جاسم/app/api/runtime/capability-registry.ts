@@ -23,6 +23,11 @@ import {
   type EffectResolver,
 } from "./completion-policy";
 import {
+  executeOpportunityDiscover,
+  executeOpportunityPublish,
+  resolvePublishEffect,
+} from "./opportunity-capabilities";
+import {
   expectationEffectResolver,
   type EffectExpectation,
 } from "./effect-observation-bridge";
@@ -783,6 +788,55 @@ const notifyCapability: TrustedCapability = {
 };
 
 runtimeCapabilityRegistry.register(notifyCapability);
+
+/**
+ * The Opportunity Exchange, reachable from a plan.
+ *
+ * Two capabilities, no route and no marketplace: the exchange in
+ * `economic-fabric.ts` was already complete and domain-free, and what was
+ * missing was a door. Registering it here means the ordinary
+ * GoalSpec → PlanGraph → DAG path reaches it, so a market step composes with
+ * every other kind of step instead of being a mode the runtime switches into.
+ *
+ * `INTERNAL_STATE`, because JASIM owns this record. That is the one effect
+ * class where JASIM's own readback verifies the effect — and the readback is
+ * what `resolvePublishEffect` performs. A publication that cannot be read back
+ * is not a publication.
+ */
+runtimeCapabilityRegistry.register({
+  id: "opportunity-publish",
+  version: "1",
+  aliases: ["publish-need", "publish-offering", "publish-capacity", "offer", "list-need"],
+  risk: "medium",
+  sideEffects: "external",
+  effectKind: "INTERNAL_STATE",
+  // The capability's own word about what it wrote. Worth nothing on its own.
+  effectEvidenceSource: "EXECUTOR_RETURN",
+  resolveEffect: (context) =>
+    resolvePublishEffect({ ownerId: context.ownerId, result: context.result }),
+  compensation: {
+    // A published Offering can be withdrawn, and withdrawal is a real state
+    // change rather than a deletion — someone may already have seen it.
+    reversibility: "PARTIALLY_COMPENSATABLE",
+    residualNote:
+      "Withdrawing a published expression does not unsee it; a counterparty may already have acted on it.",
+  },
+  inputContract: { requiredKeys: ["kind", "semanticType", "summary"] },
+  execute: async (inputs, context) => executeOpportunityPublish(inputs, context.ownerId),
+});
+
+runtimeCapabilityRegistry.register({
+  id: "opportunity-discover",
+  version: "1",
+  aliases: ["find-supplier", "find-offering", "find-need", "match-need", "discover-opportunity"],
+  risk: "low",
+  // A read. It writes Match records when matching a Need the caller owns, and
+  // those are JASIM's own derived state rather than an effect on the world.
+  sideEffects: "none",
+  effectKind: "NONE",
+  inputContract: {},
+  execute: async (inputs, context) => executeOpportunityDiscover(inputs, context.ownerId),
+});
 
 // ─── Phase K — One Real Provider ────────────────────────────────────────────
 // OpenAI chat completion capability.

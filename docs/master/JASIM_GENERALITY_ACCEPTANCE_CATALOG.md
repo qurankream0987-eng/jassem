@@ -119,15 +119,15 @@ claim this catalog exists to prevent.
 | **REPRESENTABLE** | 155 | 0 | 0 | 0 | 0 |
 | **ROUTABLE** | 155 | 0 | 0 | 0 | 0 |
 | **PLANNABLE** | 116 | 39 | 0 | 0 | 0 |
-| **EXECUTABLE** | 24 | 104 | 25 | 2 | 0 |
-| **OBSERVABLE** | 54 | 18 | 18 | 0 | 65 |
-| **VERIFIABLE** | 49 | 23 | 18 | 0 | 65 |
+| **EXECUTABLE** | 59 | 69 | 25 | 2 | 0 |
+| **OBSERVABLE** | 61 | 18 | 19 | 0 | 57 |
+| **VERIFIABLE** | 56 | 23 | 19 | 0 | 57 |
 | **PRESENTABLE** | 153 | 2 | 0 | 0 | 0 |
 | **PERSISTENT** | 121 | 17 | 0 | 0 | 17 |
 
-Scenarios blocked by an absent **provider**: **29**
+Scenarios blocked by an absent **provider**: **30**
 Scenarios blocked by this **environment**: **2**
-Scenarios waiting on a **general capability**: **104**
+Scenarios waiting on a **general capability**: **69**
 
 ### General gaps
 
@@ -141,7 +141,6 @@ Each of these closes many scenarios at once. That is what makes it general.
 - `LIVING_OBJECT_RUNTIME`
 - `LOCATION_OBSERVATION`
 - `MONITORING_ENGINE`
-- `OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH`
 - `PERSISTENT_WORLD_MATERIALIZATION`
 - `REALTIME_RUNTIME`
 - `SECURE_PRODUCT_ACTION_RUNTIME`
@@ -224,26 +223,26 @@ Each of these closes many scenarios at once. That is what makes it general.
 
 | id | goal | route | REPR | ROUT | PLAN | EXEC | OBSE | VERI | PRES | PERS | blocker |
 |---|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|
-| `market.business_publishes_need` | شركتي تحتاج 300 حبة بأقل من 250 دينار | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `market.business_publishes_offering` | انشر منتجاتي وأسعاري وكمياتي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `market.person_publishes_need` | أحتاج من يصلح مكيفي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `market.person_publishes_offering` | أعرض خدمة تصميم بالساعة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `market.resource_capacity` | عندي مولد لديه قدرة فائضة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `market.human_capacity` | عندي ساعتان متاحتان اليوم | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `market.machine_capacity` | مخرطتي متاحة 6 ساعات | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `market.pair.factory_grocery` | مصنع لديه تونة ↔ بقالة تحتاج تونة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `market.pair.restaurant_customer` | مطعم ينشر قائمته ↔ زبون يطلب وجبة بتعديلات | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `market.pair.company_candidate` | شركة تحتاج موظفًا ↔ شخص لديه وقت ومهارة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `market.pair.shipment_driver` | شحنة تحتاج نقلًا ↔ شاحنتان فارغتان اليوم | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `market.pair.warehouse_renter` | شركة تحتاج مستودعًا أسبوعًا ↔ مستودع لديه مساحة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `market.pair.machine_production` | طلب تصنيع ↔ مخرطة متاحة 6 ساعات | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `market.pair.translator_requester` | محكمة تحتاج مترجمًا ↔ مترجم لديه ساعتان | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `market.pair.technician_company` | شركة تحتاج فنيًا ↔ فني متاح | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `market.pair.farmer_buyer` | مزارع لديه محصول ↔ مشترٍ بالجملة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `market.pair.hotel_supplier` | فندق يحتاج مورد غسيل ↔ مغسلة لديها طاقة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `market.actor_is_both` | مصنعي يشتري مواد خام ويبيع منتجات في الوقت نفسه | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
+| `market.business_publishes_need` | شركتي تحتاج 300 حبة بأقل من 250 دينار | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `market.business_publishes_offering` | انشر منتجاتي وأسعاري وكمياتي | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `market.person_publishes_need` | أحتاج من يصلح مكيفي | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `market.person_publishes_offering` | أعرض خدمة تصميم بالساعة | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `market.resource_capacity` | عندي مولد لديه قدرة فائضة | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `market.human_capacity` | عندي ساعتان متاحتان اليوم | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `market.machine_capacity` | مخرطتي متاحة 6 ساعات | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `market.pair.factory_grocery` | مصنع لديه تونة ↔ بقالة تحتاج تونة | GENERAL_PLANGRAPH | ● | ● | ● | ● | — | — | ● | ● | — |
+| `market.pair.restaurant_customer` | مطعم ينشر قائمته ↔ زبون يطلب وجبة بتعديلات | GENERAL_PLANGRAPH | ● | ● | ● | ● | — | — | ● | ● | — |
+| `market.pair.company_candidate` | شركة تحتاج موظفًا ↔ شخص لديه وقت ومهارة | GENERAL_PLANGRAPH | ● | ● | ● | ● | — | — | ● | ● | — |
+| `market.pair.shipment_driver` | شحنة تحتاج نقلًا ↔ شاحنتان فارغتان اليوم | GENERAL_PLANGRAPH | ● | ● | ● | ● | — | — | ● | ● | — |
+| `market.pair.warehouse_renter` | شركة تحتاج مستودعًا أسبوعًا ↔ مستودع لديه مساحة | GENERAL_PLANGRAPH | ● | ● | ● | ● | — | — | ● | ● | — |
+| `market.pair.machine_production` | طلب تصنيع ↔ مخرطة متاحة 6 ساعات | GENERAL_PLANGRAPH | ● | ● | ● | ● | — | — | ● | ● | — |
+| `market.pair.translator_requester` | محكمة تحتاج مترجمًا ↔ مترجم لديه ساعتان | GENERAL_PLANGRAPH | ● | ● | ● | ● | — | — | ● | ● | — |
+| `market.pair.technician_company` | شركة تحتاج فنيًا ↔ فني متاح | GENERAL_PLANGRAPH | ● | ● | ● | ● | — | — | ● | ● | — |
+| `market.pair.farmer_buyer` | مزارع لديه محصول ↔ مشترٍ بالجملة | GENERAL_PLANGRAPH | ● | ● | ● | ● | — | — | ● | ● | — |
+| `market.pair.hotel_supplier` | فندق يحتاج مورد غسيل ↔ مغسلة لديها طاقة | GENERAL_PLANGRAPH | ● | ● | ● | ● | — | — | ● | ● | — |
+| `market.actor_is_both` | مصنعي يشتري مواد خام ويبيع منتجات في الوقت نفسه | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `market.internal_must_not_hide_external` | ابحث لي عن الأفضل حتى لو كان خارج جاسم | GENERAL_PLANGRAPH | ● | ● | ● | P | — | — | ● | ● | EXTERNAL_DISCOVERY_PROVIDER |
-| `market.claim_is_not_availability` | البائع يقول عنده 100 حبة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
+| `market.claim_is_not_availability` | البائع يقول عنده 100 حبة | GENERAL_PLANGRAPH | ● | ● | ● | ● | P | P | ● | ● | — |
 
 ### AGREEMENT · 11
 
@@ -381,22 +380,22 @@ Each of these closes many scenarios at once. That is what makes it general.
 
 | id | goal | route | REPR | ROUT | PLAN | EXEC | OBSE | VERI | PRES | PERS | blocker |
 |---|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|
-| `holdout.laboratory_instrument_time` | جهاز مختبر متاح 6 ساعات والجامعة تريد 10 | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `holdout.temporary_generator` | مولد احتياطي ليومين بشرط استجابة خلال 15 دقيقة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `holdout.cold_storage` | غرفة تبريد فارغة 3 أيام | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `holdout.apiary_pollination` | منحل يحتاج تلقيح بستان | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `holdout.industrial_valve_service` | صيانة صمام صناعي قبل الخميس | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `holdout.desalination_maintenance` | صيانة وحدة تحلية | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `holdout.court_interpretation` | مترجم محكمة لجلسة الثلاثاء | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `holdout.community_lending` | إعارة معدة من مكتبة الحي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `holdout.specialized_fabrication` | طاقة تصنيع دقيقة متاحة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `holdout.event_equipment` | معدات فعالية لليلة واحدة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `holdout.scientific_calibration` | معايرة جهاز قياس | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `holdout.temporary_workspace` | مساحة عمل لأسبوعين | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `holdout.agricultural_service` | رش محصول قبل المطر | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `holdout.energy_storage` | سعة تخزين طاقة فائضة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `holdout.falconry_competition` | تجهيز مسابقة صقور | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
-| `holdout.mosque_library` | فهرسة مكتبة مسجد | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH |
+| `holdout.laboratory_instrument_time` | جهاز مختبر متاح 6 ساعات والجامعة تريد 10 | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `holdout.temporary_generator` | مولد احتياطي ليومين بشرط استجابة خلال 15 دقيقة | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `holdout.cold_storage` | غرفة تبريد فارغة 3 أيام | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `holdout.apiary_pollination` | منحل يحتاج تلقيح بستان | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `holdout.industrial_valve_service` | صيانة صمام صناعي قبل الخميس | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `holdout.desalination_maintenance` | صيانة وحدة تحلية | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `holdout.court_interpretation` | مترجم محكمة لجلسة الثلاثاء | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `holdout.community_lending` | إعارة معدة من مكتبة الحي | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `holdout.specialized_fabrication` | طاقة تصنيع دقيقة متاحة | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `holdout.event_equipment` | معدات فعالية لليلة واحدة | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `holdout.scientific_calibration` | معايرة جهاز قياس | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `holdout.temporary_workspace` | مساحة عمل لأسبوعين | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `holdout.agricultural_service` | رش محصول قبل المطر | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `holdout.energy_storage` | سعة تخزين طاقة فائضة | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `holdout.falconry_competition` | تجهيز مسابقة صقور | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `holdout.mosque_library` | فهرسة مكتبة مسجد | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 
 <!-- END GENERATED -->
 
