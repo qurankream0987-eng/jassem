@@ -362,6 +362,9 @@ export default function Home() {
             {!sidebarOpen && (
               <button
                 onClick={() => setSidebarOpen(true)}
+                // An icon-only control with no name is a control a screen
+                // reader announces as «زر».
+                aria-label="فتح قائمة المحادثات"
                 className="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

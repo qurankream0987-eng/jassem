@@ -221,13 +221,38 @@ caller that only wanted rows.
 
 ---
 
-## 11. What is not yet true
+## 11. What the surface phase added
+
+**A third dataset operation: `{ op: "TABLE" }`.** `SORT` and `CHART` made a table
+into other things; nothing brought it back. A chart that cannot become a table
+again is a one-way door — the rows are still there, and a person who wants to
+read the numbers rather than look at them should not have to ask for the data a
+second time. It carries no arguments, because the table of a dataset **is** the
+dataset: same id, same revision, same rows, same sort, no re-query.
+
+**Aggregation scope.** `SOURCE` · `COMPLETE_WINDOW` · `PARTIAL_WINDOW`. An
+aggregate is the one presentation that can be false while every number in it is
+true, so a chart now carries where its numbers came from and the surface says so
+when the window was partial. `groupBy` + `aggregate` are executed by the source
+as a real `GROUP BY`, which is what earns `SOURCE`.
+
+**The identity field stopped being a column it was never asked to be.** It still
+travels with every read — a row nobody can point at later is a row an ordinal
+cannot resolve to — but when the request named its own fields, the identity is
+read without being rendered. Asking for everything still shows it.
+
+**Rows are enumerated by PRESENTED position.** The newest dataset in a
+conversation contributes its rows to reference resolution under
+`dataset:<id>:<revision>`, so «الصف الثاني» means the second row on screen —
+which is a different row once «رتبها من الأعلى» has run.
+
+---
+
+## 12. What is not yet true
 
 - **No external data source exists.** One adapter, reading JASIM's own rows.
-- **`groupBy` and `aggregate` are accepted by `DataNeed` and not yet executed by
-  the source** — charts aggregate in memory over the returned window. For
-  datasets larger than a window that is a different number from a true
-  server-side aggregate, and it is why the chart states its aggregation.
 - **No realtime.** `datasetId` + `revision` + `freshness` exist so it can attach;
   nothing pushes yet, and nothing claims to.
+- **Enum values render as the source stores them.** Columns are labelled; values
+  are not.
 - **No model has produced a DataNeed here.** `REAL_PROVIDER = BLOCKED_BY_ENVIRONMENT`.

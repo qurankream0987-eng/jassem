@@ -73,6 +73,16 @@ export type SourceQuery = {
   readonly sort: readonly { readonly field: string; readonly direction: "ASC" | "DESC" }[];
   readonly limit: number;
   readonly offset: number;
+  /**
+   * When present, the source must GROUP over the whole authorized set rather
+   * than return records. A source that cannot do this says so — it does not
+   * return rows and leave the caller to reduce a window, because a window
+   * aggregate and a whole-set aggregate are different numbers.
+   */
+  readonly aggregate?: {
+    readonly groupBy: readonly string[];
+    readonly measures: readonly { readonly field: string; readonly fn: string }[];
+  };
 };
 
 export type DataSource = {
@@ -130,6 +140,59 @@ const internalRuntimeSource: DataSource = {
         if (filter.operator === "NEQ") conditions.push(ne(target as never, filter.value as never));
         if (filter.operator === "GTE") conditions.push(gte(target as never, filter.value as never));
         if (filter.operator === "LTE") conditions.push(lte(target as never, filter.value as never));
+      }
+
+      // ── A real GROUP BY, when one was asked for ──────────────────────────
+      //
+      // This is what earns the SOURCE aggregation scope. Every column object
+      // comes from the resource registry and every value is bound, so the only
+      // thing input controls is WHICH registered column, never the SQL.
+      if (query.aggregate) {
+        const groupColumns = query.aggregate.groupBy.flatMap((field) => {
+          const target = column(field);
+          return target ? [[field, target] as const] : [];
+        });
+        if (groupColumns.length === 0) {
+          return { reason: "NOT_CONFIGURED", detail: "No groupable column resolved." };
+        }
+
+        const projection: Record<string, unknown> = Object.fromEntries(groupColumns);
+        for (const measure of query.aggregate.measures) {
+          const target = measure.fn === "COUNT" ? undefined : column(measure.field);
+          if (measure.fn === "COUNT") {
+            projection[`${measure.fn}_${measure.field}`] = sql<number>`count(*)::int`;
+            continue;
+          }
+          if (!target) {
+            return {
+              reason: "NOT_CONFIGURED",
+              detail: `No measurable column resolved for «${measure.field}».`,
+            };
+          }
+          const expression =
+            measure.fn === "SUM"
+              ? sql<number>`sum(${target})`
+              : measure.fn === "AVG"
+                ? sql<number>`avg(${target})`
+                : measure.fn === "MIN"
+                  ? sql<number>`min(${target})`
+                  : sql<number>`max(${target})`;
+          projection[`${measure.fn}_${measure.field}`] = expression;
+        }
+
+        const grouped = (await db
+          .select(projection as never)
+          .from(query.table as never)
+          .where(and(...conditions))
+          .groupBy(...groupColumns.map(([, target]) => target as never))
+          .limit(query.limit)) as unknown as Record<string, unknown>[];
+
+        return {
+          rows: grouped,
+          totalRows: grouped.length,
+          observedAt: new Date().toISOString(),
+          freshness: "UNKNOWN",
+        };
       }
 
       const selection = Object.fromEntries(

@@ -49,6 +49,8 @@ export interface ChartSurfaceData {
   aggregation: string;
   points: { category: string; value: number }[];
   freshness: 'CURRENT' | 'STALE' | 'UNKNOWN';
+  scope?: 'SOURCE' | 'COMPLETE_WINDOW' | 'PARTIAL_WINDOW';
+  coverage?: { counted: number; total?: number };
   emptyReason?: 'NO_ROWS';
 }
 
@@ -157,8 +159,24 @@ function ChartView({ surface }: { surface: ChartSurfaceData }) {
         </Text>
         <Text style={styles.footerText}>{freshnessLabel(surface.freshness)}</Text>
       </View>
+      {/* A partial window says so, in text. A bar chart of 50 rows out of
+          4000 looks exactly like a bar chart of 4000. */}
+      {surface.scope === 'PARTIAL_WINDOW' ? (
+        <Text style={styles.scopeNote}>
+          محسوب على {surface.coverage?.counted ?? 0} من{' '}
+          {surface.coverage?.total ?? surface.coverage?.counted ?? 0} صفاً المعروضة، وليس على
+          كامل البيانات.
+        </Text>
+      ) : null}
       {surface.points.map((point) => (
-        <View key={point.category} style={styles.barRow}>
+        <View
+          key={point.category}
+          style={styles.barRow}
+          accessible
+          // Identity never depends on colour: the label and the number are
+          // what a screen reader reads, and every bar shares one hue.
+          accessibilityLabel={`${point.category}: ${point.value.toLocaleString('ar')}`}
+        >
           <Text style={styles.barLabel} numberOfLines={1}>
             {point.category}
           </Text>
@@ -277,6 +295,14 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 4,
     backgroundColor: SERIES,
+  },
+  scopeNote: {
+    color: palette.text2,
+    fontFamily: fonts.regular,
+    fontSize: 11,
+    textAlign: 'right',
+    paddingHorizontal: 12,
+    paddingBottom: 6,
   },
   barValue: {
     width: 56,

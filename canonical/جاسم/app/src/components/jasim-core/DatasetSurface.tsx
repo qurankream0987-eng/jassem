@@ -57,6 +57,9 @@ export interface ChartSurfaceData {
   aggregation: string;
   points: { category: string; value: number }[];
   freshness: 'CURRENT' | 'STALE' | 'UNKNOWN';
+  /** Where the numbers were computed. See `scopeNote`. */
+  scope?: 'SOURCE' | 'COMPLETE_WINDOW' | 'PARTIAL_WINDOW';
+  coverage?: { counted: number; total?: number };
   emptyReason?: 'NO_ROWS';
 }
 
@@ -154,7 +157,11 @@ function TableView({ surface }: { surface: TableSurfaceData }) {
                   return (
                     <td
                       key={column.key}
-                      className="max-w-[22rem] truncate px-3 py-2 text-right text-[var(--jasim-text)]"
+                      // A cap the CELL respects, not one the table does. At
+                      // 22rem a single long Arabic sentence ate the whole
+                      // table and pushed «الحالة» out of sight: a long value
+                      // must never cost a column.
+                      className="max-w-[14rem] truncate px-3 py-2 text-right text-[var(--jasim-text)]"
                       title={formatCell(cell?.value, column.type)}
                     >
                       {formatCell(cell?.value, column.type)}
@@ -194,24 +201,34 @@ function BarChart({ surface }: { surface: ChartSurfaceData }) {
       {surface.points.map((point) => {
         const share = max > 0 ? (point.value / max) * 100 : 0;
         return (
-          <div key={point.category} className="flex items-center gap-3">
+          <div key={point.category} className="flex items-center gap-2 sm:gap-3">
+            {/* The label and the number hold fixed widths so the bars share
+                one baseline and stay comparable. They are narrower on a phone
+                because at 390px the old widths left the track nothing at all:
+                the chart drew its labels and no bars. */}
             <span
-              className="w-28 shrink-0 truncate text-right text-xs text-[var(--jasim-text-secondary)]"
+              className="w-16 shrink-0 truncate text-right text-xs text-[var(--jasim-text-secondary)] sm:w-28"
               title={point.category}
             >
               {point.category}
             </span>
             {/* The track is a surface, not a second series — it carries no
                 meaning and stays recessive. */}
-            <div className="h-5 flex-1 rounded bg-[var(--jasim-surface-sunken)]">
+            <div
+              className="h-5 min-w-10 flex-1 rounded bg-[var(--jasim-surface-sunken)]"
+              // Measurable, so a capture can prove the bars have room to exist
+              // at 390px rather than a screenshot having to be believed.
+              data-chart-track=""
+            >
               <div
                 className="h-full rounded-s-sm rounded-e"
+                data-chart-bar=""
                 style={{ width: `${share}%`, backgroundColor: SERIES }}
               />
             </div>
             {/* Direct labels rather than an axis: with one series the number
                 belongs next to its own bar. */}
-            <span className="w-16 shrink-0 text-left text-xs tabular-nums text-[var(--jasim-text)]">
+            <span className="w-8 shrink-0 text-left text-xs tabular-nums text-[var(--jasim-text)] sm:w-16">
               {point.value.toLocaleString('ar')}
             </span>
           </div>
@@ -282,6 +299,60 @@ function LineChart({ surface }: { surface: ChartSurfaceData }) {
   );
 }
 
+/**
+ * The sentence that stops a chart implying more than it computed.
+ *
+ * A bar chart of 50 rows out of 4000 looks exactly like a bar chart of 4000.
+ * When the numbers came from a partial window, saying so is the only thing
+ * between the reader and a wrong conclusion — so it renders as text, not as a
+ * tooltip nobody opens.
+ */
+function ScopeNote({ surface }: { surface: ChartSurfaceData }) {
+  if (surface.scope !== 'PARTIAL_WINDOW') return null;
+  const counted = surface.coverage?.counted ?? 0;
+  const total = surface.coverage?.total ?? counted;
+  return (
+    <p className="px-3 pb-2 text-[11px] text-[var(--jasim-warning)]" role="note">
+      محسوب على {counted} من {total} صفاً المعروضة، وليس على كامل البيانات.
+    </p>
+  );
+}
+
+/**
+ * The chart's numbers as text.
+ *
+ * Identity here never depends on colour: the bars share one hue, and this list
+ * is what a screen reader and a colour-blind reader actually use. It is a
+ * `<table>` rather than prose because the data is tabular and assistive
+ * technology navigates it that way.
+ */
+function ChartDataTable({ surface }: { surface: ChartSurfaceData }) {
+  return (
+    <details className="px-3 pb-2">
+      <summary className="cursor-pointer text-[11px] text-[var(--jasim-text-tertiary)]">
+        عرض القيم كنص
+      </summary>
+      <table className="mt-1 w-full text-xs">
+        <caption className="sr-only">
+          {surface.measureLabel} حسب {surface.categoryLabel}
+        </caption>
+        <tbody>
+          {surface.points.map((point) => (
+            <tr key={point.category}>
+              <th scope="row" className="py-0.5 pe-2 text-right font-normal text-[var(--jasim-text-secondary)]">
+                {point.category}
+              </th>
+              <td className="py-0.5 text-left tabular-nums text-[var(--jasim-text)]">
+                {point.value.toLocaleString('ar')}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </details>
+  );
+}
+
 function ChartView({ surface }: { surface: ChartSurfaceData }) {
   if (surface.emptyReason === 'NO_ROWS') {
     return <EmptyNote>لا توجد بيانات لرسمها.</EmptyNote>;
@@ -295,9 +366,11 @@ function ChartView({ surface }: { surface: ChartSurfaceData }) {
         </span>
         <FreshnessNote freshness={surface.freshness} />
       </div>
+      <ScopeNote surface={surface} />
       {surface.form === 'METRIC' && <MetricChart surface={surface} />}
       {surface.form === 'LINE' && <LineChart surface={surface} />}
       {surface.form === 'BAR' && <BarChart surface={surface} />}
+      <ChartDataTable surface={surface} />
     </div>
   );
 }

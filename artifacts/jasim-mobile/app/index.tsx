@@ -53,6 +53,7 @@ import {
 import { MobileWorkspaceSurface } from '@/components/MobileWorkspaceSurface';
 import { MobileLivingObjectsSurface } from '@/components/MobileLivingObjectsSurface';
 import type { MobilePresentationAction } from '@/components/MobilePresentationRenderer';
+import { MobileRoutedNotice, MobileTurnSurface } from '@/components/MobileTurnSurface';
 import type {
   ActiveWorkspaceProjection,
   LivingObjectsProjection,
@@ -72,6 +73,14 @@ interface ChatMessage {
   runId?: string;
   delivery?: 'sending' | 'queued';
   conversationId?: string;
+  /**
+   * The surface this turn produced — a TABLE, a CHART, and in time every other
+   * trusted primitive. Carried opaquely: the phone never inspects what the
+   * data MEANS, only which registered primitive draws it.
+   */
+  surface?: Record<string, unknown>;
+  /** A turn that was understood with nothing built to answer it. */
+  routed?: { state?: string; cause?: string };
 }
 
 const SUGGESTIONS = [
@@ -128,6 +137,14 @@ export default function MainChatScreen() {
       text: message.content,
       createdAt: new Date(message.createdAt).getTime(),
       runId: typeof message.metadata?.runId === 'string' ? message.metadata.runId : undefined,
+      surface:
+        message.metadata?.surface && typeof message.metadata.surface === 'object'
+          ? (message.metadata.surface as Record<string, unknown>)
+          : undefined,
+      routed:
+        message.metadata?.routed && typeof message.metadata.routed === 'object'
+          ? (message.metadata.routed as { state?: string; cause?: string })
+          : undefined,
     })),
     ...localMessages.filter(
       (message) =>
@@ -899,7 +916,18 @@ function MessageRow({
   return (
     <View style={[styles.messageRow, styles.jasimRow]}>
       <View style={[styles.bubbleMessage, styles.jasimBubble]}>
-        <Text style={styles.messageText}>{displayText}</Text>
+        {/* A routed turn produced no surface: understood, with nothing to
+            answer it with. Its words are drawn as a notice rather than as an
+            ordinary reply, exactly as on the web, so «لا يوجد مصدر بيانات»
+            never reads as a finding. */}
+        {message.routed?.state ? (
+          <MobileRoutedNotice message={displayText} state={message.routed.state} />
+        ) : (
+          <Text style={styles.messageText}>{displayText}</Text>
+        )}
+        {/* The same semantic surface contract the web receives. Mobile adapts
+            presentation only — there is no second data system here. */}
+        <MobileTurnSurface surface={message.surface} />
         {message.runId ? <RunResultPreview runId={message.runId} /> : null}
       </View>
     </View>

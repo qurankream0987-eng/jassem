@@ -62,6 +62,21 @@ export type AuthorizedQuery = {
   readonly sort: readonly { readonly field: string; readonly direction: "ASC" | "DESC" }[];
   readonly limit: number;
   readonly offset: number;
+  /**
+   * True when the identity field was added by this authorizer rather than
+   * asked for.
+   *
+   * It still travels and is still read — the runtime needs it. It just is not
+   * a COLUMN of the answer: a person who asked for «الهدف والحالة» and got a
+   * column of UUIDs pushing «الحالة» off the edge of the table was shown
+   * something they did not ask for instead of something they did.
+   */
+  readonly identityImplicit: boolean;
+  /** Present only when every grouped and measured column authorised it. */
+  readonly aggregate?: {
+    readonly groupBy: readonly string[];
+    readonly measures: readonly { readonly field: string; readonly fn: string }[];
+  };
 };
 
 /** Every way a read can end. Each is a different fact and stays distinct. */
@@ -149,6 +164,7 @@ export function authorizeDataNeed(input: {
   const fields = [...new Set([resource.identityField, ...requestedFields])].filter((field) =>
     readableKeys.has(field),
   );
+  const identityImplicit = need.fields.length > 0 && !need.fields.includes(resource.identityField);
 
   // ── Filters ───────────────────────────────────────────────────────────────
   for (const filter of need.filters) {
@@ -204,6 +220,57 @@ export function authorizeDataNeed(input: {
     }
   }
 
+  // ── Grouping and measures ─────────────────────────────────────────────────
+  //
+  // Checked with the same strictness as a projection, because an aggregate
+  // reads the same rows. A column that may not be read may not be summed.
+  for (const field of need.groupBy) {
+    const column = findColumn(resource, field);
+    if (!column || column.sensitive) {
+      return {
+        status: column?.sensitive ? "DENIED" : "NEEDS_INPUT",
+        detail: `«${field}» cannot group «${resource.id}».`,
+        message: column?.sensitive
+          ? `لا يمكن التجميع حسب الحقل «${column.label}».`
+          : `لا أعرف الحقل «${field}» للتجميع.`,
+      };
+    }
+    if (!column.capabilities.includes("GROUP")) {
+      return {
+        status: "NEEDS_INPUT",
+        detail: `«${field}» does not support grouping.`,
+        message: `الحقل «${column.label}» لا يدعم التجميع.`,
+      };
+    }
+  }
+  for (const measure of need.aggregate) {
+    // COUNT measures rows, not a column, so it needs no measurable field.
+    if (measure.fn === "COUNT") continue;
+    const column = findColumn(resource, measure.field);
+    if (!column || column.sensitive) {
+      return {
+        status: column?.sensitive ? "DENIED" : "NEEDS_INPUT",
+        detail: `«${measure.field}» cannot be aggregated on «${resource.id}».`,
+        message: column?.sensitive
+          ? `لا يمكن حساب الحقل «${column.label}».`
+          : `لا أعرف الحقل «${measure.field}» للحساب.`,
+      };
+    }
+    if (column.type !== "NUMBER" && column.type !== "INTEGER") {
+      return {
+        status: "NEEDS_INPUT",
+        detail: `«${measure.field}» is not numeric.`,
+        message: `الحقل «${column.label}» ليس رقمياً، ولا يمكن حسابه.`,
+      };
+    }
+  }
+  // An aggregate needs something to group by; measures alone would reduce the
+  // whole resource to one row, which is a different request and is not this one.
+  const aggregate =
+    need.groupBy.length > 0 && need.aggregate.length > 0
+      ? { groupBy: need.groupBy, measures: need.aggregate }
+      : undefined;
+
   const window = effectiveWindow(need);
 
   return {
@@ -218,6 +285,8 @@ export function authorizeDataNeed(input: {
       sort: need.sort,
       limit: window.limit,
       offset: window.offset,
+      identityImplicit,
+      ...(aggregate ? { aggregate } : {}),
     },
   };
 }
@@ -257,6 +326,7 @@ export async function executeAuthorizedQuery(query: AuthorizedQuery): Promise<Da
     sort: query.sort,
     limit: query.limit,
     offset: query.offset,
+    ...(query.aggregate ? { aggregate: query.aggregate } : {}),
   };
 
   const result = await source.read(sourceQuery);
@@ -282,10 +352,34 @@ export async function executeAuthorizedQuery(query: AuthorizedQuery): Promise<Da
     };
   }
 
-  const columns: DatasetColumn[] = query.fields.flatMap((field) => {
-    const column = findColumn(query.resource, field);
-    return column ? [{ key: column.key, label: column.label, type: column.type }] : [];
-  });
+  // An aggregate's columns are its groups and its measures — not the resource's
+  // record columns, which no longer describe what a row is.
+  const columns: DatasetColumn[] = query.aggregate
+    ? [
+        ...query.aggregate.groupBy.flatMap((field) => {
+          const column = findColumn(query.resource, field);
+          return column ? [{ key: column.key, label: column.label, type: column.type }] : [];
+        }),
+        ...query.aggregate.measures.map((measure) => {
+          const column = findColumn(query.resource, measure.field);
+          return {
+            key: `${measure.fn}_${measure.field}`,
+            label:
+              measure.fn === "COUNT"
+                ? "العدد"
+                : `${AGGREGATION_LABEL[measure.fn] ?? measure.fn} ${column?.label ?? measure.field}`,
+            type: "NUMBER" as const,
+          };
+        }),
+      ]
+    : query.fields
+        .filter(
+          (field) => !(query.identityImplicit && field === query.resource.identityField),
+        )
+        .flatMap((field) => {
+          const column = findColumn(query.resource, field);
+          return column ? [{ key: column.key, label: column.label, type: column.type }] : [];
+        });
 
   const rows: DatasetRow[] = result.rows.map((values, index) => ({
     // Runtime-assigned and opaque. A caller quotes one back; it cannot build one.
@@ -317,10 +411,29 @@ export async function executeAuthorizedQuery(query: AuthorizedQuery): Promise<Da
         generatedAt: now,
       },
       freshness: result.freshness,
+      ...(query.aggregate
+        ? {
+            aggregation: {
+              // Earned, not claimed: the source ran a GROUP BY over the whole
+              // authorized set, so this is the real number.
+              scope: "SOURCE" as const,
+              groupBy: query.aggregate.groupBy,
+              measures: query.aggregate.measures,
+              coverage: { counted: result.totalRows ?? rows.length, total: result.totalRows },
+            },
+          }
+        : {}),
       ownerScope: query.ownerScope,
     },
   };
 }
+
+const AGGREGATION_LABEL: Readonly<Record<string, string>> = Object.freeze({
+  SUM: "مجموع",
+  AVG: "متوسط",
+  MIN: "أدنى",
+  MAX: "أعلى",
+});
 
 /** Resolve, authorize and execute in one call. The only entry point callers need. */
 export async function readCanonicalData(input: {

@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { RunLifecycleCard } from '@/components/runtime/RunLifecycleCard';
 import { PresentationRenderer } from '@/components/jasim-core/PresentationRenderer';
 import { SafeMarkdownPreview } from './SafeMarkdownPreview';
+import { RoutedNotice, TurnSurface } from '@/components/jasim-core/TurnSurface';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -214,6 +215,23 @@ export function ChatMessage({
     });
   }, [displayContent]);
 
+  /**
+   * A turn the router understood and could not answer with data.
+   *
+   * `metadata.routed` is written by one branch of the runtime and one only:
+   * the branch that produced NO surface — UNAVAILABLE, DENIED, NEEDS_INPUT,
+   * BLOCKED_BY_PROVIDER. Its presence IS the fact, so there is no list of
+   * states here to drift out of date.
+   *
+   * The words it carries are still the answer, but they must not be drawn as
+   * an ordinary reply: «لا يوجد مصدر بيانات لهذا» in a normal bubble reads as
+   * a finding, and a person cannot tell it apart from one.
+   */
+  const routed = (message.metadata as Record<string, unknown> | undefined)?.routed as
+    | { state?: string; cause?: string }
+    | undefined;
+  const routedState = isAssistant && typeof routed?.state === 'string' ? routed.state : null;
+
   const inlineActions = message.metadata?.actions as Array<{ id: string; label: string; type?: string }> | undefined;
   const presentation = message.metadata?.presentation;
   const shouldRenderPresentation =
@@ -273,7 +291,9 @@ export function ChatMessage({
           }`}
         >
           {/* Content */}
-          {isStreaming && isLast && isAssistant ? (
+          {routedState ? (
+            <RoutedNotice state={routedState} message={displayContent} />
+          ) : isStreaming && isLast && isAssistant ? (
             <StreamingText text={displayContent} speedMs={16} />
           ) : (
             <div className={`prose prose-invert prose-sm max-w-none ${isUser ? 'prose-p:text-white prose-strong:text-white' : ''}`}>
@@ -286,6 +306,14 @@ export function ChatMessage({
 
           {/* Generic discovery candidates */}
           <StructuredCandidates metadata={message.metadata} />
+
+          {/*
+            The surface this turn produced — a TABLE, a CHART, and in time
+            every other trusted primitive. It sits under the assistant's words
+            because the conversation stays primary: the surface is what the
+            turn made, not a place the person navigated to.
+          */}
+          <TurnSurface surface={(message.metadata as Record<string, unknown> | undefined)?.surface} />
 
           {/* Runtime Presentation IR, validated before it reaches SchemaRenderer */}
           {shouldRenderPresentation ? (

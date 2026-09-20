@@ -20,7 +20,9 @@
  */
 
 import {
+  aggregationScopeFor,
   derivedSort,
+  type AggregationScope,
   type CanonicalDataset,
   type DatasetColumn,
 } from "./canonical-dataset";
@@ -62,6 +64,15 @@ export type ChartSurface = {
   readonly aggregation: ChartAggregation;
   readonly points: readonly { readonly category: string; readonly value: number }[];
   readonly freshness: CanonicalDataset["freshness"];
+  /**
+   * WHERE the numbers came from, carried so the surface can say it.
+   *
+   * A bar chart of 50 rows out of 4000 looks exactly like a bar chart of 4000.
+   * The only thing that stops it implying «هذه كل العمليات» is this field and
+   * the label the surface draws from it.
+   */
+  readonly scope: AggregationScope;
+  readonly coverage: { readonly counted: number; readonly total?: number };
   readonly emptyReason?: "NO_ROWS";
 };
 
@@ -77,6 +88,17 @@ export type SurfaceRefusal = {
   readonly reason: "UNKNOWN_FIELD" | "NOT_MEASURABLE" | "UNSUPPORTED_FORM";
   readonly message: string;
 };
+
+/** The sentence a chart must carry when its numbers are not the whole story. */
+export function scopeNote(
+  scope: AggregationScope,
+  coverage: { counted: number; total?: number },
+): string | undefined {
+  if (scope === "SOURCE") return undefined;
+  if (scope === "COMPLETE_WINDOW") return undefined;
+  const total = coverage.total ?? coverage.counted;
+  return `محسوب على ${coverage.counted} من ${total} صفاً المعروضة، وليس على كامل البيانات.`;
+}
 
 /**
  * Render a dataset as a table.
@@ -170,6 +192,7 @@ export function chartSurface(
     value: reduce(values, intent.aggregation),
   }));
 
+  const scope = aggregationScopeFor(dataset);
   return {
     primitive: "CHART",
     datasetId: dataset.datasetId,
@@ -180,6 +203,11 @@ export function chartSurface(
     aggregation: intent.aggregation,
     points,
     freshness: dataset.freshness,
+    scope,
+    coverage: {
+      counted: dataset.rows.length,
+      ...(dataset.view.totalRows !== undefined ? { total: dataset.view.totalRows } : {}),
+    },
     ...(points.length === 0 ? { emptyReason: "NO_ROWS" as const } : {}),
   };
 }

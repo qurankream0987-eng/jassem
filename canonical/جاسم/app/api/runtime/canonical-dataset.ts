@@ -96,6 +96,28 @@ export type DatasetView = {
   readonly totalRows?: number;
 };
 
+/**
+ * WHERE an aggregate was computed — the difference between a true answer and a
+ * plausible one.
+ *
+ *   SOURCE           the source grouped and reduced over the whole authorized
+ *                    set. «كل العمليات», and it means it.
+ *   COMPLETE_WINDOW  computed in memory, over a window that happens to contain
+ *                    every matching row. Arithmetically identical to SOURCE.
+ *   PARTIAL_WINDOW   computed in memory over SOME of the rows. This is the one
+ *                    that lies if it is not said out loud: a bar chart of 50
+ *                    rows out of 4000 looks exactly like a bar chart of 4000.
+ */
+export type AggregationScope = "SOURCE" | "COMPLETE_WINDOW" | "PARTIAL_WINDOW";
+
+export type DatasetAggregation = {
+  readonly scope: AggregationScope;
+  readonly groupBy: readonly string[];
+  readonly measures: readonly { readonly field: string; readonly fn: string }[];
+  /** Rows the aggregate actually saw, and how many exist. */
+  readonly coverage: { readonly counted: number; readonly total?: number };
+};
+
 export type CanonicalDataset = {
   readonly datasetId: string;
   /**
@@ -109,9 +131,25 @@ export type CanonicalDataset = {
   readonly view: DatasetView;
   readonly provenance: DatasetProvenance;
   readonly freshness: Freshness;
+  /** Present when the rows ARE an aggregate rather than records. */
+  readonly aggregation?: DatasetAggregation;
   /** Whose data this is. Set by the runtime from the session, never by input. */
   readonly ownerScope: string;
 };
+
+/**
+ * How an in-memory aggregate over this dataset would have to describe itself.
+ *
+ * The honest answer depends on whether the window saw everything. When the
+ * source already aggregated, that scope stands — reducing an aggregate again
+ * does not make it less true.
+ */
+export function aggregationScopeFor(dataset: CanonicalDataset): AggregationScope {
+  if (dataset.aggregation?.scope === "SOURCE") return "SOURCE";
+  const total = dataset.view.totalRows;
+  if (total === undefined || total <= dataset.rows.length) return "COMPLETE_WINDOW";
+  return "PARTIAL_WINDOW";
+}
 
 /** Look a row up by the reference the runtime gave it. */
 export function rowByRef(

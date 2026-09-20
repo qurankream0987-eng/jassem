@@ -4516,7 +4516,17 @@ export type RuntimeReferenceType =
   | "run"
   | "task"
   | "source"
-  | "artifact";
+  | "artifact"
+  /**
+   * A row of the table the person is looking at.
+   *
+   * Not a domain type: a row of ANY dataset, from any resource, because the
+   * dataset itself is general. It earns a reference type for the same reason
+   * `source` and `artifact` have one — it is something that was ENUMERATED on
+   * screen, and «الثاني» can only mean a position in a list that was actually
+   * numbered.
+   */
+  | "dataset_row";
 
 export type RuntimeReferenceEvidence = {
   referenceType: RuntimeReferenceType;
@@ -4677,6 +4687,16 @@ export async function resolveRuntimeReferences(input: {
     requestedTypes.add("conversation");
   }
   if (/مصدر|source/i.test(lowerContent)) requestedTypes.add("source");
+  // «الصف الثاني» names the table rather than the sources beside it. «وصف»
+  // (a description) must not match, so a bare «و» is not accepted as a
+  // proclitic here — only «وال».
+  if (
+    /(?<![\p{L}\p{N}])(?:[وفبلك]?ال)?(?:صف|صفوف|سطر|أسطر)(?![\p{L}\p{N}])|(?<![a-z])rows?(?![a-z])/iu.test(
+      lowerContent,
+    )
+  ) {
+    requestedTypes.add("dataset_row");
+  }
   if (/صورة|image/i.test(lowerContent)) requestedTypes.add("artifact");
   if (/منتج|سيارة|هاتف|جهاز|خدمة|entity|product|car|phone|service/i.test(lowerContent)) {
     requestedTypes.add("entity");
@@ -4809,6 +4829,41 @@ export async function resolveRuntimeReferences(input: {
       });
     }
   }
+  // ── The rows on screen ────────────────────────────────────────────────────
+  //
+  // «اعرض الثاني» after a table means the second row AS PRESENTED — which is
+  // not the second row that was read, once «رتبها من الأعلى» has run. The
+  // dataset carries its own presented positions and re-numbers them on every
+  // re-sort, so enumerating by `row.position` is what keeps the ordinal
+  // pointing at the row the person is actually looking at.
+  //
+  // Only the newest dataset in the conversation is enumerated: an older table,
+  // further up, is no longer "the list".
+  for (const message of messages) {
+    const dataset = (message.metadata as Record<string, unknown> | null)?.dataset as
+      | CanonicalDataset
+      | undefined;
+    if (!dataset || typeof dataset !== "object" || !Array.isArray(dataset.rows)) continue;
+    const shownAt = new Date(message.createdAt ?? 0).getTime();
+    for (const row of dataset.rows) {
+      add({
+        type: "dataset_row",
+        id: `${dataset.datasetId}:${row.ref}`,
+        text: Object.values(row.values ?? {}).map(String).join(" "),
+        conversationId: toStrId(message.conversationId),
+        messageId: toStrId(message.id),
+        score: 0,
+        updatedAt: message.createdAt,
+        enumerationKey: `dataset:${dataset.datasetId}:${dataset.revision}`,
+        position: row.position,
+        enumeratedAt: shownAt,
+      });
+    }
+    // The newest assistant message carrying a dataset wins; `messages` is
+    // ordered newest first.
+    break;
+  }
+
   for (const task of tasks) {
     add({
       type: "task",
@@ -5434,6 +5489,12 @@ const DatasetOpSchema = z.discriminatedUnion("op", [
       aggregation: z.enum(CHART_AGGREGATIONS),
     })
     .strict(),
+  // «رجّعها جدول» — the way back. A chart that cannot become a table again is
+  // a one-way door: the rows are still there, and a person who wants to read
+  // the numbers rather than look at them should not have to ask for the data
+  // a second time. Carries no arguments because there is nothing to choose:
+  // the table of a dataset is the dataset.
+  z.object({ op: z.literal("TABLE") }).strict(),
 ]);
 
 /**
@@ -6249,6 +6310,24 @@ export async function routeRuntimeConversationTurn(input: {
   });
   if (commerceResponse) return commerceResponse;
 
+  /**
+   * A read is not an authorization.
+   *
+   * `presentationForConversationEnvelope` derives the Presentation IR from the
+   * envelope's KIND, and `direct_action` maps to «موافقة مطلوبة». So a turn
+   * that only READ rows drew an approval card underneath its own table, asking
+   * a person to approve something that had already happened and had no effect
+   * to approve.
+   *
+   * It is the same defect the semantic router fixed one level up: the
+   * envelope's kind is the model's guess at a shape, and the ROUTE is the
+   * fact. These two responders are the branches that execute nothing, so their
+   * presentation is informational — the surface and the sentence are the whole
+   * answer.
+   */
+  const informPresentation = (content: string) =>
+    routePresentation({ interactionNeed: "inform", data: { content } });
+
   // Two small responders, defined here so the branches below read as decisions
   // rather than as message-assembly.
   const respondRouted = async (result: {
@@ -6265,6 +6344,7 @@ export async function routeRuntimeConversationTurn(input: {
       outputKind: "routed",
       metadata: {
         ...modelMetadata,
+        presentation: informPresentation(result.message),
         routed: {
           route: routeDecision.route,
           reason: routeDecision.reason,
@@ -6285,7 +6365,7 @@ export async function routeRuntimeConversationTurn(input: {
         cause: result.cause,
         message: result.message,
         confidence: envelope.confidence,
-        presentation,
+        presentation: informPresentation(result.message),
       },
     };
   };
@@ -6296,14 +6376,16 @@ export async function routeRuntimeConversationTurn(input: {
     primitive: "TABLE" | "CHART";
     observation?: Readonly<Record<string, unknown>>;
   }): Promise<RuntimeConversationOutputResponse> => {
+    const message = datasetMessage(result.dataset, result.primitive);
     const assistantMessage = await createRuntimeMessage({
       ownerId: input.ownerId,
       conversationId: input.conversationId,
       role: "assistant",
-      content: datasetMessage(result.dataset, result.primitive),
+      content: message,
       outputKind: "dataset",
       metadata: {
         ...modelMetadata,
+        presentation: informPresentation(message),
         // The dataset itself, so the next turn can re-sort or morph it without
         // going back to the source.
         dataset: result.dataset,
@@ -6323,7 +6405,7 @@ export async function routeRuntimeConversationTurn(input: {
         freshness: result.dataset.freshness,
         surface: result.surface,
         confidence: envelope.confidence,
-        presentation,
+        presentation: informPresentation(message),
       },
     };
   };
@@ -6343,6 +6425,17 @@ export async function routeRuntimeConversationTurn(input: {
         message: "لا توجد بيانات معروضة لأغيّر طريقة عرضها.",
         state: "UNAVAILABLE",
         cause: "NO_ACTIVE_DATASET",
+      });
+    }
+
+    // CHART → TABLE. The same dataset, the same rows, the same sort it already
+    // carried — only the way of looking at it changed back. No re-query, so the
+    // numbers a person reads are exactly the numbers they were just shown.
+    if (datasetOp.op === "TABLE") {
+      return respondDataset({
+        dataset: previous,
+        surface: tableSurface(previous),
+        primitive: "TABLE",
       });
     }
 
