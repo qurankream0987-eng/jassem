@@ -80,6 +80,12 @@ import { gatherEffectAssertions } from "./completion-policy";
 import { deriveConversationTitle, shouldDeriveTitle } from "./conversation-title";
 import { GoalSpecSchema, evaluateGoalSpec, type GoalEvaluation } from "./goal-spec";
 import {
+  decideSemanticRoute,
+  routeUnavailable,
+  type RoutableEnvelopeKind,
+  type RouteDecision,
+} from "./semantic-router";
+import {
   PlanGraphSchema,
   materializePlanGraph,
   validatePlanGraph,
@@ -5730,6 +5736,24 @@ export type RuntimeConversationOutputResponse = {
         bubble: RuntimeBubbleResponse;
         confidence: number;
         presentation?: PresentationDefinition;
+      }
+    /**
+     * The turn was routed to a mechanism that does not exist yet.
+     *
+     * Its own variant, rather than a `text` reply carrying an apology, because
+     * a caller needs to be able to tell "JASIM answered" from "JASIM
+     * understood and has nothing built to answer with". Collapsing the two is
+     * how an unbuilt feature starts looking like a working one.
+     */
+    | {
+        kind: "routed";
+        route: string;
+        reason: string;
+        state: "UNAVAILABLE";
+        cause: string;
+        message: string;
+        confidence: number;
+        presentation?: PresentationDefinition;
       };
 };
 
@@ -6037,8 +6061,25 @@ export async function routeRuntimeConversationTurn(input: {
     goal: goalEvaluation,
   });
 
+  // ── The semantic router ───────────────────────────────────────────────────
+  //
+  // Computed here, before any branch reads `envelope.kind`, because that was
+  // the bug: the envelope's kind is a presentation decision, and letting it
+  // decide mechanism turned a question into a blocked execution run.
+  const routeDecision: RouteDecision = decideSemanticRoute({
+    envelopeKind: envelope.kind as RoutableEnvelopeKind,
+    plan: planOutcome?.plan,
+    planValidation: planOutcome?.validation,
+    goalOutcome: goalEvaluation?.goal.outcome,
+  });
+
   const modelMetadata = {
     outputEnvelopeVersion: envelope.version,
+    // §11: route selection must be observable. The route and the rule that
+    // chose it, never the message that produced them.
+    semanticRoute: routeDecision.route,
+    semanticRouteReason: routeDecision.reason,
+    semanticRouteDownstream: routeDecision.downstream,
     decisionId: envelope.decisionId,
     confidence: envelope.confidence,
     model: { provider: modelResponse.provider, model: modelResponse.model },
@@ -6082,6 +6123,55 @@ export async function routeRuntimeConversationTurn(input: {
     modelMetadata,
   });
   if (commerceResponse) return commerceResponse;
+
+  // ── Route away from execution, truthfully ─────────────────────────────────
+  //
+  // The whole point of the router. A read, an account action, a standing
+  // condition and a persistent system each have a correct mechanism, and none
+  // of those mechanisms is "make execution proposals". Before this, all four
+  // arrived as `direct_action` and produced a blocked run — an artefact of the
+  // envelope kind, not an answer to what was asked.
+  //
+  // Placed after the commerce branch so that transitional path keeps behaving
+  // exactly as it did; the ratchet says it may shrink, and shrinking it is a
+  // separate, proven step rather than a side effect of this one.
+  //
+  // No run. No proposal. No DAG. Nothing is attempted, so nothing can be
+  // reported as having succeeded.
+  if (routeDecision.downstream === "NOT_IMPLEMENTED") {
+    const unavailable = routeUnavailable(routeDecision.route);
+    const assistantMessage = await createRuntimeMessage({
+      ownerId: input.ownerId,
+      conversationId: input.conversationId,
+      role: "assistant",
+      content: unavailable.message,
+      outputKind: "routed",
+      metadata: {
+        ...modelMetadata,
+        routed: {
+          route: unavailable.route,
+          reason: routeDecision.reason,
+          state: unavailable.state,
+          cause: unavailable.cause,
+          ...(routeDecision.dataNeed ? { dataNeed: routeDecision.dataNeed } : {}),
+        },
+      },
+    });
+    return {
+      userMessage,
+      assistantMessage,
+      output: {
+        kind: "routed",
+        route: unavailable.route,
+        reason: routeDecision.reason,
+        state: unavailable.state,
+        cause: unavailable.cause,
+        message: unavailable.message,
+        confidence: envelope.confidence,
+        presentation,
+      },
+    };
+  }
 
   if (envelope.kind === "text") {
     const assistantMessage = await createRuntimeMessage({
