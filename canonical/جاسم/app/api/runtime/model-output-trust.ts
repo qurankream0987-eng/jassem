@@ -44,6 +44,19 @@ export class ModelOutputAuthorityError extends Error {
  * and `POLICY-OVERRIDE` are one key.
  */
 export const AUTHORITY_KEYS: ReadonlySet<string> = new Set([
+  // Data authority. Every one of these is an attempt to be the runtime: to
+  // widen a scope, name a table, or hand over SQL. Mirrored as
+  // `DATA_AUTHORITY_KEYS` in `data-need.ts`, which is tested against this set.
+  "authorizationscope",
+  "permission",
+  "permissions",
+  "bypassauthorization",
+  "allrows",
+  "allowners",
+  "rawsql",
+  "sqlquery",
+  "tablename",
+  "unsafe",
   // Plan authority. A plan says how work would proceed. It may not declare
   // that the work was approved, that a provider is trusted, or that an effect
   // occurred. Mirrored as `PLAN_AUTHORITY_KEYS` in `plan-graph.ts`, which is

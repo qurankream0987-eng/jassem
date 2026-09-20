@@ -162,6 +162,13 @@ vi.mock("../../db/schema", () => ({
   toolInstances: Object.assign({ id: { name: "id" }, name: { name: "name" }, description: { name: "description" }, type: { name: "type" }, config: { name: "config" }, isActive: { name: "isActive" }, createdAt: { name: "createdAt" }, updatedAt: { name: "updatedAt" } }, { name: "toolInstances" }),
   policies: Object.assign({ id: { name: "id" }, name: { name: "name" }, description: { name: "description" }, type: { name: "type" }, rules: { name: "rules" }, createdAt: { name: "createdAt" }, updatedAt: { name: "updatedAt" } }, { name: "policies" }),
   events: Object.assign({ id: { name: "id" }, type: { name: "type" }, payload: { name: "payload" }, processed: { name: "processed" }, createdAt: { name: "createdAt" }, updatedAt: { name: "updatedAt" } }, { name: "events" }),
+  // Read by the canonical resource registry, which this test's import chain
+  // now reaches. This mock is an explicit whitelist rather than a partial of
+  // the real schema, so every table a new module imports has to be listed
+  // here or the suite fails to load — which is how this arrived.
+  runs: Object.assign({ id: { name: "id" }, ownerId: { name: "ownerId" }, goal: { name: "goal" }, status: { name: "status" }, idempotencyKey: { name: "idempotencyKey" }, createdAt: { name: "createdAt" }, updatedAt: { name: "updatedAt" } }, { name: "runs" }),
+  runtimeTasks: Object.assign({ id: { name: "id" }, userId: { name: "userId" }, goal: { name: "goal" }, status: { name: "status" }, createdAt: { name: "createdAt" }, updatedAt: { name: "updatedAt" } }, { name: "runtimeTasks" }),
+  conversations: Object.assign({ id: { name: "id" }, userId: { name: "userId" }, title: { name: "title" }, status: { name: "status" }, createdAt: { name: "createdAt" }, updatedAt: { name: "updatedAt" } }, { name: "conversations" }),
 }));
 
 // Mock LLM Router to force deterministic fallback paths

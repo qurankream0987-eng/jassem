@@ -155,11 +155,10 @@ describe("with no plan, the envelope still decides — unchanged", () => {
 });
 
 describe("an unbuilt mechanism says so", () => {
-  it.each(["DIRECT_READ", "TRUSTED_PRODUCT_ACTION", "MONITORING", "PERSISTENT_WORLD"] as const)(
+  it.each(["TRUSTED_PRODUCT_ACTION", "MONITORING", "PERSISTENT_WORLD"] as const)(
     "%s reports NOT_IMPLEMENTED",
     (planKind) => {
       const map = {
-        DIRECT_READ: "DIRECT_READ",
         TRUSTED_PRODUCT_ACTION: "IDENTITY_CHANGE",
         MONITORING: "MONITORING",
         PERSISTENT_WORLD: "PERSISTENT_WORLD",
@@ -171,6 +170,16 @@ describe("an unbuilt mechanism says so", () => {
       expect(decision.downstream).toBe("NOT_IMPLEMENTED");
     },
   );
+
+  it("DIRECT_READ is AVAILABLE now that the data layer exists", () => {
+    // It left NOT_IMPLEMENTED when `readCanonicalData` landed. Its unavailable
+    // cases are the data layer's own — UNAVAILABLE for an unregistered
+    // resource, DENIED for a field — which are far more specific than
+    // "not built".
+    const decision = route({ envelopeKind: "direct_action", plan: planOf("DIRECT_READ") });
+    expect(decision.route).toBe("DIRECT_READ");
+    expect(decision.downstream).toBe("AVAILABLE");
+  });
 
   it.each(["TEXT", "GENERATED_PRESENTATION", "GENERAL_PLANGRAPH", "LEGACY_FLAT"] as const)(
     "%s is AVAILABLE",

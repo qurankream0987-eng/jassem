@@ -22,6 +22,9 @@ export type PresentationPrimitive =
   | "FORM"
   | "CHOICE"
   | "TABLE"
+  // A chart of a CanonicalDataset. Added with the data layer, not before: a
+  // chart with no dataset is a picture.
+  | "CHART"
   | "COMPARISON"
   | "STATUS"
   | "PROGRESS"
@@ -284,6 +287,10 @@ const PRESENTATION_PRIMITIVES = [
   "PAYMENT_STATUS",
   "CHAT",
   "METRIC",
+  // CHART became legitimate only once CanonicalDataset existed: a chart with
+  // no dataset is a picture. It renders a dataset the runtime produced, never
+  // model-authored drawing code.
+  "CHART",
   "ARTIFACT_PREVIEW",
   "DOCUMENT",
   "MEDIA",

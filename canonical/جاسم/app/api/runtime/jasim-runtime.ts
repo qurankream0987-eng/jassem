@@ -79,6 +79,17 @@ import {
 import { gatherEffectAssertions } from "./completion-policy";
 import { deriveConversationTitle, shouldDeriveTitle } from "./conversation-title";
 import { GoalSpecSchema, evaluateGoalSpec, type GoalEvaluation } from "./goal-spec";
+import { DataNeedSchema } from "./data-need";
+import { readCanonicalData, readObservation } from "./authorized-query";
+import type { CanonicalDataset } from "./canonical-dataset";
+import {
+  CHART_AGGREGATIONS,
+  CHART_FORMS,
+  chartSurface,
+  isRefusal,
+  resortedTable,
+  tableSurface,
+} from "./dataset-presentation";
 import {
   decideSemanticRoute,
   routeUnavailable,
@@ -5398,6 +5409,67 @@ async function attachPlanGraphToRun(input: {
   }
 }
 
+/**
+ * A new view of a dataset that already exists.
+ *
+ * Deliberately tiny, and deliberately carries NO resource, NO filters and no
+ * way to widen what was read. «رتبها من الأعلى» and «حولها إلى رسم» are
+ * questions about rows the person is already looking at; letting either reach
+ * the source again would risk answering with different data than is on screen.
+ */
+const DatasetOpSchema = z.discriminatedUnion("op", [
+  z
+    .object({
+      op: z.literal("SORT"),
+      field: z.string().trim().min(1).max(80),
+      direction: z.enum(["ASC", "DESC"]),
+    })
+    .strict(),
+  z
+    .object({
+      op: z.literal("CHART"),
+      form: z.enum(CHART_FORMS),
+      categoryField: z.string().trim().min(1).max(80),
+      measureField: z.string().trim().min(1).max(80).optional(),
+      aggregation: z.enum(CHART_AGGREGATIONS),
+    })
+    .strict(),
+]);
+
+/**
+ * The most recent dataset in this conversation.
+ *
+ * Datasets live in assistant message metadata rather than in a table of their
+ * own: they are part of what was SAID, they are owner-scoped by the
+ * conversation they belong to, and they expire with it. Walking backwards
+ * finds the one the person is looking at, which is the one they mean.
+ */
+async function latestConversationDataset(input: {
+  ownerId: string;
+  conversationId: string;
+}): Promise<CanonicalDataset | undefined> {
+  const rows = await db
+    .select({ metadata: jasimRuntimeMessages.metadata })
+    .from(jasimRuntimeMessages)
+    .where(
+      and(
+        eq(jasimRuntimeMessages.ownerId, input.ownerId),
+        eq(jasimRuntimeMessages.conversationId, toNumId(input.conversationId)),
+        eq(jasimRuntimeMessages.role, "assistant"),
+      ),
+    )
+    .orderBy(desc(jasimRuntimeMessages.createdAt))
+    .limit(20);
+
+  for (const row of rows) {
+    const dataset = (row.metadata as Record<string, unknown> | null)?.dataset;
+    if (dataset && typeof dataset === "object" && "datasetId" in dataset) {
+      return dataset as CanonicalDataset;
+    }
+  }
+  return undefined;
+}
+
 async function attachExecutionProposalsToRun(input: {
   ownerId: string;
   runId: string;
@@ -5535,6 +5607,13 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       // reference to parse time is the fix; the cycle itself is pre-existing
       // and not this phase's to unpick.
       planGraph: z.lazy(() => PlanGraphSchema).optional(),
+      // What to read, when the plan says this is a read. Semantic only — the
+      // runtime resolves the resource, adds the owner and bounds the window.
+      dataNeed: DataNeedSchema.optional(),
+      // A new view of the dataset the previous turn produced. This is
+      // «رتبها من الأعلى» and «حولها إلى رسم»: no resource, no filters, no
+      // second read — a presentation change costs no query.
+      datasetOp: DatasetOpSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -5560,6 +5639,13 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       // reference to parse time is the fix; the cycle itself is pre-existing
       // and not this phase's to unpick.
       planGraph: z.lazy(() => PlanGraphSchema).optional(),
+      // What to read, when the plan says this is a read. Semantic only — the
+      // runtime resolves the resource, adds the owner and bounds the window.
+      dataNeed: DataNeedSchema.optional(),
+      // A new view of the dataset the previous turn produced. This is
+      // «رتبها من الأعلى» and «حولها إلى رسم»: no resource, no filters, no
+      // second read — a presentation change costs no query.
+      datasetOp: DatasetOpSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -5585,6 +5671,13 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       // reference to parse time is the fix; the cycle itself is pre-existing
       // and not this phase's to unpick.
       planGraph: z.lazy(() => PlanGraphSchema).optional(),
+      // What to read, when the plan says this is a read. Semantic only — the
+      // runtime resolves the resource, adds the owner and bounds the window.
+      dataNeed: DataNeedSchema.optional(),
+      // A new view of the dataset the previous turn produced. This is
+      // «رتبها من الأعلى» and «حولها إلى رسم»: no resource, no filters, no
+      // second read — a presentation change costs no query.
+      datasetOp: DatasetOpSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -5746,6 +5839,17 @@ export type RuntimeConversationOutputResponse = {
      * how an unbuilt feature starts looking like a working one.
      */
     | {
+        kind: "dataset";
+        primitive: "TABLE" | "CHART";
+        datasetId: string;
+        revision: number;
+        rowCount: number;
+        freshness: string;
+        surface: Record<string, unknown>;
+        confidence: number;
+        presentation?: PresentationDefinition;
+      }
+    | {
         kind: "routed";
         route: string;
         reason: string;
@@ -5851,6 +5955,27 @@ function validateIntentFeasibility(intent: EnvelopeExecutionIntent) {
     status:
       intent.missingInputs.length > 0 ? ("awaiting_input" as const) : ("blocked" as const),
   };
+}
+
+/**
+ * What to say above a table or a chart.
+ *
+ * It names the row count and never claims live data: `UNKNOWN` freshness says
+ * «حسب آخر قراءة», not «مباشر». Nothing in this codebase may say the latter
+ * until realtime makes it true.
+ */
+function datasetMessage(dataset: CanonicalDataset, primitive: "TABLE" | "CHART"): string {
+  if (dataset.rows.length === 0) {
+    return "لا توجد نتائج مطابقة. لم أعرض أي بيانات غير حقيقية.";
+  }
+  const what = primitive === "CHART" ? "رسماً" : "جدولاً";
+  const freshness =
+    dataset.freshness === "CURRENT"
+      ? "محدّثة الآن"
+      : dataset.freshness === "STALE"
+        ? "قد لا تكون محدّثة"
+        : "حسب آخر قراءة";
+  return `عرضت ${what} يحتوي ${dataset.rows.length} صفاً (${freshness}).`;
 }
 
 function executionIntentMessage(
@@ -6123,6 +6248,170 @@ export async function routeRuntimeConversationTurn(input: {
     modelMetadata,
   });
   if (commerceResponse) return commerceResponse;
+
+  // Two small responders, defined here so the branches below read as decisions
+  // rather than as message-assembly.
+  const respondRouted = async (result: {
+    message: string;
+    state: string;
+    cause: string;
+    observation?: Readonly<Record<string, unknown>>;
+  }): Promise<RuntimeConversationOutputResponse> => {
+    const assistantMessage = await createRuntimeMessage({
+      ownerId: input.ownerId,
+      conversationId: input.conversationId,
+      role: "assistant",
+      content: result.message,
+      outputKind: "routed",
+      metadata: {
+        ...modelMetadata,
+        routed: {
+          route: routeDecision.route,
+          reason: routeDecision.reason,
+          state: result.state,
+          cause: result.cause,
+        },
+        ...(result.observation ? { read: result.observation } : {}),
+      },
+    });
+    return {
+      userMessage,
+      assistantMessage,
+      output: {
+        kind: "routed",
+        route: routeDecision.route,
+        reason: routeDecision.reason,
+        state: result.state as "UNAVAILABLE",
+        cause: result.cause,
+        message: result.message,
+        confidence: envelope.confidence,
+        presentation,
+      },
+    };
+  };
+
+  const respondDataset = async (result: {
+    dataset: CanonicalDataset;
+    surface: Record<string, unknown>;
+    primitive: "TABLE" | "CHART";
+    observation?: Readonly<Record<string, unknown>>;
+  }): Promise<RuntimeConversationOutputResponse> => {
+    const assistantMessage = await createRuntimeMessage({
+      ownerId: input.ownerId,
+      conversationId: input.conversationId,
+      role: "assistant",
+      content: datasetMessage(result.dataset, result.primitive),
+      outputKind: "dataset",
+      metadata: {
+        ...modelMetadata,
+        // The dataset itself, so the next turn can re-sort or morph it without
+        // going back to the source.
+        dataset: result.dataset,
+        surface: result.surface,
+        ...(result.observation ? { read: result.observation } : {}),
+      },
+    });
+    return {
+      userMessage,
+      assistantMessage,
+      output: {
+        kind: "dataset",
+        primitive: result.primitive,
+        datasetId: result.dataset.datasetId,
+        revision: result.dataset.revision,
+        rowCount: result.dataset.rows.length,
+        freshness: result.dataset.freshness,
+        surface: result.surface,
+        confidence: envelope.confidence,
+        presentation,
+      },
+    };
+  };
+
+  // ── A new view of the dataset already on screen ───────────────────────────
+  //
+  // Before the read branch, because «رتبها من الأعلى» names no resource and
+  // must never be mistaken for a fresh request. No query runs here at all.
+  const datasetOp = "datasetOp" in envelope ? envelope.datasetOp : undefined;
+  if (datasetOp) {
+    const previous = await latestConversationDataset({
+      ownerId: input.ownerId,
+      conversationId: input.conversationId,
+    });
+    if (!previous) {
+      return respondRouted({
+        message: "لا توجد بيانات معروضة لأغيّر طريقة عرضها.",
+        state: "UNAVAILABLE",
+        cause: "NO_ACTIVE_DATASET",
+      });
+    }
+
+    if (datasetOp.op === "SORT") {
+      const resorted = resortedTable(previous, datasetOp.field, datasetOp.direction);
+      if (isRefusal(resorted)) {
+        return respondRouted({
+          message: resorted.message,
+          state: "UNAVAILABLE",
+          cause: resorted.reason,
+        });
+      }
+      return respondDataset({
+        dataset: resorted.dataset,
+        surface: resorted.surface,
+        primitive: "TABLE",
+      });
+    }
+
+    const chart = chartSurface(previous, {
+      form: datasetOp.form,
+      categoryField: datasetOp.categoryField,
+      measureField: datasetOp.measureField,
+      aggregation: datasetOp.aggregation,
+    });
+    if (isRefusal(chart)) {
+      return respondRouted({
+        message: chart.message,
+        state: "UNAVAILABLE",
+        cause: chart.reason,
+      });
+    }
+    // The SAME dataset — same id, same rows, same provenance. Only the surface
+    // changed, which is what MORPH means.
+    return respondDataset({ dataset: previous, surface: chart, primitive: "CHART" });
+  }
+
+  // ── DIRECT_READ: the real data path ───────────────────────────────────────
+  if (routeDecision.route === "DIRECT_READ") {
+    const need = "dataNeed" in envelope ? envelope.dataNeed : undefined;
+    if (!need) {
+      // Understood as a read, without knowing what to read. Asking is the
+      // honest move; guessing a resource would answer a different question.
+      return respondRouted({
+        message: "فهمت أنك تطلب عرض بيانات، لكن لم يتضح أي بيانات. حدّد لي ما تريد رؤيته.",
+        state: "NEEDS_INPUT",
+        cause: "DATA_NEED_MISSING",
+      });
+    }
+
+    const startedAt = Date.now();
+    const outcome = await readCanonicalData({ need, ownerScope: input.ownerId });
+    const observation = readObservation({ outcome, latencyMs: Date.now() - startedAt });
+
+    if (outcome.status !== "OK") {
+      return respondRouted({
+        message: outcome.message,
+        state: outcome.status,
+        cause: outcome.status,
+        observation,
+      });
+    }
+    return respondDataset({
+      dataset: outcome.dataset,
+      surface: tableSurface(outcome.dataset),
+      primitive: "TABLE",
+      observation,
+    });
+  }
 
   // ── Route away from execution, truthfully ─────────────────────────────────
   //

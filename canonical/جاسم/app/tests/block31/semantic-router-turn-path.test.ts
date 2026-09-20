@@ -133,21 +133,18 @@ describe("the router controls what the live turn does", () => {
     expect(result.output.kind).toBe("routed");
   });
 
-  it("a read is answered truthfully, not with invented numbers", async () => {
-    const { result, metadata } = await turn(
+  it("a read with no data need asks rather than inventing numbers", async () => {
+    // DIRECT_READ reaches the real data layer now. Without a data need the
+    // runtime knows it was asked for data and not WHICH data, so it asks —
+    // guessing a resource would answer a different question.
+    const { result } = await turn(
       "أرني جدول مبيعاتي",
       envelope({ goalSpec: GOAL("عرض جدول المبيعات"), planGraph: plan("DIRECT_READ") }),
     );
     const output = result.output as Record<string, unknown>;
-    expect(output.state).toBe("UNAVAILABLE");
-    expect(output.cause).toBe("MECHANISM_NOT_IMPLEMENTED");
+    expect(output.state).toBe("NEEDS_INPUT");
+    expect(output.cause).toBe("DATA_NEED_MISSING");
     expect(result.assistantMessage.content).toMatch(/فهمت/);
-    // The data need reached the boundary, carrying the goal and nothing else.
-    const routed = metadata.routed as Record<string, unknown>;
-    expect(routed.dataNeed).toEqual({
-      kind: "AUTHORIZED_READ",
-      subject: "عرض جدول المبيعات",
-    });
   });
 
   it("«سجلني خروج» produces no AUTHENTICATE node anywhere", async () => {
@@ -247,7 +244,8 @@ describe("the router controls what the live turn does", () => {
       JSON.stringify({
         route: "DIRECT_READ",
         reason: "PLAN_DIRECT_READ",
-        downstream: "NOT_IMPLEMENTED",
+        // AVAILABLE since the data layer landed.
+        downstream: "AVAILABLE",
       }),
     );
   });

@@ -103,9 +103,9 @@ export type RoutableEnvelopeKind =
  * gets a database connection, and a boundary that carried one would be the
  * thing this phase is supposed to keep possible to build safely.
  */
-export type DataNeed = {
+export type RouteDataNeed = {
   readonly kind: "AUTHORIZED_READ";
-  /** The goal's own words. The data layer, when it exists, resolves these. */
+  /** The goal's own words, kept so an answer can quote what was asked. */
   readonly subject: string;
 };
 
@@ -114,7 +114,7 @@ export type RouteDecision = {
   readonly reason: RouteReason;
   readonly downstream: RouteDownstream;
   /** Present only for `DIRECT_READ`. */
-  readonly dataNeed?: DataNeed;
+  readonly dataNeed?: RouteDataNeed;
   /** The plan's own classification, when a plan was proposed. */
   readonly planKind?: PlanGraph["kind"];
 };
@@ -127,7 +127,10 @@ export type RouteDecision = {
  * something adjacent.
  */
 const NOT_IMPLEMENTED: ReadonlySet<SemanticRoute> = new Set<SemanticRoute>([
-  "DIRECT_READ",
+  // DIRECT_READ left this set when the data layer landed. It now reaches
+  // `readCanonicalData`, and its unavailable cases are the data layer's own —
+  // UNAVAILABLE for an unregistered resource, DENIED for a field, and so on —
+  // which are far more specific than "not built".
   "TRUSTED_PRODUCT_ACTION",
   "MONITORING",
   "PERSISTENT_WORLD",
