@@ -444,8 +444,42 @@ describe("negotiation is one mechanism, not one per subject", () => {
   });
 
   it("names one general gap for all of them", () => {
+    // It used to be GENERAL_AGREEMENT_RUNTIME, which is closed. What every one
+    // of them now waits on is the SAME door — and it is the same door the
+    // business family waits on, which is what makes it a general gap rather
+    // than a missing feature.
     const blockers = new Set(agreement.map((scenario) => scenario.currentBlocker));
-    expect([...blockers]).toEqual(["GENERAL_AGREEMENT_RUNTIME"]);
+    expect([...blockers]).toEqual(["AUTHORITY_ADMINISTRATION_PATH"]);
+    expect(GENERAL_GAPS as readonly string[]).not.toContain("GENERAL_AGREEMENT_RUNTIME");
+  });
+
+  it("plans through one mechanism, proven rather than declared", () => {
+    // PLANNABLE moved for all of them at once, which is what a general
+    // runtime looks like when it lands. EXECUTABLE deliberately did not.
+    for (const scenario of agreement) {
+      expect(scenario.gates.PLANNABLE, scenario.id).toBe("PASS");
+      expect(scenario.gates.EXECUTABLE, scenario.id).toBe("NOT_YET_IMPLEMENTED");
+      // Negotiating inside JASIM writes JASIM's own rows, and a scenario that
+      // called that a pure read would be the false pure read again.
+      expect(scenario.sideEffect, scenario.id).toBe("INTERNAL_STATE");
+      expect(scenario.gates.OBSERVABLE, scenario.id).toBe("PASS");
+    }
+  });
+
+  it("the governing law records the agreement law", () => {
+    const law = readFileSync(LAW, "utf8");
+    for (const clause of [
+      "Intent != Proposal != Approval != Agreement != Transaction != Fulfillment",
+      "TARGET != AUTHORITY",
+      "RESERVE != LLM CONTEXT",
+      "NOT_DISCLOSED != NOT_INFERABLE",
+      "EXECUTION != APPROVAL",
+      "DOMAIN_NEGOTIATION_TYPES_ADDED = 0",
+      "SalaryNegotiation",
+      "RentNegotiation",
+    ]) {
+      expect(law, clause).toContain(clause);
+    }
   });
 
   it("keeps the private bound private", () => {
@@ -490,7 +524,7 @@ describe("a business is a scope, not an app", () => {
     // runs today, and creating the company by talking does not.
     const acting = business.filter((scenario) => scenario.gates.EXECUTABLE === "PASS");
     const administering = business.filter(
-      (scenario) => scenario.currentBlocker === "SCOPE_ADMINISTRATION_PATH",
+      (scenario) => scenario.currentBlocker === "AUTHORITY_ADMINISTRATION_PATH",
     );
     expect(acting.length).toBeGreaterThan(0);
     expect(administering.length).toBeGreaterThan(0);
@@ -551,17 +585,17 @@ describe("no scenario changes status silently", () => {
       pass: {
         REPRESENTABLE: 162,
         ROUTABLE: 162,
-        PLANNABLE: 122,
+        PLANNABLE: 133,
         EXECUTABLE: 65,
-        OBSERVABLE: 67,
-        VERIFIABLE: 62,
+        OBSERVABLE: 69,
+        VERIFIABLE: 64,
         PRESENTABLE: 160,
         PERSISTENT: 128,
       },
       blockedByProvider: 31,
       blockedByEnvironment: 2,
       notYetImplemented: 69,
-      generalGaps: 13,
+      generalGaps: 12,
     });
   });
 

@@ -91,6 +91,29 @@ export const AUTHORITY_KEYS: ReadonlySet<string> = new Set([
   "principalid",
   "ismember",
   "granted",
+  // Negotiation authority. A model may propose a term VALUE — a proposal binds
+  // nobody — and it may never widen the limit it is proposing inside, nor
+  // declare that a negotiation ended. Mirrored as `NEGOTIATION_AUTHORITY_KEYS`
+  // in `agreement-runtime.ts`, which is tested against this set.
+  //
+  // The reserve is treated exactly like a credential: it does not enter a model
+  // context at all, so there is no correct value for a model to send back.
+  "reserve",
+  "reservevalue",
+  "bounds",
+  "envelopeid",
+  "mayconcede",
+  "mayaccept",
+  "mayacceptwithinreserve",
+  "authoritybasis",
+  "agreementid",
+  "agreed",
+  "accepted",
+  "committed",
+  "commitmentid",
+  "bindingauthority",
+  "approved",
+  "ownerapproved",
   // Goal authority. A model may state what should happen; it may not declare
   // that a requirement has been waived, met, or approved. Each of these ends a
   // question the model is not entitled to close. Mirrored as

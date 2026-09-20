@@ -8,6 +8,7 @@
 // ============================================================================
 
 import {
+  boolean,
   index,
   integer,
   jsonb,
@@ -618,6 +619,105 @@ export const scopeProviderBindings = pgTable(
     ),
   ],
 );
+
+// ─────────────────────────────────────────────────────────────────────────────
+// THE GENERAL AGREEMENT RUNTIME
+//
+//   Intent != Proposal != Approval != Agreement != Transaction != Fulfillment
+//
+// One mechanism for every subject. No table here names what is being
+// negotiated, and no column branches on it.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * One party's BOUNDED AUTHORITY inside one engagement.
+ *
+ * `bounds` carries, per term, the direction, the target and the RESERVE. The
+ * reserve is the limit JASIM may act to; the target is what the person would
+ * like, and `TARGET != AUTHORITY`.
+ *
+ * Append-only and versioned. Authority that could be edited in place would let
+ * an agreement be re-explained after it was reached.
+ */
+export const negotiationEnvelopes = pgTable(
+  "negotiation_envelopes",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    engagementId: varchar("engagementId", { length: 64 }).notNull(),
+    ownerId: varchar("ownerId", { length: 100 }).notNull(),
+    bounds: jsonb("bounds").$type<Record<string, unknown>>().notNull().default({}),
+    /** Undeclared authority is NO authority. Both default to false. */
+    mayConcede: boolean("mayConcede").notNull().default(false),
+    mayAcceptWithinReserve: boolean("mayAcceptWithinReserve").notNull().default(false),
+    version: integer("version").notNull(),
+    state: varchar("state", { length: 16 }).notNull().default("active"),
+    /** WHO delegated it. A scope cannot delegate to itself. */
+    setByPrincipalId: varchar("setByPrincipalId", { length: 100 }).notNull(),
+    supersedesId: varchar("supersedesId", { length: 64 }),
+    expiresAt: timestamp("expiresAt", { withTimezone: true }),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("negotiation_envelopes_scope_idx").on(table.engagementId, table.ownerId),
+    uniqueIndex("negotiation_envelopes_version_idx").on(
+      table.engagementId,
+      table.ownerId,
+      table.version,
+    ),
+  ],
+);
+
+/**
+ * `AGREEMENT != TRANSACTION`. Nothing here moves money, books anything or tells
+ * anyone. It records that two parties agreed to an exact proposal VERSION, and
+ * under whose authority the acceptance happened.
+ */
+export const agreements = pgTable(
+  "agreements",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    engagementId: varchar("engagementId", { length: 64 }).notNull(),
+    proposalId: varchar("proposalId", { length: 64 }).notNull(),
+    participants: jsonb("participants").$type<string[]>().notNull(),
+    /** A SNAPSHOT. A later edit must not change what was agreed. */
+    terms: jsonb("terms").$type<Record<string, unknown>>().notNull(),
+    authorityBasis: jsonb("authorityBasis").$type<Record<string, unknown>>().notNull(),
+    acceptedByOwnerId: varchar("acceptedByOwnerId", { length: 100 }).notNull(),
+    status: varchar("status", { length: 16 }).notNull().default("agreed"),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("agreements_proposal_idx").on(table.proposalId),
+    index("agreements_engagement_idx").on(table.engagementId),
+  ],
+);
+
+/**
+ * What each party owes, as the term sheet DECLARED it — never inferred. A
+ * runtime that guessed who owes what from a field name would have acquired a
+ * domain in the one place it matters most.
+ */
+export const commitments = pgTable(
+  "commitments",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    agreementId: varchar("agreementId", { length: 64 }).notNull(),
+    ownerId: varchar("ownerId", { length: 100 }).notNull(),
+    termKey: varchar("termKey", { length: 160 }).notNull(),
+    dueAt: timestamp("dueAt", { withTimezone: true }),
+    /** OPEN until something OBSERVES otherwise. Never advanced by the party who owes it. */
+    state: varchar("state", { length: 16 }).notNull().default("open"),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("commitments_agreement_idx").on(table.agreementId),
+    index("commitments_owner_idx").on(table.ownerId),
+  ],
+);
+
+export type NegotiationEnvelope = typeof negotiationEnvelopes.$inferSelect;
+export type Agreement = typeof agreements.$inferSelect;
+export type Commitment = typeof commitments.$inferSelect;
 
 export type Organization = typeof organizations.$inferSelect;
 export type ScopePolicy = typeof scopePolicies.$inferSelect;

@@ -113,7 +113,6 @@ export type ProviderClass = (typeof PROVIDER_CLASSES)[number];
 export const GENERAL_GAPS = [
   // OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH was here and is closed: the
   // exchange is reached as two ordinary capabilities a plan can name.
-  "GENERAL_AGREEMENT_RUNTIME",
   "GENERAL_TRANSACTION_FULFILLMENT",
   "REALTIME_RUNTIME",
   "MONITORING_ENGINE",
@@ -121,9 +120,18 @@ export const GENERAL_GAPS = [
   "PERSISTENT_WORLD_MATERIALIZATION",
   "SECURE_PRODUCT_ACTION_RUNTIME",
   // BUSINESS_SCOPE_RUNTIME was here and is closed: an organization is a value
-  // the ownerId column holds, and a turn can act on its authority. What is
-  // still missing is a way to ADMINISTER one by talking.
-  "SCOPE_ADMINISTRATION_PATH",
+  // the ownerId column holds, and a turn can act on its authority.
+  //
+  // GENERAL_AGREEMENT_RUNTIME was here and is closed: one evaluator, one
+  // envelope and one agreement for every subject there is.
+  //
+  // What both left behind is the SAME gap, which is what makes it general: a
+  // person cannot perform an AUTHORITY ACT by talking. Creating an
+  // organization, granting a verb, setting a policy, binding a provider and
+  // delegating a negotiating limit are one shape — and a plan may never do any
+  // of them on the person's behalf, because an approval the person did not
+  // read is not an approval.
+  "AUTHORITY_ADMINISTRATION_PATH",
   "EXTERNAL_DISCOVERY_PROVIDER",
   "BUSINESS_DATA_SOURCE_ADAPTER",
   "LOCATION_OBSERVATION",
@@ -930,21 +938,27 @@ const AGREEMENT_SCENARIOS: readonly Scenario[] = Object.freeze([
     primitives: ["Actor", "Proposal", "Term", "Constraint", "Authority", "Agreement"] as const,
     capabilities: ["PROPOSE", "COUNTER_PROPOSE", "AGREE", "COMMIT"] as const,
     providers: ["NONE"] as const,
-    sideEffect: "REMOTE_MUTATION" as const,
+    // Negotiating inside JASIM writes JASIM's own rows. Reaching a
+    // counterparty who is not in JASIM is messaging, and a different scenario.
+    sideEffect: "INTERNAL_STATE" as const,
     requiresApproval: true,
     gates: gates({
       REPRESENTABLE: "PASS",
       ROUTABLE: "PASS",
-      PLANNABLE: "NOT_YET_IMPLEMENTED",
+      // Earned: a turn plans `agreement-open` → `agreement-propose` as two
+      // dependent nodes, and the router gained nothing.
+      PLANNABLE: "PASS",
+      // NOT earned: countering on someone's behalf needs an envelope, and
+      // delegating one is an authority act no plan may perform.
       EXECUTABLE: "NOT_YET_IMPLEMENTED",
       OBSERVABLE: "PASS",
       VERIFIABLE: "PASS",
       PRESENTABLE: "PASS",
       PERSISTENT: "PASS",
     }),
-    currentBlocker: "GENERAL_AGREEMENT_RUNTIME" as const,
+    currentBlocker: "AUTHORITY_ADMINISTRATION_PATH" as const,
     truthfulRuntimeState:
-      "Versioned proposal terms and acceptance into a TransactionIntent exist. A negotiable-term model with a bounded authority envelope and counter-proposals does not. One runtime closes all eight of these at once.",
+      "All eight negotiate through ONE evaluator and the same four capabilities, proven on the live executor, and a counter never passes the reserve. Opening and proposing run from a turn today. Countering needs an envelope, and «لا تتجاوز 250» cannot yet be said to JASIM — only delegated where the person can see the number.",
     domainBranchesRequired: 0 as const,
   })),
   {
@@ -955,16 +969,16 @@ const AGREEMENT_SCENARIOS: readonly Scenario[] = Object.freeze([
     primitives: ["Constraint", "Authority", "Policy", "Proposal"],
     capabilities: ["PROPOSE", "COUNTER_PROPOSE"],
     providers: ["NONE"],
-    sideEffect: "NONE",
+    sideEffect: "INTERNAL_STATE",
     requiresApproval: true,
     gates: gates({
-      REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "NOT_YET_IMPLEMENTED",
-      EXECUTABLE: "NOT_YET_IMPLEMENTED", OBSERVABLE: "NOT_APPLICABLE",
-      VERIFIABLE: "NOT_APPLICABLE", PRESENTABLE: "PASS", PERSISTENT: "PASS",
+      REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+      EXECUTABLE: "NOT_YET_IMPLEMENTED", OBSERVABLE: "PASS",
+      VERIFIABLE: "PASS", PRESENTABLE: "PASS", PERSISTENT: "PASS",
     }),
-    currentBlocker: "GENERAL_AGREEMENT_RUNTIME",
+    currentBlocker: "AUTHORITY_ADMINISTRATION_PATH",
     truthfulRuntimeState:
-      "TARGET != AUTHORITY. The private projection that keeps a counterparty from reading constraints already exists on expressions; the authority envelope a negotiation would act within does not.",
+      "TARGET != AUTHORITY, and the envelope now holds both: a counter is clamped at the reserve over any number of rounds, and the reserve is structurally absent from what the counterparty sees. Saying it to JASIM is what is missing — a limit is delegated where the person reads the number, never through a plan.",
     domainBranchesRequired: 0,
   },
   {
@@ -975,15 +989,16 @@ const AGREEMENT_SCENARIOS: readonly Scenario[] = Object.freeze([
     primitives: ["Constraint", "Authority", "Policy"],
     capabilities: ["PROPOSE", "COUNTER_PROPOSE"],
     providers: ["NONE"],
-    sideEffect: "NONE",
+    sideEffect: "INTERNAL_STATE",
     requiresApproval: true,
     gates: gates({
-      REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "NOT_YET_IMPLEMENTED",
-      EXECUTABLE: "NOT_YET_IMPLEMENTED", OBSERVABLE: "NOT_APPLICABLE",
-      VERIFIABLE: "NOT_APPLICABLE", PRESENTABLE: "PASS", PERSISTENT: "PASS",
+      REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+      EXECUTABLE: "NOT_YET_IMPLEMENTED", OBSERVABLE: "PASS",
+      VERIFIABLE: "PASS", PRESENTABLE: "PASS", PERSISTENT: "PASS",
     }),
-    currentBlocker: "GENERAL_AGREEMENT_RUNTIME",
-    truthfulRuntimeState: "The mirror of the buyer's maximum, and the same one runtime.",
+    currentBlocker: "AUTHORITY_ADMINISTRATION_PATH",
+    truthfulRuntimeState:
+      "The mirror of the buyer's maximum, and literally the same code: HIGHER_IS_BETTER is the other value of one field, not a second branch.",
     domainBranchesRequired: 0,
   },
   {
@@ -997,12 +1012,13 @@ const AGREEMENT_SCENARIOS: readonly Scenario[] = Object.freeze([
     sideEffect: "INTERNAL_STATE",
     requiresApproval: true,
     gates: gates({
-      REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "NOT_YET_IMPLEMENTED",
+      REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
       EXECUTABLE: "NOT_YET_IMPLEMENTED", OBSERVABLE: "PASS", VERIFIABLE: "PASS",
       PRESENTABLE: "PASS", PERSISTENT: "PASS",
     }),
-    currentBlocker: "GENERAL_AGREEMENT_RUNTIME",
-    truthfulRuntimeState: "Acceptance creates a TransactionIntent — never a payment. Commitment as a primitive does not exist yet.",
+    currentBlocker: "AUTHORITY_ADMINISTRATION_PATH",
+    truthfulRuntimeState:
+      "An Agreement records the exact proposal version, its terms as a snapshot and whose authority accepted it. AGREEMENT != TRANSACTION: it creates no payment, and a Commitment exists only where the term sheet DECLARED who owes what. Agreeing from a turn needs an envelope that permits it.",
     domainBranchesRequired: 0,
   },
 ]);
@@ -1416,7 +1432,7 @@ const BUSINESS_SCENARIOS: readonly Scenario[] = Object.freeze(
           ? ("BUSINESS_DATA_SOURCE_ADAPTER" as const)
           : group === "WORLD"
             ? ("PERSISTENT_WORLD_MATERIALIZATION" as const)
-            : ("SCOPE_ADMINISTRATION_PATH" as const),
+            : ("AUTHORITY_ADMINISTRATION_PATH" as const),
     truthfulRuntimeState:
       group === "ACT"
         ? "«باسم شركتي» resolves to a durable, revocable membership, the run opens under the organization, and the declared verb is checked before anything is written. The organization itself is created through the API rather than by talking, which is `business.scope`."
@@ -1521,12 +1537,12 @@ const MONETIZATION_SCENARIOS: readonly Scenario[] = Object.freeze([
 
 const JASIM_OS_SCENARIOS: readonly Scenario[] = Object.freeze(
   ([
-    ["same_core", "شغّل جاسم لمطعمي", "SCOPE_ADMINISTRATION_PATH"],
+    ["same_core", "شغّل جاسم لمطعمي", "AUTHORITY_ADMINISTRATION_PATH"],
     ["business_data", "اجعله يرى بيانات مطعمي فقط", "BUSINESS_DATA_SOURCE_ADAPTER"],
     ["branding", "اجعل اسمه وشعاره لمطعمي", "PERSISTENT_WORLD_MATERIALIZATION"],
-    ["policies", "طبّق سياسات مطعمي", "SCOPE_ADMINISTRATION_PATH"],
-    ["permissions", "حدد ما يراه الموظفون", "SCOPE_ADMINISTRATION_PATH"],
-    ["providers", "اربط مزوداتي", "SCOPE_ADMINISTRATION_PATH"],
+    ["policies", "طبّق سياسات مطعمي", "AUTHORITY_ADMINISTRATION_PATH"],
+    ["permissions", "حدد ما يراه الموظفون", "AUTHORITY_ADMINISTRATION_PATH"],
+    ["providers", "اربط مزوداتي", "AUTHORITY_ADMINISTRATION_PATH"],
   ] as const).map(([id, goal, blocker]) => ({
     id: `jasimos.${id}`,
     goal,
@@ -1709,9 +1725,9 @@ const IDEA_CASES: readonly Omit<Scenario, "family" | "domainBranchesRequired">[]
       REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
       PRESENTABLE: "PASS", PERSISTENT: "PASS",
     }),
-    currentBlocker: "GENERAL_AGREEMENT_RUNTIME",
+    currentBlocker: "AUTHORITY_ADMINISTRATION_PATH",
     truthfulRuntimeState:
-      "The availabilities publish and match today; the rota itself is recurring Commitments under an Agreement, and the agreement runtime does not exist. The answer is that named capability, not that JASIM does not do neighbourhoods.",
+      "The availabilities publish and match, and a turn slot is a Term with a due time that becomes an OPEN Commitment when agreed. What nobody can do yet is authorize JASIM to agree on their behalf by saying so. The answer is that door, not that JASIM does not do neighbourhoods.",
   },
   {
     id: "idea.rare_seed_lending_ring",
@@ -1729,9 +1745,9 @@ const IDEA_CASES: readonly Omit<Scenario, "family" | "domainBranchesRequired">[]
       REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
       PRESENTABLE: "PASS", PERSISTENT: "PASS",
     }),
-    currentBlocker: "GENERAL_AGREEMENT_RUNTIME",
+    currentBlocker: "AUTHORITY_ADMINISTRATION_PATH",
     truthfulRuntimeState:
-      "«ضعف الكمية بعد الموسم» is a Term with a quantity ratio and a deadline — representable, unenforceable: nothing carries a Term into an Agreement yet, and returning seed is a HUMAN_ACTION nothing observes.",
+      "«ضعف الكمية بعد الموسم» is a Term with a quantity, a holder and a deadline, and it now becomes a Commitment that stays OPEN until something observes otherwise. Returning the seed is still a HUMAN_ACTION nothing observes, and agreeing on someone's behalf still needs a limit they delegated.",
   },
   {
     id: "idea.vanishing_dialect_archive",

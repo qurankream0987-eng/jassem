@@ -39,6 +39,14 @@ import {
   respondToProposal,
 } from "../runtime/economic-fabric";
 import {
+  AgreementAuthorityError,
+  AgreementInputError,
+  commitAgreement,
+  getAgreement,
+  negotiationEnvelopeHistory,
+  setNegotiationEnvelope,
+} from "../runtime/agreement-runtime";
+import {
   ExternalActionSessionError,
   UntrustedExternalUrlError,
   consumeExternalActionSession,
@@ -57,6 +65,12 @@ function handleFabricError(error: unknown): never {
     throw new TRPCError({ code: "NOT_FOUND", message: error.message, cause: error });
   }
   if (error instanceof UntrustedExternalUrlError) {
+    throw new TRPCError({ code: "BAD_REQUEST", message: error.message, cause: error });
+  }
+  if (error instanceof AgreementAuthorityError) {
+    throw new TRPCError({ code: "FORBIDDEN", message: error.message, cause: error });
+  }
+  if (error instanceof AgreementInputError) {
     throw new TRPCError({ code: "BAD_REQUEST", message: error.message, cause: error });
   }
   if (error instanceof ExternalActionSessionError) {
@@ -283,6 +297,107 @@ export const fabricRouter = router({
           ownerId: ownerIdOf(ctx),
           action: input.action,
         });
+      } catch (error) {
+        handleFabricError(error);
+      }
+    }),
+
+  /**
+   * Delegate BOUNDED AUTHORITY inside one engagement.
+   *
+   * This is where «لا تتجاوز 250 دينارًا ولا تخبره بذلك» lands. It is a
+   * trusted-path act on purpose: an envelope is authority, and authority is
+   * delegated by a person who is present, never by a plan.
+   *
+   * The reserve enters here and leaves nowhere. No projection carries it, no
+   * model context receives it, and no counterparty response contains it.
+   */
+  negotiationEnvelopeSet: authedQuery
+    .input(
+      z.object({
+        engagementId: z.string(),
+        bounds: z.record(z.string(), z.unknown()),
+        mayConcede: z.boolean().optional(),
+        mayAcceptWithinReserve: z.boolean().optional(),
+        expiresAt: z.string().datetime().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const envelope = await setNegotiationEnvelope({
+          engagementId: input.engagementId,
+          ownerId: ownerIdOf(ctx),
+          principalId: ownerIdOf(ctx),
+          bounds: input.bounds,
+          mayConcede: input.mayConcede,
+          mayAcceptWithinReserve: input.mayAcceptWithinReserve,
+          ...(input.expiresAt ? { expiresAt: new Date(input.expiresAt) } : {}),
+        });
+        // The row is NOT returned. It carries the reserve, and a response is a
+        // place a reserve could travel to.
+        return {
+          envelopeId: envelope.id,
+          version: envelope.version,
+          mayConcede: envelope.mayConcede,
+          mayAcceptWithinReserve: envelope.mayAcceptWithinReserve,
+          boundedTerms: Object.keys(envelope.bounds as Record<string, unknown>),
+        };
+      } catch (error) {
+        handleFabricError(error);
+      }
+    }),
+
+  /** Which versions existed and who delegated each. Never their bounds. */
+  negotiationEnvelopeHistory: authedQuery
+    .input(z.object({ engagementId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const rows = await negotiationEnvelopeHistory({
+          engagementId: input.engagementId,
+          ownerId: ownerIdOf(ctx),
+        });
+        return rows.map((row) => ({
+          envelopeId: row.id,
+          version: row.version,
+          state: row.state,
+          setBy: row.setByPrincipalId,
+          mayConcede: row.mayConcede,
+          mayAcceptWithinReserve: row.mayAcceptWithinReserve,
+          boundedTerms: Object.keys(row.bounds as Record<string, unknown>),
+          createdAt: row.createdAt,
+        }));
+      } catch (error) {
+        handleFabricError(error);
+      }
+    }),
+
+  /**
+   * Agree, as the owner themselves.
+   *
+   * `ownerDirect` is set HERE and nowhere a plan can reach, because this is the
+   * one place a person is actually present. `EXECUTION != APPROVAL`.
+   */
+  agreementCommit: authedQuery
+    .input(z.object({ proposalId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const { agreement, commitments } = await commitAgreement({
+          proposalId: input.proposalId,
+          ownerId: ownerIdOf(ctx),
+          principalId: ownerIdOf(ctx),
+          ownerDirect: true,
+        });
+        return { agreement, commitments };
+      } catch (error) {
+        handleFabricError(error);
+      }
+    }),
+
+  agreementGet: authedQuery
+    .input(z.object({ agreementId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        return await getAgreement(input.agreementId, ownerIdOf(ctx));
       } catch (error) {
         handleFabricError(error);
       }

@@ -143,6 +143,24 @@ mechanism that nothing a person says can reach.
 
 Those are two facts, and one test passing is never a reason to promote both.
 
+## One door, twice
+
+Two families — `BUSINESS` and `AGREEMENT` — arrived at the same blocker from
+opposite directions, and that is what made it a **general** gap rather than two
+missing features.
+
+Creating an organization, granting a verb, setting a policy, binding a provider
+and delegating a negotiating limit are one shape: an **authority act**. A plan
+may never perform one on the person's behalf, because an approval the person did
+not read is not an approval — so none of them can be reached by talking yet, and
+all of them name `AUTHORITY_ADMINISTRATION_PATH`.
+
+Note what moved and what did not when the agreement runtime landed. `PLANNABLE`
+moved for all eleven agreement scenarios at once, which is what a general
+mechanism looks like when it arrives. `EXECUTABLE` moved for none of them,
+because the door is a different thing. A phase that promoted both would have
+been reporting its own effort rather than the repository.
+
 ## What the ratchets can and cannot prove
 
 | ratchet | proves | does **not** prove |
@@ -172,10 +190,10 @@ claim this catalog exists to prevent.
 |---|---:|---:|---:|---:|---:|
 | **REPRESENTABLE** | 162 | 0 | 0 | 0 | 0 |
 | **ROUTABLE** | 162 | 0 | 0 | 0 | 0 |
-| **PLANNABLE** | 122 | 40 | 0 | 0 | 0 |
+| **PLANNABLE** | 133 | 29 | 0 | 0 | 0 |
 | **EXECUTABLE** | 65 | 69 | 26 | 2 | 0 |
-| **OBSERVABLE** | 67 | 22 | 20 | 0 | 53 |
-| **VERIFIABLE** | 62 | 27 | 20 | 0 | 53 |
+| **OBSERVABLE** | 69 | 22 | 20 | 0 | 51 |
+| **VERIFIABLE** | 64 | 27 | 20 | 0 | 51 |
 | **PRESENTABLE** | 160 | 2 | 0 | 0 | 0 |
 | **PERSISTENT** | 128 | 17 | 0 | 0 | 17 |
 
@@ -187,16 +205,15 @@ Scenarios waiting on a **general capability**: **69**
 
 Each of these closes many scenarios at once. That is what makes it general.
 
+- `AUTHORITY_ADMINISTRATION_PATH`
 - `BUSINESS_DATA_SOURCE_ADAPTER`
 - `EXTERNAL_DISCOVERY_PROVIDER`
-- `GENERAL_AGREEMENT_RUNTIME`
 - `GENERAL_TRANSACTION_FULFILLMENT`
 - `LIVING_OBJECT_RUNTIME`
 - `LOCATION_OBSERVATION`
 - `MONITORING_ENGINE`
 - `PERSISTENT_WORLD_MATERIALIZATION`
 - `REALTIME_RUNTIME`
-- `SCOPE_ADMINISTRATION_PATH`
 - `SECURE_PRODUCT_ACTION_RUNTIME`
 - `SPONSORED_DISCOVERY_RUNTIME`
 - `SUBSCRIPTION_RUNTIME`
@@ -304,17 +321,17 @@ Each of these closes many scenarios at once. That is what makes it general.
 
 | id | goal | route | REPR | ROUT | PLAN | EXEC | OBSE | VERI | PRES | PERS | blocker |
 |---|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|
-| `agreement.price` | فاوضه على السعر | GENERAL_PLANGRAPH | ● | ● | ○ | ○ | ● | ● | ● | ● | GENERAL_AGREEMENT_RUNTIME |
-| `agreement.delivery` | فاوضه على موعد التسليم | GENERAL_PLANGRAPH | ● | ● | ○ | ○ | ● | ● | ● | ● | GENERAL_AGREEMENT_RUNTIME |
-| `agreement.payment_terms` | فاوضه على الدفع بعد 30 يومًا | GENERAL_PLANGRAPH | ● | ● | ○ | ○ | ● | ● | ● | ● | GENERAL_AGREEMENT_RUNTIME |
-| `agreement.salary` | فاوضه على الراتب | GENERAL_PLANGRAPH | ● | ● | ○ | ○ | ● | ● | ● | ● | GENERAL_AGREEMENT_RUNTIME |
-| `agreement.rent` | فاوضه على الإيجار | GENERAL_PLANGRAPH | ● | ● | ○ | ○ | ● | ● | ● | ● | GENERAL_AGREEMENT_RUNTIME |
-| `agreement.shipping` | فاوضه على أجرة الشحن | GENERAL_PLANGRAPH | ● | ● | ○ | ○ | ● | ● | ● | ● | GENERAL_AGREEMENT_RUNTIME |
-| `agreement.service` | فاوضه على نطاق الخدمة | GENERAL_PLANGRAPH | ● | ● | ○ | ○ | ● | ● | ● | ● | GENERAL_AGREEMENT_RUNTIME |
-| `agreement.equipment` | فاوضه على أجرة المعدة | GENERAL_PLANGRAPH | ● | ● | ○ | ○ | ● | ● | ● | ● | GENERAL_AGREEMENT_RUNTIME |
-| `agreement.buyer_private_maximum` | لا تتجاوز 250 دينارًا ولا تخبره بذلك | GENERAL_PLANGRAPH | ● | ● | ○ | ○ | — | — | ● | ● | GENERAL_AGREEMENT_RUNTIME |
-| `agreement.seller_private_minimum` | لا تنزل تحت 180 ولا تكشف الحد | GENERAL_PLANGRAPH | ● | ● | ○ | ○ | — | — | ● | ● | GENERAL_AGREEMENT_RUNTIME |
-| `agreement.commitment` | اتفقنا — ثبّت الاتفاق | GENERAL_PLANGRAPH | ● | ● | ○ | ○ | ● | ● | ● | ● | GENERAL_AGREEMENT_RUNTIME |
+| `agreement.price` | فاوضه على السعر | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
+| `agreement.delivery` | فاوضه على موعد التسليم | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
+| `agreement.payment_terms` | فاوضه على الدفع بعد 30 يومًا | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
+| `agreement.salary` | فاوضه على الراتب | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
+| `agreement.rent` | فاوضه على الإيجار | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
+| `agreement.shipping` | فاوضه على أجرة الشحن | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
+| `agreement.service` | فاوضه على نطاق الخدمة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
+| `agreement.equipment` | فاوضه على أجرة المعدة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
+| `agreement.buyer_private_maximum` | لا تتجاوز 250 دينارًا ولا تخبره بذلك | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
+| `agreement.seller_private_minimum` | لا تنزل تحت 180 ولا تكشف الحد | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
+| `agreement.commitment` | اتفقنا — ثبّت الاتفاق | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ● | ● | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
 
 ### TRANSACTIONS · 8
 
@@ -403,11 +420,11 @@ Each of these closes many scenarios at once. That is what makes it general.
 | `business.needs` | انشر احتياجاتي | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `business.resources` | سجّل معداتي | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `business.capacity` | سجّل طاقتي المتاحة | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
-| `business.scope` | أنشئ حساب شركتي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_ADMINISTRATION_PATH |
-| `business.team` | أضف موظفًا إلى فريقي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_ADMINISTRATION_PATH |
-| `business.permissions` | اعطه صلاحية العروض فقط | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_ADMINISTRATION_PATH |
-| `business.policies` | ضع سياسة: لا تبيع بأقل من التكلفة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_ADMINISTRATION_PATH |
-| `business.provider_bindings` | اربط نظام المخزون عندي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_ADMINISTRATION_PATH |
+| `business.scope` | أنشئ حساب شركتي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
+| `business.team` | أضف موظفًا إلى فريقي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
+| `business.permissions` | اعطه صلاحية العروض فقط | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
+| `business.policies` | ضع سياسة: لا تبيع بأقل من التكلفة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
+| `business.provider_bindings` | اربط نظام المخزون عندي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
 | `business.analytics` | أرني أداء المبيعات | DIRECT_READ | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_DATA_SOURCE_ADAPTER |
 | `business.world_association` | اربط نظام شركتي بهذا الحساب | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | PERSISTENT_WORLD_MATERIALIZATION |
 
@@ -425,12 +442,12 @@ Each of these closes many scenarios at once. That is what makes it general.
 
 | id | goal | route | REPR | ROUT | PLAN | EXEC | OBSE | VERI | PRES | PERS | blocker |
 |---|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|
-| `jasimos.same_core` | شغّل جاسم لمطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_ADMINISTRATION_PATH |
+| `jasimos.same_core` | شغّل جاسم لمطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
 | `jasimos.business_data` | اجعله يرى بيانات مطعمي فقط | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_DATA_SOURCE_ADAPTER |
 | `jasimos.branding` | اجعل اسمه وشعاره لمطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | PERSISTENT_WORLD_MATERIALIZATION |
-| `jasimos.policies` | طبّق سياسات مطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_ADMINISTRATION_PATH |
-| `jasimos.permissions` | حدد ما يراه الموظفون | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_ADMINISTRATION_PATH |
-| `jasimos.providers` | اربط مزوداتي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_ADMINISTRATION_PATH |
+| `jasimos.policies` | طبّق سياسات مطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
+| `jasimos.permissions` | حدد ما يراه الموظفون | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
+| `jasimos.providers` | اربط مزوداتي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
 
 ### HOLDOUT · 16
 
@@ -459,8 +476,8 @@ Each of these closes many scenarios at once. That is what makes it general.
 |---|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|
 | `idea.skill_hour_bank` | عندي فكرة: بنك وقت، الناس يتبادلون ساعات مهارة بدل النقود | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `idea.rainwater_surplus_ring` | فكرة: الجيران يتشاركون فائض ماء المطر المجمّع من أسطحهم | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
-| `idea.elder_companionship_rota` | فكرة: دوام تناوب لمرافقة كبار السن الوحيدين في الحي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ○ | ○ | ● | ● | GENERAL_AGREEMENT_RUNTIME |
-| `idea.rare_seed_lending_ring` | فكرة: حلقة إعارة بذور نادرة، تُرجَع بضعف الكمية بعد الموسم | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ○ | ○ | ● | ● | GENERAL_AGREEMENT_RUNTIME |
+| `idea.elder_companionship_rota` | فكرة: دوام تناوب لمرافقة كبار السن الوحيدين في الحي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ○ | ○ | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
+| `idea.rare_seed_lending_ring` | فكرة: حلقة إعارة بذور نادرة، تُرجَع بضعف الكمية بعد الموسم | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ○ | ○ | ● | ● | AUTHORITY_ADMINISTRATION_PATH |
 | `idea.vanishing_dialect_archive` | فكرة: أرشيف للهجات التي تنقرض، يسجّله كبار السن وتُفهرس مقاطعه | GENERAL_PLANGRAPH | ● | ● | ● | P | P | P | ● | ● | — |
 | `idea.dark_sky_map` | فكرة: خريطة لأماكن الظلام الصالحة لرصد النجوم يحدّثها الراصدون | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ○ | ○ | ● | ● | LOCATION_OBSERVATION |
 | `idea.flood_channel_watch` | فكرة: أهل الوادي يتابعون مجرى السيل ويُنبَّهون قبل الفيضان | MONITORING | ● | ● | ○ | ○ | ○ | ○ | ● | ● | MONITORING_ENGINE |

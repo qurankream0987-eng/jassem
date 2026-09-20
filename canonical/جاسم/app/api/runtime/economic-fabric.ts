@@ -665,6 +665,33 @@ export async function matchNeed(input: {
 // Engagement + versioned Proposal + TransactionIntent
 // ---------------------------------------------------------------------------
 
+/**
+ * The parties of a match, derived from the matched expressions.
+ *
+ * Exported because a caller that had to NAME the participants could name a
+ * stranger. The only correct answer comes from the match itself, so the only
+ * safe thing a caller can do is ask for it.
+ */
+export async function participantsForMatch(matchId: string): Promise<string[]> {
+  const [match] = await db
+    .select()
+    .from(economicMatches)
+    .where(eq(economicMatches.id, matchId))
+    .limit(1);
+  if (!match) throw new EconomicNotFoundError("Match not found.");
+  const expressionIds = [
+    match.needId,
+    ...(match.offeringId
+      ? [match.offeringId]
+      : (match.compositeComponents ?? []).map((c) => c.expressionId)),
+  ];
+  const matched = await db
+    .select()
+    .from(economicExpressions)
+    .where(inArray(economicExpressions.id, expressionIds));
+  return [...new Set(matched.map((row) => row.ownerId))];
+}
+
 export async function createEngagement(input: {
   matchId: string;
   initiatorOwnerId: string;
@@ -690,17 +717,7 @@ export async function createEngagement(input: {
     );
   }
   // Derive the exact participant set from the matched expressions.
-  const expressionIds = [
-    match.needId,
-    ...(match.offeringId
-      ? [match.offeringId]
-      : (match.compositeComponents ?? []).map((c) => c.expressionId)),
-  ];
-  const matched = await db
-    .select()
-    .from(economicExpressions)
-    .where(inArray(economicExpressions.id, expressionIds));
-  const allowed = new Set(matched.map((row) => row.ownerId));
+  const allowed = new Set(await participantsForMatch(input.matchId));
   const requested = new Set(input.participants);
   if (requested.size !== allowed.size || [...requested].some((p) => !allowed.has(p))) {
     throw new EconomicAuthorizationError(

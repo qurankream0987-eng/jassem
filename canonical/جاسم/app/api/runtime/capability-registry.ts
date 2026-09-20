@@ -23,6 +23,16 @@ import {
   type EffectResolver,
 } from "./completion-policy";
 import {
+  executeAgreementCommit,
+  executeAgreementOpen,
+  executeAgreementPropose,
+  executeAgreementRespond,
+  resolveCommitEffect,
+  resolveOpenEffect,
+  resolveProposeEffect,
+  resolveRespondEffect,
+} from "./agreement-capabilities";
+import {
   executeOpportunityDiscover,
   executeOpportunityMatch,
   executeOpportunityPublish,
@@ -906,6 +916,121 @@ runtimeCapabilityRegistry.register({
   },
   inputContract: { requiredKeys: ["needId"] },
   execute: async (inputs, context) => executeOpportunityMatch(inputs, context.ownerId),
+});
+
+// ─── The general agreement runtime ──────────────────────────────────────────
+//
+// Four capabilities for every subject there is. A `SalaryNegotiation` beside a
+// `RentNegotiation` would be the failure these four exist to prevent.
+//
+//   Intent != Proposal != Approval != Agreement != Transaction != Fulfillment
+//
+// Every one is INTERNAL_STATE with a readback, because JASIM owns these rows
+// and therefore JASIM's own reading — never the executor's return value — is
+// what makes any of them VERIFIED.
+// ─────────────────────────────────────────────────────────────────────────────
+
+runtimeCapabilityRegistry.register({
+  id: "agreement-open",
+  version: "1",
+  aliases: ["open-negotiation", "start-negotiation", "engage"],
+  risk: "medium",
+  scopePermission: "mutate",
+  sideEffects: "external",
+  effectKind: "INTERNAL_STATE",
+  effectEvidenceSource: "EXECUTOR_RETURN",
+  resolveEffect: (context) =>
+    resolveOpenEffect({ ownerId: context.ownerId, result: context.result }),
+  compensation: {
+    // Closing an engagement is a state change, not an erasure: the other party
+    // already knows someone wanted to talk.
+    reversibility: "PARTIALLY_COMPENSATABLE",
+    residualNote: "Closing an engagement does not unsend the approach that opened it.",
+  },
+  inputContract: { requiredKeys: ["matchId"] },
+  execute: async (inputs, context) => executeAgreementOpen(inputs, context.ownerId),
+});
+
+runtimeCapabilityRegistry.register({
+  id: "agreement-propose",
+  version: "1",
+  aliases: ["propose-terms", "make-offer", "counter-offer", "propose"],
+  risk: "medium",
+  // Putting terms on the table in a scope's name commits nobody and speaks for
+  // everybody in it. That is `publish`.
+  scopePermission: "publish",
+  sideEffects: "external",
+  effectKind: "INTERNAL_STATE",
+  effectEvidenceSource: "EXECUTOR_RETURN",
+  resolveEffect: (context) =>
+    resolveProposeEffect({ ownerId: context.ownerId, result: context.result }),
+  compensation: {
+    reversibility: "PARTIALLY_COMPENSATABLE",
+    residualNote: "A withdrawn proposal was still read; a counterparty may have acted on it.",
+  },
+  inputContract: { requiredKeys: ["engagementId", "terms"] },
+  execute: async (inputs, context) => executeAgreementPropose(inputs, context.ownerId),
+});
+
+/**
+ * Responding may write a counter and may write nothing, and BOTH are claims.
+ *
+ * Declared INTERNAL_STATE for both branches rather than switching: a capability
+ * whose effect class depended on its own outcome could report the cheaper one.
+ * The readback checks whichever branch was reported.
+ */
+runtimeCapabilityRegistry.register({
+  id: "agreement-respond",
+  version: "1",
+  aliases: ["evaluate-proposal", "respond-to-proposal", "negotiate"],
+  risk: "medium",
+  scopePermission: "publish",
+  sideEffects: "external",
+  effectKind: "INTERNAL_STATE",
+  effectEvidenceSource: "EXECUTOR_RETURN",
+  resolveEffect: (context) =>
+    resolveRespondEffect({ ownerId: context.ownerId, result: context.result }),
+  compensation: {
+    reversibility: "PARTIALLY_COMPENSATABLE",
+    residualNote: "A counter that was sent cannot be unsent.",
+  },
+  inputContract: { requiredKeys: ["proposalId"] },
+  execute: async (inputs, context) => executeAgreementRespond(inputs, context.ownerId),
+});
+
+/**
+ * Agreeing. On an ENVELOPE's authority and never on the owner's own.
+ *
+ *   EXECUTION != APPROVAL
+ *
+ * A capability sees a scope id and cannot see the person, so it cannot tell an
+ * approved run from an unapproved one. Accepting on the owner's direct
+ * authority happens where the person is present, and `ownerDirect` is a
+ * reserved input here so naming it is refused rather than obeyed.
+ */
+runtimeCapabilityRegistry.register({
+  id: "agreement-commit",
+  version: "1",
+  aliases: ["accept-proposal", "agree", "conclude-agreement"],
+  risk: "high",
+  // Agreeing in a scope's name is an approval, and it is the one verb here
+  // that a merely-publishing member must not hold.
+  scopePermission: "approve",
+  authorityClass: "owner",
+  sideEffects: "external",
+  effectKind: "INTERNAL_STATE",
+  effectEvidenceSource: "EXECUTOR_RETURN",
+  resolveEffect: (context) =>
+    resolveCommitEffect({ ownerId: context.ownerId, result: context.result }),
+  compensation: {
+    // An agreement is not undone by deleting it. Ending one is its own act
+    // between the parties, and this runtime does not have it.
+    reversibility: "IRREVERSIBLE",
+    residualNote:
+      "An agreement is a fact between two parties. Releasing one is a separate act they both take, not a deletion.",
+  },
+  inputContract: { requiredKeys: ["proposalId"] },
+  execute: async (inputs, context) => executeAgreementCommit(inputs, context.ownerId),
 });
 
 // ─── Phase K — One Real Provider ────────────────────────────────────────────

@@ -225,6 +225,73 @@ DOMAIN_ROLES_ADDED          = 0
 A business's *kind* — restaurant, factory, school — is an **attribute** of the
 organization. It is data the owner supplies, and no production code branches on it.
 
+## 4.6 NEGOTIATION AND AGREEMENT
+
+One negotiation mechanism, for every subject there is. A salary, a rent, a
+shipping fee, a service scope and six hours of laboratory time are the same
+evaluator and the same four capabilities, differing only in a term key that
+nothing in the runtime reads.
+
+```
+Intent != Proposal != Approval != Agreement != Transaction != Fulfillment
+```
+
+Reaching an Agreement moves no money, books nothing and tells nobody. It records
+that two parties agreed to an exact proposal **version** and under whose
+authority. A Commitment exists only where the term sheet **declared** who owes
+what: a runtime that inferred the payer from a field called `price` would have
+acquired a domain at the worst possible point.
+
+### Bounded authority
+
+```
+TARGET != AUTHORITY
+```
+
+The target is what someone would like. The reserve is what they may go to.
+«لا تتجاوز 250 دينارًا ولا تخبره بذلك» is two different facts — a limit and a
+secret — and the envelope holds both. A counter is clamped at the reserve over
+any number of rounds, and an envelope may never agree past its own limit. The
+owner themselves may agree to anything they like: the reserve bounds what JASIM
+may do **on their behalf**, never what they may decide.
+
+Undeclared authority is **no** authority: `mayConcede` and `mayAcceptWithinReserve`
+both default to false.
+
+```
+RESERVE != LLM CONTEXT
+```
+
+A reserve is treated as a credential. It never enters a model context, never
+appears in a counterparty projection and never explains a refusal.
+
+```
+NOT_DISCLOSED != NOT_INFERABLE
+```
+
+And the runtime does not claim more than that. A reserve is never **stated**; it
+may still be **inferred** from a sequence of counters, and asserting otherwise
+would be the false guarantee.
+
+### A capability may not approve
+
+```
+EXECUTION != APPROVAL
+```
+
+A capability sees a scope id, not a person, and cannot tell an approved run from
+an unapproved one. So it may act only within a limit the owner delegated in
+advance, where the person read the number. Accepting on the owner's own
+authority happens where the person is present.
+
+```
+DOMAIN_NEGOTIATION_TYPES_ADDED = 0
+DOMAIN_TERM_TYPES_ADDED        = 0
+```
+
+There is no `SalaryNegotiation`, no `RentNegotiation`, no currency type and no
+date type. What is being negotiated lives in a term key, which is data.
+
 ## 5. Business is a scope, not an app
 
 A Business may own data, Needs, Offerings, Resources, Capacity, Policies,
