@@ -259,6 +259,18 @@ export const EFFECT_AUTHORITY_KEYS: ReadonlySet<string> = new Set([
   "verificationstatus",
   "sufficientsources",
   "completiondecision",
+  // The same self-grading vocabulary the observation boundary refuses. A name
+  // that cannot enter through a signal must not enter through a capability's
+  // own output either: one door closed and the other open is one open door.
+  "trustlevel",
+  "trustclass",
+  "trustscore",
+  "providertrust",
+  "independent",
+  "authoritative",
+  "proofclass",
+  "confirmed",
+  "effectverified",
 ]);
 
 const EFFECT_STATES: ReadonlySet<string> = new Set<EffectState>([

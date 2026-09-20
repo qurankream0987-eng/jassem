@@ -48,7 +48,8 @@
 import { randomUUID } from "node:crypto";
 import { and, desc, eq, gte } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { executionAttempts, observations, type Observation } from "@db/schema";
+import { events, executionAttempts, observations, type Observation } from "@db/schema";
+import type { Freshness } from "./canonical-dataset";
 import type { EffectAssertion, EffectClaimSource, EffectState } from "./completion-policy";
 
 export type BridgeDb = NodePgDatabase<any>;
@@ -166,6 +167,19 @@ export type EffectSignalInput = {
   observedAt?: Date;
   /** How long this observation may be treated as current. */
   freshnessTtlMs?: number;
+  /**
+   * The sender's own stable identity for this signal.
+   *
+   * A provider that retries a callback sends the same one. Ingestion is
+   * idempotent on `(ownerId, attemptId, correlationId)`: the second arrival
+   * returns the first row instead of appending a second observation, so a
+   * retried webhook cannot make one delivery look like two.
+   *
+   * It is a DEDUPLICATION key, never an authority claim — a caller cannot use
+   * it to reach another owner's attempt, because the attempt binding below is
+   * owner-scoped regardless.
+   */
+  correlationId?: string;
   provenance?: Record<string, unknown>;
 };
 
@@ -245,6 +259,38 @@ export async function submitEffectSignal(
       ? new Date(observedAt.getTime() + input.freshnessTtlMs)
       : null;
 
+  // ── Replay ─────────────────────────────────────────────────────────────
+  //
+  // A provider that does not get its 200 sends the callback again. Appending a
+  // second observation would not repeat the physical effect — nothing here
+  // executes anything — but it would let one delivery be counted twice by any
+  // policy that counts, and it would put two rows where the world had one
+  // event. The earlier row is returned unchanged: a replay teaches nothing new
+  // and must not rewrite what was already recorded.
+  const correlationId = input.correlationId?.trim();
+  if (correlationId) {
+    const prior = await db
+      .select()
+      .from(observations)
+      .where(
+        and(
+          eq(observations.ownerId, input.ownerId),
+          eq(observations.subjectKind, input.subjectKind),
+          eq(observations.subjectId, input.subjectId),
+          eq(observations.observationType, input.observationType),
+        ),
+      )
+      .orderBy(desc(observations.observedAt))
+      .limit(50);
+    const duplicate = prior.find((row) => {
+      const provenance = row.provenance as { attemptId?: unknown; correlationId?: unknown };
+      return (
+        provenance.attemptId === input.attemptId && provenance.correlationId === correlationId
+      );
+    });
+    if (duplicate) return duplicate;
+  }
+
   const [row] = await db
     .insert(observations)
     .values({
@@ -265,12 +311,73 @@ export async function submitEffectSignal(
         runId: attempt.runId,
         nodeId: attempt.nodeId,
         receivedAt: now.toISOString(),
+        ...(correlationId ? { correlationId } : {}),
       },
       payload: input.payload,
       freshnessExpiresAt,
     })
     .returning();
+
+  // ── The durable event ──────────────────────────────────────────────────
+  //
+  // Append-only, owner-scoped, ordered by the table's own serial id — which is
+  // the resume cursor a realtime subscriber will need. It records that an
+  // observation EXISTS and what it is about; the observation itself already
+  // holds the payload, so this carries no duplicate of the value and nothing a
+  // subscriber could mistake for a verdict.
+  await db.insert(events).values({
+    type: "OBSERVATION_RECORDED",
+    source: "runtime",
+    ownerId: input.ownerId,
+    runId: attempt.runId,
+    ...(correlationId ? { correlationId } : {}),
+    message: `An observation of ${input.subjectKind}/${input.observationType} was recorded.`,
+    payload: {
+      observationId: row!.id,
+      subjectKind: input.subjectKind,
+      subjectId: input.subjectId,
+      observationType: input.observationType,
+      attemptId: input.attemptId,
+      nodeId: attempt.nodeId,
+      claimSource: CHANNEL_SOURCE[input.channel],
+      sourceKind: CHANNEL_PROOF_CLASS[input.channel],
+      observedAt: observedAt.toISOString(),
+      // An observation is evidence. Nothing here says it verified anything.
+      effects: "none",
+    },
+  });
   return row!;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Freshness
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * How current an observation is, in the vocabulary the datasets already use.
+ *
+ * ─── WHY THE THIRD STATE IS NOT "PROBABLY FINE" ─────────────────────────────
+ *
+ * An observation that declares no validity horizon says nothing about how long
+ * its reading remains true. A temperature from four seconds ago and a door
+ * state from four seconds ago decay at completely different rates, and neither
+ * the clock nor the runtime knows which this is. Receiving something recently
+ * is a fact about US, not about the world, so a reading with no declared
+ * horizon is `UNKNOWN` — not `CURRENT`.
+ *
+ * This deliberately does NOT replace `classifyObservationPresence`, which
+ * answers a different question for the presentation layer (is there anything
+ * to show) and carries its own default max age. This one answers "may this be
+ * treated as the current state of the world", and it refuses to guess.
+ */
+export function observationFreshness(
+  observation: Pick<Observation, "observedAt" | "freshnessExpiresAt">,
+  now: Date = new Date(),
+): Freshness {
+  const horizon = observation.freshnessExpiresAt?.getTime();
+  if (horizon === undefined) return "UNKNOWN";
+  if (Number.isNaN(observation.observedAt.getTime())) return "UNKNOWN";
+  return horizon > now.getTime() ? "CURRENT" : "STALE";
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -455,6 +562,8 @@ export function observationEffectResolver(
     ownerId: string;
     capabilityId: string;
     attemptId: string;
+    runId: string;
+    nodeId: string;
     result: Record<string, unknown> | null;
   }) => Omit<ObservationEffectQuery, "ownerId" | "attemptId"> | undefined,
 ) {
@@ -475,4 +584,103 @@ export function observationEffectResolver(
     });
     return evidence?.assertion;
   };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Declaring what would count as an effect having occurred
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * A capability's own statement of what an observation of its effect looks like.
+ *
+ * This is the piece that was missing between a bridge that could record
+ * observations and a policy that could consume them: something a capability
+ * declares ONCE, at registration, so that every capability gets
+ * observation-backed verification without anyone writing a verifier for it.
+ *
+ * ─── WHY THIS IS NOT A DOMAIN HOOK ──────────────────────────────────────────
+ *
+ * It names no subject matter. `subject` derives an opaque `(kind, id)` pair
+ * from the trusted execution context; `observationType` is the property being
+ * watched; `occurredWhen` reads a payload the RUNTIME already classified. A
+ * valve, a calibration cycle, a generator and a delivery all declare the same
+ * four things — which is the test of whether this belongs in the core.
+ *
+ * ─── WHAT IT CANNOT DO ──────────────────────────────────────────────────────
+ *
+ * It cannot name its own claim source. The source is fixed when the signal
+ * arrives, by the channel, in `submitEffectSignal`. A capability declaring
+ * what evidence would convince it is not the same as a capability deciding
+ * what its evidence is worth, and only the first is safe.
+ */
+export type EffectExpectationContext = {
+  ownerId: string;
+  capabilityId: string;
+  attemptId: string;
+  runId: string;
+  nodeId: string;
+  result: Record<string, unknown> | null;
+};
+
+export type EffectExpectation = {
+  /** The property observed — "state", "delivery", "existence", "position". */
+  observationType: string;
+  /**
+   * What the observation must be ABOUT, derived from trusted context.
+   *
+   * `undefined` means this attempt produced nothing identifiable to observe,
+   * which leaves the effect unconfirmed rather than confirmed.
+   */
+  subject: (context: EffectExpectationContext) =>
+    | { subjectKind: string; subjectId: string }
+    | undefined;
+  /**
+   * The observed payload that means the effect occurred.
+   *
+   * It receives the execution context as well, so a capability can say "the
+   * observed state equals the state this attempt asked for" without naming a
+   * single state. That is what lets one declaration serve a valve, a
+   * calibration cycle and a generator: the target travels in the result, and
+   * the predicate compares rather than recognises.
+   */
+  occurredWhen: (
+    payload: Record<string, unknown>,
+    context: EffectExpectationContext,
+  ) => boolean;
+  /** The observed payload that means it definitively did not. */
+  notOccurredWhen?: (
+    payload: Record<string, unknown>,
+    context: EffectExpectationContext,
+  ) => boolean;
+  /**
+   * How current an observation must be to be evidence of THIS effect.
+   *
+   * Separate from the row's own TTL on purpose: the sender says how long its
+   * reading stays meaningful, and the capability says how recent a reading has
+   * to be to answer this particular question. Both must pass.
+   */
+  maxAgeMs?: number;
+};
+
+/**
+ * Compose a declaration into the resolver the completion policy already takes.
+ *
+ * One function, no registry of verifiers, nothing per capability. Adding an
+ * observation-verified capability is adding a declaration.
+ */
+export function expectationEffectResolver(db: BridgeDb, expectation: EffectExpectation) {
+  return observationEffectResolver(db, (context) => {
+    const subject = expectation.subject(context);
+    if (!subject) return undefined;
+    return {
+      subjectKind: subject.subjectKind,
+      subjectId: subject.subjectId,
+      observationType: expectation.observationType,
+      occurredWhen: (payload) => expectation.occurredWhen(payload, context),
+      ...(expectation.notOccurredWhen
+        ? { notOccurredWhen: (payload: Record<string, unknown>) => expectation.notOccurredWhen!(payload, context) }
+        : {}),
+      ...(expectation.maxAgeMs !== undefined ? { maxAgeMs: expectation.maxAgeMs } : {}),
+    };
+  });
 }

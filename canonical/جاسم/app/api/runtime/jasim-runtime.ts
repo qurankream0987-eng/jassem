@@ -2743,6 +2743,66 @@ async function appendDagNodeEvent(input: {
   });
 }
 
+/**
+ * The durable, append-only record of a verification decision.
+ *
+ * `verificationDetail` on the attempt is the CURRENT verdict, and
+ * reconciliation overwrites it — which is correct for "what do we believe now"
+ * and useless for "what did we believe, and on what evidence". A later
+ * observation is a new fact, not a correction of the old one, so the
+ * transitions are appended here and never rewritten.
+ *
+ * It is also the event a realtime subscriber will resume from: the row's own
+ * serial id is the cursor, `ownerId` is the scope, and nothing in the payload
+ * carries a value a subscriber could mistake for the evidence itself.
+ */
+async function appendVerificationEvent(input: {
+  runId: string;
+  ownerId: string;
+  nodeId: string;
+  attemptId: string;
+  capabilityId: string;
+  effectKind: string;
+  from: string | null;
+  to: string;
+  decision?: string;
+  reasonCode?: string;
+  assertions: readonly { state: string; source: string; authority?: string; reference?: string }[];
+  stage: "EXECUTION" | "RECONCILIATION";
+}): Promise<void> {
+  // Unchanged is not a transition. Appending one on every reconciliation pass
+  // would bury the real changes under a heartbeat.
+  if (input.from === input.to && input.stage === "RECONCILIATION") return;
+  await db.insert(jasimRuntimeRunEvents).values({
+    type: "VERIFICATION_CHANGED",
+    source: "runtime",
+    ownerId: input.ownerId,
+    runId: input.runId,
+    message: `Verification of ${input.capabilityId} moved ${input.from ?? "—"} → ${input.to}.`,
+    payload: {
+      attemptId: input.attemptId,
+      nodeId: input.nodeId,
+      capabilityId: input.capabilityId,
+      effectKind: input.effectKind,
+      from: input.from,
+      to: input.to,
+      stage: input.stage,
+      ...(input.decision ? { decision: input.decision } : {}),
+      ...(input.reasonCode ? { reasonCode: input.reasonCode } : {}),
+      // The evidence this verdict rested on, as it stood. Kept because a
+      // verdict without its reasons cannot be audited, and the attempt row's
+      // copy will be overwritten by the next reconciliation.
+      assertions: input.assertions.map((entry) => ({
+        state: entry.state,
+        source: entry.source,
+        ...(entry.authority ? { authority: entry.authority } : {}),
+        ...(entry.reference ? { reference: entry.reference } : {}),
+      })),
+      effects: "none",
+    },
+  });
+}
+
 async function reconcileDagRun(runId: string, ownerId: string): Promise<void> {
   const [run] = await db
     .select()
@@ -4127,6 +4187,24 @@ export async function executeRuntimeDagNode(input: {
       })
       .where(eq(jasimRuntimeExecutionAttempts.id, attemptId));
 
+    await appendVerificationEvent({
+      runId: input.runId,
+      ownerId: input.ownerId,
+      nodeId: running.id,
+      attemptId,
+      capabilityId,
+      effectKind: effectContract.effectKind,
+      // The attempt had no verdict before this: it was created and then run.
+      from: null,
+      to: verification.status,
+      ...(verification.completion?.decision ? { decision: verification.completion.decision } : {}),
+      ...(verification.completion?.reasonCode
+        ? { reasonCode: verification.completion.reasonCode }
+        : {}),
+      assertions: gathered.assertions,
+      stage: "EXECUTION",
+    });
+
     if (gathered.declarationViolation) {
       // A capability that tried to grade its own evidence is a security event,
       // not a formatting quirk. It is already UNCERTAIN by this point; it is
@@ -4221,6 +4299,12 @@ export async function executeRuntimeDagNode(input: {
       fenceVersion: running.fenceVersion,
       output: outputWithLineage,
       now: input.now,
+      // The registry this node was claimed, validated and verified against.
+      // Without it the completion gate re-resolved the capability in the
+      // default registry and refused UNKNOWN_CAPABILITY — so an injected
+      // registry was honoured everywhere except at the last step, and a node
+      // it had just executed could never complete.
+      capabilityRegistry: input.capabilityRegistry,
     });
   } catch (error) {
     if (error instanceof TestOnlySimulatedProcessCrash) {
@@ -9154,6 +9238,23 @@ export async function reconcileUncertainAttempt(
       },
     })
     .where(eq(jasimRuntimeExecutionAttempts.id, attemptId));
+
+  await appendVerificationEvent({
+    runId: attempt.runId,
+    ownerId,
+    nodeId: attempt.nodeId,
+    attemptId,
+    capabilityId: attempt.capabilityId,
+    effectKind: reconcileContract.effectKind,
+    from: attempt.verificationStatus ?? null,
+    to: verification.status,
+    ...(verification.completion?.decision ? { decision: verification.completion.decision } : {}),
+    ...(verification.completion?.reasonCode
+      ? { reasonCode: verification.completion.reasonCode }
+      : {}),
+    assertions: reconcileGathered.assertions,
+    stage: "RECONCILIATION",
+  });
 
   if (lookupResult && node?.status === "RUNNING") {
     if (!node.claimedBy || !attempt.leaseToken) {

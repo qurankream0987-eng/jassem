@@ -69,6 +69,16 @@ export const AUTHORITY_KEYS: ReadonlySet<string> = new Set([
   "approvalnotrequired",
   "authorityoverride",
   "executionverified",
+  // Effect-verification authority. A model may say what it believes happened;
+  // it may not name how much its own word is worth, nor grade an observation.
+  // The same six names are refused at the observation boundary — a claim that
+  // cannot enter through a signal must not enter through a proposal either.
+  "effectverified",
+  "observationverified",
+  "claimsource",
+  "proofclass",
+  "trustscore",
+  "providertrust",
   // Goal authority. A model may state what should happen; it may not declare
   // that a requirement has been waived, met, or approved. Each of these ends a
   // question the model is not entitled to close. Mirrored as

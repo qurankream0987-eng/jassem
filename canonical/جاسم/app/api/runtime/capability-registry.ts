@@ -23,6 +23,10 @@ import {
   type EffectResolver,
 } from "./completion-policy";
 import {
+  expectationEffectResolver,
+  type EffectExpectation,
+} from "./effect-observation-bridge";
+import {
   resolveCompensationPolicy,
   type CompensationPolicy,
 } from "./compensation-policy";
@@ -112,6 +116,21 @@ export type TrustedCapability = {
    * UNCERTAIN assertion, never an optimistic one.
    */
   resolveEffect?: EffectResolver;
+  /**
+   * What an OBSERVATION of this capability's effect looks like.
+   *
+   * The declarative form of `resolveEffect`, and the one that should be used
+   * whenever the authority that owns the effect reports through the runtime's
+   * observation channels rather than through a bespoke API call. The registry
+   * composes it into a resolver below, so a capability gains independent
+   * verification by describing what would convince it — not by anyone writing
+   * a verifier for it.
+   *
+   * An explicit `resolveEffect` wins if both are present: hand-written trusted
+   * code is more specific than a declaration, and silently merging the two
+   * would make which one answered unpredictable.
+   */
+  effectExpectation?: EffectExpectation;
   /**
    * How a verified effect of this capability can be recovered when the larger
    * goal later fails. Omitting it on an effectful capability resolves to
@@ -380,7 +399,14 @@ export class CapabilityRegistry {
       ...(capability.effectEvidenceSource
         ? { effectEvidenceSource: capability.effectEvidenceSource }
         : {}),
-      ...(capability.resolveEffect ? { resolveEffect: capability.resolveEffect } : {}),
+      // Hand-written trusted code first; a declaration composed into the same
+      // resolver shape otherwise. Either way the completion policy sees one
+      // contract and has no idea which form produced it.
+      ...(capability.resolveEffect
+        ? { resolveEffect: capability.resolveEffect }
+        : capability.effectExpectation
+          ? { resolveEffect: expectationEffectResolver(db, capability.effectExpectation) }
+          : {}),
       compensation: resolveCompensationPolicy(effectKind, capability.compensation),
     };
   }
