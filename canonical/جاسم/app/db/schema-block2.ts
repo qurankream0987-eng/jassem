@@ -551,3 +551,74 @@ export type RemoteExecution = typeof remoteExecutions.$inferSelect;
 export type NewRemoteExecution = typeof remoteExecutions.$inferInsert;
 export type NotificationIntent = typeof notificationIntents.$inferSelect;
 export type NewNotificationIntent = typeof notificationIntents.$inferInsert;
+
+// ---------------------------------------------------------------------------
+// ACTOR SCOPE — an organization is a scope that owns things, not a second
+// kind of system. Every table already keys on `ownerId`, which has always
+// meant "acting scope"; an organization is another value that column can hold.
+// ---------------------------------------------------------------------------
+
+export const organizations = pgTable(
+  "organizations",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    displayName: varchar("displayName", { length: 200 }).notNull(),
+    /** Lineage, not authority. Authority comes from membership. */
+    createdByPrincipalId: varchar("createdByPrincipalId", { length: 100 }).notNull(),
+    status: varchar("status", { length: 16 }).notNull().default("active"),
+    /**
+     * What this organization is, as DATA. A "restaurant" lives here and never
+     * as a type in the core: a factory, a school and a clinic differ in their
+     * attributes, never in their architecture.
+     */
+    attributes: jsonb("attributes").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [index("organizations_principal_idx").on(table.createdByPrincipalId)],
+);
+
+export const scopePolicies = pgTable(
+  "scope_policies",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    scopeId: varchar("scopeId", { length: 100 }).notNull(),
+    policyKey: varchar("policyKey", { length: 120 }).notNull(),
+    value: jsonb("value").$type<Record<string, unknown>>().notNull(),
+    version: integer("version").notNull().default(1),
+    state: varchar("state", { length: 16 }).notNull().default("active"),
+    setByPrincipalId: varchar("setByPrincipalId", { length: 100 }).notNull(),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index("scope_policies_scope_idx").on(table.scopeId, table.policyKey, table.version)],
+);
+
+export const scopeProviderBindings = pgTable(
+  "scope_provider_bindings",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    scopeId: varchar("scopeId", { length: 100 }).notNull(),
+    providerClass: varchar("providerClass", { length: 64 }).notNull(),
+    providerId: varchar("providerId", { length: 120 }).notNull(),
+    /** A NAME, never a secret. The value lives in the environment. */
+    credentialEnvName: varchar("credentialEnvName", { length: 160 }),
+    state: varchar("state", { length: 16 }).notNull().default("active"),
+    boundByPrincipalId: varchar("boundByPrincipalId", { length: 100 }).notNull(),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+    revokedAt: timestamp("revokedAt", { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex("scope_provider_bindings_unique_idx").on(
+      table.scopeId,
+      table.providerClass,
+      table.providerId,
+    ),
+  ],
+);
+
+export type Organization = typeof organizations.$inferSelect;
+export type ScopePolicy = typeof scopePolicies.$inferSelect;
+export type ScopeProviderBinding = typeof scopeProviderBindings.$inferSelect;

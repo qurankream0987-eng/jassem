@@ -40,6 +40,7 @@ import {
 import {
   assignPlanCapabilities,
   canonicalJson,
+  capabilityScopePermission,
   executeAssignedCapability,
   executeTrustedCapability,
   evaluateExecutionPolicy,
@@ -77,6 +78,14 @@ import {
   type VerificationResult,
 } from "./execution-verifier";
 import { gatherEffectAssertions } from "./completion-policy";
+import {
+  CONVERSATION_SCOPE_KEY,
+  authorizeScopeAction,
+  conversationScopeMemory,
+  conversationScopeRequest,
+  resolveActingScope,
+  type ScopePermission,
+} from "./actor-scope";
 import { deriveConversationTitle, shouldDeriveTitle } from "./conversation-title";
 import { GoalSpecSchema, evaluateGoalSpec, type GoalEvaluation } from "./goal-spec";
 import { DataNeedSchema } from "./data-need";
@@ -2254,8 +2263,23 @@ export async function createRuntimeRun(input: {
   inputs?: Record<string, unknown>;
   requiredCapabilities?: string[];
   resumeAt?: Date;
+  /**
+   * Who must be able to SEE the conversation, when that is not the run's owner.
+   *
+   * A run owned by an organization hangs off a conversation owned by the
+   * person who spoke: they said it, the company did not. The check here exists
+   * to stop a run being attached to a conversation the requester cannot see,
+   * and the requester is the PRINCIPAL. Defaulting to `ownerId` keeps every
+   * existing caller — where scope and principal are the same — unchanged.
+   */
+  conversationPrincipalId?: string;
 }): Promise<RuntimeRunResponse> {
-  if (input.conversationId) await loadConversationRecord(input.conversationId, input.ownerId);
+  if (input.conversationId) {
+    await loadConversationRecord(
+      input.conversationId,
+      input.conversationPrincipalId ?? input.ownerId,
+    );
+  }
   if (input.bubbleId) await getRuntimeBubble(input.bubbleId, input.ownerId);
   if (input.taskId) await getRuntimeTask(input.taskId, input.ownerId);
   const existing = await db
@@ -5219,8 +5243,13 @@ export async function createExecutionProposal(input: {
   referenceResolution: RuntimeReferenceResolution;
   dependencies?: string[];
   capabilityRegistry?: CapabilityRegistry;
+  /** The person who must be able to see the conversation. See `createRuntimeRun`. */
+  conversationPrincipalId?: string;
 }): Promise<RuntimeExecutionProposalResponse> {
-  await loadConversationRecord(input.conversationId, input.ownerId);
+  await loadConversationRecord(
+    input.conversationId,
+    input.conversationPrincipalId ?? input.ownerId,
+  );
   if (input.runId) await loadRuntimeRunRecord(input.runId, input.ownerId);
   if (input.bubbleId) await getRuntimeBubble(input.bubbleId, input.ownerId);
   if (input.worldId) await getRuntimeWorld(input.worldId, input.ownerId);
@@ -5462,6 +5491,7 @@ async function createExecutionProposalsForIntent(input: {
   kind: "direct_action" | "workflow" | "durable_run";
   intent: EnvelopeExecutionIntent;
   referenceResolution: RuntimeReferenceResolution;
+  conversationPrincipalId?: string;
 }): Promise<RuntimeExecutionProposalResponse[]> {
   const requestedCapabilities = [...new Set(input.intent.requiredCapabilities)];
   const capabilities = requestedCapabilities.length > 0 ? requestedCapabilities : [null];
@@ -5470,6 +5500,9 @@ async function createExecutionProposalsForIntent(input: {
       createExecutionProposal({
         ownerId: input.ownerId,
         conversationId: input.conversationId,
+        ...(input.conversationPrincipalId
+          ? { conversationPrincipalId: input.conversationPrincipalId }
+          : {}),
         runId: input.runId,
         sourceMessageId: input.sourceMessageId,
         intentType: input.kind,
@@ -5556,6 +5589,21 @@ async function attachPlanGraphToRun(input: {
  * questions about rows the person is already looking at; letting either reach
  * the source again would risk answering with different data than is on screen.
  */
+/**
+ * A REQUEST for an acting scope. Never a grant of one.
+ *
+ * The model may say «باسم شركة النور» and pass the name along. It may not say
+ * that the person belongs to that company, nor what they may do there — those
+ * keys are refused by `SCOPE_AUTHORITY_KEYS` before this schema is reached.
+ */
+const ActingScopeRequestSchema = z
+  .object({
+    intent: z.enum(["PERSONAL", "ORGANIZATION"]),
+    organizationId: z.string().trim().min(1).max(64).optional(),
+    organizationHint: z.string().trim().min(1).max(200).optional(),
+  })
+  .strict();
+
 const DatasetOpSchema = z.discriminatedUnion("op", [
   z
     .object({
@@ -5759,6 +5807,8 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       // «رتبها من الأعلى» and «حولها إلى رسم»: no resource, no filters, no
       // second read — a presentation change costs no query.
       datasetOp: DatasetOpSchema.optional(),
+      // On whose behalf this turn is acting, as a request.
+      actingScope: ActingScopeRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -5791,6 +5841,8 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       // «رتبها من الأعلى» and «حولها إلى رسم»: no resource, no filters, no
       // second read — a presentation change costs no query.
       datasetOp: DatasetOpSchema.optional(),
+      // On whose behalf this turn is acting, as a request.
+      actingScope: ActingScopeRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -5823,6 +5875,8 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       // «رتبها من الأعلى» and «حولها إلى رسم»: no resource, no filters, no
       // second read — a presentation change costs no query.
       datasetOp: DatasetOpSchema.optional(),
+      // On whose behalf this turn is acting, as a request.
+      actingScope: ActingScopeRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -6238,8 +6292,14 @@ export async function routeRuntimeConversationTurn(input: {
   // wrote — not a summary and not an inference — so it needs no model and can
   // never say something they did not. Best-effort: a naming failure must not
   // cost anyone their turn.
+  //
+  // The same row also carries the conversation's established acting scope. If
+  // this load fails, `scopeConversation` stays undefined and the turn acts
+  // personally — the safe direction, and the only one a failure may take.
+  let scopeConversation: typeof jasimRuntimeConversations.$inferSelect | undefined;
   try {
     const conversation = await loadConversationRecord(input.conversationId, input.ownerId);
+    scopeConversation = conversation;
     if (shouldDeriveTitle(conversation.title)) {
       const derived = deriveConversationTitle(input.content);
       if (derived) {
@@ -6343,8 +6403,63 @@ export async function routeRuntimeConversationTurn(input: {
     goalOutcome: goalEvaluation?.goal.outcome,
   });
 
+  // ── ON WHOSE AUTHORITY ───────────────────────────────────────────────────
+  //
+  // Resolved here, before any branch acts, because every branch below writes
+  // rows that belong to someone. «باسم شركتي» is a request; durable membership
+  // is the answer, and it is re-checked on EVERY turn — a revoked membership
+  // must stop working immediately, not when the conversation ends.
+  //
+  // A turn that says nothing about scope continues the one the conversation is
+  // already being conducted for. What is carried forward is the REQUEST, not
+  // the permission: it goes through the same resolution as a fresh «باسم شركتي»,
+  // so a membership revoked between two turns is denied on the second one.
+  const carriedScope = conversationScopeRequest(scopeConversation?.metadata);
+  const scopeRequest =
+    "actingScope" in envelope && envelope.actingScope ? envelope.actingScope : carriedScope;
+  const scopeResolution = await resolveActingScope({
+    principalId: input.ownerId,
+    ...(scopeRequest ? { request: scopeRequest } : {}),
+  });
+
+  // Remember, or forget. `conversationScopeMemory` returns null for every
+  // outcome but an organization that actually resolved, so a scope that stopped
+  // resolving cannot linger.
+  if (scopeConversation) {
+    const memory = conversationScopeMemory(scopeResolution);
+    const before = conversationScopeRequest(scopeConversation.metadata)?.organizationId;
+    if (before !== memory?.organizationId) {
+      const metadata = { ...(scopeConversation.metadata ?? {}) } as Record<string, unknown>;
+      if (memory) metadata[CONVERSATION_SCOPE_KEY] = memory;
+      else delete metadata[CONVERSATION_SCOPE_KEY];
+      await db
+        .update(jasimRuntimeConversations)
+        .set({ metadata })
+        .where(
+          and(
+            eq(jasimRuntimeConversations.id, toNumId(input.conversationId)),
+            eq(jasimRuntimeConversations.userId, toNumId(input.ownerId)),
+          ),
+        );
+    }
+  }
+
   const modelMetadata = {
     outputEnvelopeVersion: envelope.version,
+    ...(scopeResolution.status === "RESOLVED"
+      ? {
+          actingScope: {
+            kind: scopeResolution.scope.kind,
+            scopeId: scopeResolution.scope.scopeId,
+            ...(scopeResolution.scope.kind === "ORGANIZATION"
+              ? {
+                  organizationId: scopeResolution.scope.organizationId,
+                  displayName: scopeResolution.scope.displayName,
+                }
+              : {}),
+          },
+        }
+      : {}),
     // §11: route selection must be observable. The route and the rule that
     // chose it, never the message that produced them.
     semanticRoute: routeDecision.route,
@@ -6511,6 +6626,70 @@ export async function routeRuntimeConversationTurn(input: {
     };
   };
 
+  // ── A named scope the person has no standing in ──────────────────────────
+  //
+  // Before anything is written. Acting as an organization one does not belong
+  // to is not a formatting problem to be corrected later — nothing may happen
+  // first and be attributed afterwards.
+  if (scopeResolution.status === "DENIED") {
+    return respondRouted({
+      message: scopeResolution.message,
+      state: "DENIED",
+      cause: scopeResolution.reason,
+    });
+  }
+  if (scopeResolution.status === "NEEDS_INPUT") {
+    // Two employers and «باسم شركتي». Choosing one of them would publish under
+    // a name the person did not pick.
+    return respondRouted({
+      message: `${scopeResolution.message} ${scopeResolution.candidates
+        .map((candidate) => `«${candidate.displayName}»`)
+        .join("، ")}`,
+      state: "NEEDS_INPUT",
+      cause: scopeResolution.reason,
+    });
+  }
+  /** Everything this turn writes belongs to this scope. */
+  const actingOwnerId = scopeResolution.scope.scopeId;
+
+  // ── MEMBERSHIP != PERMISSION ─────────────────────────────────────────────
+  //
+  // Resolving the scope answered "does this person belong here". It did not
+  // answer "may they do THIS here". A member granted only `view` may read the
+  // company's data and may not publish in its name, and the difference has to
+  // be enforced where both the principal and the scope are known — which is
+  // here, and not in the worker that later executes the run.
+  //
+  // The verbs come from the capabilities the turn names, declared at
+  // registration. Nothing in the conversation chooses them, and a capability
+  // that declares none needs `mutate`.
+  if (scopeResolution.scope.kind === "ORGANIZATION") {
+    const named = new Set<string>([
+      ...("intent" in envelope ? envelope.intent.requiredCapabilities : []),
+      ...(planOutcome?.plan.nodes ?? []).map((node) => node.capabilityId),
+    ]);
+    const needed = new Set<ScopePermission>(
+      [...named].map((capabilityId) => capabilityScopePermission(capabilityId)),
+    );
+    // A read is an authority act too, and «أرني عمليات الشركة» names no
+    // capability at all.
+    if (routeDecision.route === "DIRECT_READ") needed.add("view");
+    for (const permission of needed) {
+      const allowed = await authorizeScopeAction({
+        principalId: input.ownerId,
+        scopeId: actingOwnerId,
+        permission,
+      });
+      if (!allowed.ok) {
+        return respondRouted({
+          message: `لا تملك صلاحية «${permission}» باسم «${scopeResolution.scope.displayName}».`,
+          state: "DENIED",
+          cause: allowed.code,
+        });
+      }
+    }
+  }
+
   // ── A new view of the dataset already on screen ───────────────────────────
   //
   // Before the read branch, because «رتبها من الأعلى» names no resource and
@@ -6588,7 +6767,9 @@ export async function routeRuntimeConversationTurn(input: {
     }
 
     const startedAt = Date.now();
-    const outcome = await readCanonicalData({ need, ownerScope: input.ownerId });
+    // The SCOPE's data, not the person's. «أرني عملياتي» said while acting for
+    // a company is a question about the company.
+    const outcome = await readCanonicalData({ need, ownerScope: actingOwnerId });
     const observation = readObservation({ outcome, latencyMs: Date.now() - startedAt });
 
     if (outcome.status !== "OK") {
@@ -6836,10 +7017,14 @@ export async function routeRuntimeConversationTurn(input: {
     let planAttachment: { attached: boolean; reason?: string } | undefined;
     if (envelope.intent.persistence === "durable") {
       run = await createRuntimeRun({
-        ownerId: input.ownerId,
+        // The SCOPE owns the run, and therefore owns everything its
+        // capabilities write. The conversation and its messages stay with the
+        // person: they said it, the company did not.
+        ownerId: actingOwnerId,
         goal: envelope.goal,
         idempotencyKey: `turn:${envelope.decisionId}`,
         conversationId: input.conversationId,
+        conversationPrincipalId: input.ownerId,
         status: runStatus,
         requiredCapabilities: envelope.intent.requiredCapabilities,
         inputs: envelope.intent.inputs,
@@ -6863,14 +7048,15 @@ export async function routeRuntimeConversationTurn(input: {
     // `blocked`, and a blocked run cannot receive a DAG.
     if (run && planOutcome?.materializable) {
       planAttachment = await attachPlanGraphToRun({
-        ownerId: input.ownerId,
+        ownerId: actingOwnerId,
         runId: run.id,
         plan: planOutcome.plan,
       });
     }
     const proposals = await createExecutionProposalsForIntent({
-      ownerId: input.ownerId,
+      ownerId: actingOwnerId,
       conversationId: input.conversationId,
+      conversationPrincipalId: input.ownerId,
       runId: run?.id,
       sourceMessageId: userMessage.id,
       kind: envelope.kind,
@@ -6879,7 +7065,7 @@ export async function routeRuntimeConversationTurn(input: {
     });
     if (run) {
       run = await attachExecutionProposalsToRun({
-        ownerId: input.ownerId,
+        ownerId: actingOwnerId,
         runId: run.id,
         proposals,
       });

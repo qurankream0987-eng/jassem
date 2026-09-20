@@ -133,6 +133,25 @@ export function authorizeDataNeed(input: {
     };
   }
 
+  // ── The scope must be able to OWN this resource ───────────────────────────
+  //
+  // A resource whose owner column is numeric is keyed to a person. An
+  // organization scope is not a number, so the owner predicate would match
+  // nothing — and returning zero rows would be a FALSE EMPTY: it would say the
+  // company has no conversations when the truth is that a company cannot hold
+  // one at all. The two are different answers and only one of them is honest.
+  //
+  // This is the seam a business data source arrives at. An adapter an owner
+  // connects registers its resource with its own owner column, and reads
+  // through this same path with no new branch here.
+  if (resource.ownerIsNumeric && !/^\d+$/u.test(ownerScope)) {
+    return {
+      status: "UNAVAILABLE",
+      detail: `Resource «${resource.id}» is keyed to a personal owner; this scope is not one.`,
+      message: `«${resource.title}» مرتبط بحساب شخصي، ولا توجد صفوف تخص هذا النطاق. لم أعرض أي بيانات.`,
+    };
+  }
+
   const readable = readableColumns(resource);
   const readableKeys = new Set(readable.map((column) => column.key));
 

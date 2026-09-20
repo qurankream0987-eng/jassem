@@ -79,6 +79,18 @@ export const AUTHORITY_KEYS: ReadonlySet<string> = new Set([
   "proofclass",
   "trustscore",
   "providertrust",
+  // Acting-scope authority. A model may name the organization it believes is
+  // meant; it may never assert that the person belongs to it, what they may do
+  // there, or which scope a row belongs to. Mirrored as `SCOPE_AUTHORITY_KEYS`
+  // in `actor-scope.ts`, which is tested against this set.
+  "actingscopeid",
+  "scopeid",
+  "organizationid",
+  "businessid",
+  "membershipid",
+  "principalid",
+  "ismember",
+  "granted",
   // Goal authority. A model may state what should happen; it may not declare
   // that a requirement has been waived, met, or approved. Each of these ends a
   // question the model is not entitled to close. Mirrored as

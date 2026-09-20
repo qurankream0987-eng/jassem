@@ -329,37 +329,111 @@ async function resolvePublishEffect(context: {
 
 // ── Discovery ────────────────────────────────────────────────────────────────
 
-export async function executeOpportunityDiscover(
+/**
+ * MATCHING IS NOT A READ, and this was declared wrongly at first.
+ *
+ * `opportunity-discover` originally did both jobs and declared
+ * `sideEffects: none`. Listing really is a read. Matching is not: `matchNeed`
+ * INSERTS an `economic_matches` row per viable offering, with a fresh id each
+ * time, so calling it twice records the same finding twice. Those rows are
+ * derived, but they are neither idempotent nor reconstructable after the
+ * underlying offerings change — which makes them canonical internal state.
+ *
+ * A capability's effect class is one value, so a capability that is sometimes
+ * pure and sometimes not has to be classified by its worst case or split. It
+ * is split, because classifying the whole thing INTERNAL_STATE would have made
+ * a plain listing demand an effect readback it could never satisfy.
+ *
+ * FALSE_PURE_READ = 0.
+ */
+export async function executeOpportunityMatch(
   inputs: Record<string, unknown>,
   ownerId: string,
 ): Promise<Record<string, unknown>> {
   assertNoReservedKeys(inputs, "inputs", RESERVED_INPUT_KEYS);
   const needId = typeof inputs.needId === "string" ? inputs.needId.trim() : "";
+  if (!needId) throw new OpportunityInputError("needId is required to match a Need.");
 
-  // Matching a Need the caller owns is the strongest form of discovery: it
-  // returns Match records with per-constraint results rather than a list.
-  if (needId) {
-    const { matches, composite } = await matchNeed({ needId, requesterOwnerId: ownerId });
+  const { matches, composite } = await matchNeed({ needId, requesterOwnerId: ownerId });
+  return {
+    mode: "MATCH",
+    needId,
+    matchCount: matches.length,
+    matches: matches.slice(0, MAX_RESULTS).map((match) => ({
+      matchId: match.id,
+      offeringId: match.offeringId,
+      status: match.status,
+      constraintResults: match.constraintResults,
+    })),
+    ...(composite
+      ? {
+          composite: {
+            matchId: composite.id,
+            components: composite.compositeComponents,
+            status: composite.status,
+          },
+        }
+      : {}),
+    // A finding of zero is still a finding that happened.
+    effect: { state: "OCCURRED" as const, reference: needId },
+  };
+}
+
+/**
+ * The readback for a match run: JASIM's own record that the matching happened.
+ *
+ * A zero-match run wrote nothing, and that is not a failure — it is the honest
+ * answer that nothing matched. So the readback confirms the NEED still exists
+ * and belongs to this scope, which is what the attempt actually claimed.
+ */
+async function resolveMatchEffect(context: {
+  ownerId: string;
+  result: Record<string, unknown> | null;
+}): Promise<EffectAssertion | undefined> {
+  const needId = context.result?.needId;
+  if (typeof needId !== "string" || !needId) return undefined;
+  const [row] = await db
+    .select()
+    .from(economicExpressions)
+    .where(
+      and(
+        eq(economicExpressions.id, needId),
+        eq(economicExpressions.ownerId, context.ownerId),
+      ),
+    )
+    .limit(1);
+  if (!row) {
     return {
-      mode: "MATCH",
-      needId,
-      matchCount: matches.length,
-      matches: matches.slice(0, MAX_RESULTS).map((match) => ({
-        matchId: match.id,
-        offeringId: match.offeringId,
-        status: match.status,
-        constraintResults: match.constraintResults,
-      })),
-      ...(composite
-        ? {
-            composite: {
-              matchId: composite.id,
-              components: composite.compositeComponents,
-              status: composite.status,
-            },
-          }
-        : {}),
+      state: "NOT_OCCURRED",
+      source: "INTERNAL_READBACK",
+      authority: "opportunity-exchange",
+      notes: ["No Need of this scope matches the id the attempt reported."],
     };
+  }
+  return {
+    state: "OCCURRED",
+    source: "INTERNAL_READBACK",
+    authority: "opportunity-exchange",
+    reference: row.id,
+    notes: ["The Need this attempt matched against is recorded in this scope."],
+  };
+}
+
+/**
+ * Listing. A genuine read: it inserts nothing and is safe to repeat.
+ *
+ * `needId` is refused here rather than quietly routed to matching, because the
+ * difference between the two is the difference between reading and writing.
+ */
+export async function executeOpportunityDiscover(
+  inputs: Record<string, unknown>,
+  ownerId: string,
+): Promise<Record<string, unknown>> {
+  assertNoReservedKeys(inputs, "inputs", RESERVED_INPUT_KEYS);
+  if (typeof inputs.needId === "string" && inputs.needId.trim()) {
+    throw new OpportunityInputError(
+      "Matching a Need records findings and is a separate capability; discovery only lists.",
+    );
   }
 
   const kindRaw = String(inputs.kind ?? "OFFERING").toUpperCase();
@@ -396,4 +470,4 @@ export async function executeOpportunityDiscover(
   };
 }
 
-export { resolvePublishEffect };
+export { resolveMatchEffect, resolvePublishEffect };

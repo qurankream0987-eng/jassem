@@ -229,10 +229,19 @@ describe("the door does not know what is being traded", () => {
     }
   });
 
-  it("registers exactly two capabilities, not one per market", () => {
+  it("registers three capabilities, not one per market", () => {
+    // Two became three when matching was separated from discovery: discovery
+    // lists and writes nothing, matching records findings. Sharing one
+    // registration made a write look like a pure read, which is the one thing
+    // a side-effect declaration may never do. The count is pinned so that a
+    // FOURTH — a `PublishRestaurantOffering` — is a visible diff.
     const registrations = [...source.matchAll(/export async function execute(\w+)/g)].map(
       (match) => match[1]!,
     );
-    expect(registrations.sort()).toEqual(["OpportunityDiscover", "OpportunityPublish"]);
+    expect(registrations.sort()).toEqual([
+      "OpportunityDiscover",
+      "OpportunityMatch",
+      "OpportunityPublish",
+    ]);
   });
 });

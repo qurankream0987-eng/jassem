@@ -24,7 +24,9 @@ import {
 } from "./completion-policy";
 import {
   executeOpportunityDiscover,
+  executeOpportunityMatch,
   executeOpportunityPublish,
+  resolveMatchEffect,
   resolvePublishEffect,
 } from "./opportunity-capabilities";
 import {
@@ -35,6 +37,7 @@ import {
   resolveCompensationPolicy,
   type CompensationPolicy,
 } from "./compensation-policy";
+import type { ScopePermission } from "./actor-scope";
 
 /**
  * Trusted runtime capabilities.
@@ -100,6 +103,19 @@ export type TrustedCapability = {
    * `sideEffects: "external"` capability to REMOTE_MUTATION, the strictest kind.
    */
   effectKind?: EffectKind;
+  /**
+   * The VERB an acting scope must hold to run this.
+   *
+   * Declared here, in trusted registration code, for the same reason
+   * `effectEvidenceSource` is: a capability that could name its own required
+   * permission could name `view` and write. Omitting it is safe but never
+   * permissive — `scopePermissionFor` derives `mutate` from any effect kind but
+   * `NONE`, and `mutate` for a capability it cannot identify at all.
+   *
+   * These are verbs and never roles. There is no `FactoryManager` permission
+   * and there never will be.
+   */
+  scopePermission?: ScopePermission;
   /**
    * How much this capability's own `effect.state` declaration is worth.
    *
@@ -383,6 +399,22 @@ export class CapabilityRegistry {
    * source. That is the fail-closed choice: the runtime cannot verify the
    * effect of something it cannot identify, so it must not claim to.
    */
+  /**
+   * What an organization scope must be allowed to do before this may run.
+   *
+   * Pessimistic by construction: an unknown capability and an undeclared
+   * effectful one both require `mutate`, so forgetting to declare cannot widen
+   * what a member may do in a company's name.
+   */
+  scopePermissionFor(name: string): ScopePermission {
+    const capability = this.resolveForAssignment(name);
+    if (!capability) return "mutate";
+    if (capability.scopePermission) return capability.scopePermission;
+    return effectKindFromSideEffects(capability.sideEffects, capability.effectKind) === "NONE"
+      ? "view"
+      : "mutate";
+  }
+
   effectContract(name: string): {
     effectKind: EffectKind;
     effectEvidenceSource?: EffectClaimSource;
@@ -528,6 +560,11 @@ export function capabilityEffectContract(
   compensation: CompensationPolicy;
 } {
   return runtimeCapabilityRegistry.effectContract(name);
+}
+
+/** The verb an acting scope must hold to run `name`. */
+export function capabilityScopePermission(name: string): ScopePermission {
+  return runtimeCapabilityRegistry.scopePermissionFor(name);
 }
 
 export function validateTrustedCapabilityInputs(
@@ -808,6 +845,8 @@ runtimeCapabilityRegistry.register({
   version: "1",
   aliases: ["publish-need", "publish-offering", "publish-capacity", "offer", "list-need"],
   risk: "medium",
+  // Putting a company's name into the open market is its own authority.
+  scopePermission: "publish",
   sideEffects: "external",
   effectKind: "INTERNAL_STATE",
   // The capability's own word about what it wrote. Worth nothing on its own.
@@ -828,14 +867,45 @@ runtimeCapabilityRegistry.register({
 runtimeCapabilityRegistry.register({
   id: "opportunity-discover",
   version: "1",
-  aliases: ["find-supplier", "find-offering", "find-need", "match-need", "discover-opportunity"],
+  aliases: ["find-supplier", "find-offering", "find-need", "discover-opportunity", "list-opportunities"],
   risk: "low",
-  // A read. It writes Match records when matching a Need the caller owns, and
-  // those are JASIM's own derived state rather than an effect on the world.
+  scopePermission: "view",
+  // A genuine read: it lists and inserts nothing. Matching used to share this
+  // registration and does not any more, because matching writes.
   sideEffects: "none",
   effectKind: "NONE",
   inputContract: {},
   execute: async (inputs, context) => executeOpportunityDiscover(inputs, context.ownerId),
+});
+
+/**
+ * Matching records what it found, so it is internal state and says so.
+ *
+ * Each run inserts one `economic_matches` row per viable offering with a fresh
+ * id, so it is not idempotent and a second run is a second recorded finding.
+ * Declaring it a pure read would have been the small lie the completion policy
+ * exists to prevent.
+ */
+runtimeCapabilityRegistry.register({
+  id: "opportunity-match",
+  version: "1",
+  aliases: ["match-need", "match-opportunity"],
+  risk: "low",
+  // Matching records findings against the company's Need. That is a write.
+  scopePermission: "mutate",
+  sideEffects: "external",
+  effectKind: "INTERNAL_STATE",
+  effectEvidenceSource: "EXECUTOR_RETURN",
+  resolveEffect: (context) =>
+    resolveMatchEffect({ ownerId: context.ownerId, result: context.result }),
+  compensation: {
+    // Findings are append-only evidence of what was true when they were made.
+    // Deleting them would erase the record rather than undo an effect.
+    reversibility: "IRREVERSIBLE",
+    residualNote: "A recorded match is evidence of what matched at that moment; it is not undone.",
+  },
+  inputContract: { requiredKeys: ["needId"] },
+  execute: async (inputs, context) => executeOpportunityMatch(inputs, context.ownerId),
 });
 
 // ─── Phase K — One Real Provider ────────────────────────────────────────────

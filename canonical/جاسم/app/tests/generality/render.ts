@@ -85,6 +85,8 @@ export function renderGenerated(): string {
     `- \`DOMAIN_BRANCHES_REQUIRED = ${board.domainBranchesRequired}\``,
     `- \`BLIND_HOLDOUT_SCENARIOS = ${board.holdouts}\``,
     `- \`BLIND_HOLDOUT_REQUIRING_DOMAIN_BRANCH = ${board.holdoutsRequiringDomainBranch}\``,
+    `- \`BLIND_IDEA_HOLDOUTS = ${board.blindIdeaHoldouts}\``,
+    `- \`IDEA_DOMAIN_BRANCHES = ${board.ideasRequiringDomainBranch}\``,
     "",
     "## Scenarios",
     "",

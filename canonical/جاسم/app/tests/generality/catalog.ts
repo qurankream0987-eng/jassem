@@ -120,7 +120,10 @@ export const GENERAL_GAPS = [
   "LIVING_OBJECT_RUNTIME",
   "PERSISTENT_WORLD_MATERIALIZATION",
   "SECURE_PRODUCT_ACTION_RUNTIME",
-  "BUSINESS_SCOPE_RUNTIME",
+  // BUSINESS_SCOPE_RUNTIME was here and is closed: an organization is a value
+  // the ownerId column holds, and a turn can act on its authority. What is
+  // still missing is a way to ADMINISTER one by talking.
+  "SCOPE_ADMINISTRATION_PATH",
   "EXTERNAL_DISCOVERY_PROVIDER",
   "BUSINESS_DATA_SOURCE_ADAPTER",
   "LOCATION_OBSERVATION",
@@ -149,7 +152,7 @@ export const FAMILIES = [
   "DISCOVERY", "OPEN_MARKET", "AGREEMENT", "TRANSACTIONS",
   "OBSERVATION_VERIFICATION", "MONITORING", "REALTIME_LIVING_OBJECTS",
   "WORLDS", "PHYSICAL_EXTERNAL", "BUSINESS", "MONETIZATION", "JASIM_OS",
-  "HOLDOUT",
+  "HOLDOUT", "IDEA_INTAKE",
 ] as const;
 export type Family = (typeof FAMILIES)[number];
 
@@ -1238,7 +1241,13 @@ const REALTIME_SCENARIOS: readonly Scenario[] = Object.freeze(
     goal,
     family: "REALTIME_LIVING_OBJECTS" as const,
     route: "PERSISTENT_LIVING_OBJECT" as const,
-    primitives: ["Reference", "Observation", "Event", "Time"] as const,
+    // Found by the idea holdouts: «أرني السائق على الخريطة» is the one scenario
+    // in the catalog whose blocker is LOCATION_OBSERVATION, and it was not
+    // declaring the primitive it is blocked on.
+    primitives:
+      id === "delivery_tracker"
+        ? (["Reference", "Observation", "Event", "Location", "Time"] as const)
+        : (["Reference", "Observation", "Event", "Time"] as const),
     capabilities: ["TRACK", "OBSERVE", "PRESENT"] as const,
     providers: id === "delivery_tracker" ? (["MAPS", "TELEMETRY"] as const) : (["NONE"] as const),
     sideEffect: "NONE" as const,
@@ -1348,42 +1357,74 @@ const PROVIDER_SCENARIOS: readonly Scenario[] = Object.freeze(
 
 // ── N · BUSINESS ────────────────────────────────────────────────────────────
 
+/**
+ * A Business is an Actor SCOPE. Everything here is the same mechanism a person
+ * uses, with a different owner — which is why the split below is not between
+ * "business features" that work and ones that do not, but between ACTING in a
+ * scope (which a turn can do) and ADMINISTERING one (which it cannot yet).
+ */
 const BUSINESS_SCENARIOS: readonly Scenario[] = Object.freeze(
   ([
-    ["scope", "أنشئ حساب شركتي"],
-    ["team", "أضف موظفًا إلى فريقي"],
-    ["permissions", "اعطه صلاحية العروض فقط"],
-    ["offerings", "انشر عروضي"],
-    ["needs", "انشر احتياجاتي"],
-    ["resources", "سجّل معداتي"],
-    ["capacity", "سجّل طاقتي المتاحة"],
-    ["policies", "ضع سياسة: لا تبيع بأقل من التكلفة"],
-    ["provider_bindings", "اربط نظام المخزون عندي"],
-    ["analytics", "أرني أداء المبيعات"],
-    ["world_association", "اربط نظام شركتي بهذا الحساب"],
-  ] as const).map(([id, goal]) => ({
+    // Acting in a scope: proven on the live turn, owned by the organization.
+    ["offerings", "انشر عروضي", "ACT"],
+    ["needs", "انشر احتياجاتي", "ACT"],
+    ["resources", "سجّل معداتي", "ACT"],
+    ["capacity", "سجّل طاقتي المتاحة", "ACT"],
+    // Administering a scope: the mechanisms exist and nothing a person says
+    // reaches them.
+    ["scope", "أنشئ حساب شركتي", "ADMIN"],
+    ["team", "أضف موظفًا إلى فريقي", "ADMIN"],
+    ["permissions", "اعطه صلاحية العروض فقط", "ADMIN"],
+    ["policies", "ضع سياسة: لا تبيع بأقل من التكلفة", "ADMIN"],
+    ["provider_bindings", "اربط نظام المخزون عندي", "ADMIN"],
+    // Waiting on something else entirely.
+    ["analytics", "أرني أداء المبيعات", "DATA"],
+    ["world_association", "اربط نظام شركتي بهذا الحساب", "WORLD"],
+  ] as const).map(([id, goal, group]) => ({
     id: `business.${id}`,
     goal,
     family: "BUSINESS" as const,
-    route: "GENERAL_PLANGRAPH" as const,
-    primitives: ["Actor", "Policy", "Authority", "Resource", "Capacity"] as const,
-    capabilities: ["PERSIST", "MUTATE", "PRESENT"] as const,
+    route: (group === "DATA" ? "DIRECT_READ" : "GENERAL_PLANGRAPH") as Route,
+    primitives:
+      group === "ACT"
+        ? (["Actor", "Offering", "Need", "Resource", "Capacity", "Authority"] as const)
+        : (["Actor", "Policy", "Authority", "Resource", "Capacity"] as const),
+    capabilities:
+      group === "ACT"
+        ? (["UNDERSTAND", "ROUTE", "PERSIST", "OBSERVE", "VERIFY", "PRESENT"] as const)
+        : (["PERSIST", "MUTATE", "PRESENT"] as const),
     providers: ["NONE"] as const,
     sideEffect: "INTERNAL_STATE" as const,
-    requiresApproval: true,
+    requiresApproval: group !== "ACT",
     gates: gates({
       REPRESENTABLE: "PASS",
       ROUTABLE: "PASS",
       PLANNABLE: "PASS",
-      EXECUTABLE: "NOT_YET_IMPLEMENTED",
-      OBSERVABLE: "NOT_APPLICABLE",
-      VERIFIABLE: "NOT_APPLICABLE",
+      // Earned: `actor-scope-runtime.test.ts` opens the run under the
+      // organization, publishes through the same capability a person uses, and
+      // verifies it by internal readback.
+      EXECUTABLE: group === "ACT" ? "PASS" : "NOT_YET_IMPLEMENTED",
+      OBSERVABLE: group === "ACT" ? "PASS" : "NOT_APPLICABLE",
+      VERIFIABLE: group === "ACT" ? "PASS" : "NOT_APPLICABLE",
       PRESENTABLE: "PASS",
       PERSISTENT: "PASS",
     }),
-    currentBlocker: "BUSINESS_SCOPE_RUNTIME" as const,
+    currentBlocker:
+      group === "ACT"
+        ? null
+        : group === "DATA"
+          ? ("BUSINESS_DATA_SOURCE_ADAPTER" as const)
+          : group === "WORLD"
+            ? ("PERSISTENT_WORLD_MATERIALIZATION" as const)
+            : ("SCOPE_ADMINISTRATION_PATH" as const),
     truthfulRuntimeState:
-      "Memberships, delegation grants and owner-scoped expressions exist. A Business as a first-class scope that owns data, offerings, policies and provider bindings does not. A Business is a scope, never a domain app.",
+      group === "ACT"
+        ? "«باسم شركتي» resolves to a durable, revocable membership, the run opens under the organization, and the declared verb is checked before anything is written. The organization itself is created through the API rather than by talking, which is `business.scope`."
+        : group === "DATA"
+          ? "A read now runs under the ACTING scope and sees only its rows; a resource a scope cannot own answers UNAVAILABLE rather than an empty table. «أداء المبيعات» needs business data nobody has connected."
+          : group === "WORLD"
+            ? "An organization owns data, policies and provider bindings today. A durable materialized system carrying them is a different gap."
+            : "Organizations, memberships, permissions, versioned private policies and provider bindings all exist and are enforced. No capability lets a person reach any of them by speaking, and inventing one per administrative verb would be the wrong shape.",
     domainBranchesRequired: 0 as const,
   })),
 );
@@ -1480,13 +1521,13 @@ const MONETIZATION_SCENARIOS: readonly Scenario[] = Object.freeze([
 
 const JASIM_OS_SCENARIOS: readonly Scenario[] = Object.freeze(
   ([
-    ["same_core", "شغّل جاسم لمطعمي"],
-    ["business_data", "اجعله يرى بيانات مطعمي فقط"],
-    ["branding", "اجعل اسمه وشعاره لمطعمي"],
-    ["policies", "طبّق سياسات مطعمي"],
-    ["permissions", "حدد ما يراه الموظفون"],
-    ["providers", "اربط مزوداتي"],
-  ] as const).map(([id, goal]) => ({
+    ["same_core", "شغّل جاسم لمطعمي", "SCOPE_ADMINISTRATION_PATH"],
+    ["business_data", "اجعله يرى بيانات مطعمي فقط", "BUSINESS_DATA_SOURCE_ADAPTER"],
+    ["branding", "اجعل اسمه وشعاره لمطعمي", "PERSISTENT_WORLD_MATERIALIZATION"],
+    ["policies", "طبّق سياسات مطعمي", "SCOPE_ADMINISTRATION_PATH"],
+    ["permissions", "حدد ما يراه الموظفون", "SCOPE_ADMINISTRATION_PATH"],
+    ["providers", "اربط مزوداتي", "SCOPE_ADMINISTRATION_PATH"],
+  ] as const).map(([id, goal, blocker]) => ({
     id: `jasimos.${id}`,
     goal,
     family: "JASIM_OS" as const,
@@ -1506,9 +1547,9 @@ const JASIM_OS_SCENARIOS: readonly Scenario[] = Object.freeze(
       PRESENTABLE: "PASS",
       PERSISTENT: "PASS",
     }),
-    currentBlocker: "BUSINESS_SCOPE_RUNTIME" as const,
+    currentBlocker: blocker,
     truthfulRuntimeState:
-      "JASIM OS is the same core with a business scope, its data, its policies and its branding. There is no second intelligence, and building one would be the failure.",
+      "The core already runs under a business scope: the run, the rows it writes and the data it reads all belong to the organization, and the permission is checked per verb. What is missing is administering and materializing one — its branding, its own data and its policies — and none of that is a second intelligence.",
     domainBranchesRequired: 0 as const,
   })),
 );
@@ -1559,7 +1600,9 @@ export const HOLDOUTS: readonly Scenario[] = Object.freeze(
     ] as const,
     capabilities: ["UNDERSTAND", "ROUTE", "DISCOVER", "PERSIST", "OBSERVE", "VERIFY"] as const,
     providers: ["NONE"] as const,
-    sideEffect: "NONE" as const,
+    // Publishing writes a durable row. FALSE_PURE_READ = 0 applies to the
+    // catalog's own declarations as much as to the capability registry's.
+    sideEffect: "INTERNAL_STATE" as const,
     requiresApproval: false,
     gates: gates({
       REPRESENTABLE: "PASS",
@@ -1582,6 +1625,184 @@ export const HOLDOUTS: readonly Scenario[] = Object.freeze(
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
+// BLIND IDEA HOLDOUTS — the Idea Intake Law
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * These are not domains. They are IDEAS — things somebody thought of that match
+ * no industry, no marketplace, no application, no business category and no
+ * workflow anybody has written down.
+ *
+ *   UNKNOWN IDEA != UNSUPPORTED DOMAIN
+ *
+ * The measurement is whether an idea can enter JASIM at all: whether it
+ * decomposes into the primitives that already exist, routes to a mechanism
+ * that already exists, and comes back with an ANSWER. Two answers are correct
+ * and different, and both appear below:
+ *
+ *   "this needs a capability that does not exist yet"  → NOT_YET_IMPLEMENTED
+ *   "this needs a provider nobody has connected"       → BLOCKED_BY_PROVIDER
+ *
+ * "JASIM does not support that kind of thing" is the only wrong answer,
+ * because there are no kinds of thing.
+ *
+ * Deliberately NOT one route: forcing every idea down one path would be its own
+ * domain branch. What is ratcheted is that no idea reaches for a route, a
+ * primitive or a capability that the named scenarios do not already use.
+ */
+const IDEA_CASES: readonly Omit<Scenario, "family" | "domainBranchesRequired">[] = [
+  {
+    id: "idea.skill_hour_bank",
+    goal: "عندي فكرة: بنك وقت، الناس يتبادلون ساعات مهارة بدل النقود",
+    route: "GENERAL_PLANGRAPH",
+    primitives: [
+      "Actor", "Goal", "Need", "Offering", "Capacity", "Availability",
+      "Economics", "Constraint", "Opportunity", "Time",
+    ],
+    capabilities: ["UNDERSTAND", "ROUTE", "DISCOVER", "PERSIST", "OBSERVE", "VERIFY"],
+    providers: ["NONE"],
+    sideEffect: "INTERNAL_STATE",
+    requiresApproval: false,
+    gates: gates({
+      REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+      EXECUTABLE: "PASS", OBSERVABLE: "PASS", VERIFIABLE: "PASS",
+      PRESENTABLE: "PASS", PERSISTENT: "PASS",
+    }),
+    currentBlocker: null,
+    truthfulRuntimeState:
+      "An hour of a skill is a Capacity with a unit and a price; the exchange never learns that the unit is an hour rather than a dinar. Published and matched through the same two capabilities as everything else.",
+  },
+  {
+    id: "idea.rainwater_surplus_ring",
+    goal: "فكرة: الجيران يتشاركون فائض ماء المطر المجمّع من أسطحهم",
+    route: "GENERAL_PLANGRAPH",
+    primitives: [
+      "Actor", "Goal", "Resource", "Capacity", "Availability", "Need",
+      "Constraint", "Economics", "Opportunity", "Location",
+    ],
+    capabilities: ["UNDERSTAND", "ROUTE", "DISCOVER", "PERSIST", "OBSERVE", "VERIFY"],
+    providers: ["NONE"],
+    sideEffect: "INTERNAL_STATE",
+    requiresApproval: false,
+    gates: gates({
+      REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+      EXECUTABLE: "PASS", OBSERVABLE: "PASS", VERIFIABLE: "PASS",
+      PRESENTABLE: "PASS", PERSISTENT: "PASS",
+    }),
+    currentBlocker: null,
+    truthfulRuntimeState:
+      "A roof with surplus is a Resource holding Capacity with an Availability window; a neighbour wanting it is a Need with a quantity bound. Published and matched with no water, roof or neighbourhood anywhere in the runtime.",
+  },
+  {
+    id: "idea.elder_companionship_rota",
+    goal: "فكرة: دوام تناوب لمرافقة كبار السن الوحيدين في الحي",
+    route: "GENERAL_PLANGRAPH",
+    primitives: [
+      "Actor", "Goal", "Need", "Capacity", "Availability", "Commitment",
+      "Agreement", "Term", "Time",
+    ],
+    capabilities: ["UNDERSTAND", "ROUTE", "DISCOVER", "PROPOSE", "AGREE", "COMMIT", "SCHEDULE"],
+    providers: ["HUMAN"],
+    sideEffect: "HUMAN_ACTION",
+    requiresApproval: true,
+    gates: gates({
+      REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+      PRESENTABLE: "PASS", PERSISTENT: "PASS",
+    }),
+    currentBlocker: "GENERAL_AGREEMENT_RUNTIME",
+    truthfulRuntimeState:
+      "The availabilities publish and match today; the rota itself is recurring Commitments under an Agreement, and the agreement runtime does not exist. The answer is that named capability, not that JASIM does not do neighbourhoods.",
+  },
+  {
+    id: "idea.rare_seed_lending_ring",
+    goal: "فكرة: حلقة إعارة بذور نادرة، تُرجَع بضعف الكمية بعد الموسم",
+    route: "GENERAL_PLANGRAPH",
+    primitives: [
+      "Actor", "Goal", "Offering", "Need", "Resource", "Term", "Agreement",
+      "Constraint", "Economics", "Time",
+    ],
+    capabilities: ["UNDERSTAND", "ROUTE", "DISCOVER", "PROPOSE", "AGREE", "COMMIT"],
+    providers: ["NONE"],
+    sideEffect: "HUMAN_ACTION",
+    requiresApproval: true,
+    gates: gates({
+      REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+      PRESENTABLE: "PASS", PERSISTENT: "PASS",
+    }),
+    currentBlocker: "GENERAL_AGREEMENT_RUNTIME",
+    truthfulRuntimeState:
+      "«ضعف الكمية بعد الموسم» is a Term with a quantity ratio and a deadline — representable, unenforceable: nothing carries a Term into an Agreement yet, and returning seed is a HUMAN_ACTION nothing observes.",
+  },
+  {
+    id: "idea.vanishing_dialect_archive",
+    goal: "فكرة: أرشيف للهجات التي تنقرض، يسجّله كبار السن وتُفهرس مقاطعه",
+    route: "GENERAL_PLANGRAPH",
+    primitives: ["Actor", "Goal", "Dataset", "Reference", "Event", "Policy", "Time"],
+    capabilities: ["UNDERSTAND", "ROUTE", "PERSIST", "READ", "PRESENT"],
+    providers: ["STORAGE"],
+    sideEffect: "INTERNAL_STATE",
+    requiresApproval: false,
+    gates: gates({
+      REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+      EXECUTABLE: "BLOCKED_BY_PROVIDER",
+      OBSERVABLE: "BLOCKED_BY_PROVIDER",
+      VERIFIABLE: "BLOCKED_BY_PROVIDER",
+      PRESENTABLE: "PASS", PERSISTENT: "PASS",
+    }),
+    currentBlocker: null,
+    truthfulRuntimeState:
+      "A recording is a Reference with an owner and a Policy; an index over them is a Dataset. No media storage provider is bound, so nothing can be stored or read back. PROVIDER_READY = PASS, LIVE_EXECUTION = BLOCKED_BY_PROVIDER.",
+  },
+  {
+    id: "idea.dark_sky_map",
+    goal: "فكرة: خريطة لأماكن الظلام الصالحة لرصد النجوم يحدّثها الراصدون",
+    route: "GENERAL_PLANGRAPH",
+    primitives: ["Actor", "Goal", "Observation", "Location", "Dataset", "Event", "Time"],
+    capabilities: ["UNDERSTAND", "ROUTE", "OBSERVE", "PERSIST", "PRESENT"],
+    providers: ["MAPS"],
+    sideEffect: "INTERNAL_STATE",
+    requiresApproval: false,
+    gates: gates({
+      REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+      PRESENTABLE: "PASS", PERSISTENT: "PASS",
+    }),
+    currentBlocker: "LOCATION_OBSERVATION",
+    truthfulRuntimeState:
+      "A darkness reading is an Observation with a Location, a claim source and a freshness horizon — the same shape as any other. Nothing can observe a place, and a MAP that invented one would be the false success this catalog exists to prevent.",
+  },
+  {
+    id: "idea.flood_channel_watch",
+    goal: "فكرة: أهل الوادي يتابعون مجرى السيل ويُنبَّهون قبل الفيضان",
+    route: "MONITORING",
+    primitives: ["Actor", "Goal", "Observation", "Constraint", "Event", "Policy", "Time"],
+    capabilities: ["UNDERSTAND", "ROUTE", "MONITOR", "OBSERVE", "NOTIFY"],
+    providers: ["TELEMETRY"],
+    sideEffect: "MESSAGE_DISPATCH",
+    requiresApproval: false,
+    gates: gates({
+      REPRESENTABLE: "PASS", ROUTABLE: "PASS",
+      PRESENTABLE: "PASS", PERSISTENT: "PASS",
+    }),
+    currentBlocker: "MONITORING_ENGINE",
+    truthfulRuntimeState:
+      "Routed to MONITORING, which reports NOT_IMPLEMENTED — the same answer «راقب السعر» gets. A standing condition over an Observation stream is one missing engine, not one missing per subject.",
+  },
+];
+
+/**
+ * An idea is not a family of one. It is catalogued the same way as everything
+ * else, and its `domainBranchesRequired` is 0 by construction — a number that
+ * would have to be edited by hand to become a lie.
+ */
+export const IDEA_HOLDOUTS: readonly Scenario[] = Object.freeze(
+  IDEA_CASES.map((idea) => ({
+    ...idea,
+    family: "IDEA_INTAKE" as const,
+    domainBranchesRequired: 0 as const,
+  })),
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
 // The catalog
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1599,6 +1820,7 @@ export const SCENARIOS: readonly Scenario[] = Object.freeze([
   ...MONETIZATION_SCENARIOS,
   ...JASIM_OS_SCENARIOS,
   ...HOLDOUTS,
+  ...IDEA_HOLDOUTS,
 ]);
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1615,6 +1837,9 @@ export type Scoreboard = {
   readonly generalGaps: readonly GeneralGap[];
   readonly holdouts: number;
   readonly holdoutsRequiringDomainBranch: number;
+  /** Blind IDEAS — §4.4. Counted apart, because they measure a different law. */
+  readonly blindIdeaHoldouts: number;
+  readonly ideasRequiringDomainBranch: number;
   readonly domainBranchesRequired: number;
 };
 
@@ -1658,6 +1883,7 @@ export function scoreboard(scenarios: readonly Scenario[] = SCENARIOS): Scoreboa
   }
 
   const holdouts = scenarios.filter((scenario) => scenario.family === "HOLDOUT");
+  const ideas = scenarios.filter((scenario) => scenario.family === "IDEA_INTAKE");
   return Object.freeze({
     totalScenarios: scenarios.length,
     gates: Object.freeze(counts),
@@ -1667,6 +1893,8 @@ export function scoreboard(scenarios: readonly Scenario[] = SCENARIOS): Scoreboa
     generalGaps: Object.freeze([...gapsSeen].sort()),
     holdouts: holdouts.length,
     holdoutsRequiringDomainBranch: holdouts.filter((s) => s.domainBranchesRequired > 0).length,
+    blindIdeaHoldouts: ideas.length,
+    ideasRequiringDomainBranch: ideas.filter((s) => s.domainBranchesRequired > 0).length,
     domainBranchesRequired: scenarios.reduce((total, s) => total + s.domainBranchesRequired, 0),
   });
 }

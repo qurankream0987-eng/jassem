@@ -90,6 +90,59 @@ equipment and every holdout at the same time.
 
 Writing code for a scenario is how a general system becomes a pile of verticals.
 
+## Two blind families
+
+**Blind holdouts** are unfamiliar *domains* — a valve, an apiary, a desalination
+unit. They ask whether what is built can represent a world nobody had in mind.
+
+**Blind ideas** are something else, and are catalogued apart. An idea matches no
+industry, no marketplace, no application, no business category and no workflow —
+it is a thing somebody just thought of:
+
+```
+UNKNOWN IDEA != UNSUPPORTED DOMAIN
+```
+
+The measurement is whether the idea can **enter** at all. It decomposes into the
+primitives that already exist, routes to a mechanism that already exists, and
+comes back with an answer. Two answers are correct and different:
+
+```
+"this needs a capability that does not exist yet"   → NOT_YET_IMPLEMENTED
+"this needs a provider nobody has connected"        → BLOCKED_BY_PROVIDER
+```
+
+Both occur in the `IDEA_INTAKE` table below, and so does a third case: an idea
+that simply runs today. **"JASIM does not support that kind of thing" is the only
+wrong answer, because there are no kinds of thing.**
+
+The ideas are deliberately not forced down one route. Answering every idea the
+same way would be a domain branch wearing the costume of generality.
+
+```
+IDEA_DOMAIN_BRANCHES = 0
+IDEA_AGENTS_ADDED    = 0
+```
+
+Neither blind family may be the first user of a primitive, a capability or a
+route. A blind case that licensed itself would be measuring nothing, so the
+"already exists" in every sentence above means *used by a scenario that did shape
+the implementation*.
+
+## A business is a scope
+
+```
+AUTHENTICATED PRINCIPAL  !=  ACTING SCOPE
+```
+
+The `BUSINESS` family is split by a distinction the catalog would otherwise
+blur. **Acting** in a scope — publishing a company's Need, reading its rows —
+runs on the live turn today. **Administering** one — creating it, adding a
+member, granting a verb, setting a policy, binding a provider — exists as a
+mechanism that nothing a person says can reach.
+
+Those are two facts, and one test passing is never a reason to promote both.
+
 ## What the ratchets can and cannot prove
 
 | ratchet | proves | does **not** prove |
@@ -98,6 +151,7 @@ Writing code for a scenario is how a general system becomes a pile of verticals.
 | `BLIND_HOLDOUT_REQUIRING_DOMAIN_BRANCH = 0` | 16 unfamiliar domains are represented and routed by existing primitives | that they can be executed — most cannot yet, and say so |
 | no domain identifier in the runtime | no exported name in the runtime is an industry noun | that the logic inside is domain-free; the holdouts test that behaviourally |
 | holdouts import no production domain module | the holdout suite cannot have shaped production code | that no future code will be written for them |
+| `IDEA_DOMAIN_BRANCHES = 0` | 7 open-ended ideas enter, decompose and get an answer using only what the named scenarios already use | that every one of them can be carried out — most cannot yet, and say which gap or provider is why |
 
 A ratchet that claimed more than this would be the same false confidence the
 catalog exists to prevent.
@@ -108,7 +162,7 @@ catalog exists to prevent.
 
 ## Scoreboard
 
-**TOTAL_SCENARIOS = 155** · holdouts = 16
+**TOTAL_SCENARIOS = 162** · holdouts = 16
 
 Counted per gate. There is deliberately no single percentage: eight gates
 answer eight questions, and one number answering all of them is the exact
@@ -116,16 +170,16 @@ claim this catalog exists to prevent.
 
 | gate | PASS | NOT_YET_IMPLEMENTED | BLOCKED_BY_PROVIDER | BLOCKED_BY_ENVIRONMENT | NOT_APPLICABLE |
 |---|---:|---:|---:|---:|---:|
-| **REPRESENTABLE** | 155 | 0 | 0 | 0 | 0 |
-| **ROUTABLE** | 155 | 0 | 0 | 0 | 0 |
-| **PLANNABLE** | 116 | 39 | 0 | 0 | 0 |
-| **EXECUTABLE** | 59 | 69 | 25 | 2 | 0 |
-| **OBSERVABLE** | 61 | 18 | 19 | 0 | 57 |
-| **VERIFIABLE** | 56 | 23 | 19 | 0 | 57 |
-| **PRESENTABLE** | 153 | 2 | 0 | 0 | 0 |
-| **PERSISTENT** | 121 | 17 | 0 | 0 | 17 |
+| **REPRESENTABLE** | 162 | 0 | 0 | 0 | 0 |
+| **ROUTABLE** | 162 | 0 | 0 | 0 | 0 |
+| **PLANNABLE** | 122 | 40 | 0 | 0 | 0 |
+| **EXECUTABLE** | 65 | 69 | 26 | 2 | 0 |
+| **OBSERVABLE** | 67 | 22 | 20 | 0 | 53 |
+| **VERIFIABLE** | 62 | 27 | 20 | 0 | 53 |
+| **PRESENTABLE** | 160 | 2 | 0 | 0 | 0 |
+| **PERSISTENT** | 128 | 17 | 0 | 0 | 17 |
 
-Scenarios blocked by an absent **provider**: **30**
+Scenarios blocked by an absent **provider**: **31**
 Scenarios blocked by this **environment**: **2**
 Scenarios waiting on a **general capability**: **69**
 
@@ -134,7 +188,6 @@ Scenarios waiting on a **general capability**: **69**
 Each of these closes many scenarios at once. That is what makes it general.
 
 - `BUSINESS_DATA_SOURCE_ADAPTER`
-- `BUSINESS_SCOPE_RUNTIME`
 - `EXTERNAL_DISCOVERY_PROVIDER`
 - `GENERAL_AGREEMENT_RUNTIME`
 - `GENERAL_TRANSACTION_FULFILLMENT`
@@ -143,6 +196,7 @@ Each of these closes many scenarios at once. That is what makes it general.
 - `MONITORING_ENGINE`
 - `PERSISTENT_WORLD_MATERIALIZATION`
 - `REALTIME_RUNTIME`
+- `SCOPE_ADMINISTRATION_PATH`
 - `SECURE_PRODUCT_ACTION_RUNTIME`
 - `SPONSORED_DISCOVERY_RUNTIME`
 - `SUBSCRIPTION_RUNTIME`
@@ -152,6 +206,8 @@ Each of these closes many scenarios at once. That is what makes it general.
 - `DOMAIN_BRANCHES_REQUIRED = 0`
 - `BLIND_HOLDOUT_SCENARIOS = 16`
 - `BLIND_HOLDOUT_REQUIRING_DOMAIN_BRANCH = 0`
+- `BLIND_IDEA_HOLDOUTS = 7`
+- `IDEA_DOMAIN_BRANCHES = 0`
 
 ## Scenarios
 
@@ -343,17 +399,17 @@ Each of these closes many scenarios at once. That is what makes it general.
 
 | id | goal | route | REPR | ROUT | PLAN | EXEC | OBSE | VERI | PRES | PERS | blocker |
 |---|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|
-| `business.scope` | أنشئ حساب شركتي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_SCOPE_RUNTIME |
-| `business.team` | أضف موظفًا إلى فريقي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_SCOPE_RUNTIME |
-| `business.permissions` | اعطه صلاحية العروض فقط | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_SCOPE_RUNTIME |
-| `business.offerings` | انشر عروضي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_SCOPE_RUNTIME |
-| `business.needs` | انشر احتياجاتي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_SCOPE_RUNTIME |
-| `business.resources` | سجّل معداتي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_SCOPE_RUNTIME |
-| `business.capacity` | سجّل طاقتي المتاحة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_SCOPE_RUNTIME |
-| `business.policies` | ضع سياسة: لا تبيع بأقل من التكلفة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_SCOPE_RUNTIME |
-| `business.provider_bindings` | اربط نظام المخزون عندي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_SCOPE_RUNTIME |
-| `business.analytics` | أرني أداء المبيعات | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_SCOPE_RUNTIME |
-| `business.world_association` | اربط نظام شركتي بهذا الحساب | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_SCOPE_RUNTIME |
+| `business.offerings` | انشر عروضي | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `business.needs` | انشر احتياجاتي | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `business.resources` | سجّل معداتي | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `business.capacity` | سجّل طاقتي المتاحة | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `business.scope` | أنشئ حساب شركتي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_ADMINISTRATION_PATH |
+| `business.team` | أضف موظفًا إلى فريقي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_ADMINISTRATION_PATH |
+| `business.permissions` | اعطه صلاحية العروض فقط | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_ADMINISTRATION_PATH |
+| `business.policies` | ضع سياسة: لا تبيع بأقل من التكلفة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_ADMINISTRATION_PATH |
+| `business.provider_bindings` | اربط نظام المخزون عندي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_ADMINISTRATION_PATH |
+| `business.analytics` | أرني أداء المبيعات | DIRECT_READ | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_DATA_SOURCE_ADAPTER |
+| `business.world_association` | اربط نظام شركتي بهذا الحساب | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | PERSISTENT_WORLD_MATERIALIZATION |
 
 ### MONETIZATION · 5
 
@@ -369,12 +425,12 @@ Each of these closes many scenarios at once. That is what makes it general.
 
 | id | goal | route | REPR | ROUT | PLAN | EXEC | OBSE | VERI | PRES | PERS | blocker |
 |---|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|
-| `jasimos.same_core` | شغّل جاسم لمطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_SCOPE_RUNTIME |
-| `jasimos.business_data` | اجعله يرى بيانات مطعمي فقط | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_SCOPE_RUNTIME |
-| `jasimos.branding` | اجعل اسمه وشعاره لمطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_SCOPE_RUNTIME |
-| `jasimos.policies` | طبّق سياسات مطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_SCOPE_RUNTIME |
-| `jasimos.permissions` | حدد ما يراه الموظفون | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_SCOPE_RUNTIME |
-| `jasimos.providers` | اربط مزوداتي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_SCOPE_RUNTIME |
+| `jasimos.same_core` | شغّل جاسم لمطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_ADMINISTRATION_PATH |
+| `jasimos.business_data` | اجعله يرى بيانات مطعمي فقط | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_DATA_SOURCE_ADAPTER |
+| `jasimos.branding` | اجعل اسمه وشعاره لمطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | PERSISTENT_WORLD_MATERIALIZATION |
+| `jasimos.policies` | طبّق سياسات مطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_ADMINISTRATION_PATH |
+| `jasimos.permissions` | حدد ما يراه الموظفون | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_ADMINISTRATION_PATH |
+| `jasimos.providers` | اربط مزوداتي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_ADMINISTRATION_PATH |
 
 ### HOLDOUT · 16
 
@@ -396,6 +452,18 @@ Each of these closes many scenarios at once. That is what makes it general.
 | `holdout.energy_storage` | سعة تخزين طاقة فائضة | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `holdout.falconry_competition` | تجهيز مسابقة صقور | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `holdout.mosque_library` | فهرسة مكتبة مسجد | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+
+### IDEA_INTAKE · 7
+
+| id | goal | route | REPR | ROUT | PLAN | EXEC | OBSE | VERI | PRES | PERS | blocker |
+|---|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|
+| `idea.skill_hour_bank` | عندي فكرة: بنك وقت، الناس يتبادلون ساعات مهارة بدل النقود | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `idea.rainwater_surplus_ring` | فكرة: الجيران يتشاركون فائض ماء المطر المجمّع من أسطحهم | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `idea.elder_companionship_rota` | فكرة: دوام تناوب لمرافقة كبار السن الوحيدين في الحي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ○ | ○ | ● | ● | GENERAL_AGREEMENT_RUNTIME |
+| `idea.rare_seed_lending_ring` | فكرة: حلقة إعارة بذور نادرة، تُرجَع بضعف الكمية بعد الموسم | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ○ | ○ | ● | ● | GENERAL_AGREEMENT_RUNTIME |
+| `idea.vanishing_dialect_archive` | فكرة: أرشيف للهجات التي تنقرض، يسجّله كبار السن وتُفهرس مقاطعه | GENERAL_PLANGRAPH | ● | ● | ● | P | P | P | ● | ● | — |
+| `idea.dark_sky_map` | فكرة: خريطة لأماكن الظلام الصالحة لرصد النجوم يحدّثها الراصدون | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ○ | ○ | ● | ● | LOCATION_OBSERVATION |
+| `idea.flood_channel_watch` | فكرة: أهل الوادي يتابعون مجرى السيل ويُنبَّهون قبل الفيضان | MONITORING | ● | ● | ○ | ○ | ○ | ○ | ● | ● | MONITORING_ENGINE |
 
 <!-- END GENERATED -->
 

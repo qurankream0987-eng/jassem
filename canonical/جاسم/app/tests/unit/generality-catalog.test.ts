@@ -14,6 +14,7 @@
  * is sufficient and the document says so.
  */
 
+import { execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -24,6 +25,7 @@ import {
   GATE_STATUSES,
   GENERAL_GAPS,
   HOLDOUTS,
+  IDEA_HOLDOUTS,
   PRIMITIVES,
   PROVIDER_CLASSES,
   ROUTES,
@@ -230,6 +232,18 @@ describe("the architectural ratchets", () => {
 
 // ── Holdouts ─────────────────────────────────────────────────────────────────
 
+const BLIND_FAMILIES = new Set(["HOLDOUT", "IDEA_INTAKE"]);
+
+/** The primitives the scenarios that DID shape the implementation reach for. */
+function namedPrimitives(): Set<string> {
+  return new Set(
+    SCENARIOS.filter((scenario) => !BLIND_FAMILIES.has(scenario.family)).flatMap(
+      (scenario) => scenario.primitives,
+    ),
+  );
+}
+
+
 describe("the blind holdouts", () => {
   it("there are at least fifteen", () => {
     expect(HOLDOUTS.length).toBeGreaterThanOrEqual(15);
@@ -249,11 +263,9 @@ describe("the blind holdouts", () => {
   it("none uses a primitive invented for it", () => {
     // A holdout reaching for a primitive no named scenario uses would mean the
     // core had been widened to accommodate an unfamiliar domain.
-    const named = new Set(
-      SCENARIOS.filter((scenario) => scenario.family !== "HOLDOUT").flatMap(
-        (scenario) => scenario.primitives,
-      ),
-    );
+    // Both blind families are excluded from the "named" set. A blind case that
+    // licensed itself, or licensed another blind case, would measure nothing.
+    const named = namedPrimitives();
     for (const holdout of HOLDOUTS) {
       for (const primitive of holdout.primitives) {
         expect(named, `${holdout.id}: ${primitive}`).toContain(primitive);
@@ -267,6 +279,114 @@ describe("the blind holdouts", () => {
     for (const holdout of HOLDOUTS) {
       if (holdout.currentBlocker === null) continue;
       expect(holdout.gates.EXECUTABLE, holdout.id).not.toBe("PASS");
+    }
+  });
+});
+
+// ── The Idea Intake Law ──────────────────────────────────────────────────────
+
+/**
+ * §4.4. An idea is not a domain, and an unfamiliar one is not an unsupported
+ * one. What is measured here is that an idea nobody anticipated ENTERS —
+ * decomposing into primitives, routes and capabilities that already existed
+ * before anyone thought of it.
+ */
+describe("any lawful idea may enter", () => {
+  it("there are at least five blind ideas", () => {
+    expect(IDEA_HOLDOUTS.length).toBeGreaterThanOrEqual(5);
+  });
+
+  it("every one is representable and routable with what already exists", () => {
+    // This is the whole law. An idea that could not even be stated would be
+    // the runtime saying "JASIM does not support that kind of thing".
+    for (const idea of IDEA_HOLDOUTS) {
+      expect(idea.gates.REPRESENTABLE, idea.id).toBe("PASS");
+      expect(idea.gates.ROUTABLE, idea.id).toBe("PASS");
+    }
+  });
+
+  it("IDEA_DOMAIN_BRANCHES = 0", () => {
+    expect(scoreboard().ideasRequiringDomainBranch).toBe(0);
+  });
+
+  it("none reaches for a primitive, capability or route invented for it", () => {
+    const named = namedPrimitives();
+    const namedCapabilities = new Set(
+      SCENARIOS.filter((scenario) => !BLIND_FAMILIES.has(scenario.family)).flatMap(
+        (scenario) => scenario.capabilities,
+      ),
+    );
+    const namedRoutes = new Set(
+      SCENARIOS.filter((scenario) => !BLIND_FAMILIES.has(scenario.family)).map(
+        (scenario) => scenario.route,
+      ),
+    );
+    for (const idea of IDEA_HOLDOUTS) {
+      for (const primitive of idea.primitives) {
+        expect(named, `${idea.id}: ${primitive}`).toContain(primitive);
+      }
+      for (const capability of idea.capabilities) {
+        expect(namedCapabilities, `${idea.id}: ${capability}`).toContain(capability);
+      }
+      expect(namedRoutes, `${idea.id}: ${idea.route}`).toContain(idea.route);
+    }
+  });
+
+  it("is not forced down one path", () => {
+    // The opposite failure. Answering every idea with the same route would be
+    // a domain branch wearing the costume of generality.
+    expect(new Set(IDEA_HOLDOUTS.map((idea) => idea.route)).size).toBeGreaterThan(1);
+  });
+
+  it("answers with a named capability or a named provider, never a refusal", () => {
+    // The two correct answers, and the proof that both actually occur. A
+    // catalog where every idea were blocked the same way would be measuring
+    // one gap, not the intake law.
+    const byCapability = IDEA_HOLDOUTS.filter((idea) => idea.currentBlocker !== null);
+    const byProvider = IDEA_HOLDOUTS.filter((idea) =>
+      GATES.some((gate) => idea.gates[gate] === "BLOCKED_BY_PROVIDER"),
+    );
+    const carried = IDEA_HOLDOUTS.filter((idea) => idea.gates.EXECUTABLE === "PASS");
+    expect(byCapability.length, "an idea blocked by a missing capability").toBeGreaterThan(0);
+    expect(byProvider.length, "an idea blocked by an unbound provider").toBeGreaterThan(0);
+    expect(carried.length, "an idea that runs today").toBeGreaterThan(0);
+    for (const idea of IDEA_HOLDOUTS) {
+      if (idea.currentBlocker === null) continue;
+      expect(GENERAL_GAPS, `${idea.id} blames ${idea.currentBlocker}`).toContain(
+        idea.currentBlocker,
+      );
+    }
+  });
+
+  it("IDEA_AGENTS_ADDED = 0 — the runtime has no idea machinery", () => {
+    // `Idea` is not a primitive, not a capability, not a route and not a name
+    // anywhere in the runtime. If persisting ideas ever needs a type, that is
+    // a separate decision with its own evidence, and this is what forces it to
+    // be one.
+    for (const vocabulary of [PRIMITIVES, CAPABILITIES, ROUTES] as readonly (readonly string[])[]) {
+      for (const entry of vocabulary) {
+        expect(entry.toLowerCase(), entry).not.toContain("idea");
+      }
+    }
+    const runtime = execSync(
+      "grep -rlE 'IdeaAgent|IdeaMarketplace|IdeaRegistry|IdeaCategory|IDEA_CATEGOR' api src || true",
+      { cwd: process.cwd(), encoding: "utf8" },
+    ).trim();
+    expect(runtime, "the runtime names no idea machinery").toBe("");
+  });
+
+  it("the governing law records the Idea Intake Law", () => {
+    const law = readFileSync(LAW, "utf8");
+    for (const clause of [
+      "THE IDEA INTAKE LAW",
+      "UNKNOWN IDEA != UNSUPPORTED DOMAIN",
+      "IDEA_DOMAIN_BRANCHES = 0",
+      "IDEA_AGENTS_ADDED    = 0",
+      "IdeaAgent",
+      "IdeaMarketplace",
+      "there are no kinds of thing",
+    ]) {
+      expect(law, clause).toContain(clause);
     }
   });
 });
@@ -339,6 +459,75 @@ describe("negotiation is one mechanism, not one per subject", () => {
   });
 });
 
+// ── A business is a scope ────────────────────────────────────────────────────
+
+describe("a business is a scope, not an app", () => {
+  const business = SCENARIOS.filter((scenario) => scenario.family === "BUSINESS");
+  const jasimos = SCENARIOS.filter((scenario) => scenario.family === "JASIM_OS");
+
+  it("no scenario names a KIND of business", () => {
+    // A restaurant, a factory and a school differ in their attributes. If one
+    // of them were a scenario id, it would soon be a branch.
+    const KINDS = ["restaurant", "factory", "school", "hotel", "clinic", "shop", "logistics"];
+    for (const scenario of [...business, ...jasimos]) {
+      for (const kind of KINDS) {
+        expect(scenario.id.toLowerCase(), scenario.id).not.toContain(kind);
+      }
+    }
+  });
+
+  it("uses the same primitives a person uses", () => {
+    const personal = namedPrimitives();
+    for (const scenario of [...business, ...jasimos]) {
+      for (const primitive of scenario.primitives) {
+        expect(personal, `${scenario.id}: ${primitive}`).toContain(primitive);
+      }
+    }
+  });
+
+  it("acting in a scope and administering one are different facts", () => {
+    // The whole point of not bulk-promoting a family: publishing as a company
+    // runs today, and creating the company by talking does not.
+    const acting = business.filter((scenario) => scenario.gates.EXECUTABLE === "PASS");
+    const administering = business.filter(
+      (scenario) => scenario.currentBlocker === "SCOPE_ADMINISTRATION_PATH",
+    );
+    expect(acting.length).toBeGreaterThan(0);
+    expect(administering.length).toBeGreaterThan(0);
+    for (const scenario of acting) {
+      expect(scenario.currentBlocker, scenario.id).toBeNull();
+      // Writing under a scope is INTERNAL_STATE, and internal state is read
+      // back. A business write that claimed to need no observation would be
+      // the false pure read this catalog refuses.
+      expect(scenario.sideEffect, scenario.id).not.toBe("NONE");
+      expect(scenario.gates.OBSERVABLE, scenario.id).toBe("PASS");
+    }
+  });
+
+  it("JASIM OS blames no runtime of its own", () => {
+    // `BUSINESS_SCOPE_RUNTIME` is closed and must not come back as a second
+    // intelligence under another name.
+    expect(GENERAL_GAPS as readonly string[]).not.toContain("BUSINESS_SCOPE_RUNTIME");
+    for (const scenario of jasimos) {
+      expect(GENERAL_GAPS, scenario.id).toContain(scenario.currentBlocker!);
+    }
+  });
+
+  it("the governing law records that a scope is not a second intelligence", () => {
+    const law = readFileSync(LAW, "utf8");
+    for (const clause of [
+      "AUTHENTICATED PRINCIPAL  !=  ACTING SCOPE",
+      "DOMAIN_BUSINESS_TYPES_ADDED = 0",
+      "DOMAIN_ROLES_ADDED          = 0",
+      "FactoryManager",
+      "RestaurantOwner",
+      "There is no second intelligence",
+    ]) {
+      expect(law, clause).toContain(clause);
+    }
+  });
+});
+
 // ── The scoreboard, pinned ───────────────────────────────────────────────────
 
 describe("no scenario changes status silently", () => {
@@ -349,25 +538,27 @@ describe("no scenario changes status silently", () => {
     expect({
       total: board.totalScenarios,
       holdouts: board.holdouts,
+      ideas: board.blindIdeaHoldouts,
       pass: Object.fromEntries(GATES.map((gate) => [gate, passCount(gate)])),
       blockedByProvider: board.blockedByProvider,
       blockedByEnvironment: board.blockedByEnvironment,
       notYetImplemented: board.notYetImplemented,
       generalGaps: board.generalGaps.length,
     }).toEqual({
-      total: 155,
+      total: 162,
       holdouts: 16,
+      ideas: 7,
       pass: {
-        REPRESENTABLE: 155,
-        ROUTABLE: 155,
-        PLANNABLE: 116,
-        EXECUTABLE: 59,
-        OBSERVABLE: 61,
-        VERIFIABLE: 56,
-        PRESENTABLE: 153,
-        PERSISTENT: 121,
+        REPRESENTABLE: 162,
+        ROUTABLE: 162,
+        PLANNABLE: 122,
+        EXECUTABLE: 65,
+        OBSERVABLE: 67,
+        VERIFIABLE: 62,
+        PRESENTABLE: 160,
+        PERSISTENT: 128,
       },
-      blockedByProvider: 30,
+      blockedByProvider: 31,
       blockedByEnvironment: 2,
       notYetImplemented: 69,
       generalGaps: 13,

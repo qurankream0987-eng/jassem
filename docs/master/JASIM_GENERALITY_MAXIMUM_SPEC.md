@@ -155,6 +155,76 @@ Someone says
 and that becomes a `Resource` with `Capacity`, `Availability` and `Location`,
 offered into the same exchange. The market is a mechanism, not a destination.
 
+## 4.4 THE IDEA INTAKE LAW
+
+Any lawful open-ended idea may enter JASIM **without** matching a known industry,
+marketplace, application, business category or workflow.
+
+```
+UNKNOWN IDEA != UNSUPPORTED DOMAIN
+```
+
+JASIM's response to an unfamiliar idea is to decompose it into the primitives it
+already has:
+
+```
+Goal · Actor · Need · Offering · Resource · Capacity
+Constraint · Preference · Economics · Policy · Opportunity
+Capabilities · Providers
+```
+
+What comes back may be "this needs a capability that does not exist yet" or "this
+needs a provider nobody has connected". Both are answers. "JASIM does not support
+that kind of thing" is not, because there are no kinds of thing.
+
+Forbidden: `IdeaAgent`, `IdeaMarketplace`, an idea registry, an idea category
+enum, and `Idea` as a permanent canonical primitive — unless persistence or
+versioning of ideas independently requires one, which is a separate decision with
+its own evidence.
+
+```
+IDEA_DOMAIN_BRANCHES = 0
+IDEA_AGENTS_ADDED    = 0
+```
+
+## 4.5 ACTOR SCOPE
+
+```
+AUTHENTICATED PRINCIPAL  !=  ACTING SCOPE
+```
+
+Authentication answers *who is using JASIM*. Acting scope answers *on whose
+authority*. One person is one principal and may act as several scopes — their own,
+and each organization they belong to.
+
+An organization is a general **Actor scope**: a value the `ownerId` column can
+hold, not a second runtime and not a second intelligence. It owns Needs,
+Offerings, Resources, Capacity, data, policies, provider bindings and world
+associations, through exactly the same mechanisms a person does.
+
+Natural language may **request** a scope and may never **grant** one:
+
+```
+names an organization they do not belong to   → DENIED
+«باسم شركتي» with two plausible organizations → NEEDS_INPUT
+```
+
+Never a silent choice. Membership is durable, revocable and audited; revoking it
+removes future authority and rewrites no history.
+
+Permissions are verbs — `view`, `publish`, `mutate`, `approve`, `manage_members`,
+`manage_policies`, `manage_providers`, `act_financially`. Roles may bundle them;
+the permissions are the authority. There is no `FactoryManager` and no
+`RestaurantOwner`.
+
+```
+DOMAIN_BUSINESS_TYPES_ADDED = 0
+DOMAIN_ROLES_ADDED          = 0
+```
+
+A business's *kind* — restaurant, factory, school — is an **attribute** of the
+organization. It is data the owner supplies, and no production code branches on it.
+
 ## 5. Business is a scope, not an app
 
 A Business may own data, Needs, Offerings, Resources, Capacity, Policies,

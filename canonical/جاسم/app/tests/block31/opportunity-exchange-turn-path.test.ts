@@ -188,7 +188,7 @@ describe("a plan can reach the opportunity exchange", () => {
     });
 
     const { result } = await runNode({
-      capabilityId: "opportunity-discover",
+      capabilityId: "opportunity-match",
       inputs: { needId: need.result.expressionId },
     });
     expect(result.mode).toBe("MATCH");
@@ -208,7 +208,7 @@ describe("a plan can reach the opportunity exchange", () => {
       },
     });
     const { result } = await runNode({
-      capabilityId: "opportunity-discover",
+      capabilityId: "opportunity-match",
       inputs: { needId: need.result.expressionId },
     });
     expect(result.matchCount).toBe(0);
@@ -271,7 +271,7 @@ describe("a plan can reach the opportunity exchange", () => {
       inputs: { kind: "NEED", semanticType: "x", summary: "ليس لي" },
     });
     const { attempt } = await runNode({
-      capabilityId: "opportunity-discover",
+      capabilityId: "opportunity-match",
       inputs: { needId: need.result.expressionId },
     });
     expect(attempt.executionStatus).toBe("FAILED");
@@ -464,7 +464,7 @@ describe("a plan can reach the opportunity exchange", () => {
       },
     });
     const { result } = await runNode({
-      capabilityId: "opportunity-discover",
+      capabilityId: "opportunity-match",
       inputs: { needId: need.result.expressionId },
     });
     expect(result.matchCount).toBe(1);
@@ -494,11 +494,60 @@ describe("a plan can reach the opportunity exchange", () => {
       },
     });
     const { result } = await runNode({
-      capabilityId: "opportunity-discover",
+      capabilityId: "opportunity-match",
       inputs: { needId: need.result.expressionId },
     });
     expect(result.matchCount).toBe(0);
   });
+  // ── 5b. Matching writes, and says so ──────────────────────────────────────
+
+  it("matching is not a read: a second run records a second finding", async () => {
+    // This is why matching is its own capability. `matchNeed` inserts one row
+    // per viable offering with a fresh id, so it is not idempotent and a pure
+    // read declaration would have been false.
+    await publish({ attributes: { quantity: 500, unitPrice: 0.8 } }, OTHER);
+    const need = await runNode({
+      capabilityId: "opportunity-publish",
+      inputs: {
+        kind: "NEED",
+        semanticType: "tuna can 200g",
+        summary: "أحتاج 300 حبة",
+        attributes: { quantity: 300 },
+        hardConstraints: [{ field: "unitPrice", operator: "lte", value: 0.85 }],
+      },
+    });
+    const first = await runNode({
+      capabilityId: "opportunity-match",
+      inputs: { needId: need.result.expressionId },
+    });
+    expect(first.attempt.verificationStatus).toBe("VERIFIED");
+
+    await runNode({
+      capabilityId: "opportunity-match",
+      inputs: { needId: need.result.expressionId },
+    });
+    const rows = await handle.db.execute(
+      sql.raw("SELECT count(*)::int AS n FROM economic_matches"),
+    );
+    expect((rows.rows[0] as { n: number }).n).toBe(2);
+  });
+
+  it("discovery refuses to match rather than quietly writing", async () => {
+    const need = await runNode({
+      capabilityId: "opportunity-publish",
+      inputs: { kind: "NEED", semanticType: "x", summary: "طلب" },
+    });
+    const { attempt } = await runNode({
+      capabilityId: "opportunity-discover",
+      inputs: { needId: need.result.expressionId },
+    });
+    expect(attempt.executionStatus).toBe("FAILED");
+    const rows = await handle.db.execute(
+      sql.raw("SELECT count(*)::int AS n FROM economic_matches"),
+    );
+    expect((rows.rows[0] as { n: number }).n).toBe(0);
+  });
+
   // ── 6. The conversational path ────────────────────────────────────────────
 
   it("a conversational turn plans an exchange node", async () => {
