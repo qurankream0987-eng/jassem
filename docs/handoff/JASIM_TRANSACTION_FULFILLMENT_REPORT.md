@@ -187,6 +187,32 @@ scope, parties are ids, and nothing in the transaction core knows what an
 organization is — the business scope runtime already exists and resolves member
 authority before this is reached.
 
+**What that PASS claims, and what it does not.** It is a statement about the
+transaction core and nothing else: a transaction is materialized, obligated,
+paid against, fulfilled, observed, verified and compensated identically whether
+the acting scope is a person or an organization, and the core contains no
+organization type, no business role and no branch that asks which it is. The
+scope arrives as an id, member authority is resolved before the core is
+reached, and a scope that owns nothing is not a special case.
+
+It does **not** claim, on its own, any of the following, and no later phase may
+cite it as if it did:
+
+```
+BUSINESS_SCOPE_READY  !=  ORGANIZATION MEMBERSHIP RUNTIME COMPLETE
+BUSINESS_SCOPE_READY  !=  TEAM MANAGEMENT COMPLETE
+BUSINESS_SCOPE_READY  !=  RBAC ADMINISTRATION COMPLETE
+BUSINESS_SCOPE_READY  !=  BUSINESS ONBOARDING COMPLETE
+```
+
+Membership is granted and revoked today as an authority act — a person reads a
+statement and cites its digest — and that is a narrower thing than an
+administration surface for a team. Business onboarding, an invitation flow, a
+role catalogue and a members screen do not exist, and the generality catalog
+records them where they belong rather than under this line. The transaction
+result stands exactly as written above; this paragraph only fixes the size of
+the sentence.
+
 Two gaps sit at nine. `SECURE_PRODUCT_ACTION_RUNTIME` is the one to take next:
 it is the last route the semantic router names and honestly reports as
 unimplemented, and unlike `PERSISTENT_WORLD_MATERIALIZATION` it needs no

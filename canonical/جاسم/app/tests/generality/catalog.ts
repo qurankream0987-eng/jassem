@@ -100,6 +100,13 @@ export const PROVIDER_CLASSES = [
   "NONE", "MODEL", "SEARCH", "MESSAGING", "EMAIL", "PAYMENT", "MAPS",
   "CALENDAR", "DEVICE", "STORAGE", "HUMAN", "EXTERNAL_MARKETPLACE",
   "TELEMETRY", "MCP", "A2A",
+  /**
+   * Whoever can mint or retire a credential. JASIM stores no password and
+   * verifies none: it exchanges an external identity for a session. Naming
+   * the class is what keeps "no identity provider is connected" from being
+   * mistaken for "JASIM cannot sign anybody in".
+   */
+  "IDENTITY",
 ] as const;
 export type ProviderClass = (typeof PROVIDER_CLASSES)[number];
 
@@ -121,7 +128,25 @@ export const GENERAL_GAPS = [
   "MONITORING_ENGINE",
   "LIVING_OBJECT_RUNTIME",
   "PERSISTENT_WORLD_MATERIALIZATION",
-  "SECURE_PRODUCT_ACTION_RUNTIME",
+  // SECURE_PRODUCT_ACTION_RUNTIME was here and is closed: a conversation
+  // opens a trusted surface the RUNTIME described, the surface collects what
+  // the registry declared, and one server boundary validates, authorizes,
+  // mutates and records it. What a credential still needs is an identity
+  // provider, which is a different thing and says so.
+  /**
+   * Nothing in this repository says what happens to the rows a person owns
+   * when they leave. There is no erasure policy, no retention rule and no
+   * tombstone. Closing an account is real; deleting one is not, and inventing
+   * the deletion would be the worst false success this codebase could make.
+   */
+  "DATA_ERASURE_POLICY",
+  /**
+   * A person's authority inside a scope is granted and revoked today, as an
+   * authority act with a statement and a digest. An outside APPLICATION
+   * holding delegated access is a grant this repository never issues, so
+   * there is nothing to show a person and nothing to withdraw.
+   */
+  "DELEGATED_ACCESS_RUNTIME",
   // BUSINESS_SCOPE_RUNTIME was here and is closed: an organization is a value
   // the ownerId column holds, and a turn can act on its authority.
   //
@@ -294,10 +319,14 @@ const SCENARIOS_A_E: readonly Scenario[] = Object.freeze([
     providers: ["NONE"],
     sideEffect: "INTERNAL_STATE",
     requiresApproval: false,
-    gates: ROUTED_ONLY({ PRESENTABLE: "PASS" }),
-    currentBlocker: "SECURE_PRODUCT_ACTION_RUNTIME",
+    gates: gates({
+      REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+      EXECUTABLE: "PASS", OBSERVABLE: "PASS", VERIFIABLE: "PASS",
+      PRESENTABLE: "PASS", PERSISTENT: "PASS",
+    }),
+    currentBlocker: null,
     truthfulRuntimeState:
-      "The router names TRUSTED_PRODUCT_ACTION and says the mechanism is not implemented. It never falls back to a DAG.",
+      "The router names TRUSTED_PRODUCT_ACTION and the turn now opens a trusted action session behind it. It still never falls back to a DAG.",
     domainBranchesRequired: 0,
   },
   {
@@ -561,29 +590,149 @@ const SCENARIOS_A_E: readonly Scenario[] = Object.freeze([
   },
 
   // ══ C · SECURE PRODUCT ACTIONS ═══════════════════════════════════════════
+  //
+  // These eight were one block with one status while the mechanism did not
+  // exist. It exists now, and they stop being one block: each is graded on
+  // what its own registered action actually does today. Three run, three wait
+  // on an identity provider this repository has never had, and two are held
+  // by a general gap that is NOT the secure-surface gap and says which.
+  //
+  // The uniform shape stays: ONE registry, ONE submission boundary, ONE audit
+  // record. A per-scenario gate is a measurement, not a branch.
   ...([
-    ["login", "سجّلني دخول"],
-    ["logout", "سجّلني خروج"],
-    ["signup", "أنشئ لي حسابًا"],
-    ["password_change", "غيّر كلمة المرور"],
-    ["account_deletion", "احذف حسابي"],
-    ["settings", "غيّر اسمي في الحساب"],
-    ["privacy", "أوقف مشاركة موقعي"],
-    ["permissions", "امنع هذا التطبيق من الوصول"],
-  ] as const).map(([id, goal]) => ({
-    id: `product.${id}`,
-    goal,
+    {
+      id: "login",
+      goal: "سجّلني دخول",
+      action: "session.establish",
+      providers: ["IDENTITY"] as const,
+      requiresApproval: false,
+      gates: gates({
+        REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+        EXECUTABLE: "BLOCKED_BY_PROVIDER", OBSERVABLE: "BLOCKED_BY_PROVIDER",
+        VERIFIABLE: "BLOCKED_BY_PROVIDER", PRESENTABLE: "PASS", PERSISTENT: "PASS",
+      }),
+      currentBlocker: null,
+      truthfulRuntimeState:
+        "The trusted surface, the action session and the one submission boundary are real and anonymous-capable. JASIM stores no password and verifies none — it exchanges an external identity for a session — so the action says it is blocked instead of pretending.",
+    },
+    {
+      id: "logout",
+      goal: "سجّلني خروج",
+      action: "session.revoke",
+      providers: ["NONE"] as const,
+      requiresApproval: false,
+      gates: gates({
+        REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+        EXECUTABLE: "PASS", OBSERVABLE: "PASS", VERIFIABLE: "PASS",
+        PRESENTABLE: "PASS", PERSISTENT: "PASS",
+      }),
+      currentBlocker: null,
+      truthfulRuntimeState:
+        "Every token minted for the identity before now stops being accepted, at the server, on both the Bearer and the cookie path. A client erasing its own storage is not what is being claimed here.",
+    },
+    {
+      id: "signup",
+      goal: "أنشئ لي حسابًا",
+      action: "account.create",
+      providers: ["IDENTITY"] as const,
+      requiresApproval: false,
+      gates: gates({
+        REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+        EXECUTABLE: "BLOCKED_BY_PROVIDER", OBSERVABLE: "BLOCKED_BY_PROVIDER",
+        VERIFIABLE: "BLOCKED_BY_PROVIDER", PRESENTABLE: "PASS", PERSISTENT: "PASS",
+      }),
+      currentBlocker: null,
+      truthfulRuntimeState:
+        "A person with no identity yet can reach the surface — the action is declared ANONYMOUS_ALLOWED and proven to be. Creating the identity itself needs the provider that issues it.",
+    },
+    {
+      id: "password_change",
+      goal: "غيّر كلمة المرور",
+      action: "credential.rotate",
+      providers: ["IDENTITY"] as const,
+      requiresApproval: true,
+      gates: gates({
+        REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+        EXECUTABLE: "BLOCKED_BY_PROVIDER", OBSERVABLE: "BLOCKED_BY_PROVIDER",
+        VERIFIABLE: "BLOCKED_BY_PROVIDER", PRESENTABLE: "PASS", PERSISTENT: "PASS",
+      }),
+      currentBlocker: null,
+      truthfulRuntimeState:
+        "Three SENSITIVE fields, re-authentication the caller may supply but never assert, and a proof that the typed secret reaches no table, no event and no model context. There is no password in this repository to rotate.",
+    },
+    {
+      id: "account_deletion",
+      goal: "احذف حسابي",
+      action: "account.close",
+      providers: ["NONE"] as const,
+      requiresApproval: true,
+      gates: gates({
+        REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+        EXECUTABLE: "NOT_YET_IMPLEMENTED", OBSERVABLE: "PASS",
+        VERIFIABLE: "NOT_YET_IMPLEMENTED", PRESENTABLE: "PASS", PERSISTENT: "PASS",
+      }),
+      currentBlocker: "DATA_ERASURE_POLICY" as const,
+      truthfulRuntimeState:
+        "Typing the exact phrase «أغلق حسابي» suspends the account and revokes its sessions, and the runtime says in the same breath that it deleted nothing. The person asked for deletion, so this gate is not a pass: there is no erasure policy to carry out.",
+    },
+    {
+      id: "settings",
+      goal: "غيّر اسمي في الحساب",
+      action: "settings.update",
+      providers: ["NONE"] as const,
+      requiresApproval: false,
+      gates: gates({
+        REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+        EXECUTABLE: "PASS", OBSERVABLE: "PASS", VERIFIABLE: "PASS",
+        PRESENTABLE: "PASS", PERSISTENT: "PASS",
+      }),
+      currentBlocker: null,
+      truthfulRuntimeState:
+        "One action for every preference there is. The key is a closed choice the registry supplies, the write lands under the signed-in actor only, and repeating it leaves the same final state.",
+    },
+    {
+      id: "privacy",
+      goal: "أوقف مشاركة موقعي",
+      action: "settings.update",
+      providers: ["DEVICE"] as const,
+      requiresApproval: false,
+      gates: gates({
+        REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+        EXECUTABLE: "BLOCKED_BY_PROVIDER", OBSERVABLE: "BLOCKED_BY_PROVIDER",
+        VERIFIABLE: "BLOCKED_BY_PROVIDER", PRESENTABLE: "PASS", PERSISTENT: "PASS",
+      }),
+      currentBlocker: null,
+      truthfulRuntimeState:
+        "«privacy» is one of the registry's closed preference keys and the write is the same general action. But JASIM shares no device location today, so recording the preference is not withdrawing a live grant, and the catalog will not call it one.",
+    },
+    {
+      id: "permissions",
+      goal: "امنع هذا التطبيق من الوصول",
+      action: null,
+      providers: ["NONE"] as const,
+      requiresApproval: true,
+      gates: gates({
+        REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+        EXECUTABLE: "NOT_YET_IMPLEMENTED", OBSERVABLE: "NOT_YET_IMPLEMENTED",
+        VERIFIABLE: "NOT_YET_IMPLEMENTED", PRESENTABLE: "PASS", PERSISTENT: "PASS",
+      }),
+      currentBlocker: "DELEGATED_ACCESS_RUNTIME" as const,
+      truthfulRuntimeState:
+        "A PERSON's authority in a scope is revoked today through `membership.revoke`, an authority act with a statement and a digest — deliberately not duplicated as a product action. An outside application's delegated access is a grant JASIM never issues, so there is nothing to list and nothing to withdraw.",
+    },
+  ] as const).map((entry) => ({
+    id: `product.${entry.id}`,
+    goal: entry.goal,
     family: "SECURE_PRODUCT_ACTIONS" as const,
     route: "TRUSTED_PRODUCT_ACTION" as const,
     primitives: ["Actor", "Authority", "Policy", "Event"] as const,
     capabilities: ["UNDERSTAND", "ROUTE", "SECURE_PRODUCT_ACTION", "MUTATE"] as const,
-    providers: ["NONE"] as const,
+    providers: entry.providers,
     sideEffect: "INTERNAL_STATE" as const,
-    requiresApproval: true,
-    gates: ROUTED_ONLY({ PRESENTABLE: "PASS" }),
-    currentBlocker: "SECURE_PRODUCT_ACTION_RUNTIME" as const,
-    truthfulRuntimeState:
-      "Routed correctly and refused honestly. Credentials must never reach the model context, which is why this is a secure surface and not a DAG node.",
+    requiresApproval: entry.requiresApproval,
+    gates: entry.gates,
+    currentBlocker: entry.currentBlocker,
+    truthfulRuntimeState: entry.truthfulRuntimeState,
     domainBranchesRequired: 0 as const,
   })),
 

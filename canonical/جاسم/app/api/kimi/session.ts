@@ -35,12 +35,18 @@ export async function verifySessionToken(
     const { payload } = await jose.jwtVerify(token, sessionSecret(), {
       algorithms: [JWT_ALG],
     });
-    const { unionId, clientId } = payload;
+    const { unionId, clientId, iat } = payload;
     if (!unionId || !clientId) {
       console.warn("[session] JWT payload missing required fields.");
       return null;
     }
-    return { unionId, clientId } as SessionPayload;
+    // `iat` travels out because revocation needs it. The token carries no id of
+    // its own, so when it was minted is the only handle a revocation has.
+    return {
+      unionId: String(unionId),
+      clientId: String(clientId),
+      ...(typeof iat === "number" ? { issuedAt: iat } : {}),
+    };
   } catch (error) {
     console.warn("[session] JWT verification failed:", error);
     return null;

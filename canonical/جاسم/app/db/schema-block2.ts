@@ -783,6 +783,70 @@ export const transactions = pgTable(
 
 export type Transaction = typeof transactions.$inferSelect;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// THE SECURE PRODUCT ACTION RUNTIME
+//
+//   CONVERSATION INITIATES · TRUSTED RUNTIME DEFINES · TRUSTED SURFACE COLLECTS
+//   SERVER VALIDATES · POLICY AUTHORIZES · RUNTIME MUTATES · AUDIT RECORDS
+//
+//   PASSWORD · TOKEN · BIOMETRIC SECRET · PAYMENT CREDENTIAL != LLM CONTEXT
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * One initiated product action, waiting for a trusted surface to complete it.
+ *
+ * Opaque, server-generated, short-lived and single-use. It names an action the
+ * SERVER registered — never a schema a model invented — and it holds no
+ * submitted secret: a collected value is used and discarded inside the trusted
+ * boundary.
+ */
+export const productActionSessions = pgTable(
+  "product_action_sessions",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    actionId: varchar("actionId", { length: 80 }).notNull(),
+    /** A surface built for v1 may not submit into v2. */
+    actionVersion: integer("actionVersion").notNull(),
+    /** Null for login and signup: an anonymous person is not somebody. */
+    actorId: varchar("actorId", { length: 100 }),
+    /** Binds a pre-auth surface to ONE caller rather than to anyone who guesses. */
+    anonymousRef: varchar("anonymousRef", { length: 128 }),
+    conversationId: varchar("conversationId", { length: 64 }),
+    status: varchar("status", { length: 24 }).notNull().default("INITIATED"),
+    confirmed: boolean("confirmed").notNull().default(false),
+    /** Rendered by the runtime from the registered schema. Never model text. */
+    presentation: jsonb("presentation").$type<Record<string, unknown>>().notNull().default({}),
+    /** The NON-SENSITIVE part of what was submitted. A sentinel proves it. */
+    record: jsonb("record").$type<Record<string, unknown>>().notNull().default({}),
+    outcome: varchar("outcome", { length: 40 }),
+    expiresAt: timestamp("expiresAt", { withTimezone: true }).notNull(),
+    completedAt: timestamp("completedAt", { withTimezone: true }),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("product_action_sessions_actor_idx").on(table.actorId, table.status),
+    index("product_action_sessions_expiry_idx").on(table.expiresAt),
+  ],
+);
+
+/**
+ * Session revocation, which did not exist.
+ *
+ * The session token is a stateless year-long JWT with no id of its own, so the
+ * only revocation its design permits is "everything issued for this identity
+ * before now". That is narrower than "log out this device", and it is recorded
+ * rather than claimed.
+ */
+export const identitySessionRevocations = pgTable("identity_session_revocations", {
+  unionId: varchar("unionId", { length: 255 }).primaryKey(),
+  revokedBefore: timestamp("revokedBefore", { withTimezone: true }).notNull(),
+  revokedAt: timestamp("revokedAt", { withTimezone: true }).defaultNow().notNull(),
+  reason: varchar("reason", { length: 64 }).notNull(),
+});
+
+export type ProductActionSession = typeof productActionSessions.$inferSelect;
+export type IdentitySessionRevocation = typeof identitySessionRevocations.$inferSelect;
+
 /**
  * ONE authority act, waiting for the person who must decide it.
  *

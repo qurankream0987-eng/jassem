@@ -367,10 +367,34 @@ async function bindObligations(input: {
   }
 }
 
-function beneficiaryOf(term: Term, parties: readonly string[]): string | null {
-  if (term.owedTo) return term.owedTo;
+/**
+ * Who an obligation is owed to.
+ *
+ * Declared, or — with exactly two parties — the other one, which is
+ * determinate. With three, there is no "other party" to be determinate about,
+ * and guessing which of two beneficiaries a term meant would be the runtime
+ * deciding who gets paid.
+ *
+ *   AMBIGUOUS_MULTI_PARTY_BENEFICIARY = REJECTED
+ */
+function beneficiaryOf(term: Term, parties: readonly string[]): string {
+  if (term.owedTo) {
+    if (!parties.includes(term.owedTo)) {
+      throw new TransactionError(
+        `«${term.key}» is owed to somebody who is not a party to this transaction.`,
+        "INVALID",
+      );
+    }
+    return term.owedTo;
+  }
   const others = parties.filter((party) => party !== term.owedBy);
-  return others.length === 1 ? others[0]! : null;
+  if (others.length !== 1) {
+    throw new TransactionError(
+      `«${term.key}» does not say who it is owed to, and with ${parties.length} parties there is no "other party" to infer.`,
+      "INVALID",
+    );
+  }
+  return others[0]!;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

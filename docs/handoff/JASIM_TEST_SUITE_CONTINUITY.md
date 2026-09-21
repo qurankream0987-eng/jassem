@@ -108,3 +108,11 @@ collection, which is the mistake that produced the 203 in the first place.
 
 The frozen evaluation is a **subset of Main**, not a fifth suite — adding it to a
 grand total double-counts 74 tests.
+
+Each suite is also run **alone**. Block 2, Block 3 and Block 3.1 need
+`--no-file-parallelism`, and all three share one proof database: two runs
+against it at the same time truncate each other's tables mid-test and produce
+failures that belong to neither suite. A red run that cannot be reproduced when
+nothing else is running is a collision, not a finding — and the reverse trap is
+worse, so a red run is only ever dismissed after a clean run **alone**, never
+because it looked like noise.

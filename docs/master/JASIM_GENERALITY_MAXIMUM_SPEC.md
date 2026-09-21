@@ -479,6 +479,100 @@ verified, there is **compensation** — a new effect, a refund, a released
 reservation — and nothing pretends the original vanished or deletes a row to
 make it so.
 
+## 4.10 A SECURE PRODUCT ACTION
+
+Some of what a person asks for is not a goal in the world. It is a change to
+JASIM itself: sign me in, sign me out, change this setting, close my account.
+These are the actions where a mistake costs an identity, so they have their own
+law.
+
+```
+CONVERSATION INITIATES
+  -> TRUSTED PRODUCT RUNTIME DEFINES
+    -> TRUSTED SURFACE COLLECTS
+      -> SERVER VALIDATES
+        -> POLICY AUTHORIZES
+          -> RUNTIME MUTATES
+            -> AUDIT RECORDS
+```
+
+Seven steps, and the model appears at exactly one of them: the first. It
+recognises what a person wants. It defines nothing and performs nothing.
+
+```
+AUTHENTICATE != DAG NODE
+MODEL RECOGNISES != MODEL DEFINES
+SURFACE COLLECTS != SURFACE DECIDES
+CLIENT STATE CLEARED != SESSION REVOKED
+ACCOUNT CLOSED   != ACCOUNT DELETED
+```
+
+### A secret is not context
+
+```
+PASSWORD · TOKEN · BIOMETRIC SECRET · PAYMENT CREDENTIAL   !=   LLM CONTEXT
+```
+
+What a person types into a trusted surface is read once, by the one server
+boundary that needs it, and is never written anywhere. It does not enter a
+conversation message, an assistant reply, a Presentation IR payload kept for
+replay, an event payload, an analytics record or a log line. This is not a
+convention; it is a test that hunts a sentinel string through every table the
+runtime writes and fails if it finds it anywhere.
+
+```
+SECRET_IN_MODEL_CONTEXT       = 0
+SECRET_IN_CONVERSATION_STORAGE = 0
+SECRET_IN_OBSERVABILITY       = 0
+```
+
+### The runtime defines the action, and there is one of it
+
+The model may not define the input schema, which fields are sensitive, whether
+confirmation is required, whether re-authentication is required, who is
+authorized, or what the mutation does. A registry does, one entry per general
+product verb, and one server boundary submits all of them.
+
+No `users_v2`. No `sessions_v2`. No `auth_v2`. No second password system and no
+second permission system: granting and revoking a person's authority stays an
+**authority act** with a statement and a digest, because a second approval
+mechanism beside it is how two answers to "may they?" come to exist.
+
+```
+DOMAIN_PRODUCT_ACTIONS_ADDED = 0
+PARALLEL_AUTH_SYSTEMS_ADDED  = 0
+```
+
+`LoginAgent`, `SignupFlow`, `PasswordResetModule` and `AccountSettingsAgent`
+are the names this section exists to prevent.
+
+### Approval, and what it is worth
+
+An irreversible action is confirmed by the person typing back the exact phrase
+the runtime showed them. A yes/no on an irreversible act is a click, and
+
+```
+APPROVAL != CLICK
+```
+
+A caller may not assert that it re-authenticated, that a policy allowed it,
+that a confirmation was satisfied, or who the actor is. Those are the runtime's
+own words. A submitted field carrying one of them is refused, never ignored.
+
+### Ending honestly
+
+Signing out means the **server** stops accepting every token minted for that
+identity before now. A client that erased its own storage has proven nothing.
+
+Closing an account is real and deleting one is not, while no erasure policy
+exists. The runtime suspends the account, revokes its sessions, and says in the
+same breath that it deleted nothing — and the catalog records the deletion gate
+as unmet rather than calling the closure a pass.
+
+```
+FALSE_SUCCESS = 0
+```
+
 ## 5. Business is a scope, not an app
 
 A Business may own data, Needs, Offerings, Resources, Capacity, Policies,

@@ -9,6 +9,13 @@ export type TokenResponse = {
 export type SessionPayload = {
   unionId: string;
   clientId: string;
+  /**
+   * When the token was minted.
+   *
+   * Carried out of the JWT because revocation needs it: the token has no id of
+   * its own, so the only handle a revocation has is the moment it was issued.
+   */
+  issuedAt?: number;
 };
 
 export type UserProfile = {

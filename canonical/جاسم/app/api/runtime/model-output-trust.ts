@@ -127,6 +127,27 @@ export const AUTHORITY_KEYS: ReadonlySet<string> = new Set([
   // never say that something was settled, delivered, paid or verified.
   // Mirrored as `TRANSACTION_AUTHORITY_KEYS` in `transaction-runtime.ts`,
   // which is tested against this set.
+  // Product-action authority. A model may name a registered actionId. It may
+  // never define a field, mark one sensitive, say a confirmation was given, or
+  // claim somebody re-authenticated. Mirrored as
+  // `PRODUCT_ACTION_AUTHORITY_KEYS` in `product-actions.ts`, tested against
+  // this set.
+  "actorid",
+  "userid",
+  "isadmin",
+  "authorization",
+  "permissiongranted",
+  "sessionid",
+  "passwordhash",
+  "refreshtoken",
+  "policyoverride",
+  "reauthenticated",
+  "sessiontoken",
+  "accesstoken",
+  "confirmationsatisfied",
+  "confirmed",
+  "actioncompleted",
+  "status",
   "transactionid",
   "settled",
   "fulfilled",

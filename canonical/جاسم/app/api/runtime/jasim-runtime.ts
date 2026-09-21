@@ -84,6 +84,11 @@ import {
 } from "./authority-acts";
 import { disclosableDecision, evaluatePolicies } from "./policy-enforcement";
 import {
+  ProductActionError,
+  getProductAction,
+  initiateProductAction,
+} from "./product-actions";
+import {
   CONVERSATION_SCOPE_KEY,
   authorizeScopeAction,
   conversationScopeMemory,
@@ -5632,6 +5637,21 @@ const ActingScopeRequestSchema = z
   .strict();
 
 /**
+ * A REQUEST for a product action. The model names a registered id.
+ *
+ * There is deliberately no `fields`, no `values`, no `sensitive`, no
+ * `confirmation` and no `ownerId`: the schema, the sensitivity of each field,
+ * whether confirmation is required and whose account it is all come from
+ * trusted registration, and `PRODUCT_ACTION_AUTHORITY_KEYS` refuses the rest
+ * before this schema is reached.
+ *
+ *   MODEL_DEFINED_SECRET_FIELDS = 0
+ */
+const ProductActionRequestSchema = z
+  .object({ actionId: z.string().trim().min(1).max(80) })
+  .strict();
+
+/**
  * A REQUEST for an authority act. Never a performance of one.
  *
  * The model names a registered act and typed parameters. It cannot write the
@@ -5852,6 +5872,7 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       // On whose behalf this turn is acting, as a request.
       actingScope: ActingScopeRequestSchema.optional(),
       authorityRequest: AuthorityRequestSchema.optional(),
+      productAction: ProductActionRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -5887,6 +5908,7 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       // On whose behalf this turn is acting, as a request.
       actingScope: ActingScopeRequestSchema.optional(),
       authorityRequest: AuthorityRequestSchema.optional(),
+      productAction: ProductActionRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -5922,6 +5944,7 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       // On whose behalf this turn is acting, as a request.
       actingScope: ActingScopeRequestSchema.optional(),
       authorityRequest: AuthorityRequestSchema.optional(),
+      productAction: ProductActionRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -6322,6 +6345,15 @@ export async function routeRuntimeConversationTurn(input: {
   ownerId: string;
   conversationId: string;
   content: string;
+  /**
+   * The AUTHENTICATED user row, handed down from the transport.
+   *
+   * Passed rather than looked up, because the thing that knows who is signed
+   * in is the request, not the conversation. A turn cannot name whose account
+   * it is about, and a product action that needs an actor gets this one or
+   * none.
+   */
+  actorUser?: import("../../db/schema").User;
 }): Promise<RuntimeConversationOutputResponse> {
   const userMessage = await createRuntimeMessage({
     ownerId: input.ownerId,
@@ -6779,6 +6811,63 @@ export async function routeRuntimeConversationTurn(input: {
         // floor steers a decision without being disclosed.
         extra: { policy: disclosableDecision(decision) },
       });
+    }
+  }
+
+  // ── A PRODUCT ACTION: OPEN A DOOR, CARRY NO SECRET ───────────────────────
+  //
+  //   CONVERSATION INITIATES · TRUSTED RUNTIME DEFINES · TRUSTED SURFACE COLLECTS
+  //   AUTHENTICATE != DAG NODE
+  //
+  // «سجلني دخول» and «غيّر كلمة السر» end here and go no further. The turn
+  // opens a short-lived, opaque, single-use action session and hands back the
+  // presentation contract the REGISTRY defines. Nothing is collected here,
+  // nothing is executed here, and no field of it was named by a model.
+  const productAction = "productAction" in envelope ? envelope.productAction : undefined;
+  if (productAction) {
+    const action = getProductAction(productAction.actionId);
+    if (!action) {
+      return respondRouted({
+        message: "فهمت أن هذا إجراء على حسابك، لكن لا يوجد إجراء مسجّل بهذا الاسم.",
+        state: "UNAVAILABLE",
+        cause: "UNKNOWN_PRODUCT_ACTION",
+      });
+    }
+    try {
+      const { session, presentation } = await initiateProductAction({
+        actionId: action.id,
+        // The actor comes from the authenticated session and nowhere else. A
+        // turn cannot name whose account it is about.
+        ...(input.actorUser ? { actor: input.actorUser } : {}),
+        anonymousRef: input.ownerId,
+        conversationId: input.conversationId,
+      });
+      return respondRouted({
+        message: `${presentation.title} — ${presentation.consequence}`,
+        state: "NEEDS_TRUSTED_SURFACE",
+        cause: "PRODUCT_ACTION_INITIATED",
+        extra: {
+          // The contract a trusted surface renders. It carries labels and
+          // kinds, and never a value.
+          productAction: {
+            actionSessionId: session.id,
+            expiresAt: session.expiresAt.toISOString(),
+            presentation,
+          },
+        },
+      });
+    } catch (error) {
+      if (error instanceof ProductActionError) {
+        return respondRouted({
+          message:
+            error.code === "UNAUTHENTICATED"
+              ? "هذا الإجراء يحتاج تسجيل دخول أولاً."
+              : error.message,
+          state: error.code === "UNAUTHENTICATED" ? "NEEDS_INPUT" : "DENIED",
+          cause: error.code,
+        });
+      }
+      throw error;
     }
   }
 

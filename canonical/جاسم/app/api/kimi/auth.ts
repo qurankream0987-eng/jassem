@@ -71,6 +71,7 @@ export async function authenticateRequest(headers: Headers) {
     if (!user) {
       throw new JasimError("AUTH_USER_NOT_FOUND", "User not found. Please re-login.", 403);
     }
+    await assertNotRevoked(claim);
     return user;
   }
 
@@ -89,7 +90,27 @@ export async function authenticateRequest(headers: Headers) {
   if (!user) {
     throw new JasimError("AUTH_USER_NOT_FOUND", "User not found. Please re-login.", 403);
   }
+  await assertNotRevoked(claim);
   return user;
+}
+
+/**
+ * A revoked token authorizes nothing, on either transport.
+ *
+ * Here rather than in the cookie branch alone: logging out by clearing a
+ * cookie while the bearer token in a mobile app keeps working is exactly the
+ * false success this check exists to end. A signature that verifies is not the
+ * same as a session that still stands.
+ */
+async function assertNotRevoked(claim: { unionId: string; issuedAt?: number }): Promise<void> {
+  const { sessionIsRevoked } = await import("../runtime/product-actions");
+  const revoked = await sessionIsRevoked({
+    unionId: claim.unionId,
+    ...(claim.issuedAt !== undefined ? { issuedAt: claim.issuedAt } : {}),
+  });
+  if (revoked) {
+    throw new JasimError("AUTH_FORBIDDEN", "This session has been revoked.", 403);
+  }
 }
 
 export function createOAuthCallbackHandler() {

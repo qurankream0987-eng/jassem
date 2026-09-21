@@ -632,6 +632,88 @@ describe("a business is a scope, not an app", () => {
   });
 });
 
+// ── A product action is one door ─────────────────────────────────────────────
+
+describe("a secure product action is one door, graded one at a time", () => {
+  const product = SCENARIOS.filter(
+    (scenario) => scenario.family === "SECURE_PRODUCT_ACTIONS",
+  );
+
+  it("blames no secure-surface runtime of its own", () => {
+    // The gap is closed. What a credential still waits for is an IDENTITY
+    // provider, and what a deletion waits for is an erasure policy. Both are
+    // different things, and neither may wear the closed gap's name again.
+    expect(GENERAL_GAPS as readonly string[]).not.toContain("SECURE_PRODUCT_ACTION_RUNTIME");
+    for (const scenario of [...product, SCENARIOS.find((s) => s.id === "route.product_action")!]) {
+      expect(scenario.route, scenario.id).toBe("TRUSTED_PRODUCT_ACTION");
+      expect(scenario.gates.PLANNABLE, scenario.id).toBe("PASS");
+      // The action session row outlives the turn whether or not the action
+      // ran, which is what makes the audit record possible at all.
+      expect(scenario.gates.PERSISTENT, scenario.id).toBe("PASS");
+      if (scenario.currentBlocker === null) continue;
+      expect(GENERAL_GAPS, scenario.id).toContain(scenario.currentBlocker);
+    }
+  });
+
+  it("stopped being one block with one status", () => {
+    // Before the runtime existed these eight shared a single verdict. If they
+    // ever collapse back into one, the catalog has stopped measuring them.
+    const running = product.filter((scenario) => scenario.gates.EXECUTABLE === "PASS");
+    const waitingOnProvider = product.filter(
+      (scenario) => scenario.gates.EXECUTABLE === "BLOCKED_BY_PROVIDER",
+    );
+    const waitingOnCapability = product.filter(
+      (scenario) => scenario.gates.EXECUTABLE === "NOT_YET_IMPLEMENTED",
+    );
+    expect(running.length, "an action that runs today").toBeGreaterThan(0);
+    expect(waitingOnProvider.length, "an action waiting on a provider").toBeGreaterThan(0);
+    expect(waitingOnCapability.length, "an action waiting on a capability").toBeGreaterThan(0);
+  });
+
+  it("a credential waits on an identity provider, never on a missing password store", () => {
+    // JASIM stores no password and verifies none. Recording that as a
+    // generality failure would be wrong; recording it as a PASS would be a
+    // lie. It is a provider class with nothing bound to it.
+    for (const id of ["product.login", "product.signup", "product.password_change"]) {
+      const scenario = product.find((entry) => entry.id === id)!;
+      expect(scenario.providers, id).toContain("IDENTITY");
+      expect(scenario.currentBlocker, id).toBeNull();
+      expect(scenario.gates.EXECUTABLE, id).toBe("BLOCKED_BY_PROVIDER");
+    }
+  });
+
+  it("closing an account is never recorded as deleting one", () => {
+    const closing = product.find((entry) => entry.id === "product.account_deletion")!;
+    expect(closing.currentBlocker).toBe("DATA_ERASURE_POLICY");
+    expect(closing.gates.EXECUTABLE).not.toBe("PASS");
+    expect(closing.truthfulRuntimeState).toContain("deleted nothing");
+  });
+
+  it("permission revocation still belongs to the authority act", () => {
+    const permissions = product.find((entry) => entry.id === "product.permissions")!;
+    expect(permissions.currentBlocker).toBe("DELEGATED_ACCESS_RUNTIME");
+    expect(permissions.truthfulRuntimeState).toContain("membership.revoke");
+  });
+
+  it("the governing law records that a secret is not context", () => {
+    const law = readFileSync(LAW, "utf8");
+    for (const clause of [
+      "A SECURE PRODUCT ACTION",
+      "AUTHENTICATE != DAG NODE",
+      "CLIENT STATE CLEARED != SESSION REVOKED",
+      "ACCOUNT CLOSED   != ACCOUNT DELETED",
+      "PASSWORD · TOKEN · BIOMETRIC SECRET · PAYMENT CREDENTIAL   !=   LLM CONTEXT",
+      "SECRET_IN_MODEL_CONTEXT       = 0",
+      "DOMAIN_PRODUCT_ACTIONS_ADDED = 0",
+      "PARALLEL_AUTH_SYSTEMS_ADDED  = 0",
+      "LoginAgent",
+      "PasswordResetModule",
+    ]) {
+      expect(law, clause).toContain(clause);
+    }
+  });
+});
+
 // ── The scoreboard, pinned ───────────────────────────────────────────────────
 
 describe("no scenario changes status silently", () => {
@@ -655,17 +737,17 @@ describe("no scenario changes status silently", () => {
       pass: {
         REPRESENTABLE: 162,
         ROUTABLE: 162,
-        PLANNABLE: 138,
-        EXECUTABLE: 89,
-        OBSERVABLE: 76,
-        VERIFIABLE: 71,
+        PLANNABLE: 147,
+        EXECUTABLE: 92,
+        OBSERVABLE: 80,
+        VERIFIABLE: 74,
         PRESENTABLE: 160,
-        PERSISTENT: 128,
+        PERSISTENT: 137,
       },
-      blockedByProvider: 35,
+      blockedByProvider: 39,
       blockedByEnvironment: 2,
-      notYetImplemented: 40,
-      generalGaps: 10,
+      notYetImplemented: 33,
+      generalGaps: 11,
     });
   });
 

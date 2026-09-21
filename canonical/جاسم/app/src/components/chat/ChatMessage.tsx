@@ -9,6 +9,8 @@ import { RunLifecycleCard } from '@/components/runtime/RunLifecycleCard';
 import { PresentationRenderer } from '@/components/jasim-core/PresentationRenderer';
 import { SafeMarkdownPreview } from './SafeMarkdownPreview';
 import { RoutedNotice, TurnSurface } from '@/components/jasim-core/TurnSurface';
+import { TrustedProductActionMount } from '@/components/jasim-core/TrustedProductActionMount';
+import type { ProductActionPresentation } from '@/components/jasim-core/TrustedProductActionSurface';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -232,6 +234,18 @@ export function ChatMessage({
     | undefined;
   const routedState = isAssistant && typeof routed?.state === 'string' ? routed.state : null;
 
+  /**
+   * A sensitive product action the turn initiated.
+   *
+   * The contract came down from the server's registry; this reads it and
+   * renders the trusted surface. The conversation carried the INTENT and the
+   * surface carries the collection, which is the whole separation.
+   */
+  const productAction = message.metadata?.productAction as
+    | { actionSessionId: string; expiresAt: string; presentation: ProductActionPresentation }
+    | undefined;
+
+
   const inlineActions = message.metadata?.actions as Array<{ id: string; label: string; type?: string }> | undefined;
   const presentation = message.metadata?.presentation;
   const shouldRenderPresentation =
@@ -291,7 +305,13 @@ export function ChatMessage({
           }`}
         >
           {/* Content */}
-          {routedState ? (
+          {productAction ? (
+            <TrustedProductActionMount
+              actionSessionId={productAction.actionSessionId}
+              expiresAt={productAction.expiresAt}
+              presentation={productAction.presentation}
+            />
+          ) : routedState ? (
             <RoutedNotice state={routedState} message={displayContent} />
           ) : isStreaming && isLast && isAssistant ? (
             <StreamingText text={displayContent} speedMs={16} />

@@ -23,6 +23,11 @@ import {
   rejectAuthorityRequest,
 } from "../runtime/authority-acts";
 import {
+  ProductActionError,
+  cancelProductAction,
+  submitProductAction,
+} from "../runtime/product-actions";
+import {
   actOnRuntimeTask,
   archiveRuntimeConversation,
   attachRuntimeArtifactToBubble,
@@ -134,6 +139,22 @@ function canGenerate(source: string): boolean {
 // ── Error mapping ─────────────────────────────────────────────────────────────
 
 function handleRuntimeError(error: unknown): never {
+  if (error instanceof ProductActionError) {
+    throw new TRPCError({
+      code:
+        error.code === "UNAUTHENTICATED"
+          ? "UNAUTHORIZED"
+          : error.code === "FORBIDDEN"
+            ? "FORBIDDEN"
+            : error.code === "UNKNOWN_ACTION"
+              ? "NOT_FOUND"
+              : error.code === "EXPIRED" || error.code === "STATE"
+                ? "CONFLICT"
+                : "BAD_REQUEST",
+      message: error.message,
+      cause: error,
+    });
+  }
   if (error instanceof AuthorityActError) {
     throw new TRPCError({
       code:
@@ -341,6 +362,10 @@ export const runtimeRouter = router({
           ownerId: ownerIdOf(ctx),
           conversationId: input.conversationId,
           content: input.content,
+          // Who is actually signed in, from the request. A product action that
+          // needs an actor gets this one or none: a turn never names whose
+          // account it is about.
+          ...(ctx.user ? { actorUser: ctx.user } : {}),
         });
         // Phase E — emit CONVERSATION_TURN_ROUTED semantic event (fire-and-forget)
         void createRuntimeSemanticEvent({
@@ -1205,6 +1230,75 @@ export const runtimeRouter = router({
           principalId: ownerIdOf(ctx),
         });
         return { requestId: row.id, state: row.state, resolution: row.resolution };
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  // ── The trusted product-action surface ────────────────────────────────────
+  //
+  //   TRUSTED SURFACE COLLECTS · SERVER VALIDATES · RUNTIME MUTATES
+  //
+  // This is the ONLY place a collected value enters, and it is a mutation
+  // rather than a query so nothing lands in a URL or a cache. Sensitive fields
+  // are used inside the trusted boundary and dropped: they are never returned,
+  // never stored on the session row, and never put in an event.
+
+  /**
+   * Submit what a trusted surface collected.
+   *
+   * `values` is an opaque record here on purpose — the SCHEMA is the
+   * registry's, and validating it against a shape declared in the transport
+   * would be a second definition of what a field is.
+   *
+   * AUTHENTICATED ONLY, deliberately. `initiateProductAction` and
+   * `submitProductAction` both support an anonymous caller bound by
+   * `anonymousRef`, because login and signup must work for somebody who is
+   * nobody yet. But every ANONYMOUS_ALLOWED action registered today is
+   * `BLOCKED_BY_PROVIDER`, so an unauthenticated mutation endpoint here would
+   * be reachable attack surface serving no working flow. It is added with the
+   * identity provider that makes those flows real, not before.
+   */
+  productActionSubmit: authedQuery
+    .input(
+      z.object({
+        actionSessionId: z.string().trim().min(1).max(64),
+        actionVersion: z.number().int().positive().optional(),
+        values: z.record(z.string(), z.unknown()).default({}),
+        confirmation: z.union([z.string().max(200), z.boolean()]).optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const outcome = await submitProductAction({
+          actionSessionId: input.actionSessionId,
+          actor: ctx.user!,
+          values: input.values,
+          ...(input.actionVersion !== undefined ? { actionVersion: input.actionVersion } : {}),
+          ...(input.confirmation !== undefined ? { confirmation: input.confirmation } : {}),
+        });
+        // The outcome and nothing else. No echo of what was typed.
+        return {
+          status: outcome.status,
+          outcome: outcome.outcome,
+          detail: outcome.detail,
+          actionSessionId: outcome.session.id,
+        };
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  /** «خلاص لا تغيّر كلمة السر». Nothing happened, and the row says so. */
+  productActionCancel: authedQuery
+    .input(z.object({ actionSessionId: z.string().trim().min(1).max(64) }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const session = await cancelProductAction({
+          actionSessionId: input.actionSessionId,
+          actor: ctx.user!,
+        });
+        return { actionSessionId: session.id, status: session.status };
       } catch (error) {
         handleRuntimeError(error);
       }

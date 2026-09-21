@@ -224,29 +224,30 @@ claim this catalog exists to prevent.
 |---|---:|---:|---:|---:|---:|
 | **REPRESENTABLE** | 162 | 0 | 0 | 0 | 0 |
 | **ROUTABLE** | 162 | 0 | 0 | 0 | 0 |
-| **PLANNABLE** | 138 | 24 | 0 | 0 | 0 |
-| **EXECUTABLE** | 89 | 40 | 31 | 2 | 0 |
-| **OBSERVABLE** | 76 | 20 | 24 | 0 | 42 |
-| **VERIFIABLE** | 71 | 25 | 24 | 0 | 42 |
+| **PLANNABLE** | 147 | 15 | 0 | 0 | 0 |
+| **EXECUTABLE** | 92 | 33 | 35 | 2 | 0 |
+| **OBSERVABLE** | 80 | 12 | 28 | 0 | 42 |
+| **VERIFIABLE** | 74 | 18 | 28 | 0 | 42 |
 | **PRESENTABLE** | 160 | 2 | 0 | 0 | 0 |
-| **PERSISTENT** | 128 | 17 | 0 | 0 | 17 |
+| **PERSISTENT** | 137 | 8 | 0 | 0 | 17 |
 
-Scenarios blocked by an absent **provider**: **35**
+Scenarios blocked by an absent **provider**: **39**
 Scenarios blocked by this **environment**: **2**
-Scenarios waiting on a **general capability**: **40**
+Scenarios waiting on a **general capability**: **33**
 
 ### General gaps
 
 Each of these closes many scenarios at once. That is what makes it general.
 
 - `BUSINESS_DATA_SOURCE_ADAPTER`
+- `DATA_ERASURE_POLICY`
+- `DELEGATED_ACCESS_RUNTIME`
 - `EXTERNAL_DISCOVERY_PROVIDER`
 - `LIVING_OBJECT_RUNTIME`
 - `LOCATION_OBSERVATION`
 - `MONITORING_ENGINE`
 - `PERSISTENT_WORLD_MATERIALIZATION`
 - `REALTIME_RUNTIME`
-- `SECURE_PRODUCT_ACTION_RUNTIME`
 - `SPONSORED_DISCOVERY_RUNTIME`
 - `SUBSCRIPTION_RUNTIME`
 
@@ -269,7 +270,7 @@ Each of these closes many scenarios at once. That is what makes it general.
 | `route.text` | ما هو الفرق بين العقد والاتفاق؟ | TEXT | ● | ● | ● | E | — | — | ● | — | — |
 | `route.direct_read` | أرني عملياتي | DIRECT_READ | ● | ● | ● | ● | — | — | ● | — | — |
 | `route.generated_presentation` | اعرض لي هذا كبطاقة | GENERATED_PRESENTATION | ● | ● | ● | E | — | — | ● | — | — |
-| `route.product_action` | سجّلني خروج | TRUSTED_PRODUCT_ACTION | ● | ● | ○ | ○ | ○ | ○ | ● | ○ | SECURE_PRODUCT_ACTION_RUNTIME |
+| `route.product_action` | سجّلني خروج | TRUSTED_PRODUCT_ACTION | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `route.plangraph` | رتب لي مؤتمرًا الشهر القادم | GENERAL_PLANGRAPH | ● | ● | ● | P | ● | ● | ● | ● | — |
 | `route.monitoring` | راقب السعر وأخبرني إذا نزل | MONITORING | ● | ● | ○ | ○ | ○ | ○ | ○ | ○ | MONITORING_ENGINE |
 | `route.living_object` | أين وصل طلبي؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ○ | ○ | ○ | ○ | ● | ● | LIVING_OBJECT_RUNTIME |
@@ -296,14 +297,14 @@ Each of these closes many scenarios at once. That is what makes it general.
 
 | id | goal | route | REPR | ROUT | PLAN | EXEC | OBSE | VERI | PRES | PERS | blocker |
 |---|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|
-| `product.login` | سجّلني دخول | TRUSTED_PRODUCT_ACTION | ● | ● | ○ | ○ | ○ | ○ | ● | ○ | SECURE_PRODUCT_ACTION_RUNTIME |
-| `product.logout` | سجّلني خروج | TRUSTED_PRODUCT_ACTION | ● | ● | ○ | ○ | ○ | ○ | ● | ○ | SECURE_PRODUCT_ACTION_RUNTIME |
-| `product.signup` | أنشئ لي حسابًا | TRUSTED_PRODUCT_ACTION | ● | ● | ○ | ○ | ○ | ○ | ● | ○ | SECURE_PRODUCT_ACTION_RUNTIME |
-| `product.password_change` | غيّر كلمة المرور | TRUSTED_PRODUCT_ACTION | ● | ● | ○ | ○ | ○ | ○ | ● | ○ | SECURE_PRODUCT_ACTION_RUNTIME |
-| `product.account_deletion` | احذف حسابي | TRUSTED_PRODUCT_ACTION | ● | ● | ○ | ○ | ○ | ○ | ● | ○ | SECURE_PRODUCT_ACTION_RUNTIME |
-| `product.settings` | غيّر اسمي في الحساب | TRUSTED_PRODUCT_ACTION | ● | ● | ○ | ○ | ○ | ○ | ● | ○ | SECURE_PRODUCT_ACTION_RUNTIME |
-| `product.privacy` | أوقف مشاركة موقعي | TRUSTED_PRODUCT_ACTION | ● | ● | ○ | ○ | ○ | ○ | ● | ○ | SECURE_PRODUCT_ACTION_RUNTIME |
-| `product.permissions` | امنع هذا التطبيق من الوصول | TRUSTED_PRODUCT_ACTION | ● | ● | ○ | ○ | ○ | ○ | ● | ○ | SECURE_PRODUCT_ACTION_RUNTIME |
+| `product.login` | سجّلني دخول | TRUSTED_PRODUCT_ACTION | ● | ● | ● | P | P | P | ● | ● | — |
+| `product.logout` | سجّلني خروج | TRUSTED_PRODUCT_ACTION | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `product.signup` | أنشئ لي حسابًا | TRUSTED_PRODUCT_ACTION | ● | ● | ● | P | P | P | ● | ● | — |
+| `product.password_change` | غيّر كلمة المرور | TRUSTED_PRODUCT_ACTION | ● | ● | ● | P | P | P | ● | ● | — |
+| `product.account_deletion` | احذف حسابي | TRUSTED_PRODUCT_ACTION | ● | ● | ● | ○ | ● | ○ | ● | ● | DATA_ERASURE_POLICY |
+| `product.settings` | غيّر اسمي في الحساب | TRUSTED_PRODUCT_ACTION | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `product.privacy` | أوقف مشاركة موقعي | TRUSTED_PRODUCT_ACTION | ● | ● | ● | P | P | P | ● | ● | — |
+| `product.permissions` | امنع هذا التطبيق من الوصول | TRUSTED_PRODUCT_ACTION | ● | ● | ● | ○ | ○ | ○ | ● | ● | DELEGATED_ACCESS_RUNTIME |
 
 ### MULTI_STEP · 4
 

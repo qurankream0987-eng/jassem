@@ -127,6 +127,13 @@
       "when": 1788187200000,
       "tag": "0017_transaction_fulfillment",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1788273600000,
+      "tag": "0018_product_actions",
+      "breakpoints": true
     }
   ]
 }
