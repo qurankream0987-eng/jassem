@@ -176,6 +176,25 @@ about survives it: a body carrying no recognized schema is scope configuration
 that enforces nothing and never claimed to, and the statement a person approves
 says which of the two they are getting.
 
+## A missing capability and a missing provider are different answers
+
+The `TRANSACTIONS` family is where the distinction stops being academic.
+
+`ألغِ الطلب` and `هل وصل الطلب؟` **run**: cancellation is canonical state JASIM
+owns, and the answer to "did it arrive" is a projection that says PENDING
+rather than guessing. `اشترِ لي هذا`, `بع لي هذا`, `احجز لي هذه` and
+`احجز المساحة لأسبوع` reach a counterparty outside JASIM, and nothing is
+connected — so they read `BLOCKED_BY_PROVIDER` and blame no general gap at all.
+
+```
+GENERALITY FAILURE != PROVIDER NOT CONNECTED
+```
+
+That is why closing `GENERAL_TRANSACTION_FULFILLMENT` moved `EXECUTABLE` by
+only four while `blockedByProvider` rose by four: the runtime exists, and the
+world is not plugged into it. A phase that had marked all nine green would have
+been reporting a payment system nobody can pay through.
+
 ## What the ratchets can and cannot prove
 
 | ratchet | proves | does **not** prove |
@@ -205,16 +224,16 @@ claim this catalog exists to prevent.
 |---|---:|---:|---:|---:|---:|
 | **REPRESENTABLE** | 162 | 0 | 0 | 0 | 0 |
 | **ROUTABLE** | 162 | 0 | 0 | 0 | 0 |
-| **PLANNABLE** | 133 | 29 | 0 | 0 | 0 |
-| **EXECUTABLE** | 85 | 49 | 26 | 2 | 0 |
-| **OBSERVABLE** | 78 | 22 | 20 | 0 | 42 |
-| **VERIFIABLE** | 73 | 27 | 20 | 0 | 42 |
+| **PLANNABLE** | 138 | 24 | 0 | 0 | 0 |
+| **EXECUTABLE** | 89 | 40 | 31 | 2 | 0 |
+| **OBSERVABLE** | 76 | 20 | 24 | 0 | 42 |
+| **VERIFIABLE** | 71 | 25 | 24 | 0 | 42 |
 | **PRESENTABLE** | 160 | 2 | 0 | 0 | 0 |
 | **PERSISTENT** | 128 | 17 | 0 | 0 | 17 |
 
-Scenarios blocked by an absent **provider**: **31**
+Scenarios blocked by an absent **provider**: **35**
 Scenarios blocked by this **environment**: **2**
-Scenarios waiting on a **general capability**: **49**
+Scenarios waiting on a **general capability**: **40**
 
 ### General gaps
 
@@ -222,7 +241,6 @@ Each of these closes many scenarios at once. That is what makes it general.
 
 - `BUSINESS_DATA_SOURCE_ADAPTER`
 - `EXTERNAL_DISCOVERY_PROVIDER`
-- `GENERAL_TRANSACTION_FULFILLMENT`
 - `LIVING_OBJECT_RUNTIME`
 - `LOCATION_OBSERVATION`
 - `MONITORING_ENGINE`
@@ -351,14 +369,14 @@ Each of these closes many scenarios at once. That is what makes it general.
 
 | id | goal | route | REPR | ROUT | PLAN | EXEC | OBSE | VERI | PRES | PERS | blocker |
 |---|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|
-| `transaction.buy` | اشترِ لي هذا | GENERAL_PLANGRAPH | ● | ● | ○ | ○ | ● | ● | ● | ● | GENERAL_TRANSACTION_FULFILLMENT |
-| `transaction.sell` | بع لي هذا | GENERAL_PLANGRAPH | ● | ● | ○ | ○ | ● | ● | ● | ● | GENERAL_TRANSACTION_FULFILLMENT |
-| `transaction.book` | احجز لي هذه | GENERAL_PLANGRAPH | ● | ● | ○ | ○ | ● | ● | ● | ● | GENERAL_TRANSACTION_FULFILLMENT |
-| `transaction.reserve` | احجز المساحة لأسبوع | GENERAL_PLANGRAPH | ● | ● | ○ | ○ | ● | ● | ● | ● | GENERAL_TRANSACTION_FULFILLMENT |
-| `transaction.cancel` | ألغِ الطلب | GENERAL_PLANGRAPH | ● | ● | ○ | ○ | ● | ● | ● | ● | GENERAL_TRANSACTION_FULFILLMENT |
+| `transaction.buy` | اشترِ لي هذا | GENERAL_PLANGRAPH | ● | ● | ● | P | P | P | ● | ● | — |
+| `transaction.sell` | بع لي هذا | GENERAL_PLANGRAPH | ● | ● | ● | P | P | P | ● | ● | — |
+| `transaction.book` | احجز لي هذه | GENERAL_PLANGRAPH | ● | ● | ● | P | P | P | ● | ● | — |
+| `transaction.reserve` | احجز المساحة لأسبوع | GENERAL_PLANGRAPH | ● | ● | ● | P | P | P | ● | ● | — |
+| `transaction.cancel` | ألغِ الطلب | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `transaction.pay` | ادفع | GENERAL_PLANGRAPH | ● | ● | ● | P | P | P | ● | ● | — |
 | `transaction.refund` | أرجع لي المبلغ | GENERAL_PLANGRAPH | ● | ● | ● | P | P | P | ● | ● | — |
-| `transaction.fulfillment` | هل وصل الطلب؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ○ | ● | ● | ● | ● | GENERAL_TRANSACTION_FULFILLMENT |
+| `transaction.fulfillment` | هل وصل الطلب؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ● | ● | ● | ● | ● | — |
 
 ### OBSERVATION_VERIFICATION · 8
 
@@ -448,7 +466,7 @@ Each of these closes many scenarios at once. That is what makes it general.
 |---|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|
 | `monetization.user_subscription` | اشترك لي في الخطة الشهرية | GENERAL_PLANGRAPH | ● | ● | ● | ○ | P | P | ● | ● | SUBSCRIPTION_RUNTIME |
 | `monetization.business_subscription` | اشترك لشركتي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | P | P | ● | ● | SUBSCRIPTION_RUNTIME |
-| `monetization.commission` | خذ عمولتك من الصفقة | GENERAL_PLANGRAPH | ● | ● | ● | ○ | P | P | ● | ● | GENERAL_TRANSACTION_FULFILLMENT |
+| `monetization.commission` | خذ عمولتك من الصفقة | GENERAL_PLANGRAPH | ● | ● | ● | P | P | P | ● | ● | — |
 | `monetization.sponsored` | روّج لعرضي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SPONSORED_DISCOVERY_RUNTIME |
 | `monetization.sponsored_never_wins` | لماذا هذا العرض أولًا؟ | DIRECT_READ | ● | ● | ● | ○ | — | — | ● | — | SPONSORED_DISCOVERY_RUNTIME |
 
@@ -490,8 +508,8 @@ Each of these closes many scenarios at once. That is what makes it general.
 |---|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|
 | `idea.skill_hour_bank` | عندي فكرة: بنك وقت، الناس يتبادلون ساعات مهارة بدل النقود | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `idea.rainwater_surplus_ring` | فكرة: الجيران يتشاركون فائض ماء المطر المجمّع من أسطحهم | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
-| `idea.elder_companionship_rota` | فكرة: دوام تناوب لمرافقة كبار السن الوحيدين في الحي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ○ | ○ | ● | ● | GENERAL_TRANSACTION_FULFILLMENT |
-| `idea.rare_seed_lending_ring` | فكرة: حلقة إعارة بذور نادرة، تُرجَع بضعف الكمية بعد الموسم | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ○ | ○ | ● | ● | GENERAL_TRANSACTION_FULFILLMENT |
+| `idea.elder_companionship_rota` | فكرة: دوام تناوب لمرافقة كبار السن الوحيدين في الحي | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `idea.rare_seed_lending_ring` | فكرة: حلقة إعارة بذور نادرة، تُرجَع بضعف الكمية بعد الموسم | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `idea.vanishing_dialect_archive` | فكرة: أرشيف للهجات التي تنقرض، يسجّله كبار السن وتُفهرس مقاطعه | GENERAL_PLANGRAPH | ● | ● | ● | P | P | P | ● | ● | — |
 | `idea.dark_sky_map` | فكرة: خريطة لأماكن الظلام الصالحة لرصد النجوم يحدّثها الراصدون | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ○ | ○ | ● | ● | LOCATION_OBSERVATION |
 | `idea.flood_channel_watch` | فكرة: أهل الوادي يتابعون مجرى السيل ويُنبَّهون قبل الفيضان | MONITORING | ● | ● | ○ | ○ | ○ | ○ | ● | ● | MONITORING_ENGINE |

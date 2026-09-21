@@ -79,6 +79,8 @@ export type CreatePaymentIntentInput = {
   currency: string;
   purpose: string;
   transactionIntentId?: string | null;
+  /** The canonical Transaction this settles, when it settles one. */
+  transactionId?: string | null;
   orderId?: string | null;
   providerConstraints?: Record<string, unknown>;
   paymentMethodRef?: string | null;
@@ -119,6 +121,7 @@ export async function createPaymentIntent(
       currency,
       purpose: input.purpose,
       transactionIntentId: input.transactionIntentId ?? null,
+      transactionId: input.transactionId ?? null,
       orderId: input.orderId ?? null,
       providerConstraints: input.providerConstraints ?? {},
       paymentMethodRef: input.paymentMethodRef ?? null,

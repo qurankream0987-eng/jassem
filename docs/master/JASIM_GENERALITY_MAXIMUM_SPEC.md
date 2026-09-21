@@ -409,6 +409,76 @@ There is no `FactoryPolicy`, no `NegotiationPolicyEvaluator` and no
 `ShippingPolicyEvaluator`. One boundary is consulted before anything
 irreversible, and no capability reads a rule of its own.
 
+## 4.9 TRANSACTION AND FULFILLMENT
+
+```
+OPPORTUNITY != PROPOSAL
+PROPOSAL    != AGREEMENT
+AGREEMENT   != COMMITMENT
+COMMITMENT != TRANSACTION
+TRANSACTION != PAYMENT
+PAYMENT     != FULFILLMENT
+FULFILLMENT != VERIFICATION
+```
+
+```
+ACCEPTED OFFER   != EXECUTED TRANSACTION
+PAID             != DELIVERED
+PROVIDER RECEIPT != VERIFIED FULFILLMENT
+CLAIMED_COMPLETE != VERIFIED_COMPLETE
+```
+
+Eight facts, and a runtime that collapses any adjacent pair can tell somebody
+their goods arrived because a card cleared.
+
+### One transaction, no roles
+
+A Transaction has **parties**, not a buyer and a seller. The same Actor is a
+buyer in one and a provider in the next, and encoding either as a column would
+end the open market. It snapshots the committed terms: a later edit to an
+offering, a price, a policy or a catalogue changes nothing about what was
+agreed.
+
+```
+DOMAIN_TRANSACTION_TYPES_ADDED    = 0
+DOMAIN_FULFILLMENT_TYPES_ADDED    = 0
+DOMAIN_TRANSACTION_HANDLERS_ADDED = 0
+```
+
+There is no `PurchaseTransaction` and no `RentalTransaction`. Goods, laboratory
+hours, generator capacity, warehouse pallets, a translation and a fabrication
+job are the same rows differing in a term key nothing reads.
+
+### The obligation is the unit
+
+What each party owes is an **obligation**, declared by the term that named who
+owes what — never inferred from a field called `price`. An obligation carries
+who owes it, who it is owed to, what would prove it, and two separate states:
+what the world is **said** to have done, and what JASIM can **prove**.
+
+Evidence is an effect kind from the completion policy's own closed set, so an
+obligation is judged by the rules every capability's effect already obeys.
+
+```
+DOMAIN_FULFILLMENT_VERIFIERS = 0
+```
+
+Undeclared evidence means `HUMAN_ACTION`, the strictest — somebody's own word
+about their own work settles nothing.
+
+### The state is derived
+
+A transaction's state comes from its obligations, every time it is asked, and
+nothing writes `SETTLED`. **A payment verified while a delivery is pending is an
+OPEN transaction**, and making that impossible to misread is the point.
+
+### Ending honestly
+
+Cancelling is for before anything irreversible. After an obligation is
+verified, there is **compensation** — a new effect, a refund, a released
+reservation — and nothing pretends the original vanished or deletes a row to
+make it so.
+
 ## 5. Business is a scope, not an app
 
 A Business may own data, Needs, Offerings, Resources, Capacity, Policies,

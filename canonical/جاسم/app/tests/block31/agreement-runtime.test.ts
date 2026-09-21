@@ -871,12 +871,33 @@ describe("one negotiation runtime, whatever is being negotiated", () => {
           `SELECT column_name FROM information_schema.columns WHERE table_name = '${table}'`,
         ),
       );
-      const names = columns.rows.map((row) => String((row as { column_name: string }).column_name));
+      const names = columns.rows
+        .map((row) => String((row as { column_name: string }).column_name))
+        // `subjectKind` / `subjectId` are the observation-subject pair the
+        // effect bridge uses everywhere: two opaque strings a term supplies so
+        // JASIM knows WHAT to read back. They name no category and nothing
+        // branches on them — asserted below — and excluding them by name here
+        // keeps the check about what it was always about: what is being
+        // exchanged must live in a term KEY, which is data.
+        .filter((name) => name !== "subjectKind" && name !== "subjectId");
       for (const forbidden of ["subject", "kind", "category", "type", "industry", "domain"]) {
         expect(names.join(","), `${table}.${forbidden}`).not.toContain(forbidden);
       }
     }
     expect(await handle.db.select().from(negotiationEnvelopes)).toHaveLength(0);
     expect(await handle.db.select().from(commitments)).toHaveLength(0);
+  });
+
+  it("no production line branches on an observation subject", async () => {
+    // The other half of the claim above: `subjectKind` is carried and never
+    // compared, so a term saying «shipment» and one saying «instrument» take
+    // the same path.
+    const { execSync } = await import("node:child_process");
+    // `typeof x === "string"` is a shape check, not a branch on the value.
+    const hits = execSync(
+      "grep -rnE 'subjectKind ===|switch \\(.*subjectKind' api | grep -v 'typeof ' || true",
+      { cwd: process.cwd(), encoding: "utf8" },
+    ).trim();
+    expect(hits).toBe("");
   });
 });

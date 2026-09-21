@@ -553,6 +553,40 @@ describe("a business is a scope, not an app", () => {
     expect(core.currentBlocker).toBeNull();
   });
 
+  it("the governing law records that paid is not delivered", () => {
+    const law = readFileSync(LAW, "utf8");
+    for (const clause of [
+      "COMMITMENT != TRANSACTION",
+      "TRANSACTION != PAYMENT",
+      "PAID             != DELIVERED",
+      "CLAIMED_COMPLETE != VERIFIED_COMPLETE",
+      "DOMAIN_TRANSACTION_TYPES_ADDED    = 0",
+      "DOMAIN_FULFILLMENT_VERIFIERS = 0",
+      "PurchaseTransaction",
+    ]) {
+      expect(law, clause).toContain(clause);
+    }
+  });
+
+  it("a transaction family scenario blames no runtime of its own", () => {
+    // The gap is closed. What reaches outside JASIM is a PROVIDER gap, and
+    // the two must not be confused again.
+    expect(GENERAL_GAPS as readonly string[]).not.toContain("GENERAL_TRANSACTION_FULFILLMENT");
+    const family = SCENARIOS.filter((scenario) => scenario.family === "TRANSACTIONS");
+    for (const scenario of family) {
+      expect(scenario.currentBlocker, scenario.id).toBeNull();
+      expect(scenario.gates.PLANNABLE, scenario.id).toBe("PASS");
+    }
+    // And the distinction is real rather than a relabelling: some run, some
+    // wait on a provider, and both appear.
+    const running = family.filter((scenario) => scenario.gates.EXECUTABLE === "PASS");
+    const waiting = family.filter(
+      (scenario) => scenario.gates.EXECUTABLE === "BLOCKED_BY_PROVIDER",
+    );
+    expect(running.length).toBeGreaterThan(0);
+    expect(waiting.length).toBeGreaterThan(0);
+  });
+
   it("the governing law records that a stored policy is not an enforced one", () => {
     const law = readFileSync(LAW, "utf8");
     for (const clause of [
@@ -621,17 +655,17 @@ describe("no scenario changes status silently", () => {
       pass: {
         REPRESENTABLE: 162,
         ROUTABLE: 162,
-        PLANNABLE: 133,
-        EXECUTABLE: 85,
-        OBSERVABLE: 78,
-        VERIFIABLE: 73,
+        PLANNABLE: 138,
+        EXECUTABLE: 89,
+        OBSERVABLE: 76,
+        VERIFIABLE: 71,
         PRESENTABLE: 160,
         PERSISTENT: 128,
       },
-      blockedByProvider: 31,
+      blockedByProvider: 35,
       blockedByEnvironment: 2,
-      notYetImplemented: 49,
-      generalGaps: 11,
+      notYetImplemented: 40,
+      generalGaps: 10,
     });
   });
 

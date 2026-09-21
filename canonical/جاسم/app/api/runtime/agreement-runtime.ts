@@ -182,12 +182,52 @@ export type Term = {
    * one place it matters most.
    */
   readonly owedBy?: string;
+  /**
+   * Who it is owed TO. Optional because with two parties the other one is
+   * determinate; required in spirit the moment there are three.
+   */
+  readonly owedTo?: string;
   readonly dueAt?: string;
+  /**
+   * WHAT WOULD PROVE IT WAS DONE.
+   *
+   * An effect kind from the completion policy's own closed set — so an
+   * obligation's evidence is judged by the rules every capability's effect
+   * already obeys, and no verifier is written per domain. Undeclared means
+   * `HUMAN_ACTION`, which is the strictest: somebody's own word never settles
+   * it.
+   */
+  readonly evidence?: string;
+  /** What is observed. Opaque to this module, as every subject is. */
+  readonly subjectKind?: string;
+  readonly subjectId?: string;
+  /**
+   * EXACT money, when the term is a money term. Declared, never derived from a
+   * unit: «95 KWD» in a display string is not a payable amount, and inferring
+   * one from the word `price` is how a runtime acquires a currency.
+   */
+  readonly settlement?: { readonly amountMinor: string; readonly currency: string };
 };
 
 export type TermSheet = readonly Term[];
 
 const MAX_TERMS = 40;
+
+/**
+ * What can prove an obligation, borrowed whole from the completion policy.
+ *
+ * Not a new vocabulary: the same six kinds every capability's effect is judged
+ * by. `HUMAN_ACTION` is the default because it is the strictest — a person's
+ * own word about their own work settles nothing.
+ */
+const EVIDENCE_KINDS: readonly string[] = [
+  "NONE",
+  "INTERNAL_STATE",
+  "MESSAGE_DISPATCH",
+  "DEVICE_COMMAND",
+  "REMOTE_MUTATION",
+  "HUMAN_ACTION",
+];
 
 function normalizeKey(value: unknown, label: string): string {
   if (typeof value !== "string" || !value.trim()) {
@@ -235,8 +275,34 @@ export function parseTermSheet(input: unknown, label = "terms"): TermSheet {
     if (entry.unit !== undefined && typeof entry.unit !== "string") {
       throw new AgreementInputError(`«${key}» has a unit that is not a string.`);
     }
-    if (entry.owedBy !== undefined && typeof entry.owedBy !== "string") {
-      throw new AgreementInputError(`«${key}» names an obligation holder that is not an id.`);
+    for (const field of ["owedBy", "owedTo", "subjectKind", "subjectId"] as const) {
+      if (entry[field] !== undefined && typeof entry[field] !== "string") {
+        throw new AgreementInputError(`«${key}».${field} is not an id.`);
+      }
+    }
+    if (entry.evidence !== undefined) {
+      if (typeof entry.evidence !== "string" || !EVIDENCE_KINDS.includes(entry.evidence)) {
+        throw new AgreementInputError(
+          `«${key}» names evidence outside ${EVIDENCE_KINDS.join(", ")}.`,
+        );
+      }
+    }
+    if (entry.settlement !== undefined) {
+      const settlement = entry.settlement as Record<string, unknown> | null;
+      if (!settlement || typeof settlement !== "object" || Array.isArray(settlement)) {
+        throw new AgreementInputError(`«${key}» has a settlement that is not money.`);
+      }
+      // Exact integer minor units and a currency. No float, ever.
+      if (
+        typeof settlement.amountMinor !== "string" ||
+        !/^[0-9]+$/u.test(settlement.amountMinor) ||
+        BigInt(settlement.amountMinor) <= 0n
+      ) {
+        throw new AgreementInputError(`«${key}» needs exact positive minor units.`);
+      }
+      if (typeof settlement.currency !== "string" || !/^[A-Z0-9]{3,8}$/u.test(settlement.currency)) {
+        throw new AgreementInputError(`«${key}» needs a currency code.`);
+      }
     }
     if (entry.dueAt !== undefined) {
       if (typeof entry.dueAt !== "string" || Number.isNaN(Date.parse(entry.dueAt))) {
@@ -249,7 +315,14 @@ export function parseTermSheet(input: unknown, label = "terms"): TermSheet {
       value: entry.value as number | string,
       ...(typeof entry.unit === "string" ? { unit: entry.unit } : {}),
       ...(typeof entry.owedBy === "string" ? { owedBy: entry.owedBy } : {}),
+      ...(typeof entry.owedTo === "string" ? { owedTo: entry.owedTo } : {}),
       ...(typeof entry.dueAt === "string" ? { dueAt: entry.dueAt } : {}),
+      ...(typeof entry.evidence === "string" ? { evidence: entry.evidence } : {}),
+      ...(typeof entry.subjectKind === "string" ? { subjectKind: entry.subjectKind } : {}),
+      ...(typeof entry.subjectId === "string" ? { subjectId: entry.subjectId } : {}),
+      ...(entry.settlement
+        ? { settlement: entry.settlement as { amountMinor: string; currency: string } }
+        : {}),
     });
   }
   return Object.freeze(terms);
@@ -697,7 +770,11 @@ export async function commitAgreement(input: {
   /** True only when the OWNER themselves is accepting, now. */
   ownerDirect?: boolean;
   now?: Date;
-}): Promise<{ agreement: Agreement; commitments: readonly Commitment[] }> {
+}): Promise<{
+  agreement: Agreement;
+  commitments: readonly Commitment[];
+  transaction?: { readonly id: string; readonly state: string };
+}> {
   const [proposal] = await db
     .select()
     .from(economicProposals)
@@ -795,7 +872,7 @@ export async function commitAgreement(input: {
     };
   }
 
-  return db.transaction(async (tx) => {
+  const committed = await db.transaction(async (tx) => {
     // CAS: the proposal moves out of `proposed` or nothing happens. Two
     // simultaneous acceptances cannot both produce an agreement, and the
     // unique index on proposalId is the second lock.
@@ -844,6 +921,30 @@ export async function commitAgreement(input: {
             .returning();
     return { agreement: agreement!, commitments: created };
   });
+
+  // ── COMMITMENT → TRANSACTION ─────────────────────────────────────────────
+  //
+  // Here rather than in a caller, because two callers could each forget and a
+  // transaction that sometimes exists is worse than one that never does. The
+  // unique index on `agreementId` is the idempotency, so a retry that reaches
+  // this line twice still produces one transaction.
+  //
+  // Outside the transaction block above on purpose: a policy refusing to
+  // execute must not roll back an agreement two people actually reached.
+  // AGREEMENT != TRANSACTION, including when only one of them is possible.
+  const { materializeTransaction } = await import("./transaction-runtime");
+  const materialized = await materializeTransaction({
+    agreement: committed.agreement,
+    scopeId: input.ownerId,
+    commitments: committed.commitments,
+    origin: { source: "INTERNAL_EXCHANGE", engagementId: proposal.engagementId },
+    ...(input.now ? { now: input.now } : {}),
+  }).catch((error: unknown) => {
+    // Truthful rather than silent: the agreement stands and the transaction
+    // does not, and the caller is told which.
+    throw error;
+  });
+  return { ...committed, transaction: materialized.transaction };
 }
 
 export async function getAgreement(

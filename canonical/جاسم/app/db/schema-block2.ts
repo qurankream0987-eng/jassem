@@ -702,18 +702,86 @@ export const commitments = pgTable(
   {
     id: varchar("id", { length: 64 }).primaryKey(),
     agreementId: varchar("agreementId", { length: 64 }).notNull(),
+    /** Who owes it. Declared by the term, never inferred from a field name. */
     ownerId: varchar("ownerId", { length: 100 }).notNull(),
     termKey: varchar("termKey", { length: 160 }).notNull(),
     dueAt: timestamp("dueAt", { withTimezone: true }),
     /** OPEN until something OBSERVES otherwise. Never advanced by the party who owes it. */
     state: varchar("state", { length: 16 }).notNull().default("open"),
     createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+    // ── The obligation, once a transaction materializes ────────────────────
+    transactionId: varchar("transactionId", { length: 64 }),
+    /** Who it is owed TO. With two parties, the other one — determinate. */
+    beneficiaryActorId: varchar("beneficiaryActorId", { length: 100 }),
+    /**
+     * WHAT WOULD PROVE IT: an effect kind from the completion policy's own
+     * closed set, so the evidence an obligation needs is decided by the rules
+     * every capability's effect already obeys and no verifier is written per
+     * domain.
+     */
+    evidenceKind: varchar("evidenceKind", { length: 24 }).notNull().default("HUMAN_ACTION"),
+    subjectKind: varchar("subjectKind", { length: 64 }),
+    subjectId: varchar("subjectId", { length: 128 }),
+    /**
+     * CLAIMED_COMPLETE != VERIFIED_COMPLETE.
+     *
+     * Two columns because they are two facts. `state` is what the world is
+     * said to have done; `verification` is what JASIM can prove.
+     */
+    verification: varchar("verification", { length: 24 }).notNull().default("PENDING"),
+    /** Exact money, when the term declared it. Never derived from a unit. */
+    settlement: jsonb("settlement").$type<{ amountMinor: string; currency: string }>(),
+    paymentIntentId: varchar("paymentIntentId", { length: 64 }),
+    terms: jsonb("terms").$type<Record<string, unknown>>().notNull().default({}),
+    updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     index("commitments_agreement_idx").on(table.agreementId),
     index("commitments_owner_idx").on(table.ownerId),
+    index("commitments_transaction_idx").on(table.transactionId),
   ],
 );
+
+/**
+ * ONE transaction for every exchange there is.
+ *
+ *   OPPORTUNITY != PROPOSAL != AGREEMENT != COMMITMENT != TRANSACTION
+ *   TRANSACTION != PAYMENT != FULFILLMENT != VERIFICATION
+ *
+ * No column names a buyer, a seller, a purchase or a rental. The parties are a
+ * list; what each owes is an obligation; what is being exchanged lives in a
+ * term key nothing in the runtime reads.
+ */
+export const transactions = pgTable(
+  "transactions",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    /** The acting scope: a person or an organization, resolved elsewhere. */
+    scopeId: varchar("scopeId", { length: 100 }).notNull(),
+    parties: jsonb("parties").$type<string[]>().notNull(),
+    agreementId: varchar("agreementId", { length: 64 }).notNull(),
+    proposalId: varchar("proposalId", { length: 64 }),
+    engagementId: varchar("engagementId", { length: 64 }),
+    /** A snapshot. A later edit must not change what was committed. */
+    termsSnapshot: jsonb("termsSnapshot").$type<Record<string, unknown>>().notNull(),
+    termsDigest: varchar("termsDigest", { length: 64 }).notNull(),
+    /** Internal exchange, external discovery, manual proposal — it travels. */
+    origin: jsonb("origin").$type<Record<string, unknown>>().notNull().default({}),
+    authorityBasis: jsonb("authorityBasis").$type<Record<string, unknown>>().notNull().default({}),
+    policyDecision: jsonb("policyDecision").$type<Record<string, unknown>>().notNull().default({}),
+    /** DERIVED from the obligations. Nothing may write SETTLED. */
+    state: varchar("state", { length: 24 }).notNull().default("OPEN"),
+    version: integer("version").notNull().default(1),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("transactions_agreement_idx").on(table.agreementId),
+    index("transactions_scope_idx").on(table.scopeId, table.state),
+  ],
+);
+
+export type Transaction = typeof transactions.$inferSelect;
 
 /**
  * ONE authority act, waiting for the person who must decide it.

@@ -123,6 +123,20 @@ export const AUTHORITY_KEYS: ReadonlySet<string> = new Set([
   // what a policy decided, which version applied, or that something is exempt.
   // Mirrored as `POLICY_AUTHORITY_KEYS` in `policy-enforcement.ts`, which is
   // tested against this set.
+  // Transaction and fulfillment authority. A model may propose terms; it may
+  // never say that something was settled, delivered, paid or verified.
+  // Mirrored as `TRANSACTION_AUTHORITY_KEYS` in `transaction-runtime.ts`,
+  // which is tested against this set.
+  "transactionid",
+  "settled",
+  "fulfilled",
+  "verified",
+  "verification",
+  "paid",
+  "captured",
+  "receipt",
+  "paymentreceipt",
+  "obligationstate",
   "policydecision",
   "policyversion",
   "policyoverride",

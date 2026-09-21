@@ -157,14 +157,15 @@ describe("no model is consulted at enforcement time", () => {
       .split("\n")
       .filter(Boolean)
       .sort();
-    // One boundary, named in exactly four places: the three that ACT — the
-    // turn, the executor and the commitment — and one comment recording that
-    // the refused-keys set is mirrored. Nothing interprets.
+    // One boundary, named in exactly five places: the four that ACT — the
+    // turn, the executor, the commitment and the transaction — and one comment
+    // recording that the refused-keys set is mirrored. Nothing interprets.
     expect(callers).toEqual([
       "api/runtime/agreement-runtime.ts",
       "api/runtime/authority-acts.ts",
       "api/runtime/jasim-runtime.ts",
       "api/runtime/model-output-trust.ts",
+      "api/runtime/transaction-runtime.ts",
     ]);
   });
 

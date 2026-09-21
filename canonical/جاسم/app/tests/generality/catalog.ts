@@ -113,7 +113,10 @@ export type ProviderClass = (typeof PROVIDER_CLASSES)[number];
 export const GENERAL_GAPS = [
   // OPPORTUNITY_EXCHANGE_CONVERSATIONAL_PATH was here and is closed: the
   // exchange is reached as two ordinary capabilities a plan can name.
-  "GENERAL_TRANSACTION_FULFILLMENT",
+  // GENERAL_TRANSACTION_FULFILLMENT was here and is closed: a committed
+  // agreement becomes one transaction with obligations both ways, verified by
+  // the same completion policy every effect uses. What reaches OUTSIDE JASIM
+  // is a provider gap, which is a different thing and says so.
   "REALTIME_RUNTIME",
   "MONITORING_ENGINE",
   "LIVING_OBJECT_RUNTIME",
@@ -1028,11 +1031,12 @@ const AGREEMENT_SCENARIOS: readonly Scenario[] = Object.freeze([
 
 const TRANSACTION_SCENARIOS: readonly Scenario[] = Object.freeze([
   ...([
+    // The four that reach OUTSIDE JASIM, and the one that does not.
     ["buy", "اشترِ لي هذا", "REMOTE_MUTATION"],
     ["sell", "بع لي هذا", "REMOTE_MUTATION"],
     ["book", "احجز لي هذه", "REMOTE_MUTATION"],
     ["reserve", "احجز المساحة لأسبوع", "REMOTE_MUTATION"],
-    ["cancel", "ألغِ الطلب", "REMOTE_MUTATION"],
+    ["cancel", "ألغِ الطلب", "INTERNAL_STATE"],
   ] as const).map(([id, goal, effect]) => ({
     id: `transaction.${id}`,
     goal,
@@ -1046,16 +1050,21 @@ const TRANSACTION_SCENARIOS: readonly Scenario[] = Object.freeze([
     gates: gates({
       REPRESENTABLE: "PASS",
       ROUTABLE: "PASS",
-      PLANNABLE: "NOT_YET_IMPLEMENTED",
-      EXECUTABLE: "NOT_YET_IMPLEMENTED",
-      OBSERVABLE: "PASS",
-      VERIFIABLE: "PASS",
+      PLANNABLE: "PASS",
+      // Cancelling is canonical state JASIM owns, so it runs. The other four
+      // reach a counterparty outside JASIM, and no provider is connected:
+      // GENERALITY FAILURE != PROVIDER NOT CONNECTED.
+      EXECUTABLE: id === "cancel" ? "PASS" : "BLOCKED_BY_PROVIDER",
+      OBSERVABLE: id === "cancel" ? "PASS" : "BLOCKED_BY_PROVIDER",
+      VERIFIABLE: id === "cancel" ? "PASS" : "BLOCKED_BY_PROVIDER",
       PRESENTABLE: "PASS",
       PERSISTENT: "PASS",
     }),
-    currentBlocker: "GENERAL_TRANSACTION_FULFILLMENT" as const,
+    currentBlocker: null,
     truthfulRuntimeState:
-      "Commercial orders, payment intents and an economic ledger exist in Block 3. A generic Agreement → Transaction → Fulfillment path a conversation can drive does not.",
+      id === "cancel"
+        ? "Cancelling runs before anything irreversible; once an obligation is VERIFIED it becomes COMPENSATING instead, because an effect that happened did not stop happening. Compensating an EXTERNAL effect still needs the provider that produced it."
+        : "A committed Agreement becomes exactly one Transaction with obligations both ways, each verified by observation through the same completion policy every effect uses, and partial fulfillment stays partial. What is missing is the counterparty: no payment provider and no external marketplace is connected, so the outward half cannot run or be read back.",
     domainBranchesRequired: 0 as const,
   })),
   {
@@ -1110,12 +1119,12 @@ const TRANSACTION_SCENARIOS: readonly Scenario[] = Object.freeze([
     requiresApproval: false,
     gates: gates({
       REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
-      EXECUTABLE: "NOT_YET_IMPLEMENTED", OBSERVABLE: "PASS", VERIFIABLE: "PASS",
+      EXECUTABLE: "PASS", OBSERVABLE: "PASS", VERIFIABLE: "PASS",
       PRESENTABLE: "PASS", PERSISTENT: "PASS",
     }),
-    currentBlocker: "GENERAL_TRANSACTION_FULFILLMENT",
+    currentBlocker: null,
     truthfulRuntimeState:
-      "TRANSACTION = CREATED does not make FULFILLMENT = VERIFIED. The verification runtime is ready to receive the observation; nothing produces one for a delivery yet.",
+      "TRANSACTION = CREATED still does not make FULFILLMENT = VERIFIED, and the answer says so: the projection shows what was agreed, what is committed, what is paid, what is verified and what remains — per obligation, with CLAIMED and VERIFIED as two columns. An unobserved delivery reads PENDING rather than a guess.",
     domainBranchesRequired: 0,
   },
 ]);
@@ -1483,12 +1492,12 @@ const MONETIZATION_SCENARIOS: readonly Scenario[] = Object.freeze([
     requiresApproval: true,
     gates: gates({
       REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
-      EXECUTABLE: "NOT_YET_IMPLEMENTED", OBSERVABLE: "BLOCKED_BY_PROVIDER",
+      EXECUTABLE: "BLOCKED_BY_PROVIDER", OBSERVABLE: "BLOCKED_BY_PROVIDER",
       VERIFIABLE: "BLOCKED_BY_PROVIDER", PRESENTABLE: "PASS", PERSISTENT: "PASS",
     }),
-    currentBlocker: "GENERAL_TRANSACTION_FULFILLMENT",
+    currentBlocker: null,
     truthfulRuntimeState:
-      "Fee rules and an economic ledger exist. A commission is generic transaction economics, never a marketplace of its own.",
+      "A commission is one more obligation with its own declared settlement — generic transaction economics, never a marketplace of its own. Taking it needs a payment provider, and none is connected.",
     domainBranchesRequired: 0,
   },
   {
@@ -1725,11 +1734,14 @@ const IDEA_CASES: readonly Omit<Scenario, "family" | "domainBranchesRequired">[]
     requiresApproval: true,
     gates: gates({
       REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+      // Earned: the obligations exist, and the person the turn was owed to is
+      // the only one whose confirmation closes it.
+      EXECUTABLE: "PASS", OBSERVABLE: "PASS", VERIFIABLE: "PASS",
       PRESENTABLE: "PASS", PERSISTENT: "PASS",
     }),
-    currentBlocker: "GENERAL_TRANSACTION_FULFILLMENT",
+    currentBlocker: null,
     truthfulRuntimeState:
-      "The availabilities publish and match, a turn slot is a Term with a due time, and the rota's commitments are agreed by a person reading them. What is missing is the other end: a Commitment stays OPEN because nothing observes whether anybody came, and nobody's own word may close it.",
+      "A turn slot is a Term with a holder and a due time; agreeing makes it an obligation in a transaction; and it closes when the person it was owed to confirms it — never on the word of whoever owed it. A rota with one slot kept and one pending is an OPEN transaction, which is the honest state.",
   },
   {
     id: "idea.rare_seed_lending_ring",
@@ -1745,11 +1757,12 @@ const IDEA_CASES: readonly Omit<Scenario, "family" | "domainBranchesRequired">[]
     requiresApproval: true,
     gates: gates({
       REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+      EXECUTABLE: "PASS", OBSERVABLE: "PASS", VERIFIABLE: "PASS",
       PRESENTABLE: "PASS", PERSISTENT: "PASS",
     }),
-    currentBlocker: "GENERAL_TRANSACTION_FULFILLMENT",
+    currentBlocker: null,
     truthfulRuntimeState:
-      "«ضعف الكمية بعد الموسم» is a Term with a quantity, a holder and a deadline, and it becomes a Commitment the lender agreed to after reading it. Returning the seed is a HUMAN_ACTION nothing observes, so the commitment stays OPEN — which is the honest state, not a failure.",
+      "«ضعف الكمية بعد الموسم» is a Term with a quantity, a holder and a deadline that becomes an obligation in a transaction. Returning the seed is a HUMAN_ACTION, so only the lender's own confirmation closes it — the borrower saying so does not, which is the whole point.",
   },
   {
     id: "idea.vanishing_dialect_archive",

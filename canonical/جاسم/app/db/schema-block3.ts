@@ -95,6 +95,8 @@ export const paymentIntents = pgTable(
     currency: varchar("currency", { length: 8 }).notNull(),
     purpose: varchar("purpose", { length: 255 }).notNull(),
     transactionIntentId: varchar("transactionIntentId", { length: 64 }),
+    /** The canonical Transaction this settles, when it settles one. */
+    transactionId: varchar("transactionId", { length: 64 }),
     orderId: varchar("orderId", { length: 64 }),
     providerConstraints: jsonb("providerConstraints")
       .$type<Record<string, unknown>>()
@@ -126,6 +128,7 @@ export const paymentIntents = pgTable(
     uniqueIndex("payment_intents_owner_idempotency_idx").on(table.ownerId, table.idempotencyKey),
     index("payment_intents_owner_status_idx").on(table.ownerId, table.status),
     index("payment_intents_transaction_idx").on(table.transactionIntentId),
+    index("payment_intents_txn_idx").on(table.transactionId),
   ],
 );
 

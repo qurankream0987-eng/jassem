@@ -120,6 +120,13 @@
       "when": 1788100800000,
       "tag": "0016_authority_requests",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1788187200000,
+      "tag": "0017_transaction_fulfillment",
+      "breakpoints": true
     }
   ]
 }
