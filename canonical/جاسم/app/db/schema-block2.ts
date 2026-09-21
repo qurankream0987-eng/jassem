@@ -715,6 +715,44 @@ export const commitments = pgTable(
   ],
 );
 
+/**
+ * ONE authority act, waiting for the person who must decide it.
+ *
+ *   APPROVAL != CLICK
+ *
+ * The row holds a STATEMENT the runtime wrote from canonical state and a
+ * DIGEST of it. Approving cites the digest; if the statement would read
+ * differently now, the approval is void. An approval that could outlive the
+ * words it was given for is theatre.
+ */
+export const authorityRequests = pgTable(
+  "authority_requests",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    /** A registered act id. Never free text, never a model's sentence. */
+    actType: varchar("actType", { length: 80 }).notNull(),
+    /** The PERSON who must decide. A scope cannot read. */
+    principalId: varchar("principalId", { length: 100 }).notNull(),
+    scopeId: varchar("scopeId", { length: 100 }).notNull(),
+    params: jsonb("params").$type<Record<string, unknown>>().notNull().default({}),
+    /** Rendered from the act's DECLARED fields, so no parameter can be hidden. */
+    statement: jsonb("statement").$type<Record<string, unknown>>().notNull(),
+    statementDigest: varchar("statementDigest", { length: 64 }).notNull(),
+    state: varchar("state", { length: 24 }).notNull().default("PENDING"),
+    resolution: varchar("resolution", { length: 40 }),
+    result: jsonb("result").$type<Record<string, unknown>>(),
+    conversationId: varchar("conversationId", { length: 64 }),
+    expiresAt: timestamp("expiresAt", { withTimezone: true }).notNull(),
+    decidedAt: timestamp("decidedAt", { withTimezone: true }),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("authority_requests_principal_idx").on(table.principalId, table.state),
+    index("authority_requests_scope_idx").on(table.scopeId),
+  ],
+);
+
+export type AuthorityRequest = typeof authorityRequests.$inferSelect;
 export type NegotiationEnvelope = typeof negotiationEnvelopes.$inferSelect;
 export type Agreement = typeof agreements.$inferSelect;
 export type Commitment = typeof commitments.$inferSelect;

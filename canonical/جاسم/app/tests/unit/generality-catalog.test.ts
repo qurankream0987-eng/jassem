@@ -443,26 +443,26 @@ describe("negotiation is one mechanism, not one per subject", () => {
     expect(agreement.length).toBeGreaterThanOrEqual(10);
   });
 
-  it("names one general gap for all of them", () => {
-    // It used to be GENERAL_AGREEMENT_RUNTIME, which is closed. What every one
-    // of them now waits on is the SAME door — and it is the same door the
-    // business family waits on, which is what makes it a general gap rather
-    // than a missing feature.
+  it("blames nothing, having nothing left to blame", () => {
+    // Two gaps closed under this family in two phases: the runtime itself,
+    // then the door a person delegates a limit through. Neither may come back
+    // under another name.
     const blockers = new Set(agreement.map((scenario) => scenario.currentBlocker));
-    expect([...blockers]).toEqual(["AUTHORITY_ADMINISTRATION_PATH"]);
-    expect(GENERAL_GAPS as readonly string[]).not.toContain("GENERAL_AGREEMENT_RUNTIME");
+    expect([...blockers]).toEqual([null]);
+    for (const closed of ["GENERAL_AGREEMENT_RUNTIME", "AUTHORITY_ADMINISTRATION_PATH"]) {
+      expect(GENERAL_GAPS as readonly string[], closed).not.toContain(closed);
+    }
   });
 
-  it("plans through one mechanism, proven rather than declared", () => {
-    // PLANNABLE moved for all of them at once, which is what a general
-    // runtime looks like when it lands. EXECUTABLE deliberately did not.
+  it("runs through one mechanism, proven rather than declared", () => {
     for (const scenario of agreement) {
       expect(scenario.gates.PLANNABLE, scenario.id).toBe("PASS");
-      expect(scenario.gates.EXECUTABLE, scenario.id).toBe("NOT_YET_IMPLEMENTED");
+      expect(scenario.gates.EXECUTABLE, scenario.id).toBe("PASS");
       // Negotiating inside JASIM writes JASIM's own rows, and a scenario that
       // called that a pure read would be the false pure read again.
       expect(scenario.sideEffect, scenario.id).toBe("INTERNAL_STATE");
       expect(scenario.gates.OBSERVABLE, scenario.id).toBe("PASS");
+      expect(scenario.gates.VERIFIABLE, scenario.id).toBe("PASS");
     }
   });
 
@@ -519,22 +519,23 @@ describe("a business is a scope, not an app", () => {
     }
   });
 
-  it("acting in a scope and administering one are different facts", () => {
-    // The whole point of not bulk-promoting a family: publishing as a company
-    // runs today, and creating the company by talking does not.
-    const acting = business.filter((scenario) => scenario.gates.EXECUTABLE === "PASS");
-    const administering = business.filter(
-      (scenario) => scenario.currentBlocker === "AUTHORITY_ADMINISTRATION_PATH",
-    );
-    expect(acting.length).toBeGreaterThan(0);
-    expect(administering.length).toBeGreaterThan(0);
-    for (const scenario of acting) {
+  it("a scenario that runs is one with nothing left to blame", () => {
+    // Acting and administering both run now. What still does not is named,
+    // and the two remaining names are different gaps — having its own data,
+    // and having its policies read — not one more "business" feature.
+    const running = business.filter((scenario) => scenario.gates.EXECUTABLE === "PASS");
+    const waiting = business.filter((scenario) => scenario.gates.EXECUTABLE !== "PASS");
+    expect(running.length).toBeGreaterThan(0);
+    expect(waiting.length).toBeGreaterThan(0);
+    expect(new Set(waiting.map((scenario) => scenario.currentBlocker)).size).toBe(waiting.length);
+    for (const scenario of running) {
       expect(scenario.currentBlocker, scenario.id).toBeNull();
       // Writing under a scope is INTERNAL_STATE, and internal state is read
       // back. A business write that claimed to need no observation would be
       // the false pure read this catalog refuses.
       expect(scenario.sideEffect, scenario.id).not.toBe("NONE");
       expect(scenario.gates.OBSERVABLE, scenario.id).toBe("PASS");
+      expect(scenario.gates.VERIFIABLE, scenario.id).toBe("PASS");
     }
   });
 
@@ -543,7 +544,25 @@ describe("a business is a scope, not an app", () => {
     // intelligence under another name.
     expect(GENERAL_GAPS as readonly string[]).not.toContain("BUSINESS_SCOPE_RUNTIME");
     for (const scenario of jasimos) {
-      expect(GENERAL_GAPS, scenario.id).toContain(scenario.currentBlocker!);
+      if (scenario.currentBlocker === null) continue;
+      expect(GENERAL_GAPS, scenario.id).toContain(scenario.currentBlocker);
+    }
+    // And the same core genuinely runs for a business now.
+    const core = jasimos.find((scenario) => scenario.id === "jasimos.same_core")!;
+    expect(core.gates.EXECUTABLE).toBe("PASS");
+    expect(core.currentBlocker).toBeNull();
+  });
+
+  it("the governing law records that approval is not a click", () => {
+    const law = readFileSync(LAW, "utf8");
+    for (const clause of [
+      "APPROVAL != CLICK",
+      "MODEL PROPOSES != RUNTIME PERFORMS",
+      "STATEMENT != SUMMARY",
+      "DOMAIN_AUTHORITY_ACTS_ADDED = 0",
+      "RestaurantOnboarding",
+    ]) {
+      expect(law, clause).toContain(clause);
     }
   });
 
@@ -586,15 +605,15 @@ describe("no scenario changes status silently", () => {
         REPRESENTABLE: 162,
         ROUTABLE: 162,
         PLANNABLE: 133,
-        EXECUTABLE: 65,
-        OBSERVABLE: 69,
-        VERIFIABLE: 64,
+        EXECUTABLE: 84,
+        OBSERVABLE: 77,
+        VERIFIABLE: 72,
         PRESENTABLE: 160,
         PERSISTENT: 128,
       },
       blockedByProvider: 31,
       blockedByEnvironment: 2,
-      notYetImplemented: 69,
+      notYetImplemented: 50,
       generalGaps: 12,
     });
   });

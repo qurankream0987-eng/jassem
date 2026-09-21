@@ -17,6 +17,12 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { router, authedQuery } from "../trpc";
 import {
+  AuthorityActError,
+  approveAuthorityRequest,
+  listAuthorityRequests,
+  rejectAuthorityRequest,
+} from "../runtime/authority-acts";
+import {
   actOnRuntimeTask,
   archiveRuntimeConversation,
   attachRuntimeArtifactToBubble,
@@ -128,6 +134,20 @@ function canGenerate(source: string): boolean {
 // ── Error mapping ─────────────────────────────────────────────────────────────
 
 function handleRuntimeError(error: unknown): never {
+  if (error instanceof AuthorityActError) {
+    throw new TRPCError({
+      code:
+        error.code === "FORBIDDEN"
+          ? "FORBIDDEN"
+          : error.code === "NOT_FOUND" || error.code === "UNKNOWN_ACT"
+            ? "NOT_FOUND"
+            : error.code === "STATE"
+              ? "CONFLICT"
+              : "BAD_REQUEST",
+      message: error.message,
+      cause: error,
+    });
+  }
   if (error instanceof RuntimeAccessError) {
     throw new TRPCError({ code: "NOT_FOUND", message: error.message, cause: error });
   }
@@ -1092,6 +1112,99 @@ export const runtimeRouter = router({
     .query(async ({ ctx, input }) => {
       try {
         return await listBubbleContentVersions(input.bubbleId, ownerIdOf(ctx));
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  // ── Authority acts ────────────────────────────────────────────────────────
+  //
+  //   APPROVAL != CLICK
+  //
+  // Approving cites the DIGEST of the statement that was read. The runtime
+  // re-renders from current canonical state before performing, so an approval
+  // cannot outlive the words it was given for. There is deliberately no
+  // "approve all pending" and no "approve by act type": a blanket approval is
+  // an approval of something nobody read.
+
+  /** What is waiting for this person to decide. */
+  authorityRequestsList: authedQuery
+    .input(
+      z
+        .object({
+          state: z.enum(["PENDING", "PERFORMED", "REJECTED", "VOID"]).optional(),
+          limit: z.number().int().min(1).max(100).optional(),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const rows = await listAuthorityRequests({
+          principalId: ownerIdOf(ctx),
+          ...(input?.state ? { state: input.state } : {}),
+          ...(input?.limit ? { limit: input.limit } : {}),
+        });
+        return rows.map((row) => ({
+          requestId: row.id,
+          actType: row.actType,
+          scopeId: row.scopeId,
+          state: row.state,
+          resolution: row.resolution,
+          // The statement and its digest, so the surface shows exactly what
+          // will be approved and the client cites it back.
+          statement: row.statement,
+          statementDigest: row.statementDigest,
+          expiresAt: row.expiresAt,
+          decidedAt: row.decidedAt,
+          createdAt: row.createdAt,
+        }));
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  /**
+   * Decide one request, citing the words that were read.
+   *
+   * `statementDigest` is required, not optional. An approval that did not have
+   * to name what it approved would be a click.
+   */
+  authorityRequestApprove: authedQuery
+    .input(
+      z.object({
+        requestId: z.string().trim().min(1).max(64),
+        statementDigest: z.string().trim().length(64),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const outcome = await approveAuthorityRequest({
+          requestId: input.requestId,
+          principalId: ownerIdOf(ctx),
+          statementDigest: input.statementDigest,
+        });
+        return outcome.state === "PERFORMED"
+          ? { state: outcome.state, requestId: outcome.request.id, result: outcome.result }
+          : {
+              state: outcome.state,
+              requestId: outcome.request.id,
+              resolution: outcome.resolution,
+              message: outcome.message,
+            };
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  authorityRequestReject: authedQuery
+    .input(z.object({ requestId: z.string().trim().min(1).max(64) }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const row = await rejectAuthorityRequest({
+          requestId: input.requestId,
+          principalId: ownerIdOf(ctx),
+        });
+        return { requestId: row.id, state: row.state, resolution: row.resolution };
       } catch (error) {
         handleRuntimeError(error);
       }

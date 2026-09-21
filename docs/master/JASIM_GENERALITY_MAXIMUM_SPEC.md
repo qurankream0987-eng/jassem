@@ -292,6 +292,54 @@ DOMAIN_TERM_TYPES_ADDED        = 0
 There is no `SalaryNegotiation`, no `RentNegotiation`, no currency type and no
 date type. What is being negotiated lives in a term key, which is data.
 
+## 4.7 AN AUTHORITY ACT
+
+```
+APPROVAL != CLICK
+MODEL PROPOSES != RUNTIME PERFORMS
+STATEMENT != SUMMARY
+```
+
+Creating an organization, granting a verb, setting a policy, binding a
+provider, delegating a negotiating limit and agreeing are one shape: an
+**authority act**. A person must be able to do each by speaking, and a plan may
+never do any of them on their behalf.
+
+The difficulty is that the obvious implementation is worse than not building it.
+A capability that sets a limit, plus a run summary somebody clicks «موافق» on,
+is an authority they never read.
+
+So:
+
+1. A model may **request** an act — a registered act type and typed
+   parameters — and it performs nothing.
+2. The **runtime** writes the statement, from the act's declared parameter
+   schema so an act cannot choose what to leave out, and from canonical state so
+   a scope's name is what the database says. No sentence a model produced
+   enters it.
+3. **Every scalar in the parameters appears in that statement.** A reserve
+   buried three levels inside an object is rendered as its own line, because a
+   summary is where a number goes to hide. An act that names a row must also say
+   what that row says: «وافق على العرض p_8f3a» is not something anyone can
+   consent to.
+4. The person approves by citing the **digest** of what they read. Before
+   performing, the runtime re-renders from current canonical state: if the
+   statement would read differently now, the approval is **void**.
+
+There is no blanket approval — no "approve all pending", no "always approve this
+act type". Each of those is an approval of something nobody read.
+
+What was done is then **read back**, because `RECEIPT != VERIFICATION` applies to
+an act's own word about itself exactly as it applies to a provider's.
+
+```
+DOMAIN_AUTHORITY_ACTS_ADDED = 0
+```
+
+There is no `RestaurantOnboarding` act. Every act is a general verb over a
+general primitive, and a new one is a row in one registry that inherits the
+statement, the digest, the expiry and the re-render.
+
 ## 5. Business is a scope, not an app
 
 A Business may own data, Needs, Offerings, Resources, Capacity, Policies,

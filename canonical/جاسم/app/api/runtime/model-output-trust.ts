@@ -114,6 +114,16 @@ export const AUTHORITY_KEYS: ReadonlySet<string> = new Set([
   "bindingauthority",
   "approved",
   "ownerapproved",
+  // Authority-act authority. A model may REQUEST an act and name its typed
+  // parameters. It may not write the sentence the person reads, name the digest
+  // of words nobody rendered, or say that a decision was taken. Mirrored as
+  // `AUTHORITY_ACT_KEYS` in `authority-acts.ts`, which is tested against this
+  // set.
+  "statement",
+  "statementdigest",
+  "authorityrequestid",
+  "performed",
+  "decidedat",
   // Goal authority. A model may state what should happen; it may not declare
   // that a requirement has been waived, met, or approved. Each of these ends a
   // question the model is not entitled to close. Mirrored as

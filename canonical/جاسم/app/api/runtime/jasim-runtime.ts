@@ -79,6 +79,10 @@ import {
 } from "./execution-verifier";
 import { gatherEffectAssertions } from "./completion-policy";
 import {
+  AuthorityActError,
+  requestAuthorityAct,
+} from "./authority-acts";
+import {
   CONVERSATION_SCOPE_KEY,
   authorizeScopeAction,
   conversationScopeMemory,
@@ -5604,6 +5608,21 @@ const ActingScopeRequestSchema = z
   })
   .strict();
 
+/**
+ * A REQUEST for an authority act. Never a performance of one.
+ *
+ * The model names a registered act and typed parameters. It cannot write the
+ * sentence the person reads — the runtime renders that from the act's declared
+ * schema and canonical state — and it cannot approve, because
+ * `AUTHORITY_ACT_KEYS` refuses those words before this schema is reached.
+ */
+const AuthorityRequestSchema = z
+  .object({
+    actType: z.string().trim().min(1).max(80),
+    params: z.record(z.string(), z.unknown()),
+  })
+  .strict();
+
 const DatasetOpSchema = z.discriminatedUnion("op", [
   z
     .object({
@@ -5809,6 +5828,7 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       datasetOp: DatasetOpSchema.optional(),
       // On whose behalf this turn is acting, as a request.
       actingScope: ActingScopeRequestSchema.optional(),
+      authorityRequest: AuthorityRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -5843,6 +5863,7 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       datasetOp: DatasetOpSchema.optional(),
       // On whose behalf this turn is acting, as a request.
       actingScope: ActingScopeRequestSchema.optional(),
+      authorityRequest: AuthorityRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -5877,6 +5898,7 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       datasetOp: DatasetOpSchema.optional(),
       // On whose behalf this turn is acting, as a request.
       actingScope: ActingScopeRequestSchema.optional(),
+      authorityRequest: AuthorityRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -6551,6 +6573,12 @@ export async function routeRuntimeConversationTurn(input: {
     state: string;
     cause: string;
     observation?: Readonly<Record<string, unknown>>;
+    /**
+     * Structured detail the person's surface renders, carried in BOTH the
+     * stored message and the response. A statement that lived only in the
+     * response would be a statement nobody could re-read before deciding.
+     */
+    extra?: Readonly<Record<string, unknown>>;
   }): Promise<RuntimeConversationOutputResponse> => {
     const assistantMessage = await createRuntimeMessage({
       ownerId: input.ownerId,
@@ -6568,6 +6596,7 @@ export async function routeRuntimeConversationTurn(input: {
           cause: result.cause,
         },
         ...(result.observation ? { read: result.observation } : {}),
+        ...(result.extra ?? {}),
       },
     });
     return {
@@ -6582,6 +6611,7 @@ export async function routeRuntimeConversationTurn(input: {
         message: result.message,
         confidence: envelope.confidence,
         presentation: informPresentation(result.message),
+        ...(result.extra ?? {}),
       },
     };
   };
@@ -6687,6 +6717,56 @@ export async function routeRuntimeConversationTurn(input: {
           cause: allowed.code,
         });
       }
+    }
+  }
+
+  // ── AN AUTHORITY ACT: ASK, NEVER DO ──────────────────────────────────────
+  //
+  //   APPROVAL != CLICK
+  //   MODEL PROPOSES != RUNTIME PERFORMS
+  //
+  // Placed before every branch that could execute, because the whole point is
+  // that this turn performs nothing. It writes a PENDING request carrying a
+  // statement the runtime rendered — every number in the parameters on its own
+  // line — and hands it back for a person to read. Deciding is a separate act
+  // that cites the digest of exactly those words.
+  const authorityRequest =
+    "authorityRequest" in envelope ? envelope.authorityRequest : undefined;
+  if (authorityRequest) {
+    try {
+      const { request, statement } = await requestAuthorityAct({
+        actType: authorityRequest.actType,
+        principalId: input.ownerId,
+        scope: scopeResolution.scope,
+        params: authorityRequest.params,
+        conversationId: input.conversationId,
+      });
+      return respondRouted({
+        message: `${statement.headline} — باسم «${statement.onBehalfOf.displayName}». راجع التفاصيل قبل الموافقة.`,
+        state: "NEEDS_APPROVAL",
+        cause: "AUTHORITY_ACT_PENDING",
+        extra: {
+          authority: {
+            requestId: request.id,
+            actType: request.actType,
+            statementDigest: request.statementDigest,
+            expiresAt: request.expiresAt.toISOString(),
+            statement,
+          },
+        },
+      });
+    } catch (error) {
+      if (error instanceof AuthorityActError) {
+        // A request that could never be performed is refused NOW. Asking
+        // somebody to approve something that was never going to work is its
+        // own kind of dishonesty.
+        return respondRouted({
+          message: error.message,
+          state: error.code === "FORBIDDEN" ? "DENIED" : "UNAVAILABLE",
+          cause: error.code,
+        });
+      }
+      throw error;
     }
   }
 

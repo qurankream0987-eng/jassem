@@ -125,13 +125,13 @@ export const GENERAL_GAPS = [
   // GENERAL_AGREEMENT_RUNTIME was here and is closed: one evaluator, one
   // envelope and one agreement for every subject there is.
   //
-  // What both left behind is the SAME gap, which is what makes it general: a
-  // person cannot perform an AUTHORITY ACT by talking. Creating an
-  // organization, granting a verb, setting a policy, binding a provider and
-  // delegating a negotiating limit are one shape — and a plan may never do any
-  // of them on the person's behalf, because an approval the person did not
-  // read is not an approval.
-  "AUTHORITY_ADMINISTRATION_PATH",
+  // AUTHORITY_ADMINISTRATION_PATH was here and is closed: a person performs an
+  // authority act by reading a statement the runtime rendered and citing its
+  // digest. A plan still performs none of them.
+  //
+  // What that left behind: a policy can now be SET by talking, and nothing
+  // reads one. Stored, versioned and private is not enforced.
+  "POLICY_ENFORCEMENT",
   "EXTERNAL_DISCOVERY_PROVIDER",
   "BUSINESS_DATA_SOURCE_ADAPTER",
   "LOCATION_OBSERVATION",
@@ -948,17 +948,18 @@ const AGREEMENT_SCENARIOS: readonly Scenario[] = Object.freeze([
       // Earned: a turn plans `agreement-open` → `agreement-propose` as two
       // dependent nodes, and the router gained nothing.
       PLANNABLE: "PASS",
-      // NOT earned: countering on someone's behalf needs an envelope, and
-      // delegating one is an authority act no plan may perform.
-      EXECUTABLE: "NOT_YET_IMPLEMENTED",
+      // Earned: «لا تتجاوز 250» becomes an authority act whose statement puts
+      // the 250 on its own line, and once it is read and approved JASIM
+      // negotiates inside it through the ordinary executor.
+      EXECUTABLE: "PASS",
       OBSERVABLE: "PASS",
       VERIFIABLE: "PASS",
       PRESENTABLE: "PASS",
       PERSISTENT: "PASS",
     }),
-    currentBlocker: "AUTHORITY_ADMINISTRATION_PATH" as const,
+    currentBlocker: null,
     truthfulRuntimeState:
-      "All eight negotiate through ONE evaluator and the same four capabilities, proven on the live executor, and a counter never passes the reserve. Opening and proposing run from a turn today. Countering needs an envelope, and «لا تتجاوز 250» cannot yet be said to JASIM — only delegated where the person can see the number.",
+      "All eight negotiate through ONE evaluator and the same four capabilities, and a counter never passes the reserve. The limit is delegated by saying it and reading it back: the person sees the number on its own line before anything can be agreed inside it. Reaching a counterparty who is not in JASIM is messaging, and a different scenario.",
     domainBranchesRequired: 0 as const,
   })),
   {
@@ -973,12 +974,12 @@ const AGREEMENT_SCENARIOS: readonly Scenario[] = Object.freeze([
     requiresApproval: true,
     gates: gates({
       REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
-      EXECUTABLE: "NOT_YET_IMPLEMENTED", OBSERVABLE: "PASS",
+      EXECUTABLE: "PASS", OBSERVABLE: "PASS",
       VERIFIABLE: "PASS", PRESENTABLE: "PASS", PERSISTENT: "PASS",
     }),
-    currentBlocker: "AUTHORITY_ADMINISTRATION_PATH",
+    currentBlocker: null,
     truthfulRuntimeState:
-      "TARGET != AUTHORITY, and the envelope now holds both: a counter is clamped at the reserve over any number of rounds, and the reserve is structurally absent from what the counterparty sees. Saying it to JASIM is what is missing — a limit is delegated where the person reads the number, never through a plan.",
+      "TARGET != AUTHORITY, and both halves hold: a counter is clamped at the reserve over any number of rounds, and the reserve is structurally absent from what the counterparty sees. The one screen it appears on is the person's own approval — which is the only place it is supposed to be. NOT_DISCLOSED != NOT_INFERABLE, and the runtime claims no more.",
     domainBranchesRequired: 0,
   },
   {
@@ -993,10 +994,10 @@ const AGREEMENT_SCENARIOS: readonly Scenario[] = Object.freeze([
     requiresApproval: true,
     gates: gates({
       REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
-      EXECUTABLE: "NOT_YET_IMPLEMENTED", OBSERVABLE: "PASS",
+      EXECUTABLE: "PASS", OBSERVABLE: "PASS",
       VERIFIABLE: "PASS", PRESENTABLE: "PASS", PERSISTENT: "PASS",
     }),
-    currentBlocker: "AUTHORITY_ADMINISTRATION_PATH",
+    currentBlocker: null,
     truthfulRuntimeState:
       "The mirror of the buyer's maximum, and literally the same code: HIGHER_IS_BETTER is the other value of one field, not a second branch.",
     domainBranchesRequired: 0,
@@ -1013,12 +1014,12 @@ const AGREEMENT_SCENARIOS: readonly Scenario[] = Object.freeze([
     requiresApproval: true,
     gates: gates({
       REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
-      EXECUTABLE: "NOT_YET_IMPLEMENTED", OBSERVABLE: "PASS", VERIFIABLE: "PASS",
+      EXECUTABLE: "PASS", OBSERVABLE: "PASS", VERIFIABLE: "PASS",
       PRESENTABLE: "PASS", PERSISTENT: "PASS",
     }),
-    currentBlocker: "AUTHORITY_ADMINISTRATION_PATH",
+    currentBlocker: null,
     truthfulRuntimeState:
-      "An Agreement records the exact proposal version, its terms as a snapshot and whose authority accepted it. AGREEMENT != TRANSACTION: it creates no payment, and a Commitment exists only where the term sheet DECLARED who owes what. Agreeing from a turn needs an envelope that permits it.",
+      "«اتفقنا» renders every term on its own line — price, unit, who owes what — and agreeing cites the digest of exactly that, so a proposal edited while somebody was reading voids the approval. AGREEMENT != TRANSACTION: it creates no payment, and a Commitment exists only where the sheet DECLARED who owes what.",
     domainBranchesRequired: 0,
   },
 ]);
@@ -1386,8 +1387,7 @@ const BUSINESS_SCENARIOS: readonly Scenario[] = Object.freeze(
     ["needs", "انشر احتياجاتي", "ACT"],
     ["resources", "سجّل معداتي", "ACT"],
     ["capacity", "سجّل طاقتي المتاحة", "ACT"],
-    // Administering a scope: the mechanisms exist and nothing a person says
-    // reaches them.
+    // Administering a scope: an authority act the person reads and decides.
     ["scope", "أنشئ حساب شركتي", "ADMIN"],
     ["team", "أضف موظفًا إلى فريقي", "ADMIN"],
     ["permissions", "اعطه صلاحية العروض فقط", "ADMIN"],
@@ -1419,14 +1419,16 @@ const BUSINESS_SCENARIOS: readonly Scenario[] = Object.freeze(
       // Earned: `actor-scope-runtime.test.ts` opens the run under the
       // organization, publishes through the same capability a person uses, and
       // verifies it by internal readback.
-      EXECUTABLE: group === "ACT" ? "PASS" : "NOT_YET_IMPLEMENTED",
-      OBSERVABLE: group === "ACT" ? "PASS" : "NOT_APPLICABLE",
-      VERIFIABLE: group === "ACT" ? "PASS" : "NOT_APPLICABLE",
+      // ADMIN joined ACT: an authority act runs end to end from a turn, and
+      // every one of them is read back before it is reported.
+      EXECUTABLE: group === "ACT" || group === "ADMIN" ? "PASS" : "NOT_YET_IMPLEMENTED",
+      OBSERVABLE: group === "ACT" || group === "ADMIN" ? "PASS" : "NOT_APPLICABLE",
+      VERIFIABLE: group === "ACT" || group === "ADMIN" ? "PASS" : "NOT_APPLICABLE",
       PRESENTABLE: "PASS",
       PERSISTENT: "PASS",
     }),
     currentBlocker:
-      group === "ACT"
+      group === "ACT" || group === "ADMIN"
         ? null
         : group === "DATA"
           ? ("BUSINESS_DATA_SOURCE_ADAPTER" as const)
@@ -1440,7 +1442,7 @@ const BUSINESS_SCENARIOS: readonly Scenario[] = Object.freeze(
           ? "A read now runs under the ACTING scope and sees only its rows; a resource a scope cannot own answers UNAVAILABLE rather than an empty table. «أداء المبيعات» needs business data nobody has connected."
           : group === "WORLD"
             ? "An organization owns data, policies and provider bindings today. A durable materialized system carrying them is a different gap."
-            : "Organizations, memberships, permissions, versioned private policies and provider bindings all exist and are enforced. No capability lets a person reach any of them by speaking, and inventing one per administrative verb would be the wrong shape.",
+            : "Said in a turn, it becomes a PENDING authority request carrying a statement the runtime rendered — every parameter on its own line — which the person approves by citing its digest. Nothing is performed until then, a plan performs none of it, and what was done is read back before it is reported.",
     domainBranchesRequired: 0 as const,
   })),
 );
@@ -1537,12 +1539,14 @@ const MONETIZATION_SCENARIOS: readonly Scenario[] = Object.freeze([
 
 const JASIM_OS_SCENARIOS: readonly Scenario[] = Object.freeze(
   ([
-    ["same_core", "شغّل جاسم لمطعمي", "AUTHORITY_ADMINISTRATION_PATH"],
+    ["same_core", "شغّل جاسم لمطعمي", null],
     ["business_data", "اجعله يرى بيانات مطعمي فقط", "BUSINESS_DATA_SOURCE_ADAPTER"],
     ["branding", "اجعل اسمه وشعاره لمطعمي", "PERSISTENT_WORLD_MATERIALIZATION"],
-    ["policies", "طبّق سياسات مطعمي", "AUTHORITY_ADMINISTRATION_PATH"],
-    ["permissions", "حدد ما يراه الموظفون", "AUTHORITY_ADMINISTRATION_PATH"],
-    ["providers", "اربط مزوداتي", "AUTHORITY_ADMINISTRATION_PATH"],
+    // Setting a policy is done. APPLYING one is a different fact, and nothing
+    // in the runtime reads a stored policy yet.
+    ["policies", "طبّق سياسات مطعمي", "POLICY_ENFORCEMENT"],
+    ["permissions", "حدد ما يراه الموظفون", null],
+    ["providers", "اربط مزوداتي", null],
   ] as const).map(([id, goal, blocker]) => ({
     id: `jasimos.${id}`,
     goal,
@@ -1557,15 +1561,17 @@ const JASIM_OS_SCENARIOS: readonly Scenario[] = Object.freeze(
       REPRESENTABLE: "PASS",
       ROUTABLE: "PASS",
       PLANNABLE: "PASS",
-      EXECUTABLE: "NOT_YET_IMPLEMENTED",
-      OBSERVABLE: "NOT_APPLICABLE",
-      VERIFIABLE: "NOT_APPLICABLE",
+      EXECUTABLE: blocker === null ? "PASS" : "NOT_YET_IMPLEMENTED",
+      OBSERVABLE: blocker === null ? "PASS" : "NOT_APPLICABLE",
+      VERIFIABLE: blocker === null ? "PASS" : "NOT_APPLICABLE",
       PRESENTABLE: "PASS",
       PERSISTENT: "PASS",
     }),
     currentBlocker: blocker,
     truthfulRuntimeState:
-      "The core already runs under a business scope: the run, the rows it writes and the data it reads all belong to the organization, and the permission is checked per verb. What is missing is administering and materializing one — its branding, its own data and its policies — and none of that is a second intelligence.",
+      blocker === null
+        ? "The same core, with a business scope: the organization is created, staffed and its providers bound by talking — each as an authority act the person read — and every run, row and read belongs to it. There is no second intelligence, and building one would have been the failure."
+        : "The scope, its team and its providers are all set by talking today. What remains is its OWN data, its branding and a runtime that actually reads the policies it stores — three different gaps, none of them a second intelligence.",
     domainBranchesRequired: 0 as const,
   })),
 );
@@ -1725,9 +1731,9 @@ const IDEA_CASES: readonly Omit<Scenario, "family" | "domainBranchesRequired">[]
       REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
       PRESENTABLE: "PASS", PERSISTENT: "PASS",
     }),
-    currentBlocker: "AUTHORITY_ADMINISTRATION_PATH",
+    currentBlocker: "GENERAL_TRANSACTION_FULFILLMENT",
     truthfulRuntimeState:
-      "The availabilities publish and match, and a turn slot is a Term with a due time that becomes an OPEN Commitment when agreed. What nobody can do yet is authorize JASIM to agree on their behalf by saying so. The answer is that door, not that JASIM does not do neighbourhoods.",
+      "The availabilities publish and match, a turn slot is a Term with a due time, and the rota's commitments are agreed by a person reading them. What is missing is the other end: a Commitment stays OPEN because nothing observes whether anybody came, and nobody's own word may close it.",
   },
   {
     id: "idea.rare_seed_lending_ring",
@@ -1745,9 +1751,9 @@ const IDEA_CASES: readonly Omit<Scenario, "family" | "domainBranchesRequired">[]
       REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
       PRESENTABLE: "PASS", PERSISTENT: "PASS",
     }),
-    currentBlocker: "AUTHORITY_ADMINISTRATION_PATH",
+    currentBlocker: "GENERAL_TRANSACTION_FULFILLMENT",
     truthfulRuntimeState:
-      "«ضعف الكمية بعد الموسم» is a Term with a quantity, a holder and a deadline, and it now becomes a Commitment that stays OPEN until something observes otherwise. Returning the seed is still a HUMAN_ACTION nothing observes, and agreeing on someone's behalf still needs a limit they delegated.",
+      "«ضعف الكمية بعد الموسم» is a Term with a quantity, a holder and a deadline, and it becomes a Commitment the lender agreed to after reading it. Returning the seed is a HUMAN_ACTION nothing observes, so the commitment stays OPEN — which is the honest state, not a failure.",
   },
   {
     id: "idea.vanishing_dialect_archive",

@@ -251,8 +251,11 @@ describe("a capability cannot approve", () => {
       .split("\n")
       .filter(Boolean)
       .sort();
-    // The router, where a person is actually present. Nowhere else.
-    expect(callers).toEqual(["api/routers/fabric.ts"]);
+    // Two places, and both are ones where a person is actually present: the
+    // router, and the authority act whose statement they read term by term
+    // before citing its digest. Nowhere else — and a third entry appearing
+    // here is the diff that has to be argued for.
+    expect(callers).toEqual(["api/routers/fabric.ts", "api/runtime/authority-acts.ts"]);
   });
 
   it("no reserve leaves through the API surface", () => {
