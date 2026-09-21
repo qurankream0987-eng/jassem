@@ -129,9 +129,9 @@ export const GENERAL_GAPS = [
   // authority act by reading a statement the runtime rendered and citing its
   // digest. A plan still performs none of them.
   //
-  // What that left behind: a policy can now be SET by talking, and nothing
-  // reads one. Stored, versioned and private is not enforced.
-  "POLICY_ENFORCEMENT",
+  // POLICY_ENFORCEMENT was here and is closed: a typed rule is read at the
+  // turn, at the executor immediately before the effect, and at the
+  // commitment — one function, and no capability reading a rule of its own.
   "EXTERNAL_DISCOVERY_PROVIDER",
   "BUSINESS_DATA_SOURCE_ADAPTER",
   "LOCATION_OBSERVATION",
@@ -1428,13 +1428,11 @@ const BUSINESS_SCENARIOS: readonly Scenario[] = Object.freeze(
       PERSISTENT: "PASS",
     }),
     currentBlocker:
-      group === "ACT" || group === "ADMIN"
-        ? null
-        : group === "DATA"
-          ? ("BUSINESS_DATA_SOURCE_ADAPTER" as const)
-          : group === "WORLD"
-            ? ("PERSISTENT_WORLD_MATERIALIZATION" as const)
-            : ("AUTHORITY_ADMINISTRATION_PATH" as const),
+      group === "DATA"
+        ? ("BUSINESS_DATA_SOURCE_ADAPTER" as const)
+        : group === "WORLD"
+          ? ("PERSISTENT_WORLD_MATERIALIZATION" as const)
+          : null,
     truthfulRuntimeState:
       group === "ACT"
         ? "«باسم شركتي» resolves to a durable, revocable membership, the run opens under the organization, and the declared verb is checked before anything is written. The organization itself is created through the API rather than by talking, which is `business.scope`."
@@ -1442,7 +1440,7 @@ const BUSINESS_SCENARIOS: readonly Scenario[] = Object.freeze(
           ? "A read now runs under the ACTING scope and sees only its rows; a resource a scope cannot own answers UNAVAILABLE rather than an empty table. «أداء المبيعات» needs business data nobody has connected."
           : group === "WORLD"
             ? "An organization owns data, policies and provider bindings today. A durable materialized system carrying them is a different gap."
-            : "Said in a turn, it becomes a PENDING authority request carrying a statement the runtime rendered — every parameter on its own line — which the person approves by citing its digest. Nothing is performed until then, a plan performs none of it, and what was done is read back before it is reported.",
+            : "Said in a turn, it becomes a PENDING authority request carrying a statement the runtime rendered — every parameter on its own line — which the person approves by citing its digest. Nothing is performed until then, a plan performs none of it, and what was done is read back before it is reported. A policy set this way is a TYPED rule the executor consults before every effect; a note is stored as a note, and the statement says which one it is.",
     domainBranchesRequired: 0 as const,
   })),
 );
@@ -1542,9 +1540,7 @@ const JASIM_OS_SCENARIOS: readonly Scenario[] = Object.freeze(
     ["same_core", "شغّل جاسم لمطعمي", null],
     ["business_data", "اجعله يرى بيانات مطعمي فقط", "BUSINESS_DATA_SOURCE_ADAPTER"],
     ["branding", "اجعل اسمه وشعاره لمطعمي", "PERSISTENT_WORLD_MATERIALIZATION"],
-    // Setting a policy is done. APPLYING one is a different fact, and nothing
-    // in the runtime reads a stored policy yet.
-    ["policies", "طبّق سياسات مطعمي", "POLICY_ENFORCEMENT"],
+    ["policies", "طبّق سياسات مطعمي", null],
     ["permissions", "حدد ما يراه الموظفون", null],
     ["providers", "اربط مزوداتي", null],
   ] as const).map(([id, goal, blocker]) => ({
@@ -1570,8 +1566,8 @@ const JASIM_OS_SCENARIOS: readonly Scenario[] = Object.freeze(
     currentBlocker: blocker,
     truthfulRuntimeState:
       blocker === null
-        ? "The same core, with a business scope: the organization is created, staffed and its providers bound by talking — each as an authority act the person read — and every run, row and read belongs to it. There is no second intelligence, and building one would have been the failure."
-        : "The scope, its team and its providers are all set by talking today. What remains is its OWN data, its branding and a runtime that actually reads the policies it stores — three different gaps, none of them a second intelligence.",
+        ? "The same core, with a business scope: the organization is created, staffed, bound to its providers and governed by its own rules through talking — each an authority act the person read — and every run, row and read belongs to it. A rule it wrote is consulted before every effect. There is no second intelligence, and building one would have been the failure."
+        : "The scope, its team, its providers and its rules are all set by talking today, and the rules are read before anything effectful runs. What remains is its OWN data and its branding — two different gaps, neither of them a second intelligence.",
     domainBranchesRequired: 0 as const,
   })),
 );

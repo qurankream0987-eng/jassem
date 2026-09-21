@@ -60,6 +60,7 @@ import { randomUUID } from "node:crypto";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "../queries/connection";
 import { createProposal } from "./economic-fabric";
+import { evaluatePolicies } from "./policy-enforcement";
 import {
   agreements,
   commitments,
@@ -718,6 +719,40 @@ export async function commitAgreement(input: {
   }
 
   const terms = termSheetOf(proposal.terms, "agreed terms");
+
+  // ── The scope's own rules ────────────────────────────────────────────────
+  //
+  //   PERMISSION != POLICY != ENVELOPE
+  //
+  // Three different restrictions, and they compose rather than override. A
+  // business may cap what it commits to regardless of how far anybody was
+  // authorized to negotiate, so the policy is consulted here and the envelope
+  // below — and the narrower of the two wins.
+  //
+  // The facts are the term sheet itself, by the same dotted paths the
+  // authority statement renders, so a rule about `terms.price` is a rule about
+  // the line a person would read.
+  const policy = await evaluatePolicies({
+    scopeId: input.ownerId,
+    action: "agreement.commit",
+    parameters: {
+      terms: Object.fromEntries(terms.map((term) => [term.key, term.value])),
+      proposalVersion: proposal.version,
+    },
+    now,
+  });
+  if (policy.outcome === "DENIED" || policy.outcome === "UNSUPPORTED_POLICY") {
+    throw new AgreementAuthorityError(
+      "A policy of this scope forbids agreeing to these terms.",
+    );
+  }
+  if (policy.outcome === "REQUIRES_APPROVAL" && input.ownerDirect !== true) {
+    // The envelope may be wide enough and the policy still says a person
+    // decides this one. Broader authority never erases a narrower rule.
+    throw new AgreementAuthorityError(
+      "A policy of this scope requires a person to approve these terms; an envelope cannot.",
+    );
+  }
 
   // ── Whose authority ──────────────────────────────────────────────────────
   let basis: AuthorityBasis;

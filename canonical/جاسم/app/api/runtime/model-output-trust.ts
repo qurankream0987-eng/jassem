@@ -119,6 +119,19 @@ export const AUTHORITY_KEYS: ReadonlySet<string> = new Set([
   // of words nobody rendered, or say that a decision was taken. Mirrored as
   // `AUTHORITY_ACT_KEYS` in `authority-acts.ts`, which is tested against this
   // set.
+  // Policy authority. A model may propose a typed policy; it may never state
+  // what a policy decided, which version applied, or that something is exempt.
+  // Mirrored as `POLICY_AUTHORITY_KEYS` in `policy-enforcement.ts`, which is
+  // tested against this set.
+  "policydecision",
+  "policyversion",
+  "policyoverride",
+  "policyid",
+  "bypass",
+  "bypasspolicy",
+  "trusted",
+  "exempt",
+  "enforced",
   "statement",
   "statementdigest",
   "authorityrequestid",

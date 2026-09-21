@@ -75,6 +75,13 @@ import {
   termSheetOf,
 } from "./agreement-runtime";
 import { grantMembership, revokeMembership } from "./block2/membership";
+import {
+  classifyPolicyBody,
+  disclosableDecision,
+  evaluatePolicies,
+  parseEnforcementPolicy,
+  scalarPaths,
+} from "./policy-enforcement";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Vocabulary
@@ -300,6 +307,16 @@ export type AuthorityStatement = {
   readonly lines: readonly StatementLine[];
   readonly reversibility: string;
   readonly residualNote?: string;
+  /**
+   * What this scope's own rules say about it — ids, versions, effects and
+   * reason codes, never a payload.
+   *
+   * Carried IN the statement rather than beside it, so a policy change moves
+   * the digest and voids a pending approval with no new machinery. A rule that
+   * changed what an act means while somebody was reading is exactly the case
+   * `STATEMENT_CHANGED` exists for.
+   */
+  readonly policy: Record<string, unknown>;
 };
 
 const MAX_LINES = 200;
@@ -312,32 +329,25 @@ const MAX_LINES = 200;
  * value rather than asking the act what to show, so an act cannot omit a
  * number even by accident.
  */
+/**
+ * Flatten a parameter to the scalars a person can actually read.
+ *
+ * This is the anti-theatre guarantee. «bounds: {…}» hides a reserve; a line
+ * reading `bounds.price.reserve = 250` does not. The walk itself lives in
+ * `policy-enforcement`, deliberately: a policy names its fields by the same
+ * dotted path, so a rule about `bounds.price.reserve` is a rule about exactly
+ * the line the person read. Two path conventions would be two meanings of one
+ * sentence.
+ */
 function flatten(prefix: string, value: unknown, into: StatementLine[], label: string): void {
-  if (into.length >= MAX_LINES) return;
-  if (value === null || value === undefined) return;
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-    into.push({ key: prefix, label, value });
-    return;
-  }
-  if (Array.isArray(value)) {
-    value.forEach((entry, index) => flatten(`${prefix}[${index}]`, entry, into, `${label} ${index + 1}`));
-    return;
-  }
-  if (typeof value === "object") {
-    // Sorted, and not merely iterated.
-    //
-    // Found by the proof: parameters are stored as `jsonb`, and Postgres does
-    // not preserve an object's key order. Re-rendering at approval therefore
-    // produced the same lines in a different sequence and a different digest,
-    // so every envelope was VOID for having "changed" when nothing had. The
-    // digest must depend on what the statement SAYS and not on how a database
-    // happened to store it.
-    const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) =>
-      a < b ? -1 : a > b ? 1 : 0,
-    );
-    for (const [key, entry] of entries) {
-      flatten(`${prefix}.${key}`, entry, into, `${label} · ${key}`);
-    }
+  for (const entry of scalarPaths(value, prefix)) {
+    if (into.length >= MAX_LINES) return;
+    const suffix = entry.path.slice(prefix.length).replace(/^\./, "");
+    into.push({
+      key: entry.path,
+      label: suffix ? `${label} · ${suffix}` : label,
+      value: entry.value,
+    });
   }
 }
 
@@ -370,13 +380,30 @@ export async function renderAuthorityStatement(input: {
     flatten(spec.key, input.params[spec.key], lines, spec.label);
   }
   // What the ids MEAN, from canonical state. Flattened by the same walker, so
-  // an expansion is no more able to hide a number than a parameter is.
-  if (input.act.expand) {
-    const expanded = await input.act.expand(input.params, input.scope);
-    for (const [key, value] of Object.entries(expanded)) {
-      flatten(`context.${key}`, value, lines, `التفاصيل · ${key}`);
+  // an expansion is no more able to hide a number than a parameter is — and
+  // rendered at the TOP level rather than under a prefix, because these paths
+  // are also the facts a policy names. «terms.price» has to be one path: the
+  // line a person reads and the field a rule bounds.
+  const declared = new Set(input.act.params.map((spec) => spec.key));
+  const expanded = input.act.expand ? await input.act.expand(input.params, input.scope) : {};
+  for (const [key, value] of Object.entries(expanded)) {
+    if (declared.has(key)) {
+      // A collision would mean one path with two meanings, which is how a rule
+      // comes to bound something other than what it names.
+      throw new AuthorityActError(
+        `«${key}» is both a parameter and an expansion of «${input.act.id}».`,
+        "INVALID",
+      );
     }
+    flatten(key, value, lines, key);
   }
+  const decision = await evaluatePolicies({
+    scopeId: input.scope.scopeId,
+    action: input.act.id,
+    // Parameters AND what their ids stand for. A rule about the price in a
+    // proposal must see the price, not the proposal's id.
+    parameters: { ...input.params, ...expanded },
+  });
   return {
     actType: input.act.id,
     headline: input.act.headline,
@@ -388,6 +415,7 @@ export async function renderAuthorityStatement(input: {
     lines: Object.freeze(lines),
     reversibility: input.act.reversibility,
     ...(input.act.residualNote ? { residualNote: input.act.residualNote } : {}),
+    policy: disclosableDecision(decision),
   };
 }
 
@@ -422,6 +450,29 @@ function canonical(value: unknown): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const DEFAULT_TTL_MS = 15 * 60 * 1000;
+
+/**
+ * The scope's own rules, separately from the person's permission.
+ *
+ * `REQUIRES_APPROVAL` passes, because an authority request IS the approval the
+ * policy asked for. `DENIED` and `UNSUPPORTED_POLICY` do not, and neither can
+ * be approved past: `APPROVAL != POLICY OVERRIDE`.
+ */
+function assertPolicyPermits(statement: AuthorityStatement): void {
+  const decision = statement.policy as { outcome?: string };
+  if (decision.outcome === "DENIED") {
+    throw new AuthorityActError(
+      "A policy of this scope forbids this. It is not something an approval can override.",
+      "FORBIDDEN",
+    );
+  }
+  if (decision.outcome === "UNSUPPORTED_POLICY") {
+    throw new AuthorityActError(
+      "This scope carries a policy the runtime cannot evaluate, so nothing may proceed under it.",
+      "FORBIDDEN",
+    );
+  }
+}
 
 async function assertPermitted(act: AuthorityAct, principalId: string, scope: ActingScope) {
   if (act.personalOnly && scope.kind !== "PERSONAL") {
@@ -471,7 +522,11 @@ export async function requestAuthorityAct(input: {
   const params = validateParams(act, input.params);
   await assertPermitted(act, input.principalId, input.scope);
 
+  // Rendered first, and the policy gate reads the decision the statement
+  // already carries. One evaluation, so the words a person reads and the rule
+  // that let them read them can never be two different facts.
   const statement = await renderAuthorityStatement({ act, params, scope: input.scope });
+  assertPolicyPermits(statement);
   const digest = statementDigest(statement);
   const now = input.now ?? new Date();
 
@@ -573,6 +628,11 @@ export async function approveAuthorityRequest(input: {
       "The approval cites different words than the ones on this request.",
     );
   }
+
+  // Again, because a rule can be written between reading and deciding. The
+  // re-render above already voids on a changed decision; this refuses the case
+  // where the digest happened to survive.
+  assertPolicyPermits(fresh);
 
   // One approval, one act: the CAS is what makes a double-click a single act.
   const [claimed] = await db
@@ -845,6 +905,37 @@ registerAuthorityAct({
   requiredPermission: "manage_policies",
   reversibility: "REVERSIBLE",
   residualNote: "A policy is versioned: a later one supersedes it and neither is erased.",
+  expand: async (params) => {
+    //   POLICY STORED != POLICY ENFORCED
+    //
+    // The single most important line in this act. A person who asked for a
+    // rule and is about to get a note must be able to SEE that, so the
+    // classification is rendered as its own line — and when it is a rule, its
+    // effect and every condition are rendered too, because a rule nobody read
+    // is the thing this whole path exists to prevent.
+    const classification = classifyPolicyBody(params.value);
+    if (classification !== "ENFORCED") {
+      return {
+        enforcement: classification,
+        note:
+          classification === "MALFORMED"
+            ? "يدّعي أنه سياسة قابلة للتنفيذ ولا يمكن قراءته — لن يُنفَّذ، وسيمنع كل تصرّف في هذا النطاق."
+            : "يُحفَظ ولا يُنفَّذ: لا شيء في وقت التشغيل يقرؤه.",
+      };
+    }
+    const rule = parseEnforcementPolicy(params.value);
+    return {
+      enforcement: "ENFORCED",
+      effect: rule.effect,
+      actions: rule.actions.join("، "),
+      conditions: rule.conditions.map(
+        (condition) => `${condition.field} ${condition.operator} ${condition.value}`,
+      ),
+      requires: rule.requires.map(
+        (requirement) => `${requirement.field} ${requirement.operator} ${requirement.value}`,
+      ),
+    };
+  },
   perform: async ({ params, principalId, scope }) => {
     const policy = await setScopePolicy({
       principalId,
@@ -1027,8 +1118,16 @@ registerAuthorityAct({
       status: proposal.status,
       // One entry per term, so a price change between reading and approving
       // moves the digest.
-      terms: Object.fromEntries(
-        terms.map((term) => [term.key, term.unit ? `${term.value} ${term.unit}` : term.value]),
+      //
+      // The VALUE and the unit are separate lines, deliberately. These paths
+      // are also the facts a policy compares against, and «225 JOD» is a
+      // string: formatting a number for display makes it incomparable, and a
+      // rule that silently fails to match is worse than one that errors.
+      //
+      //   A FACT THAT IS DISPLAYED MUST BE THE FACT THAT IS COMPARED.
+      terms: Object.fromEntries(terms.map((term) => [term.key, term.value])),
+      units: Object.fromEntries(
+        terms.filter((term) => term.unit).map((term) => [term.key, term.unit!]),
       ),
       owes: Object.fromEntries(
         terms.filter((term) => term.owedBy).map((term) => [term.key, term.owedBy!]),

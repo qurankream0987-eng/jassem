@@ -169,9 +169,12 @@ That is why `EXECUTABLE` moved for nineteen scenarios at once here, having moved
 for none of them in the previous phase: a general mechanism lands for a whole
 family or it has not landed.
 
-What it left behind is smaller and more specific. A policy can now be **set** by
-talking, and nothing in the runtime **reads** one. Stored, versioned and private
-is not enforced, and `POLICY_ENFORCEMENT` says so.
+What it left behind — a policy that could be **set** by talking and that nothing
+**read** — is closed too. `POLICY STORED != POLICY ENFORCED` is now a decision
+taken at three boundaries by one function, and the distinction the catalog cares
+about survives it: a body carrying no recognized schema is scope configuration
+that enforces nothing and never claimed to, and the statement a person approves
+says which of the two they are getting.
 
 ## What the ratchets can and cannot prove
 
@@ -203,15 +206,15 @@ claim this catalog exists to prevent.
 | **REPRESENTABLE** | 162 | 0 | 0 | 0 | 0 |
 | **ROUTABLE** | 162 | 0 | 0 | 0 | 0 |
 | **PLANNABLE** | 133 | 29 | 0 | 0 | 0 |
-| **EXECUTABLE** | 84 | 50 | 26 | 2 | 0 |
-| **OBSERVABLE** | 77 | 22 | 20 | 0 | 43 |
-| **VERIFIABLE** | 72 | 27 | 20 | 0 | 43 |
+| **EXECUTABLE** | 85 | 49 | 26 | 2 | 0 |
+| **OBSERVABLE** | 78 | 22 | 20 | 0 | 42 |
+| **VERIFIABLE** | 73 | 27 | 20 | 0 | 42 |
 | **PRESENTABLE** | 160 | 2 | 0 | 0 | 0 |
 | **PERSISTENT** | 128 | 17 | 0 | 0 | 17 |
 
 Scenarios blocked by an absent **provider**: **31**
 Scenarios blocked by this **environment**: **2**
-Scenarios waiting on a **general capability**: **50**
+Scenarios waiting on a **general capability**: **49**
 
 ### General gaps
 
@@ -224,7 +227,6 @@ Each of these closes many scenarios at once. That is what makes it general.
 - `LOCATION_OBSERVATION`
 - `MONITORING_ENGINE`
 - `PERSISTENT_WORLD_MATERIALIZATION`
-- `POLICY_ENFORCEMENT`
 - `REALTIME_RUNTIME`
 - `SECURE_PRODUCT_ACTION_RUNTIME`
 - `SPONSORED_DISCOVERY_RUNTIME`
@@ -457,7 +459,7 @@ Each of these closes many scenarios at once. That is what makes it general.
 | `jasimos.same_core` | شغّل جاسم لمطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `jasimos.business_data` | اجعله يرى بيانات مطعمي فقط | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_DATA_SOURCE_ADAPTER |
 | `jasimos.branding` | اجعل اسمه وشعاره لمطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | PERSISTENT_WORLD_MATERIALIZATION |
-| `jasimos.policies` | طبّق سياسات مطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | POLICY_ENFORCEMENT |
+| `jasimos.policies` | طبّق سياسات مطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `jasimos.permissions` | حدد ما يراه الموظفون | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `jasimos.providers` | اربط مزوداتي | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 

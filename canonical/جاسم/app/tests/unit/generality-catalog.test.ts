@@ -553,6 +553,23 @@ describe("a business is a scope, not an app", () => {
     expect(core.currentBlocker).toBeNull();
   });
 
+  it("the governing law records that a stored policy is not an enforced one", () => {
+    const law = readFileSync(LAW, "utf8");
+    for (const clause of [
+      "POLICY STORED != POLICY ENFORCED",
+      "POLICY TEXT   != EXECUTABLE POLICY",
+      "MODEL INTERPRETATION != AUTHORITY",
+      "UNKNOWN POLICY SEMANTICS != ALLOW",
+      "POLICY ABSENCE          != POLICY DENIAL",
+      "APPROVAL   != POLICY OVERRIDE",
+      "DOMAIN_POLICY_TYPES_ADDED      = 0",
+      "DOMAIN_POLICY_EVALUATORS_ADDED = 0",
+      "ShippingPolicyEvaluator",
+    ]) {
+      expect(law, clause).toContain(clause);
+    }
+  });
+
   it("the governing law records that approval is not a click", () => {
     const law = readFileSync(LAW, "utf8");
     for (const clause of [
@@ -605,16 +622,16 @@ describe("no scenario changes status silently", () => {
         REPRESENTABLE: 162,
         ROUTABLE: 162,
         PLANNABLE: 133,
-        EXECUTABLE: 84,
-        OBSERVABLE: 77,
-        VERIFIABLE: 72,
+        EXECUTABLE: 85,
+        OBSERVABLE: 78,
+        VERIFIABLE: 73,
         PRESENTABLE: 160,
         PERSISTENT: 128,
       },
       blockedByProvider: 31,
       blockedByEnvironment: 2,
-      notYetImplemented: 50,
-      generalGaps: 12,
+      notYetImplemented: 49,
+      generalGaps: 11,
     });
   });
 

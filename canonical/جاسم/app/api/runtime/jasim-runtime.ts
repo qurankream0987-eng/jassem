@@ -82,6 +82,7 @@ import {
   AuthorityActError,
   requestAuthorityAct,
 } from "./authority-acts";
+import { disclosableDecision, evaluatePolicies } from "./policy-enforcement";
 import {
   CONVERSATION_SCOPE_KEY,
   authorizeScopeAction,
@@ -3916,6 +3917,28 @@ export async function executeRuntimeDagNode(input: {
       node: storedRunningNode,
       ownerId: input.ownerId,
     });
+
+    // ── POLICY, IMMEDIATELY BEFORE THE EFFECT ──────────────────────────────
+    //
+    // Here rather than only at the turn, because this is the last line before
+    // something irreversible happens and the inputs are finally resolved: a
+    // node whose parameters were bound from an upstream result is checked
+    // against the scope's rules with the values that will actually execute.
+    //
+    // One call to one function. No capability reads a policy, and there is no
+    // hook to add one per domain.
+    const policyDecision = await evaluatePolicies({
+      scopeId: input.ownerId,
+      action: capabilityId,
+      parameters: effectiveInputs,
+      now: input.now,
+    });
+    if (policyDecision.outcome !== "ALLOWED") {
+      // Failing truthfully rather than proceeding. A REQUIRE_APPROVAL policy
+      // reaching this point means the plan approval it already had was not the
+      // approval the policy asked for, and a worker cannot ask anybody.
+      throw new RuntimeActionError(`POLICY_${policyDecision.outcome}`);
+    }
     const registry = input.capabilityRegistry ?? getRuntimeCapabilityRegistry();
     const providers = registry.providers();
     const supportedProtocols = providers.list().reduce<Record<string, string[]>>((all, provider) => {
@@ -6717,6 +6740,45 @@ export async function routeRuntimeConversationTurn(input: {
           cause: allowed.code,
         });
       }
+    }
+  }
+
+  // ── THE SCOPE'S OWN RULES ────────────────────────────────────────────────
+  //
+  //   PERMISSION != POLICY
+  //
+  // The verbs above answered "may this person act here". This answers "what
+  // has this scope forbidden itself", which is a different question with a
+  // different answer, and both must pass.
+  //
+  // The executor checks again immediately before the effect — that is the
+  // boundary that matters. This one exists so a person is told now rather than
+  // after a run was opened that was never going to be allowed to finish.
+  {
+    const planned = (planOutcome?.plan.nodes ?? []).map((node) => ({
+      action: node.capabilityId,
+      parameters: node.inputs as unknown,
+    }));
+    for (const entry of planned) {
+      const decision = await evaluatePolicies({
+        scopeId: actingOwnerId,
+        action: entry.action,
+        parameters: entry.parameters,
+      });
+      if (decision.outcome === "ALLOWED") continue;
+      return respondRouted({
+        message:
+          decision.outcome === "REQUIRES_APPROVAL"
+            ? "سياسة هذا النطاق تشترط موافقة شخص على هذا التصرّف. لم يبدأ شيء."
+            : decision.outcome === "UNSUPPORTED_POLICY"
+              ? "هذا النطاق يحمل سياسة لا يمكن تقييمها، فلا شيء ينفَّذ تحتها."
+              : "سياسة هذا النطاق تمنع هذا التصرّف.",
+        state: decision.outcome === "REQUIRES_APPROVAL" ? "NEEDS_APPROVAL" : "DENIED",
+        cause: `POLICY_${decision.outcome}`,
+        // Ids, versions and reason codes. Never the rule itself: a private
+        // floor steers a decision without being disclosed.
+        extra: { policy: disclosableDecision(decision) },
+      });
     }
   }
 

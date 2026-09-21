@@ -201,9 +201,10 @@ describe("a person performs an authority act by reading it, not by clicking", ()
     const { proposalId } = await proposal();
     const { statement } = await ask("agreement.commit", { proposalId }, personal(HASSAN));
     const byKey = new Map(statement.lines.map((line) => [line.key, line.value]));
-    expect(byKey.get("context.terms.price")).toBe("240 JOD");
-    expect(byKey.get("context.terms.deliveryDays")).toBe(5);
-    expect(byKey.get("context.proposedBy")).toBe(LAYLA);
+    expect(byKey.get("terms.price")).toBe(240);
+    expect(byKey.get("units.price")).toBe("JOD");
+    expect(byKey.get("terms.deliveryDays")).toBe(5);
+    expect(byKey.get("proposedBy")).toBe(LAYLA);
   });
 
   it("says what cannot be undone", async () => {
@@ -224,8 +225,10 @@ describe("a person performs an authority act by reading it, not by clicking", ()
     const act = authority.getAuthorityAct("organization.create")!;
     expect(statement.headline).toBe(act.headline);
     for (const line of statement.lines) {
-      const declared = act.params.some((spec) => line.key.startsWith(spec.key));
-      expect(declared || line.key.startsWith("context."), line.key).toBe(true);
+      // Every line is either a declared parameter or an expansion of one, and
+      // both come from typed values rather than from a sentence.
+      expect(typeof line.value !== "object", line.key).toBe(true);
+      expect(act.params.some((spec) => line.key.startsWith(spec.key)), line.key).toBe(true);
     }
   });
 
@@ -713,7 +716,7 @@ describe("a person performs an authority act by reading it, not by clicking", ()
     const carried = agree.output.authority as {
       statement: { lines: Array<{ key: string; value: unknown }> };
     };
-    expect(carried.statement.lines.some((line) => line.value === "240 JOD")).toBe(true);
+    expect(carried.statement.lines.some((line) => line.value === 240)).toBe(true);
     await performFromTurn(agree.output);
 
     const rows = await handle.db.execute(

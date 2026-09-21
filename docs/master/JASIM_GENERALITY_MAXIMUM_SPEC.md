@@ -340,6 +340,75 @@ There is no `RestaurantOnboarding` act. Every act is a general verb over a
 general primitive, and a new one is a row in one registry that inherits the
 statement, the digest, the expiry and the re-render.
 
+## 4.8 A STORED POLICY IS NOT AN ENFORCED POLICY
+
+```
+POLICY STORED != POLICY ENFORCED
+POLICY TEXT   != EXECUTABLE POLICY
+```
+
+A scope may write rules for itself, and a rule is authoritative only when it
+belongs to that scope, its schema is recognized, it is active for the current
+version and time, its conditions evaluate deterministically, and the action
+being asked about is one it governs.
+
+A body that carries no recognized schema is **scope configuration**: it enforces
+nothing and never claimed to. A body that *claims* the schema and cannot be
+read is **malformed**, and nothing proceeds under it. Prose cannot become a rule
+by being stored next to rules, and the statement a person approves says which of
+the two they are getting.
+
+```
+MODEL INTERPRETATION != AUTHORITY
+```
+
+A conversational layer may **propose** a typed rule. Nothing asks a model at
+enforcement time what a stored sentence meant — a rule that means whatever it
+said today is not a rule.
+
+```
+UNKNOWN POLICY SEMANTICS != ALLOW
+POLICY ABSENCE          != POLICY DENIAL
+```
+
+Two different defaults, both deliberate. A scope with no rules permits what its
+permissions permit. A scope with a rule nobody can read permits nothing, because
+the alternative is proceeding past a rule.
+
+### Four questions, composing
+
+```
+PERMISSION != POLICY
+POLICY     != AUTHORITY ENVELOPE
+ENVELOPE   != APPROVAL
+APPROVAL   != POLICY OVERRIDE
+```
+
+May this person act here; what has this scope forbidden itself; how far may
+JASIM go on someone's behalf; and did a person decide. They compose, and **the
+narrowest wins**. A permission to transact does not answer a rule that caps the
+amount. An envelope reaching 250 does not answer a rule that says a person
+decides above 200. And approving what a rule denies does not make it permitted.
+
+The effects are `ALLOW`, `DENY`, `REQUIRE_APPROVAL` and `CONSTRAIN`. `ALLOW`
+records an intention and widens nothing. `CONSTRAIN` refuses rather than
+rewrites: clamping somebody's parameters to make them legal is the runtime
+negotiating on their behalf without being asked.
+
+A decision carries the policy's id, version, effect and a reason code — never
+its body. A seller's floor, a buyer's ceiling and an internal threshold steer
+outcomes without being disclosed, and a decision is attributable to the version
+that produced it.
+
+```
+DOMAIN_POLICY_TYPES_ADDED      = 0
+DOMAIN_POLICY_EVALUATORS_ADDED = 0
+```
+
+There is no `FactoryPolicy`, no `NegotiationPolicyEvaluator` and no
+`ShippingPolicyEvaluator`. One boundary is consulted before anything
+irreversible, and no capability reads a rule of its own.
+
 ## 5. Business is a scope, not an app
 
 A Business may own data, Needs, Offerings, Resources, Capacity, Policies,

@@ -136,8 +136,16 @@ describe("the runtime writes the statement", () => {
   });
 
   it("sorts nested keys, so storage order cannot change a digest", () => {
-    const flattenBody = code.slice(code.indexOf("function flatten("));
-    expect(flattenBody.slice(0, flattenBody.indexOf("\n}\n"))).toContain(".sort(");
+    // The walk lives in `policy-enforcement`, shared with the policy layer so
+    // a rule names its field by the same dotted path a person reads. The sort
+    // therefore has to hold there.
+    const walker = readFileSync(
+      resolve(process.cwd(), "api/runtime/policy-enforcement.ts"),
+      "utf8",
+    );
+    const fn = walker.slice(walker.indexOf("export function scalarPaths("));
+    expect(fn.slice(0, fn.indexOf("\n}\n"))).toContain(".sort(");
+    expect(code).toContain("scalarPaths(value, prefix)");
   });
 
   it("the same statement always digests the same, and a changed one never does", () => {
