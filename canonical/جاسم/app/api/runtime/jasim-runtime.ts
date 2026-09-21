@@ -89,6 +89,14 @@ import {
   initiateProductAction,
 } from "./product-actions";
 import {
+  WorldError,
+  applyWorldChangeSet,
+  conversationWorldRef,
+  materializeWorld,
+  projectWorld,
+  readWorld,
+} from "./world-runtime";
+import {
   CONVERSATION_SCOPE_KEY,
   authorizeScopeAction,
   conversationScopeMemory,
@@ -5637,6 +5645,31 @@ const ActingScopeRequestSchema = z
   .strict();
 
 /**
+ * A REQUEST for a durable world. Never a grant of one.
+ *
+ *   ROUTED != MATERIALIZED
+ *
+ * The model may propose a world's STRUCTURE — entities, relations, policies,
+ * workflows, participants — or name changes to one that exists. It may not say
+ * whose world it is, which scope is acting, what version is current, that a
+ * policy allowed it, or that anybody approved it: `WORLD_AUTHORITY_KEYS`
+ * refuses all of that before this schema is reached, and the proposal schema
+ * is `.strict()` so an undeclared key is refused rather than dropped.
+ *
+ * `worldRef` is how «أضف له المورد» finds what «له» means — a canonical id the
+ * conversation already carries, never an ordinal position on a screen.
+ */
+const WorldRequestSchema = z
+  .object({
+    intent: z.enum(["MATERIALIZE", "MUTATE"]),
+    /** For MUTATE. Omitted, the conversation's own attached world is used. */
+    worldRef: z.string().trim().min(1).max(80).optional(),
+    definition: z.record(z.string(), z.unknown()).optional(),
+    changes: z.array(z.record(z.string(), z.unknown())).max(50).optional(),
+  })
+  .strict();
+
+/**
  * A REQUEST for a product action. The model names a registered id.
  *
  * There is deliberately no `fields`, no `values`, no `sensitive`, no
@@ -5873,6 +5906,7 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       actingScope: ActingScopeRequestSchema.optional(),
       authorityRequest: AuthorityRequestSchema.optional(),
       productAction: ProductActionRequestSchema.optional(),
+      world: WorldRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -5909,6 +5943,7 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       actingScope: ActingScopeRequestSchema.optional(),
       authorityRequest: AuthorityRequestSchema.optional(),
       productAction: ProductActionRequestSchema.optional(),
+      world: WorldRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -5945,6 +5980,7 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       actingScope: ActingScopeRequestSchema.optional(),
       authorityRequest: AuthorityRequestSchema.optional(),
       productAction: ProductActionRequestSchema.optional(),
+      world: WorldRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -6634,7 +6670,16 @@ export async function routeRuntimeConversationTurn(input: {
      * response would be a statement nobody could re-read before deciding.
      */
     extra?: Readonly<Record<string, unknown>>;
+    /**
+     * A surface built from CANONICAL STATE rather than from the sentence.
+     *
+     * Used where there is real stored state to show — a materialized world is
+     * the first — and omitted everywhere else, because a branch that executed
+     * nothing has nothing but its sentence to present.
+     */
+    presentation?: PresentationDefinition;
   }): Promise<RuntimeConversationOutputResponse> => {
+    const surface = result.presentation ?? informPresentation(result.message);
     const assistantMessage = await createRuntimeMessage({
       ownerId: input.ownerId,
       conversationId: input.conversationId,
@@ -6643,7 +6688,7 @@ export async function routeRuntimeConversationTurn(input: {
       outputKind: "routed",
       metadata: {
         ...modelMetadata,
-        presentation: informPresentation(result.message),
+        presentation: surface,
         routed: {
           route: routeDecision.route,
           reason: routeDecision.reason,
@@ -6665,7 +6710,7 @@ export async function routeRuntimeConversationTurn(input: {
         cause: result.cause,
         message: result.message,
         confidence: envelope.confidence,
-        presentation: informPresentation(result.message),
+        presentation: surface,
         ...(result.extra ?? {}),
       },
     };
@@ -6865,6 +6910,139 @@ export async function routeRuntimeConversationTurn(input: {
               : error.message,
           state: error.code === "UNAUTHENTICATED" ? "NEEDS_INPUT" : "DENIED",
           cause: error.code,
+        });
+      }
+      throw error;
+    }
+  }
+
+  // ── A PERSISTENT WORLD: MATERIALIZE, OR SAY WHY NOT ──────────────────────
+  //
+  //   CONVERSATION INITIATES · RUNTIME VALIDATES · SCOPE AUTHORIZES
+  //   POLICY DECIDES · ATOMIC COMMIT · DURABLE EVENT · CANONICAL PROJECTION
+  //
+  //   ROUTED != MATERIALIZED
+  //
+  // «أنشئ لي نظاماً دائماً» ends here. Nothing is created unless the whole
+  // definition validated, the scope held the verb, no rule of the scope
+  // forbade it, and the world came BACK out of storage at the version that was
+  // just written. An empty world is never reported as a success.
+  //
+  // The route alone is enough to enter. A PERSISTENT_WORLD plan that carried
+  // no definition must not fall through to the execution path below: «أنشئ
+  // نظاماً دائماً» becoming a DAG is the exact confusion the router exists to
+  // prevent, and asking what the system contains is the honest answer.
+  const worldRequest = "world" in envelope ? envelope.world : undefined;
+  if (worldRequest || routeDecision.route === "PERSISTENT_WORLD") {
+    const scope = scopeResolution.scope;
+    const conversationRef = Number(input.conversationId);
+    const conversationId = Number.isInteger(conversationRef) && conversationRef > 0
+      ? conversationRef
+      : undefined;
+    try {
+      if (!worldRequest || worldRequest.intent === "MATERIALIZE") {
+        if (!worldRequest?.definition) {
+          return respondRouted({
+            message: "فهمت أنك تريد نظاماً دائماً، لكن لم تصل بنيته. صِف لي ما الذي سيحتويه.",
+            state: "NEEDS_INPUT",
+            cause: "WORLD_DEFINITION_MISSING",
+          });
+        }
+        const { record, created } = await materializeWorld({
+          proposal: worldRequest.definition,
+          scope,
+          // Stable per TURN. The same turn retried finds the world it already
+          // made; a different turn asking again is a different world.
+          requestKey: userMessage.id,
+          ...(conversationId !== undefined ? { conversationId } : {}),
+          statedAs: input.content,
+        });
+        return respondRouted({
+          message: created
+            ? `أنشأت «${record.title}» كنظام دائم — النسخة ${record.version}. يحتوي ${record.entityCount} كياناً و${record.policyCount} سياسة، ويبقى بعد انتهاء هذه المحادثة.`
+            : `«${record.title}» موجود بالفعل عند النسخة ${record.version}. لم أنشئ نسخة ثانية منه.`,
+          state: "MATERIALIZED",
+          cause: created ? "WORLD_MATERIALIZED" : "WORLD_ALREADY_MATERIALIZED",
+          extra: { world: projectWorld(record) },
+          presentation: routePresentation({
+            // `inform` rather than `show_state`: a world is not a tracker, and
+            // `show_state` resolves to STATUS before the world branch is
+            // reached. What a surface gets is the world's own primitive.
+            interactionNeed: "inform",
+            semanticOutput: "world",
+            worldReference: true,
+            data: projectWorld(record),
+          }),
+        });
+      }
+
+      // MUTATE. The reference comes from what the model named or from the
+      // world this conversation is already attached to — never from a position
+      // on a screen.
+      const attached = await conversationWorldRef({
+        ownerId: input.ownerId,
+        conversationId: input.conversationId,
+      });
+      const worldId = worldRequest.worldRef ?? attached;
+      if (!worldId) {
+        return respondRouted({
+          message: "فهمت أنك تريد تغيير نظام دائم، لكن لم يتضح أي نظام. سَمِّ لي النظام.",
+          state: "NEEDS_INPUT",
+          cause: "WORLD_REFERENCE_MISSING",
+        });
+      }
+      const current = await readWorld({ worldId, scope });
+      if (!current) {
+        return respondRouted({
+          message: "لا يوجد نظام بهذا المرجع في هذا النطاق.",
+          state: "UNAVAILABLE",
+          cause: "WORLD_NOT_FOUND",
+        });
+      }
+      const applied = await applyWorldChangeSet({
+        worldId,
+        scope,
+        changes: (worldRequest.changes ?? []) as never,
+        // The version the RUNTIME just read, not one the model supplied. A
+        // model naming a version would be naming the precondition it has to
+        // satisfy.
+        expectedVersion: current.version,
+        requestKey: userMessage.id,
+        ...(conversationId !== undefined ? { conversationId } : {}),
+        statedAs: input.content,
+      });
+      return respondRouted({
+        message: applied.unchanged
+          ? `«${applied.record.title}» بالفعل بهذا الشكل. لم أنشئ نسخة جديدة لتغيير لا يغيّر شيئاً.`
+          : `طبّقت ${applied.changeCount} تغييراً على «${applied.record.title}». النسخة الآن ${applied.record.version}، والنسخة السابقة ما زالت محفوظة.`,
+        state: "MATERIALIZED",
+        cause: applied.unchanged ? "WORLD_UNCHANGED" : "WORLD_VERSION_CREATED",
+        extra: { world: projectWorld(applied.record) },
+        presentation: routePresentation({
+          interactionNeed: "inform",
+          semanticOutput: "world",
+          worldReference: true,
+          data: projectWorld(applied.record),
+        }),
+      });
+    } catch (error) {
+      if (error instanceof WorldError) {
+        return respondRouted({
+          message: error.message,
+          // A conflict is a STATE a caller can act on — rebase and try again —
+          // not a failure to report as "something went wrong".
+          state:
+            error.code === "CONFLICT"
+              ? "CONFLICT"
+              : error.code === "NEEDS_AUTHORITY"
+                ? "NEEDS_APPROVAL"
+                : error.code === "NOT_FOUND"
+                  ? "UNAVAILABLE"
+                  : "DENIED",
+          cause: error.code,
+          ...(error.currentVersion
+            ? { extra: { world: { currentVersion: error.currentVersion } } }
+            : {}),
         });
       }
       throw error;

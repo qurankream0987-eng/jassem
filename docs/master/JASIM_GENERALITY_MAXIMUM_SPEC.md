@@ -573,6 +573,131 @@ as unmet rather than calling the closure a pass.
 FALSE_SUCCESS = 0
 ```
 
+## 4.11 A PERSISTENT WORLD
+
+Some of what a person asks for does not end when the conversation does:
+«أنشئ لي نظاماً دائماً لإدارة عمليات شركتي». A **World** is durable, versioned,
+authorized operational state that outlives a conversation, a Run, a Task, a
+Bubble and a device session.
+
+It is not an agent, not an intelligence, not a domain application, not a
+dashboard, not a replacement for the conversation, not a database a model
+designed and not a generated front end.
+
+```
+CONVERSATION
+  -> SEMANTIC ROUTER
+    -> PERSISTENT_WORLD
+      -> VALIDATED WorldDefinition
+        -> SCOPE / AUTHORIZATION
+          -> POLICY / APPROVAL
+            -> ATOMIC MATERIALIZATION
+              -> worldId · version 1 · durable event · canonical projection
+```
+
+```
+ROUTED       != MATERIALIZED
+MATERIALIZED != CONFIGURED
+CONFIGURED   != EXTERNALLY_CONNECTED
+IDEA != WORLD
+GOAL != WORLD
+UI != WORLD
+UI != CANONICAL STATE
+```
+
+### A World is earned, never assumed
+
+Run may exist without World. Task may exist without World. Dataset, Bubble and
+Idea may too. «عندي فكرة» decomposes into primitives; only «حوّلها إلى نظام
+دائم أدير منه الموارد والسياسات» asks for persistence, and a runtime that made
+a world per turn would fill up with worlds nobody asked for.
+
+### The definition is a proposal until the runtime accepts it
+
+```
+MODEL OUTPUT -> WorldDefinition proposal -> schema validation
+  -> reference validation -> authorization -> policy -> approval -> materialization
+```
+
+Never `MODEL -> raw schema`, `MODEL -> SQL`, `MODEL -> eval`, `MODEL -> generated
+server code`, `MODEL -> arbitrary React or HTML`. A definition describes
+structure; anything executable inside one is refused, not sandboxed. A
+definition may not bind its own capabilities either — a binding is the right to
+ACT, and a world that could grant itself one would be an application with
+authority.
+
+### Versions, and history that is not erased
+
+```
+World v1 -> ChangeSet -> World v2 -> ChangeSet -> World v3
+```
+
+The current version is explicit, every superseded version stays readable, and
+restoring an earlier shape creates a NEW version rather than erasing one.
+
+```
+NO LAST-WRITE-WINS FOR AUTHORITY-BEARING STRUCTURAL STATE
+```
+
+A change set carries the version it was built on. A caller working from a stale
+read is told what to rebase onto; it does not win by arriving second.
+
+### All of it, or none of it
+
+A ChangeSet of five changes whose fourth is invalid writes none of the five.
+There is no partially materialized world, because every change lands on a copy
+before anything reaches the database, and the commit is one transaction.
+
+Replaying is not a second decision: the request key catches a retry and the
+semantic digest catches the same change arriving by another road.
+
+### Seven classes, and not one of them is an industry
+
+```
+DATA · STRUCTURAL · POLICY · WORKFLOW · VIEW · PERMISSION · COMMERCIAL
+```
+
+«أضف عضواً» is a PERMISSION change whether the world organizes a school or a
+foundry. «أضف مورداً» is DATA whether the resource is a lathe or a beehive. The
+runtime decides which class a change IS from what it touches, so a POLICY
+change labelled DATA cannot take a DATA change's permission.
+
+```
+DOMAIN_WORLD_TYPES_ADDED      = 0
+DOMAIN_WORLD_RENDERERS_ADDED  = 0
+WORLD_MARKETPLACE_CORES_ADDED = 0
+```
+
+`FactoryWorld`, `RestaurantWorld`, `SchoolWorld`, `WarehouseWorld` and
+`PropertyWorld` are the names this section exists to prevent.
+
+### Whose world it is
+
+Ownership comes from the acting scope and from nothing a caller said. A
+proposal may not name an owner, a scope, a membership, a permission, a version,
+a policy decision or an approval. A person and an organization own a world
+through the same `scopeId` every other scoped read and write uses — there is no
+second permission system here, and a change that decides what everyone else may
+do is an **authority act**, read and cited, not a sentence in a conversation.
+
+### The market stays one market
+
+An Offering does not need a World. A Need does not need a World. A World may
+ORGANIZE references to them, and the internal opportunity exchange stays the
+one domain-neutral exchange.
+
+### What a surface may show
+
+A materialized world projects to counts and names read from stored state. A
+world that mentions a provider has connected nothing, and its projection says
+so. Both applications render it through a primitive they already had; neither
+has a world runtime of its own.
+
+```
+FALSE_WORLD_SUCCESS = 0
+FALSE_PERSISTENCE   = 0
+```
+
 ## 5. Business is a scope, not an app
 
 A Business may own data, Needs, Offerings, Resources, Capacity, Policies,

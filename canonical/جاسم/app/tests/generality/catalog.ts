@@ -127,7 +127,27 @@ export const GENERAL_GAPS = [
   "REALTIME_RUNTIME",
   "MONITORING_ENGINE",
   "LIVING_OBJECT_RUNTIME",
-  "PERSISTENT_WORLD_MATERIALIZATION",
+  // PERSISTENT_WORLD_MATERIALIZATION was here and is closed: a turn validates
+  // a definition, authorizes it against the acting scope, commits it in one
+  // transaction with a version precondition, records a durable event and reads
+  // the world back before anybody is told it exists. What that ONE name was
+  // covering turns out to be three different missing things, and the other two
+  // are below under their own names rather than inside it.
+  /**
+   * A grant is scope-wide or it does not exist. `membership.grant` gives a
+   * person verbs across an organization; nothing issues or checks a grant on
+   * ONE resource, so «اعطِ فريقي صلاحية القراءة فقط على هذا النظام» has no
+   * mechanism. The membership row already carries `resourceKind` and
+   * `resourceId`; nothing writes anything but `organization`/`*` into them.
+   */
+  "RESOURCE_SCOPED_PERMISSION_GRANT",
+  /**
+   * A scope's name, logo and palette are not driven from its canonical state.
+   * A world carries a theme and a scope has a display name, and no surface
+   * reads either — so «اجعل اسمه وشعاره لمطعمي» is a presentation gap, not a
+   * world gap, and calling it one would have hidden it inside a closed name.
+   */
+  "SCOPE_BRANDING_SURFACE",
   // SECURE_PRODUCT_ACTION_RUNTIME was here and is closed: a conversation
   // opens a trusted surface the RUNTIME described, the surface collects what
   // the registry declared, and one server boundary validates, authorizes,
@@ -391,9 +411,14 @@ const SCENARIOS_A_E: readonly Scenario[] = Object.freeze([
     providers: ["NONE"],
     sideEffect: "INTERNAL_STATE",
     requiresApproval: true,
-    gates: ROUTED_ONLY(),
-    currentBlocker: "PERSISTENT_WORLD_MATERIALIZATION",
-    truthfulRuntimeState: "Routed to PERSISTENT_WORLD, which reports NOT_IMPLEMENTED.",
+    gates: gates({
+      REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+      EXECUTABLE: "PASS", OBSERVABLE: "PASS", VERIFIABLE: "PASS",
+      PRESENTABLE: "PASS", PERSISTENT: "PASS",
+    }),
+    currentBlocker: null,
+    truthfulRuntimeState:
+      "Routed to PERSISTENT_WORLD, and the mechanism behind the route now exists: the turn validates the definition, authorizes it against the acting scope, commits it atomically and reads the world back before reporting it. It still creates no run and no DAG.",
     domainBranchesRequired: 0,
   },
 
@@ -1452,16 +1477,62 @@ const REALTIME_SCENARIOS: readonly Scenario[] = Object.freeze(
 // ── L · WORLDS ──────────────────────────────────────────────────────────────
 
 const WORLD_SCENARIOS: readonly Scenario[] = Object.freeze(
+  //
+  // These six shared one verdict while a world could be routed to and not
+  // made. Five of them now run end to end; the sixth is held by a gap that was
+  // hiding inside the closed one and is named rather than absorbed.
+  //
+  // Every one of them goes through ONE registry of mutation classes and ONE
+  // commit. A warehouse world and a laboratory world differ in the entities
+  // somebody declared and in nothing else.
+  //
+  //   DOMAIN_WORLD_TYPES_ADDED = 0
   ([
-    ["business_world", "أنشئ نظامًا دائمًا لشركتي"],
-    ["warehouse_world", "أنشئ نظام مستودع"],
-    ["operational_world", "أنشئ نظام تشغيل يومي"],
-    ["policy_mutation", "غيّر سياسة الموافقات في نظامي"],
-    ["data_mutation", "أضف حقلاً جديدًا في نظامي"],
-    ["permission_mutation", "اعطِ فريقي صلاحية القراءة فقط"],
-  ] as const).map(([id, goal]) => ({
-    id: `world.${id}`,
-    goal,
+    {
+      id: "business_world",
+      goal: "أنشئ نظامًا دائمًا لشركتي",
+      blocker: null,
+      state:
+        "A turn materializes it under the ACTING scope — an organization's world is the organization's, and the person's own scope does not see it. Version 1.0.0, a durable event, and a read-back before it is reported.",
+    },
+    {
+      id: "warehouse_world",
+      goal: "أنشئ نظام مستودع",
+      blocker: null,
+      state:
+        "The same runtime, the same registry, the same commit. A warehouse differs from a laboratory in the entities somebody declared, and in nothing the runtime knows about.",
+    },
+    {
+      id: "operational_world",
+      goal: "أنشئ نظام تشغيل يومي",
+      blocker: null,
+      state:
+        "Six unrelated operational contexts — including one nothing in the implementation anticipated — materialize and then mutate through one change set with no branch.",
+    },
+    {
+      id: "policy_mutation",
+      goal: "غيّر سياسة الموافقات في نظامي",
+      blocker: null,
+      state:
+        "A POLICY change is refused as a sentence in a conversation and performed as an authority act: the runtime renders the statement, says which class the change actually is whatever it called itself, and the digest of what was read is what authorizes. APPROVAL != CLICK.",
+    },
+    {
+      id: "data_mutation",
+      goal: "أضف حقلاً جديدًا في نظامي",
+      blocker: null,
+      state:
+        "One change set, all of it or none of it: five changes with the fourth invalid leave the world on its old version with no new row. A stale version is a CONFLICT that names what to rebase onto, never a silent overwrite.",
+    },
+    {
+      id: "permission_mutation",
+      goal: "اعطِ فريقي صلاحية القراءة فقط",
+      blocker: "RESOURCE_SCOPED_PERMISSION_GRANT" as const,
+      state:
+        "Read-only ACROSS the scope runs today, as `membership.grant` — an authority act with a statement and a digest. Read-only on ONE world does not: nothing issues or checks a grant scoped to a resource, and the world runtime deliberately did not build a second permission system to fake it.",
+    },
+  ] as const).map((entry) => ({
+    id: `world.${entry.id}`,
+    goal: entry.goal,
     family: "WORLDS" as const,
     route: "PERSISTENT_WORLD" as const,
     primitives: ["Actor", "Resource", "Policy", "Authority", "Event"] as const,
@@ -1469,10 +1540,21 @@ const WORLD_SCENARIOS: readonly Scenario[] = Object.freeze(
     providers: ["NONE"] as const,
     sideEffect: "INTERNAL_STATE" as const,
     requiresApproval: true,
-    gates: ROUTED_ONLY({ PRESENTABLE: "PASS" }),
-    currentBlocker: "PERSISTENT_WORLD_MATERIALIZATION" as const,
-    truthfulRuntimeState:
-      "Routed to PERSISTENT_WORLD, which reports NOT_IMPLEMENTED. World records exist in the schema; materialisation and mutation from a conversation do not.",
+    gates: gates({
+      REPRESENTABLE: "PASS",
+      ROUTABLE: "PASS",
+      PLANNABLE: "PASS",
+      EXECUTABLE: entry.blocker === null ? "PASS" : "NOT_YET_IMPLEMENTED",
+      // A world write is read back — from the database, after the turn that
+      // wrote it returned. A scenario that called that a pure read would be
+      // the false pure read this catalog refuses.
+      OBSERVABLE: entry.blocker === null ? "PASS" : "NOT_YET_IMPLEMENTED",
+      VERIFIABLE: entry.blocker === null ? "PASS" : "NOT_YET_IMPLEMENTED",
+      PRESENTABLE: "PASS",
+      PERSISTENT: "PASS",
+    }),
+    currentBlocker: entry.blocker,
+    truthfulRuntimeState: entry.state,
     domainBranchesRequired: 0 as const,
   })),
 );
@@ -1553,7 +1635,10 @@ const BUSINESS_SCENARIOS: readonly Scenario[] = Object.freeze(
     ["provider_bindings", "اربط نظام المخزون عندي", "ADMIN"],
     // Waiting on something else entirely.
     ["analytics", "أرني أداء المبيعات", "DATA"],
-    ["world_association", "اربط نظام شركتي بهذا الحساب", "WORLD"],
+    // Left the WORLD group when the world runtime landed: an organization owns
+    // a durable system through the same scopeId every other scoped write uses,
+    // and the conversation that made it is attached to it.
+    ["world_association", "اربط نظام شركتي بهذا الحساب", "ACT"],
   ] as const).map(([id, goal, group]) => ({
     id: `business.${id}`,
     goal,
@@ -1585,19 +1670,14 @@ const BUSINESS_SCENARIOS: readonly Scenario[] = Object.freeze(
       PRESENTABLE: "PASS",
       PERSISTENT: "PASS",
     }),
-    currentBlocker:
-      group === "DATA"
-        ? ("BUSINESS_DATA_SOURCE_ADAPTER" as const)
-        : group === "WORLD"
-          ? ("PERSISTENT_WORLD_MATERIALIZATION" as const)
-          : null,
+    currentBlocker: group === "DATA" ? ("BUSINESS_DATA_SOURCE_ADAPTER" as const) : null,
     truthfulRuntimeState:
       group === "ACT"
         ? "«باسم شركتي» resolves to a durable, revocable membership, the run opens under the organization, and the declared verb is checked before anything is written. The organization itself is created through the API rather than by talking, which is `business.scope`."
         : group === "DATA"
           ? "A read now runs under the ACTING scope and sees only its rows; a resource a scope cannot own answers UNAVAILABLE rather than an empty table. «أداء المبيعات» needs business data nobody has connected."
           : group === "WORLD"
-            ? "An organization owns data, policies and provider bindings today. A durable materialized system carrying them is a different gap."
+            ? "Unreachable: no business scenario is in the WORLD group any more."
             : "Said in a turn, it becomes a PENDING authority request carrying a statement the runtime rendered — every parameter on its own line — which the person approves by citing its digest. Nothing is performed until then, a plan performs none of it, and what was done is read back before it is reported. A policy set this way is a TYPED rule the executor consults before every effect; a note is stored as a note, and the statement says which one it is.",
     domainBranchesRequired: 0 as const,
   })),
@@ -1697,7 +1777,11 @@ const JASIM_OS_SCENARIOS: readonly Scenario[] = Object.freeze(
   ([
     ["same_core", "شغّل جاسم لمطعمي", null],
     ["business_data", "اجعله يرى بيانات مطعمي فقط", "BUSINESS_DATA_SOURCE_ADAPTER"],
-    ["branding", "اجعل اسمه وشعاره لمطعمي", "PERSISTENT_WORLD_MATERIALIZATION"],
+    // Not a world gap and never was. A durable system exists now and carries a
+    // theme; no surface reads it, and no surface reads the scope's own name
+    // either. Naming it precisely is what stops it disappearing into a closed
+    // gap's shadow.
+    ["branding", "اجعل اسمه وشعاره لمطعمي", "SCOPE_BRANDING_SURFACE"],
     ["policies", "طبّق سياسات مطعمي", null],
     ["permissions", "حدد ما يراه الموظفون", null],
     ["providers", "اربط مزوداتي", null],
@@ -1725,7 +1809,7 @@ const JASIM_OS_SCENARIOS: readonly Scenario[] = Object.freeze(
     truthfulRuntimeState:
       blocker === null
         ? "The same core, with a business scope: the organization is created, staffed, bound to its providers and governed by its own rules through talking — each an authority act the person read — and every run, row and read belongs to it. A rule it wrote is consulted before every effect. There is no second intelligence, and building one would have been the failure."
-        : "The scope, its team, its providers and its rules are all set by talking today, and the rules are read before anything effectful runs. What remains is its OWN data and its branding — two different gaps, neither of them a second intelligence.",
+        : "The scope, its team, its providers, its rules and now its durable systems are all set by talking, and the rules are read before anything effectful runs. What remains is its OWN data and its branding — two different gaps, neither of them a second intelligence.",
     domainBranchesRequired: 0 as const,
   })),
 );

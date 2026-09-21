@@ -585,9 +585,14 @@ describe("a person performs an authority act by reading it, not by clicking", ()
 
   // ── 7. The two gaps, closed through one mechanism ─────────────────────────
 
-  it("all seven acts go through the same request, statement and digest", async () => {
-    const acts = authority.listAuthorityActs().map((act) => act.id).sort();
-    expect(acts).toEqual([
+  it("every act goes through the same request, statement and digest", async () => {
+    // The list grows when a new KIND of decision needs a person to read it —
+    // `world.evolve` joined it because a rule inside a durable system decides
+    // what everyone else in the scope may do. What must never grow is the
+    // number of MECHANISMS: one registry, one statement, one digest, and the
+    // assertions below hold that for every entry rather than for seven names.
+    const acts = authority.listAuthorityActs();
+    expect(acts.map((act) => act.id).sort()).toEqual([
       "agreement.commit",
       "membership.grant",
       "membership.revoke",
@@ -595,7 +600,18 @@ describe("a person performs an authority act by reading it, not by clicking", ()
       "organization.create",
       "policy.set",
       "provider.bind",
+      "world.evolve",
     ]);
+    for (const act of acts) {
+      // A fixed sentence the runtime owns, a readback that is not the act's
+      // own word about itself, and a declared reversibility. No act is exempt.
+      expect(act.headline.length, act.id).toBeGreaterThan(10);
+      expect(typeof act.readback, act.id).toBe("function");
+      expect(
+        ["REVERSIBLE", "PARTIALLY_COMPENSATABLE", "IRREVERSIBLE"],
+        act.id,
+      ).toContain(act.reversibility);
+    }
   });
 
   it("a business is administered end to end by talking", async () => {

@@ -15,6 +15,15 @@ export class GeneratedWorldService {
     this.repository = repository;
   }
 
+  /**
+   * The structural difference between two worlds, as the canonical layer needs
+   * it before it commits anything. Exposed rather than re-implemented: a
+   * second diff would be a second opinion about what changed.
+   */
+  changesBetween(before: unknown, after: unknown): WorldChangeOperation[] {
+    return this.diff(before, after);
+  }
+
   async persistApproved(input: PersistGeneratedWorldInput): Promise<PersistGeneratedWorldResult> {
     const proposed = WorldDNASchema.parse({ ...this.object(input.world), ownerId: String(input.ownerId) });
     if (proposed.continuity === "ephemeral") throw new Error("Ephemeral task worlds are not persisted as generated systems");
@@ -47,6 +56,7 @@ export class GeneratedWorldService {
       system = await this.repository.createSystem({
         worldKey,
         ownerId: input.ownerId,
+        ...(input.scopeId ? { scopeId: input.scopeId } : {}),
         world: versionedWorld,
         version,
         taskId: input.taskId,
@@ -70,20 +80,26 @@ export class GeneratedWorldService {
       }
     }
 
-    const createdVersion = await this.repository.createVersion({
-      systemId: system.id,
-      version,
-      status: "draft",
-      world: versionedWorld,
-      contentDigest,
-      parentVersion: current?.version,
-      changeRequest: input.changeRequest ?? proposed.lineage.changeRequest,
-      requestKey: input.requestKey,
-      changes,
-      createdBy: input.ownerId,
+    // One transaction, and — when the caller said what it believed was current
+    // — one compare-and-set. Before this the version was created, then
+    // activated, then the system was moved, and a world briefly had a version
+    // nothing pointed at.
+    const activated = await this.repository.commitVersion({
+      system,
+      version: {
+        systemId: system.id,
+        version,
+        status: "active",
+        world: versionedWorld,
+        contentDigest,
+        parentVersion: current?.version,
+        changeRequest: input.changeRequest ?? proposed.lineage.changeRequest,
+        requestKey: input.requestKey,
+        changes,
+        createdBy: input.ownerId,
+      },
+      ...(input.expectedVersion !== undefined ? { expectedVersion: input.expectedVersion } : {}),
     });
-    await this.repository.activateVersion(system, createdVersion);
-    const activated = { ...createdVersion, status: "active" as const, activatedAt: new Date().toISOString() };
     if (input.conversationId) await this.repository.attachConversation(input.ownerId, input.conversationId, worldKey);
     return this.result(system, activated, !current, false, changes);
   }

@@ -4,6 +4,7 @@ import { conversations, generatedSystems, systemVersions } from "@db/schema";
 import {
   GeneratedWorldSystemSchema,
   GeneratedWorldVersionSchema,
+  WorldVersionConflictError,
   type GeneratedWorldSystem,
   type GeneratedWorldVersion,
   type WorldChangeOperation,
@@ -13,6 +14,8 @@ import type { WorldDNA } from "@contracts/dna";
 export interface NewGeneratedWorldSystem {
   worldKey: string;
   ownerId: number;
+  /** The authoritative owning scope. Defaults to the owner's personal scope. */
+  scopeId?: string;
   world: WorldDNA;
   version: string;
   taskId?: number;
@@ -34,6 +37,9 @@ export interface NewGeneratedWorldVersion {
 
 export interface GeneratedWorldRepository {
   findSystem(ownerId: number, worldKey: string): Promise<GeneratedWorldSystem | undefined>;
+  /** The scoped read. An organization's world has no personal owner to look it up by. */
+  findScopedSystem(scopeId: string, worldKey: string): Promise<GeneratedWorldSystem | undefined>;
+  listScopedSystems(scopeId: string): Promise<GeneratedWorldSystem[]>;
   getSystem(ownerId: number, systemId: number): Promise<GeneratedWorldSystem | undefined>;
   listSystems(ownerId: number): Promise<GeneratedWorldSystem[]>;
   createSystem(input: NewGeneratedWorldSystem): Promise<GeneratedWorldSystem>;
@@ -43,6 +49,25 @@ export interface GeneratedWorldRepository {
   findVersionByRequestKey(system: GeneratedWorldSystem, requestKey: string): Promise<GeneratedWorldVersion | undefined>;
   createVersion(input: NewGeneratedWorldVersion): Promise<GeneratedWorldVersion>;
   activateVersion(system: GeneratedWorldSystem, version: GeneratedWorldVersion): Promise<void>;
+  /**
+   * Create a version, retire the old one and move the system onto it — ALL OF
+   * IT, OR NONE OF IT.
+   *
+   * The two-step `createVersion` + `activateVersion` above is what this
+   * replaces on the commit path. Between those two statements a world has a
+   * version nothing points at, and a crash there leaves a draft the next
+   * writer has to guess about. Here the three writes are one transaction.
+   *
+   * `expectedVersion` makes it a compare-and-set. With it, the commit lands
+   * only while the world is still where the caller last saw it, and a stale
+   * writer raises `WorldVersionConflictError` instead of silently overwriting
+   * somebody's work.
+   */
+  commitVersion(input: {
+    system: GeneratedWorldSystem;
+    version: NewGeneratedWorldVersion;
+    expectedVersion?: string;
+  }): Promise<GeneratedWorldVersion>;
   attachConversation(ownerId: number, conversationId: number, worldKey?: string): Promise<void>;
   conversationWorld(ownerId: number, conversationId: number): Promise<string | undefined>;
 }
@@ -56,6 +81,15 @@ export class MemoryGeneratedWorldRepository implements GeneratedWorldRepository 
 
   async findSystem(ownerId: number, worldKey: string): Promise<GeneratedWorldSystem | undefined> {
     return this.clone([...this.systems.values()].find((item) => item.ownerId === ownerId && item.worldKey === worldKey));
+  }
+
+  async findScopedSystem(scopeId: string, worldKey: string): Promise<GeneratedWorldSystem | undefined> {
+    return this.clone([...this.systems.values()].find((item) => item.scopeId === scopeId && item.worldKey === worldKey));
+  }
+
+  async listScopedSystems(scopeId: string): Promise<GeneratedWorldSystem[]> {
+    return [...this.systems.values()].filter((item) => item.scopeId === scopeId)
+      .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)).map((item) => structuredClone(item));
   }
 
   async getSystem(ownerId: number, systemId: number): Promise<GeneratedWorldSystem | undefined> {
@@ -74,6 +108,7 @@ export class MemoryGeneratedWorldRepository implements GeneratedWorldRepository 
     const system = GeneratedWorldSystemSchema.parse({
       id: ++this.systemSequence,
       worldKey: input.worldKey,
+      scopeId: input.scopeId ?? String(input.ownerId),
       ownerId: input.ownerId,
       name: input.world.name,
       description: input.world.description,
@@ -134,6 +169,21 @@ export class MemoryGeneratedWorldRepository implements GeneratedWorldRepository 
     await this.updateSystem(system.id, { status: "active", version: version.version, activeWorld: version.world });
   }
 
+  async commitVersion(input: {
+    system: GeneratedWorldSystem;
+    version: NewGeneratedWorldVersion;
+    expectedVersion?: string;
+  }): Promise<GeneratedWorldVersion> {
+    const current = this.systems.get(input.system.id);
+    if (!current) throw new Error("Generated world not found");
+    if (input.expectedVersion !== undefined && current.version !== input.expectedVersion) {
+      throw new WorldVersionConflictError(input.expectedVersion, current.version);
+    }
+    const created = await this.createVersion(input.version);
+    await this.activateVersion(input.system, created);
+    return { ...created, status: "active", activatedAt: new Date().toISOString() };
+  }
+
   async attachConversation(ownerId: number, conversationId: number, worldKey?: string): Promise<void> {
     const key = `${ownerId}:${conversationId}`;
     if (worldKey) this.conversations.set(key, worldKey); else this.conversations.delete(key);
@@ -156,6 +206,20 @@ export class DrizzleGeneratedWorldRepository implements GeneratedWorldRepository
     return row ? this.toSystem(row) : undefined;
   }
 
+  async findScopedSystem(scopeId: string, worldKey: string): Promise<GeneratedWorldSystem | undefined> {
+    const row = await db.query.generatedSystems.findFirst({ where: and(
+      eq(generatedSystems.scopeId, scopeId), eq(generatedSystems.worldKey, worldKey),
+    ) });
+    return row ? this.toSystem(row) : undefined;
+  }
+
+  async listScopedSystems(scopeId: string): Promise<GeneratedWorldSystem[]> {
+    const rows = await db.select().from(generatedSystems).where(and(
+      eq(generatedSystems.scopeId, scopeId), isNotNull(generatedSystems.worldKey),
+    )).orderBy(desc(generatedSystems.updatedAt));
+    return rows.map((row) => this.toSystem(row));
+  }
+
   async getSystem(ownerId: number, systemId: number): Promise<GeneratedWorldSystem | undefined> {
     const row = await db.query.generatedSystems.findFirst({ where: and(
       eq(generatedSystems.ownerId, ownerId), eq(generatedSystems.id, systemId), isNotNull(generatedSystems.worldKey),
@@ -174,6 +238,7 @@ export class DrizzleGeneratedWorldRepository implements GeneratedWorldRepository
   async createSystem(input: NewGeneratedWorldSystem): Promise<GeneratedWorldSystem> {
     const [inserted] = await db.insert(generatedSystems).values({
       worldKey: input.worldKey,
+      scopeId: input.scopeId ?? String(input.ownerId),
       name: input.world.name,
       description: input.world.description,
       version: input.version,
@@ -253,6 +318,62 @@ export class DrizzleGeneratedWorldRepository implements GeneratedWorldRepository
     await this.updateSystem(system.id, { status: "active", version: version.version, activeWorld: version.world });
   }
 
+  /**
+   * The commit, as one transaction and one compare-and-set.
+   *
+   * The conditional UPDATE is the whole concurrency story: `WHERE id = ? AND
+   * version = ?` either matches the row the caller read or matches nothing,
+   * and "nothing" is a conflict rather than a reason to write anyway. Postgres
+   * decides it, not a read-then-write in application code that two requests
+   * can interleave inside.
+   */
+  async commitVersion(input: {
+    system: GeneratedWorldSystem;
+    version: NewGeneratedWorldVersion;
+    expectedVersion?: string;
+  }): Promise<GeneratedWorldVersion> {
+    return db.transaction(async (tx) => {
+      const guard = input.expectedVersion === undefined
+        ? eq(generatedSystems.id, input.system.id)
+        : and(eq(generatedSystems.id, input.system.id), eq(generatedSystems.version, input.expectedVersion));
+      const moved = await tx.update(generatedSystems).set({
+        status: "active",
+        version: input.version.version,
+        schema: input.version.world,
+        capabilities: input.version.world.capabilities.map((item) => item.capabilityId),
+        updatedAt: new Date(),
+      }).where(guard).returning({ id: generatedSystems.id });
+      if (moved.length === 0) {
+        const [current] = await tx.select({ version: generatedSystems.version })
+          .from(generatedSystems).where(eq(generatedSystems.id, input.system.id)).limit(1);
+        throw new WorldVersionConflictError(input.expectedVersion ?? "", current?.version ?? "unknown");
+      }
+      // Only now does anything else move. A retired snapshot is history the
+      // moment the system is standing on its replacement, and never before.
+      await tx.update(systemVersions).set({ status: "retired" }).where(and(
+        eq(systemVersions.systemId, input.system.id), eq(systemVersions.status, "active"),
+      ));
+      const [inserted] = await tx.insert(systemVersions).values({
+        systemId: input.version.systemId,
+        version: input.version.version,
+        status: "active",
+        parentVersion: input.version.parentVersion,
+        contentDigest: input.version.contentDigest,
+        changeRequest: input.version.changeRequest,
+        requestKey: input.version.requestKey,
+        createdBy: input.version.createdBy,
+        schema: input.version.world,
+        state: {},
+        migration: { fromVersion: input.version.parentVersion ?? "0.0.0", changes: input.version.changes, rollback: [] },
+        activatedAt: new Date(),
+      }).returning();
+      const [row] = await tx.select().from(systemVersions)
+        .where(eq(systemVersions.id, Number(inserted!.id))).limit(1);
+      if (!row) throw new Error("Generated world version insert failed");
+      return this.toVersion(row, input.system.ownerId);
+    });
+  }
+
   async attachConversation(ownerId: number, conversationId: number, worldKey?: string): Promise<void> {
     const conversation = await db.query.conversations.findFirst({ where: and(
       eq(conversations.id, conversationId), eq(conversations.userId, ownerId),
@@ -277,6 +398,9 @@ export class DrizzleGeneratedWorldRepository implements GeneratedWorldRepository
     return GeneratedWorldSystemSchema.parse({
       id: row.id,
       worldKey: row.worldKey ?? String((row.config as Record<string, unknown> | null)?.worldKey ?? `legacy_world_${row.id}`),
+      // A row written before scopes existed belongs to its owner's personal
+      // scope, which is exactly what its owner id spells.
+      scopeId: row.scopeId ?? String(row.ownerId),
       ownerId: row.ownerId,
       name: row.name,
       description: row.description ?? undefined,

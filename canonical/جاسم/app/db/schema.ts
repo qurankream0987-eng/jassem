@@ -725,6 +725,12 @@ export const generatedSystems = pgTable(
     description: text("description"),
     version: varchar("version", { length: 20 }).default("1.0.0"),
     ownerId: bigint("ownerId", { mode: "number" }).notNull(),
+    /**
+     * The scope this world belongs to — a person's own id, or an
+     * organization's. `ownerId` stays WHO MADE IT; this is WHOSE IT IS, and
+     * they stopped being the same question when a business became a scope.
+     */
+    scopeId: varchar("scopeId", { length: 64 }),
     continuity: generated_systems_continuity_enum("continuity"),
     visibility: generated_systems_visibility_enum("visibility").default("private"),
     sourceTaskId: bigint("sourceTaskId", { mode: "number" }),
@@ -747,6 +753,10 @@ export const generatedSystems = pgTable(
     statusIdx: index("generated_systems_status_idx").on(table.status),
     nameIdx: index("generated_systems_name_idx").on(table.name),
     worldKeyIdx: uniqueIndex("generated_systems_world_key_idx").on(table.ownerId, table.worldKey),
+    // The scoped uniqueness. Two worlds with one key under one scope is the
+    // duplicate a retried materialization must never produce.
+    scopeWorldIdx: uniqueIndex("generated_systems_scope_world_idx").on(table.scopeId, table.worldKey),
+    scopeIdx: index("generated_systems_scope_idx").on(table.scopeId, table.status),
     conversationIdx: index("generated_systems_conversation_idx").on(table.conversationId),
   })
 );

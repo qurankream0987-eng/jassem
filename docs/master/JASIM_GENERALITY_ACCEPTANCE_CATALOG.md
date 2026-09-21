@@ -224,16 +224,16 @@ claim this catalog exists to prevent.
 |---|---:|---:|---:|---:|---:|
 | **REPRESENTABLE** | 162 | 0 | 0 | 0 | 0 |
 | **ROUTABLE** | 162 | 0 | 0 | 0 | 0 |
-| **PLANNABLE** | 147 | 15 | 0 | 0 | 0 |
-| **EXECUTABLE** | 92 | 33 | 35 | 2 | 0 |
-| **OBSERVABLE** | 80 | 12 | 28 | 0 | 42 |
-| **VERIFIABLE** | 74 | 18 | 28 | 0 | 42 |
-| **PRESENTABLE** | 160 | 2 | 0 | 0 | 0 |
-| **PERSISTENT** | 137 | 8 | 0 | 0 | 17 |
+| **PLANNABLE** | 154 | 8 | 0 | 0 | 0 |
+| **EXECUTABLE** | 99 | 26 | 35 | 2 | 0 |
+| **OBSERVABLE** | 87 | 6 | 28 | 0 | 41 |
+| **VERIFIABLE** | 81 | 12 | 28 | 0 | 41 |
+| **PRESENTABLE** | 161 | 1 | 0 | 0 | 0 |
+| **PERSISTENT** | 144 | 1 | 0 | 0 | 17 |
 
 Scenarios blocked by an absent **provider**: **39**
 Scenarios blocked by this **environment**: **2**
-Scenarios waiting on a **general capability**: **33**
+Scenarios waiting on a **general capability**: **26**
 
 ### General gaps
 
@@ -246,8 +246,9 @@ Each of these closes many scenarios at once. That is what makes it general.
 - `LIVING_OBJECT_RUNTIME`
 - `LOCATION_OBSERVATION`
 - `MONITORING_ENGINE`
-- `PERSISTENT_WORLD_MATERIALIZATION`
 - `REALTIME_RUNTIME`
+- `RESOURCE_SCOPED_PERMISSION_GRANT`
+- `SCOPE_BRANDING_SURFACE`
 - `SPONSORED_DISCOVERY_RUNTIME`
 - `SUBSCRIPTION_RUNTIME`
 
@@ -274,7 +275,7 @@ Each of these closes many scenarios at once. That is what makes it general.
 | `route.plangraph` | رتب لي مؤتمرًا الشهر القادم | GENERAL_PLANGRAPH | ● | ● | ● | P | ● | ● | ● | ● | — |
 | `route.monitoring` | راقب السعر وأخبرني إذا نزل | MONITORING | ● | ● | ○ | ○ | ○ | ○ | ○ | ○ | MONITORING_ENGINE |
 | `route.living_object` | أين وصل طلبي؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ○ | ○ | ○ | ○ | ● | ● | LIVING_OBJECT_RUNTIME |
-| `route.persistent_world` | أنشئ نظامًا دائمًا لشركتي | PERSISTENT_WORLD | ● | ● | ○ | ○ | ○ | ○ | ○ | ○ | PERSISTENT_WORLD_MATERIALIZATION |
+| `route.persistent_world` | أنشئ نظامًا دائمًا لشركتي | PERSISTENT_WORLD | ● | ● | ● | ● | ● | ● | ● | ● | — |
 
 ### DATA · 12
 
@@ -417,12 +418,12 @@ Each of these closes many scenarios at once. That is what makes it general.
 
 | id | goal | route | REPR | ROUT | PLAN | EXEC | OBSE | VERI | PRES | PERS | blocker |
 |---|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|
-| `world.business_world` | أنشئ نظامًا دائمًا لشركتي | PERSISTENT_WORLD | ● | ● | ○ | ○ | ○ | ○ | ● | ○ | PERSISTENT_WORLD_MATERIALIZATION |
-| `world.warehouse_world` | أنشئ نظام مستودع | PERSISTENT_WORLD | ● | ● | ○ | ○ | ○ | ○ | ● | ○ | PERSISTENT_WORLD_MATERIALIZATION |
-| `world.operational_world` | أنشئ نظام تشغيل يومي | PERSISTENT_WORLD | ● | ● | ○ | ○ | ○ | ○ | ● | ○ | PERSISTENT_WORLD_MATERIALIZATION |
-| `world.policy_mutation` | غيّر سياسة الموافقات في نظامي | PERSISTENT_WORLD | ● | ● | ○ | ○ | ○ | ○ | ● | ○ | PERSISTENT_WORLD_MATERIALIZATION |
-| `world.data_mutation` | أضف حقلاً جديدًا في نظامي | PERSISTENT_WORLD | ● | ● | ○ | ○ | ○ | ○ | ● | ○ | PERSISTENT_WORLD_MATERIALIZATION |
-| `world.permission_mutation` | اعطِ فريقي صلاحية القراءة فقط | PERSISTENT_WORLD | ● | ● | ○ | ○ | ○ | ○ | ● | ○ | PERSISTENT_WORLD_MATERIALIZATION |
+| `world.business_world` | أنشئ نظامًا دائمًا لشركتي | PERSISTENT_WORLD | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `world.warehouse_world` | أنشئ نظام مستودع | PERSISTENT_WORLD | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `world.operational_world` | أنشئ نظام تشغيل يومي | PERSISTENT_WORLD | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `world.policy_mutation` | غيّر سياسة الموافقات في نظامي | PERSISTENT_WORLD | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `world.data_mutation` | أضف حقلاً جديدًا في نظامي | PERSISTENT_WORLD | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `world.permission_mutation` | اعطِ فريقي صلاحية القراءة فقط | PERSISTENT_WORLD | ● | ● | ● | ○ | ○ | ○ | ● | ● | RESOURCE_SCOPED_PERMISSION_GRANT |
 
 ### PHYSICAL_EXTERNAL · 16
 
@@ -459,7 +460,7 @@ Each of these closes many scenarios at once. That is what makes it general.
 | `business.policies` | ضع سياسة: لا تبيع بأقل من التكلفة | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `business.provider_bindings` | اربط نظام المخزون عندي | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `business.analytics` | أرني أداء المبيعات | DIRECT_READ | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_DATA_SOURCE_ADAPTER |
-| `business.world_association` | اربط نظام شركتي بهذا الحساب | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | PERSISTENT_WORLD_MATERIALIZATION |
+| `business.world_association` | اربط نظام شركتي بهذا الحساب | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 
 ### MONETIZATION · 5
 
@@ -477,7 +478,7 @@ Each of these closes many scenarios at once. That is what makes it general.
 |---|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|
 | `jasimos.same_core` | شغّل جاسم لمطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `jasimos.business_data` | اجعله يرى بيانات مطعمي فقط | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | BUSINESS_DATA_SOURCE_ADAPTER |
-| `jasimos.branding` | اجعل اسمه وشعاره لمطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | PERSISTENT_WORLD_MATERIALIZATION |
+| `jasimos.branding` | اجعل اسمه وشعاره لمطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ○ | — | — | ● | ● | SCOPE_BRANDING_SURFACE |
 | `jasimos.policies` | طبّق سياسات مطعمي | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `jasimos.permissions` | حدد ما يراه الموظفون | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `jasimos.providers` | اربط مزوداتي | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |

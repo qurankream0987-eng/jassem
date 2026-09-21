@@ -6,6 +6,17 @@ export const GeneratedWorldSystemStatusSchema = z.enum(["draft", "active", "paus
 export const GeneratedWorldSystemSchema = z.object({
   id: z.number().int().positive(),
   worldKey: z.string().min(1),
+  /**
+   * WHO the world belongs to, as the runtime means it.
+   *
+   * `ownerId` is the principal who created the row and stays what it always
+   * was. A scope is not a person: an organization owns a world through the
+   * same `scopeId` every other scoped read and write in this runtime uses, and
+   * a personal scope's id is simply the principal's own. Both are here because
+   * "who made it" and "whose it is" stopped being the same question when a
+   * business became a scope.
+   */
+  scopeId: z.string().min(1),
   ownerId: z.number().int().positive(),
   name: z.string(),
   description: z.string().optional(),
@@ -55,11 +66,35 @@ export type GeneratedWorldVersion = z.infer<typeof GeneratedWorldVersionSchema>;
 export interface PersistGeneratedWorldInput {
   world: unknown;
   ownerId: number;
+  /** Defaults to the owner's personal scope, which is their own id. */
+  scopeId?: string;
   taskId?: number;
   conversationId?: number;
   changeRequest?: string;
   requestKey?: string;
   forceVersion?: boolean;
+  /**
+   * The version the caller believed was current.
+   *
+   * Supplied, it is a PRECONDITION: the commit only lands if the world is
+   * still on that version, and a caller working from a stale read is told so
+   * instead of quietly winning. Omitted, the commit behaves as it always did —
+   * which is why every existing caller keeps working, and why a caller that
+   * cares about a lost update has to say so.
+   */
+  expectedVersion?: string;
+}
+
+/** A commit refused because somebody else got there first. */
+export class WorldVersionConflictError extends Error {
+  readonly currentVersion: string;
+  readonly expectedVersion: string;
+  constructor(expectedVersion: string, currentVersion: string) {
+    super(`World moved to ${currentVersion} while this change was built on ${expectedVersion}.`);
+    this.name = "WorldVersionConflictError";
+    this.expectedVersion = expectedVersion;
+    this.currentVersion = currentVersion;
+  }
 }
 
 export interface PersistGeneratedWorldResult {

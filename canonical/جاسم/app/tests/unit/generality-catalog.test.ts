@@ -714,6 +714,92 @@ describe("a secure product action is one door, graded one at a time", () => {
   });
 });
 
+// ── A world is canonical state ───────────────────────────────────────────────
+
+describe("a world is durable state, not a generated application", () => {
+  const worlds = SCENARIOS.filter((scenario) => scenario.family === "WORLDS");
+
+  it("blames no materialization runtime of its own", () => {
+    // The gap is closed. What it was COVERING was three different missing
+    // things, and the other two are named rather than left inside it.
+    expect(GENERAL_GAPS as readonly string[]).not.toContain("PERSISTENT_WORLD_MATERIALIZATION");
+    for (const scenario of [...worlds, SCENARIOS.find((s) => s.id === "route.persistent_world")!]) {
+      expect(scenario.route, scenario.id).toBe("PERSISTENT_WORLD");
+      expect(scenario.gates.PLANNABLE, scenario.id).toBe("PASS");
+      // A world is durable by definition. A WORLDS scenario that said its
+      // state does not survive would not be describing a world.
+      expect(scenario.gates.PERSISTENT, scenario.id).toBe("PASS");
+      if (scenario.currentBlocker === null) continue;
+      expect(GENERAL_GAPS, scenario.id).toContain(scenario.currentBlocker);
+    }
+  });
+
+  it("a world that runs is read back, never assumed", () => {
+    // Materializing writes rows. A scenario claiming EXECUTABLE while calling
+    // its own observation inapplicable would be the false pure read again.
+    const running = worlds.filter((scenario) => scenario.gates.EXECUTABLE === "PASS");
+    expect(running.length).toBeGreaterThan(0);
+    for (const scenario of running) {
+      expect(scenario.currentBlocker, scenario.id).toBeNull();
+      expect(scenario.sideEffect, scenario.id).toBe("INTERNAL_STATE");
+      expect(scenario.gates.OBSERVABLE, scenario.id).toBe("PASS");
+      expect(scenario.gates.VERIFIABLE, scenario.id).toBe("PASS");
+    }
+  });
+
+  it("stopped being one block with one verdict", () => {
+    const waiting = worlds.filter((scenario) => scenario.gates.EXECUTABLE !== "PASS");
+    expect(waiting.length, "a world scenario still waiting on something").toBeGreaterThan(0);
+    // And what it waits on is not the closed gap under another name.
+    for (const scenario of waiting) {
+      expect(scenario.currentBlocker, scenario.id).not.toBeNull();
+      expect(scenario.currentBlocker, scenario.id).not.toContain("WORLD");
+    }
+  });
+
+  it("a per-resource grant and a scope's branding are separate, named gaps", () => {
+    // Both were hiding inside PERSISTENT_WORLD_MATERIALIZATION. Folding either
+    // back into a closed name is how a gap disappears without being closed.
+    expect(GENERAL_GAPS as readonly string[]).toContain("RESOURCE_SCOPED_PERMISSION_GRANT");
+    expect(GENERAL_GAPS as readonly string[]).toContain("SCOPE_BRANDING_SURFACE");
+    const permission = worlds.find((scenario) => scenario.id === "world.permission_mutation")!;
+    expect(permission.currentBlocker).toBe("RESOURCE_SCOPED_PERMISSION_GRANT");
+    expect(permission.truthfulRuntimeState).toContain("membership.grant");
+    const branding = SCENARIOS.find((scenario) => scenario.id === "jasimos.branding")!;
+    expect(branding.currentBlocker).toBe("SCOPE_BRANDING_SURFACE");
+  });
+
+  it("the runtime declares no world type, renderer or agent", () => {
+    //   DOMAIN_WORLD_TYPES_ADDED = 0 · DOMAIN_WORLD_RENDERERS_ADDED = 0
+    const source = readFileSync(resolve(process.cwd(), "api/runtime/world-runtime.ts"), "utf8");
+    const declared = [...source.matchAll(/export (?:type|function|const|class|async function) (\w+)/g)]
+      .map((match) => match[1]!);
+    for (const name of declared) {
+      for (const word of ["Restaurant", "Factory", "School", "Warehouse", "Hotel", "Clinic", "Agent", "Renderer", "Dashboard", "Marketplace"]) {
+        expect(name, `${name} names ${word}`).not.toContain(word);
+      }
+    }
+  });
+
+  it("the governing law records that a world is not an application", () => {
+    const law = readFileSync(LAW, "utf8");
+    for (const clause of [
+      "A PERSISTENT WORLD",
+      "ROUTED       != MATERIALIZED",
+      "MATERIALIZED != CONFIGURED",
+      "CONFIGURED   != EXTERNALLY_CONNECTED",
+      "IDEA != WORLD",
+      "UI != WORLD",
+      "DOMAIN_WORLD_TYPES_ADDED      = 0",
+      "WORLD_MARKETPLACE_CORES_ADDED = 0",
+      "FactoryWorld",
+      "RestaurantWorld",
+    ]) {
+      expect(law, clause).toContain(clause);
+    }
+  });
+});
+
 // ── The scoreboard, pinned ───────────────────────────────────────────────────
 
 describe("no scenario changes status silently", () => {
@@ -737,17 +823,17 @@ describe("no scenario changes status silently", () => {
       pass: {
         REPRESENTABLE: 162,
         ROUTABLE: 162,
-        PLANNABLE: 147,
-        EXECUTABLE: 92,
-        OBSERVABLE: 80,
-        VERIFIABLE: 74,
-        PRESENTABLE: 160,
-        PERSISTENT: 137,
+        PLANNABLE: 154,
+        EXECUTABLE: 99,
+        OBSERVABLE: 87,
+        VERIFIABLE: 81,
+        PRESENTABLE: 161,
+        PERSISTENT: 144,
       },
       blockedByProvider: 39,
       blockedByEnvironment: 2,
-      notYetImplemented: 33,
-      generalGaps: 11,
+      notYetImplemented: 26,
+      generalGaps: 12,
     });
   });
 

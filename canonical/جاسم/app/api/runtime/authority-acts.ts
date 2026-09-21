@@ -1161,3 +1161,87 @@ registerAuthorityAct({
     };
   },
 });
+
+/**
+ * «غيّر سياسة الموافقة في نظامي».
+ *
+ *   APPROVAL != CLICK
+ *
+ * A world's DATA and STRUCTURE change through the conversation. Its POLICIES,
+ * its PARTICIPANTS and its COMMERCIAL rules do not: those decide what everyone
+ * else in the scope may do, and a person authorizes them the way they
+ * authorize every other such thing here — by reading a statement the runtime
+ * rendered from canonical state and citing its digest.
+ *
+ * There is no second approval mechanism for worlds. This is the one that
+ * already existed, with one more registration in it.
+ */
+registerAuthorityAct({
+  id: "world.evolve",
+  headline: "تغيير يحكم ما يفعله الآخرون في هذا العالم",
+  params: [
+    { key: "worldId", label: "العالم", kind: "STRING", required: true },
+    { key: "expectedVersion", label: "النسخة الحالية", kind: "STRING", required: true },
+    // An OBJECT rather than a bare list, because the shared parameter kinds
+    // have no "list of objects" and inventing one for this act would widen a
+    // vocabulary every act shares.
+    { key: "changeSet", label: "التغييرات", kind: "OBJECT", required: true },
+  ],
+  // The narrowest verb that covers every class this act carries. A POLICY
+  // change needs `manage_policies`, and the world runtime checks the class's
+  // own permission again before it commits — this is the act's floor, not a
+  // replacement for that check.
+  requiredPermission: "manage_policies",
+  reversibility: "REVERSIBLE",
+  residualNote:
+    "A world version is never erased: the change becomes a new version and the one before it stays readable.",
+  expand: async (params, scope) => {
+    const { readWorld, dominantClass, classOf, WorldChangeSchema } = await import("./world-runtime");
+    const { z } = await import("zod");
+    const world = await readWorld({ worldId: String(params.worldId), scope });
+    if (!world) throw new AuthorityActError("No such world in this scope.", "NOT_FOUND");
+    const changes = z
+      .object({ changes: z.array(WorldChangeSchema).min(1) })
+      .safeParse(params.changeSet);
+    if (!changes.success) throw new AuthorityActError("The change set is not well formed.", "INVALID");
+    return {
+      world: world.title,
+      currentVersion: world.version,
+      // What it IS, decided here. A change set that called itself something
+      // milder is rendered as what it actually does.
+      mutationClass: dominantClass(changes.data.changes),
+      changes: changes.data.changes.map(
+        (change) =>
+          `${change.operation} ${change.target} «${change.key}» (${classOf(change)})`,
+      ),
+      // Said out loud in the statement, because it is the part a person is
+      // most likely to assume the other way round.
+      residual: "لا يُحذف أي شيء: ينشأ إصدار جديد وتبقى النسخة السابقة قابلة للقراءة.",
+    };
+  },
+  perform: async ({ params, scope }) => {
+    const { applyWorldChangeSet, WorldChangeSchema } = await import("./world-runtime");
+    const { z } = await import("zod");
+    const { changes } = z
+      .object({ changes: z.array(WorldChangeSchema).min(1) })
+      .parse(params.changeSet);
+    const applied = await applyWorldChangeSet({
+      worldId: String(params.worldId),
+      scope,
+      changes,
+      expectedVersion: String(params.expectedVersion),
+      requestKey: `act:${String(params.worldId)}:${String(params.expectedVersion)}`,
+      // The act IS the authority. Nothing else in this codebase may pass this.
+      authorityGranted: true,
+    });
+    return { worldId: applied.record.worldId, version: applied.record.version };
+  },
+  readback: async ({ result, scope }) => {
+    const { readWorld } = await import("./world-runtime");
+    const world = await readWorld({ worldId: String(result.worldId), scope });
+    if (!world) return { occurred: false, detail: "That world is no longer in this scope." };
+    return world.version === result.version
+      ? { occurred: true, detail: `The world stands at ${world.version}.` }
+      : { occurred: false, detail: `The world reads ${world.version}, not ${String(result.version)}.` };
+  },
+});

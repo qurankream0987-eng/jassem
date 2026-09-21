@@ -131,9 +131,14 @@ const NOT_IMPLEMENTED: ReadonlySet<SemanticRoute> = new Set<SemanticRoute>([
   // `readCanonicalData`, and its unavailable cases are the data layer's own —
   // UNAVAILABLE for an unregistered resource, DENIED for a field, and so on —
   // which are far more specific than "not built".
+  // PERSISTENT_WORLD left this set when the world runtime landed. A turn now
+  // validates a definition, authorizes it against the acting scope, commits it
+  // atomically and reads it back before anybody is told it exists. Its
+  // unavailable cases are that runtime's own — NEEDS_INPUT for a definition
+  // that never arrived, DENIED for a rule of the scope, CONFLICT for a stale
+  // version — and every one of them is more specific than "not built".
   "TRUSTED_PRODUCT_ACTION",
   "MONITORING",
-  "PERSISTENT_WORLD",
 ]);
 
 // ── Precedence, as data ──────────────────────────────────────────────────────

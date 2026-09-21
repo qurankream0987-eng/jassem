@@ -28,6 +28,16 @@ import {
   submitProductAction,
 } from "../runtime/product-actions";
 import {
+  WorldError,
+  listWorlds,
+  projectWorld,
+  readWorld,
+  readWorldVersion,
+  worldEventsSince,
+  worldHistory,
+} from "../runtime/world-runtime";
+import { resolveActingScope } from "../runtime/actor-scope";
+import {
   actOnRuntimeTask,
   archiveRuntimeConversation,
   attachRuntimeArtifactToBubble,
@@ -136,9 +146,51 @@ function canGenerate(source: string): boolean {
   return true;
 }
 
+/**
+ * The scope this request acts as — resolved from MEMBERSHIP, never from what
+ * was asked for.
+ *
+ * A caller may name an organization. Whether it may act as one is decided by
+ * `resolveActingScope` against real memberships, and naming a scope one does
+ * not belong to is DENIED rather than honoured.
+ */
+async function requireScope(
+  ctx: { user?: { id: string | number } | null },
+  organizationId?: string,
+) {
+  const principalId = String(ctx.user!.id);
+  const resolution = await resolveActingScope({
+    principalId,
+    ...(organizationId ? { request: { intent: "ORGANIZATION" as const, organizationId } } : {}),
+  });
+  if (resolution.status !== "RESOLVED") {
+    throw new WorldError(
+      resolution.status === "DENIED"
+        ? resolution.message
+        : "That reference does not identify one scope you may act as.",
+      "FORBIDDEN",
+    );
+  }
+  return resolution.scope;
+}
+
 // ── Error mapping ─────────────────────────────────────────────────────────────
 
 function handleRuntimeError(error: unknown): never {
+  if (error instanceof WorldError) {
+    throw new TRPCError({
+      code:
+        error.code === "FORBIDDEN" || error.code === "NEEDS_AUTHORITY"
+          ? "FORBIDDEN"
+          : error.code === "NOT_FOUND"
+            ? "NOT_FOUND"
+            : error.code === "CONFLICT" || error.code === "STATE"
+              ? "CONFLICT"
+              : "BAD_REQUEST",
+      message: error.message,
+      cause: error,
+    });
+  }
   if (error instanceof ProductActionError) {
     throw new TRPCError({
       code:
@@ -1284,6 +1336,119 @@ export const runtimeRouter = router({
           detail: outcome.detail,
           actionSessionId: outcome.session.id,
         };
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  // ── The persistent world, read back ──────────────────────────────────────
+  //
+  //   UI != WORLD · UI != CANONICAL STATE
+  //
+  // Reads only. A world is CHANGED through the conversation or through the
+  // `world.evolve` authority act, and a second mutation door beside those
+  // would be a second answer to "who decided this".
+  //
+  // The same procedures serve the web app and the mobile app. Presentation
+  // adapts; semantics do not, and neither surface has a runtime of its own.
+
+  /** The world as canonical state says it is, now, after any reload. */
+  worldRead: authedQuery
+    .input(
+      z.object({
+        worldId: z.string().trim().min(1).max(80),
+        organizationId: z.string().trim().min(1).max(64).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const scope = await requireScope(ctx, input.organizationId);
+        const record = await readWorld({ worldId: input.worldId, scope });
+        if (!record) throw new WorldError("No such world in this scope.", "NOT_FOUND");
+        return { world: record, projection: projectWorld(record) };
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  worldList: authedQuery
+    .input(z.object({ organizationId: z.string().trim().min(1).max(64).optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      try {
+        const scope = await requireScope(ctx, input?.organizationId);
+        return { worlds: await listWorlds(scope) };
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  /** Every version, including the superseded ones. Nothing was erased. */
+  worldHistory: authedQuery
+    .input(
+      z.object({
+        worldId: z.string().trim().min(1).max(80),
+        organizationId: z.string().trim().min(1).max(64).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const scope = await requireScope(ctx, input.organizationId);
+        return { versions: await worldHistory({ worldId: input.worldId, scope }) };
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  /** One superseded version, still readable. */
+  worldVersion: authedQuery
+    .input(
+      z.object({
+        worldId: z.string().trim().min(1).max(80),
+        version: z.string().trim().regex(/^\d+\.\d+\.\d+$/),
+        organizationId: z.string().trim().min(1).max(64).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const scope = await requireScope(ctx, input.organizationId);
+        const definition = await readWorldVersion({
+          worldId: input.worldId,
+          scope,
+          version: input.version,
+        });
+        if (!definition) throw new WorldError("No such version of this world.", "NOT_FOUND");
+        return { version: input.version, definition };
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  /**
+   * The durable ledger, oldest first, resumable from a cursor.
+   *
+   * This is the realtime PREPARATION and none of the transport: a later
+   * subscriber resumes from `after` and misses nothing. Today a surface polls
+   * it, and neither surface claims «مباشر».
+   */
+  worldEvents: authedQuery
+    .input(
+      z.object({
+        worldId: z.string().trim().min(1).max(80),
+        after: z.number().int().nonnegative().optional(),
+        limit: z.number().int().min(1).max(200).optional(),
+        organizationId: z.string().trim().min(1).max(64).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const scope = await requireScope(ctx, input.organizationId);
+        const ledger = await worldEventsSince({
+          scope,
+          worldId: input.worldId,
+          ...(input.after !== undefined ? { after: input.after } : {}),
+          ...(input.limit !== undefined ? { limit: input.limit } : {}),
+        });
+        return { events: ledger, cursor: ledger.at(-1)?.cursor ?? input.after ?? 0 };
       } catch (error) {
         handleRuntimeError(error);
       }

@@ -155,13 +155,12 @@ describe("with no plan, the envelope still decides — unchanged", () => {
 });
 
 describe("an unbuilt mechanism says so", () => {
-  it.each(["TRUSTED_PRODUCT_ACTION", "MONITORING", "PERSISTENT_WORLD"] as const)(
+  it.each(["TRUSTED_PRODUCT_ACTION", "MONITORING"] as const)(
     "%s reports NOT_IMPLEMENTED",
     (planKind) => {
       const map = {
         TRUSTED_PRODUCT_ACTION: "IDENTITY_CHANGE",
         MONITORING: "MONITORING",
-        PERSISTENT_WORLD: "PERSISTENT_WORLD",
       } as const;
       const decision = route({
         envelopeKind: "direct_action",
@@ -170,6 +169,19 @@ describe("an unbuilt mechanism says so", () => {
       expect(decision.downstream).toBe("NOT_IMPLEMENTED");
     },
   );
+
+  it("PERSISTENT_WORLD is AVAILABLE now that the world runtime exists", () => {
+    // It left NOT_IMPLEMENTED for the same reason DIRECT_READ did: the
+    // mechanism behind the route was built. A turn validates the definition,
+    // authorizes it against the acting scope, commits it in one transaction
+    // and reads it back — and its refusals (NEEDS_INPUT, DENIED, CONFLICT)
+    // are that runtime's own, which say far more than "not built".
+    const decision = route({ envelopeKind: "direct_action", plan: planOf("PERSISTENT_WORLD") });
+    expect(decision.route).toBe("PERSISTENT_WORLD");
+    expect(decision.downstream).toBe("AVAILABLE");
+    // And it still routes AWAY from execution: a durable system is not a DAG.
+    expect(decision.reason).toBe("PLAN_PERSISTENT_WORLD");
+  });
 
   it("DIRECT_READ is AVAILABLE now that the data layer exists", () => {
     // It left NOT_IMPLEMENTED when `readCanonicalData` landed. Its unavailable

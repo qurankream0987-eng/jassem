@@ -195,3 +195,77 @@ export async function dispatchTrustedAction(
   const result = await call<unknown>("runtime.dispatchAction", "POST", action);
   return TrustedDispatchResultSchema.parse(result);
 }
+// ── The persistent world ─────────────────────────────────────────────────────
+//
+//   UI != WORLD · UI != CANONICAL STATE
+//
+// The SAME `runtime.*` procedures the web app calls. There is no
+// MobileWorldRuntime and no world semantics on this side of the wire:
+// presentation adapts, meaning does not. A world read here after a cold start
+// is the world the server has, not something restored from local state.
+
+export type MobileWorldSummary = {
+  worldId: string;
+  title: string;
+  status: string;
+  version: string;
+  entityCount: number;
+  policyCount: number;
+  workflowCount: number;
+  updatedAt: string;
+};
+
+export type MobileWorldVersion = {
+  version: string;
+  status: string;
+  parentVersion?: string;
+  changeRequest?: string;
+  createdAt: string;
+};
+
+export async function listWorlds(organizationId?: string): Promise<MobileWorldSummary[]> {
+  const result = await call<{ worlds: MobileWorldSummary[] }>(
+    "runtime.worldList",
+    "GET",
+    organizationId ? { organizationId } : undefined,
+  );
+  return result.worlds;
+}
+
+export function getWorld(
+  worldId: string,
+  organizationId?: string,
+): Promise<{ world: MobileWorldSummary; projection: Record<string, unknown> }> {
+  return call("runtime.worldRead", "GET", {
+    worldId,
+    ...(organizationId ? { organizationId } : {}),
+  });
+}
+
+/** Every version, superseded ones included. Nothing was erased to make room. */
+export async function getWorldHistory(
+  worldId: string,
+  organizationId?: string,
+): Promise<MobileWorldVersion[]> {
+  const result = await call<{ versions: MobileWorldVersion[] }>("runtime.worldHistory", "GET", {
+    worldId,
+    ...(organizationId ? { organizationId } : {}),
+  });
+  return result.versions;
+}
+
+/**
+ * The durable ledger, resumed from a cursor.
+ *
+ * Polled. Nothing here subscribes, and nothing here says «مباشر» — the
+ * transport is a separate capability and this is only the cursor it will use.
+ */
+export async function getWorldEvents(
+  worldId: string,
+  after?: number,
+): Promise<{ events: { cursor: number; type: string; version: string; message: string }[]; cursor: number }> {
+  return call("runtime.worldEvents", "GET", {
+    worldId,
+    ...(after !== undefined ? { after } : {}),
+  });
+}
