@@ -304,6 +304,52 @@ describe("the provider binding contract", () => {
     expect(CODE).toMatch(/supported\.has\(/);
   });
 
+  it("the address is written at one boundary, and it is the trusted one", () => {
+    //   MODEL_OUTPUT_TO_BINDING_ENDPOINT_DIRECT_PATH = 0
+    //
+    // `beginProviderSetup` is reached from a conversation and has no endpoint
+    // parameter at all. `completeProviderSetup` is reached only from the
+    // trusted product action, and is the one place an address is validated
+    // and stored — in the same statement as the credential reference.
+    const begin = CODE.slice(
+      CODE.indexOf("export async function beginProviderSetup"),
+      CODE.indexOf("export async function completeProviderSetup"),
+    );
+    // No parameter for one, and no read of one either.
+    expect(begin).not.toMatch(/endpointUrl\?:/);
+    expect(begin).not.toMatch(/input\.endpointUrl/);
+    expect(begin).not.toMatch(/assertReachableEndpoint/);
+    // What it writes instead, explicitly: nothing.
+    expect(begin).toMatch(/endpointUrl:\s*null/);
+
+    const complete = CODE.slice(
+      CODE.indexOf("export async function completeProviderSetup"),
+      CODE.indexOf("export async function authenticateBinding"),
+    );
+    expect(complete).toMatch(/assertReachableEndpoint\(input\.endpointUrl\)/);
+    // A FIXED provider's address is refused, not ignored.
+    expect(complete).toMatch(/else if \(input\.endpointUrl\)/);
+
+    // And the whole runtime validates an address in exactly one place.
+    expect((CODE.match(/assertReachableEndpoint\(/g) ?? []).length).toBe(2);
+  });
+
+  it("the conversation schema has nowhere to put an address", () => {
+    //   MODEL_CAN_SET_PROVIDER_ENDPOINT = NO
+    const runtime = read("api/runtime/jasim-runtime.ts").replace(
+      /\/\*[\s\S]*?\*\/|\/\/.*$/gm,
+      "",
+    );
+    const schema = runtime.slice(
+      runtime.indexOf("export const ProviderBindingRequestSchema"),
+      runtime.indexOf("const WorldRequestSchema"),
+    );
+    expect(schema).not.toMatch(/endpoint/i);
+    expect(schema).not.toMatch(/url/i);
+    // What it DOES carry is intent and a registered definition id.
+    expect(schema).toMatch(/definitionId/);
+  });
+
   it("standing is re-read on every use, never remembered from setup", () => {
     //   FORMER_MEMBER_MANAGES_ORG_BINDING = 0 · CROSS_SCOPE_BINDING = 0
     //

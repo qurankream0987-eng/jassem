@@ -127,6 +127,69 @@ holds the credentials. The `ProviderCredentialVault` interface exists so a
 deployment can substitute a real key-management backend with no caller changing.
 **That substitution is the open item of this phase.**
 
+## Who chooses where a credential is sent
+
+A review of the first cut found one narrow authority leak, and it is worth
+recording rather than quietly fixing.
+
+The model-visible request schema carried `endpointUrl`, and the conversation
+boundary passed it into `beginProviderSetup`, which network-checked it and
+persisted it as the address the credential would later be used against. The
+network check was correct. It was answering a different question.
+
+```
+SSRF_SAFE                != AUTHORIZED_DESTINATION
+MODEL_SUGGESTED_ENDPOINT != TRUSTED_ENDPOINT
+CONVERSATION_URL         != CREDENTIAL_TARGET
+```
+
+A perfectly valid public HTTPS address can still be the wrong address, and
+nothing about appearing in a conversation makes it the right one. So the field
+is gone from the schema entirely, and `beginProviderSetup` has no parameter for
+an address at all: for a provider whose endpoint is declared at setup, it leaves
+the address empty and reports that the trusted surface must collect it.
+
+**There is no "suggestion" path, and the reason is structural.** The trusted
+presentation contract carries no value, ever — not a default, not a previous
+entry, not a hint. A model-suggested prefill would have had nowhere to go, so
+removal was the only honest option rather than one of two.
+
+The address is now collected by `provider.connect`, beside the credential it
+targets, in one submission against one binding under one re-read of standing:
+
+```
+TRUSTED_CREDENTIAL + UNTRUSTED_DESTINATION = INVALID CONNECTION
+```
+
+That co-location is what makes `CROSS_BINDING_ENDPOINT_SWAP = 0` structural
+rather than checked — there is no pair of halves to mismatch. A connection whose
+address is missing seals no credential; an address supplied for a `FIXED`
+provider is **refused rather than ignored**, because silently dropping it would
+leave whoever sent it believing it took effect.
+
+Two smaller things closed at the same source: a provider base endpoint carrying
+a query string, a fragment, or an authority credential is refused — that being
+exactly where a secret would sit if one ever reached a URL, it is better refused
+than scrubbed out of the audit afterwards. The audit records the host and
+nothing else.
+
+And because a destination somebody chose does not authorize every destination
+*it* can point at, `assertWithinEndpoint` is the contract an adapter calls
+before following a redirect. No transport exists yet, so it is a contract — but
+one with a function behind it and a test on it, not a paragraph.
+
+```
+MODEL_CAN_SET_PROVIDER_ENDPOINT = NO
+MODEL_OUTPUT_TO_BINDING_ENDPOINT_DIRECT_PATH = 0
+MODEL_CHOSEN_PUBLIC_ENDPOINT_ACCEPTED = 0
+CHAT_URL_AUTOMATICALLY_BECOMES_CREDENTIAL_DESTINATION = 0
+MODEL_OVERRIDES_FIXED_PROVIDER_ENDPOINT = 0
+CREDENTIAL_REDIRECT_TO_UNTRUSTED_ORIGIN = 0
+```
+
+The model may still understand «اربطك بموقعي», and a person may still write
+their address in the conversation. Understanding is not deciding.
+
 ## Where this is stricter than what it reuses
 
 The shared network boundary permits a loopback host by name, and for its own
@@ -137,6 +200,10 @@ forms that guard lets through are refused here before resolution; everything
 else — private ranges, link-local, cloud metadata, carrier-grade NAT, and any
 *name* that resolves into one, with the resolution pinned against rebinding — is
 the shared guard's, verified by test against it rather than reimplemented.
+
+Both halves are required, and they answer different questions. The network
+boundary answers *is this address safe to contact*. The trusted surface answers
+*did the authorized person actually choose it*. Neither substitutes for the other.
 
 ## A provider's answer is evidence, and evidence is not a verdict
 

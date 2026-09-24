@@ -986,6 +986,20 @@ registerProductAction({
   risk: "HIGH",
   fields: [
     { key: "bindingId", label: "الربط", kind: "TEXT", required: true },
+    // WHERE THE CREDENTIAL WILL BE SENT.
+    //
+    // Not sensitive, and still the most authority-bearing field here. It is
+    // collected on this surface, beside the credential, in one submission —
+    // because a credential typed somewhere trusted and a destination chosen
+    // somewhere else are two halves nobody checked against each other.
+    //
+    //   MODEL_SUGGESTED_ENDPOINT != TRUSTED_ENDPOINT
+    //   SSRF_SAFE != AUTHORIZED_DESTINATION
+    //
+    // The presentation contract carries no value, ever — so nothing prefills
+    // this, and a URL the model read in the conversation cannot arrive here
+    // except by a person typing it.
+    { key: "endpoint", label: "عنوان النظام", kind: "TEXT", required: false },
     { key: "apiKey", label: "مفتاح الواجهة", kind: "SENSITIVE", required: false },
     { key: "username", label: "اسم المستخدم", kind: "SENSITIVE", required: false },
     { key: "password", label: "كلمة المرور", kind: "SENSITIVE", required: false },
@@ -1009,16 +1023,28 @@ registerProductAction({
       if (typeof value === "string" && value.length > 0) material[key] = value;
     }
     try {
+      const endpoint = typeof values.endpoint === "string" ? values.endpoint.trim() : "";
       const done = await completeProviderSetup({
         bindingId: String(values.bindingId ?? ""),
         principalId: String(actor.id),
         material,
+        // Whether it is REQUIRED, and whether it is even allowed, is read from
+        // the provider definition by the runtime. A field submitted for a
+        // provider whose address is registry code is refused, not dropped.
+        ...(endpoint ? { endpointUrl: endpoint } : {}),
       });
       return {
         outcome: "EXECUTED",
         // The lifecycle, said plainly, because this is exactly the moment
         // somebody would otherwise believe they are connected.
-        record: { lifecycle: done.lifecycle },
+        // The host, where there was one. Never a path and never a query.
+        // The host replaces the submitted address in the session record. The
+        // runtime already refused a query, a fragment and an authority
+        // credential, so what is dropped here is only the path.
+        record: {
+          lifecycle: done.lifecycle,
+          ...(done.endpointHost ? { endpoint: done.endpointHost } : {}),
+        },
         detail: "A credential reference was attached. The connection is not verified yet.",
       };
     } catch (error) {

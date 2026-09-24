@@ -98,17 +98,36 @@ describe("a product action opens a door and carries no secret", () => {
       }
     }
     // The surface a provider credential is typed into. Every field that could
-    // carry material is SENSITIVE, the only field that is not carries an
-    // identifier the runtime re-authorizes anyway, and it is single-use.
+    // carry material is SENSITIVE, and it is single-use.
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: `bindingId` is the only non-sensitive field.
+    // WHY_IT_IS_WRONG: it is not wrong — it is the assertion added one phase
+    //   ago precisely so that a new collected field could not appear
+    //   unnoticed, and it is what flagged this one.
+    // NEW_EXPECTATION: `bindingId` and `endpoint`, with `endpoint` named as
+    //   what it is: WHERE the credential in the same submission will be sent.
+    //   It moved here from the model-visible request schema, where the model
+    //   was choosing a credential's destination.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: the field it adds REMOVES an
+    //   authority from the model rather than granting one to the surface, and
+    //   the prefill assertion below is what keeps it that way — a value
+    //   carried into this presentation would let a suggestion be accepted by
+    //   somebody pressing submit without reading.
+    //
     const connect = actions.getProductAction("provider.connect")!;
     expect(connect.reauthentication).toBe(true);
     expect(connect.idempotency).toBe("SINGLE_USE");
     expect(connect.risk).toBe("HIGH");
     expect(
       connect.fields.filter((field) => field.kind !== "SENSITIVE").map((field) => field.key),
-    ).toEqual(["bindingId"]);
-    // And nothing it renders carries a value, same as every other action.
-    expect(JSON.stringify(actions.presentationFor(connect))).not.toContain("value");
+    ).toEqual(["bindingId", "endpoint"]);
+    // And nothing it renders carries a value, same as every other action —
+    // which is why there is no model-suggested prefill to accept silently.
+    const presented = actions.presentationFor(connect);
+    expect(JSON.stringify(presented)).not.toContain("value");
+    expect(presented.fields.every((field) => !("value" in field))).toBe(true);
   });
 
   it("the presentation contract carries labels and kinds, never a value", () => {

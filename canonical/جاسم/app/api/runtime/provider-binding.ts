@@ -230,6 +230,20 @@ export type ProviderResult =
  *
  * `discover` reports what this particular account can do, which is how
  * `VERIFIED != FULL ACCESS` becomes a number rather than a sentiment.
+ *
+ * ─── AND WHAT AN ADAPTER MAY NOT DO WITH THE ENDPOINT ───────────────────────
+ *
+ * The credential is opened for one call against one address. An adapter must
+ * never let it follow a redirect to another origin: a destination the
+ * authorized person chose does not authorize every destination that
+ * destination can point at.
+ *
+ *   CREDENTIAL_REDIRECT_TO_UNTRUSTED_ORIGIN = 0
+ *
+ * No transport is implemented in this phase, so this is a contract rather than
+ * a behaviour — but it is a contract with a function behind it:
+ * `assertWithinEndpoint` is what an adapter calls before following anything,
+ * and it is tested here rather than only described.
  */
 export type ProviderAdapter = {
   readonly authenticate: (context: ProviderCallContext) => Promise<AuthenticationOutcome>;
@@ -399,7 +413,45 @@ function assertPublicHttpsUrl(raw: string): URL {
   if (localName || localLiteral) {
     throw new ProviderBindingError("A provider endpoint must not be local.", "INVALID");
   }
+  // A BASE address, and nothing else. A query string or a fragment on a
+  // provider endpoint has no legitimate use and is exactly where a credential
+  // would sit if one ever reached a URL — so neither is accepted, rather than
+  // being accepted and then scrubbed out of the audit afterwards.
+  if (url.search || url.hash) {
+    throw new ProviderBindingError("A provider endpoint carries no query.", "INVALID");
+  }
+  // Credentials in the authority are the other place, and also refused.
+  if (url.username || url.password) {
+    throw new ProviderBindingError("A provider endpoint carries no credential.", "INVALID");
+  }
   return url;
+}
+
+/**
+ * May a credential issued for `endpoint` be sent to `candidate`?
+ *
+ * Only when it is the same origin. Not a parent domain, not a sibling
+ * subdomain, not the same host on another scheme or port — an origin, exactly.
+ * An adapter that follows a redirect calls this first; one that cannot answer
+ * yes must drop the credential rather than the check.
+ *
+ *   CREDENTIAL_REDIRECT_TO_UNTRUSTED_ORIGIN = 0
+ */
+export function assertWithinEndpoint(endpoint: string, candidate: string): void {
+  let target: URL;
+  let base: URL;
+  try {
+    base = new URL(endpoint);
+    target = new URL(candidate, endpoint);
+  } catch {
+    throw new ProviderBindingError("That is not an address.", "INVALID");
+  }
+  if (target.origin !== base.origin) {
+    throw new ProviderBindingError(
+      "A credential may not follow a redirect to another origin.",
+      "FORBIDDEN",
+    );
+  }
 }
 
 /** The full check, including what the name actually resolves to. */
@@ -570,8 +622,6 @@ export async function beginProviderSetup(input: {
   scopeId: string;
   definitionId: string;
   requestedCapabilities: readonly string[];
-  /** Custom providers only. Checked against the network boundary here. */
-  endpointUrl?: string;
   ttlMs?: number;
   now?: Date;
 }): Promise<SetupOpening> {
@@ -607,13 +657,21 @@ export async function beginProviderSetup(input: {
     throw new ProviderBindingError("A connection for nothing is not a connection.", "INVALID");
   }
 
-  let endpointUrl: string | null = null;
-  if (definition.endpoint.mode === "DECLARED_AT_SETUP") {
-    if (!input.endpointUrl) {
-      throw new ProviderBindingError("This provider needs an address.", "INVALID");
-    }
-    endpointUrl = await assertReachableEndpoint(input.endpointUrl);
-  }
+  // ── THE ADDRESS IS NOT DECIDED HERE ──────────────────────────────────────
+  //
+  //   MODEL_SUGGESTED_ENDPOINT != TRUSTED_ENDPOINT
+  //   CONVERSATION_URL != CREDENTIAL_TARGET
+  //   SSRF_SAFE != AUTHORIZED_DESTINATION
+  //
+  // A custom provider's address is where somebody's credential will be sent.
+  // Deciding that is an authority, and this function is reached from a
+  // conversation — so it leaves the address EMPTY and says that the trusted
+  // surface must collect it, beside the credential, in one submission.
+  //
+  // A public HTTPS address that passes every network check can still be the
+  // wrong address. Network safety answers «is this safe to contact»; only the
+  // trusted surface answers «did the authorized person choose this».
+  const declaresEndpoint = definition.endpoint.mode === "DECLARED_AT_SETUP";
 
   // Connecting the same system twice is a decision, not an accident. An
   // existing live binding is surfaced rather than silently duplicated.
@@ -653,7 +711,7 @@ export async function beginProviderSetup(input: {
     credentialVersion: 0,
     accountRef: null,
     accountLabel: null,
-    endpointUrl,
+    endpointUrl: null,
     setupSessionId: `pbs_${randomUUID()}`,
     setupExpiresAt: expiresAt,
     setupConsumedAt: null,
@@ -684,7 +742,12 @@ export async function beginProviderSetup(input: {
     bindingId: id,
     definitionId: definition.id,
     lifecycle: "SETUP_PENDING",
-    collects: AUTH_MATERIAL[definition.authMethod].map((key) => ({ key, sensitive: true })),
+    collects: [
+      // Not sensitive, and still trusted: it is typed by the person at the
+      // same surface, in the same submission, as the credential it targets.
+      ...(declaresEndpoint ? [{ key: "endpoint", sensitive: false }] : []),
+      ...AUTH_MATERIAL[definition.authMethod].map((key) => ({ key, sensitive: true })),
+    ],
     expiresAt,
   };
 }
@@ -705,8 +768,20 @@ export async function completeProviderSetup(input: {
   bindingId: string;
   principalId: string;
   material: Readonly<Record<string, string>>;
+  /**
+   * The address, for a provider whose endpoint is declared at setup.
+   *
+   * It arrives HERE and nowhere else: in the same trusted submission as the
+   * credential, against the same binding, under the same re-read of standing.
+   * That is deliberate — a credential collected on a trusted surface and sent
+   * to a destination chosen somewhere else is not a trusted connection, it is
+   * two halves that were never checked against each other.
+   *
+   *   TRUSTED_CREDENTIAL + UNTRUSTED_DESTINATION = INVALID CONNECTION
+   */
+  endpointUrl?: string;
   now?: Date;
-}): Promise<{ lifecycle: BindingLifecycle }> {
+}): Promise<{ lifecycle: BindingLifecycle; endpointHost: string | null }> {
   const now = input.now ?? new Date();
   const { row, definition } = await manageableBinding({
     bindingId: input.bindingId,
@@ -736,6 +811,24 @@ export async function completeProviderSetup(input: {
     material[key] = value;
   }
 
+  // ── THE ADDRESS, DECIDED HERE ────────────────────────────────────────────
+  //
+  // A FIXED provider's address is registry code and cannot be named from
+  // outside at all — an address supplied for one is refused rather than
+  // ignored, because silently dropping it would leave whoever sent it
+  // believing it took effect.
+  //
+  //   MODEL_OVERRIDES_FIXED_PROVIDER_ENDPOINT = 0
+  let endpointUrl: string | null = null;
+  if (definition.endpoint.mode === "DECLARED_AT_SETUP") {
+    if (!input.endpointUrl) {
+      throw new ProviderBindingError("This connection needs an address.", "INVALID");
+    }
+    endpointUrl = await assertReachableEndpoint(input.endpointUrl);
+  } else if (input.endpointUrl) {
+    throw new ProviderBindingError("This provider's address is not yours to set.", "INVALID");
+  }
+
   const version = row.credentialVersion + 1;
   // Rotation retires everything older first, so two credentials are never
   // ambiguous authority for one binding.
@@ -752,6 +845,9 @@ export async function completeProviderSetup(input: {
       credentialRef: reference,
       credentialVersion: version,
       setupConsumedAt: now,
+      // Written in the same statement as the credential reference. There is no
+      // window in which one is bound and the other is not.
+      ...(endpointUrl ? { endpointUrl } : {}),
     })
     .where(eq(scopeProviderBindings.id, row.id));
   await audit({
@@ -761,8 +857,14 @@ export async function completeProviderSetup(input: {
     definitionId: definition.id,
     lifecycle: "AUTHORIZED",
     message: `A credential reference was attached to ${definition.displayName}.`,
+    // The HOST, and only the host. Never a path, never a query string — a
+    // query string is where a secret would be if one were ever in a URL.
+    ...(endpointUrl ? { detail: new URL(endpointUrl).host } : {}),
   });
-  return { lifecycle: "AUTHORIZED" };
+  return {
+    lifecycle: "AUTHORIZED",
+    endpointHost: endpointUrl ? new URL(endpointUrl).host : null,
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

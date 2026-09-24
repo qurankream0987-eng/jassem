@@ -117,13 +117,15 @@ describe("connecting an external system", () => {
       scopeId,
       definitionId,
       requestedCapabilities: options.capabilities ?? ["READ"],
-      ...(options.endpointUrl ? { endpointUrl: options.endpointUrl } : {}),
       now: T0,
     });
     await binding.completeProviderSetup({
       bindingId: opening.bindingId,
       principalId,
       material: MATERIAL,
+      // The address goes in with the credential, at the trusted surface, or
+      // it does not go in at all.
+      ...(options.endpointUrl ? { endpointUrl: options.endpointUrl } : {}),
       now: at(MINUTE),
     });
     await binding.authenticateBinding({
@@ -631,26 +633,62 @@ describe("connecting an external system", () => {
 
   it("a custom endpoint cannot reach the inside of the network", async () => {
     //   UNTRUSTED_ENDPOINT_CAN_ACCESS_INTERNAL_NETWORK = 0
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: an unsafe address is refused by `beginProviderSetup`.
+    // WHY_IT_IS_WRONG: not the refusal — the BOUNDARY. `beginProviderSetup` is
+    //   reached from a conversation, so an address it accepted was an address
+    //   the model chose. Passing this test proved the network check worked and
+    //   said nothing about who picked the destination.
+    // NEW_EXPECTATION: the same addresses are refused at
+    //   `completeProviderSetup`, the trusted surface, where a person types
+    //   them — and `beginProviderSetup` has nowhere to put one at all.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: the old boundary let an SSRF-safe
+    //   public address through on the model's say-so. This one requires both:
+    //   technically safe, AND chosen by the authorized person.
+    //
+    const opening = await binding.beginProviderSetup({
+      principalId: ownerScope, scopeId: ownerScope, definitionId: "holdout.custom",
+      requestedCapabilities: ["READ"], now: T0,
+    });
     for (const endpoint of [
       "http://example.com/api",
       "https://127.0.0.1/api",
       "https://localhost/api",
+      "https://sub.localhost/api",
       "https://169.254.169.254/latest/meta-data/",
       "https://10.0.0.5/api",
       "https://192.168.1.1/api",
+      "https://172.16.0.9/api",
+      "https://100.64.0.1/api",
       "https://[::1]/api",
+      "https://[fd00::1]/api",
+      "https://[fe80::1]/api",
+      // Not a network problem: a base endpoint carrying a query or an
+      // authority credential is where a secret would sit if one reached a URL.
+      "https://api.example.com/v1?token=abc",
+      "https://user:pass@api.example.com/v1",
       "file:///etc/passwd",
       "not a url",
     ]) {
       await expect(
-        binding.beginProviderSetup({
-          principalId: ownerScope, scopeId: ownerScope, definitionId: "holdout.custom",
-          requestedCapabilities: ["READ"], endpointUrl: endpoint, now: T0,
+        binding.completeProviderSetup({
+          bindingId: opening.bindingId, principalId: ownerScope,
+          material: MATERIAL, endpointUrl: endpoint, now: at(MINUTE),
         }),
         endpoint,
       ).rejects.toMatchObject({ code: "INVALID" });
     }
-    expect(await bindingCount()).toBe(0);
+    // Nothing was sealed and nothing was bound by any of them.
+    expect(await credentialCount()).toBe(0);
+    const [row] = (
+      await handle.db.execute(
+        sql.raw(`SELECT "endpointUrl" AS url, lifecycle FROM scope_provider_bindings`),
+      )
+    ).rows as { url: string | null; lifecycle: string }[];
+    expect(row!.url).toBeNull();
+    expect(row!.lifecycle).toBe("SETUP_PENDING");
   });
 
   // ── J · PROVIDER OUTPUT IS EVIDENCE, NOT A VERDICT ───────────────────────

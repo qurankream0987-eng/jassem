@@ -5740,25 +5740,44 @@ const LivingObjectRequestSchema = z
  * «جاسم اربطك بموقعي» · «اربط المخزون» · «ما الأنظمة المربوطة؟» · «افصل هذا»
  *
  * Note what this schema has nowhere to put. There is no `scopeId`, no
- * `credential`, no `apiKey`, no `verified`, no `lifecycle` and no
- * `grantedCapabilities` — so the model cannot say whose the connection is,
- * cannot carry a secret, cannot declare it connected, and cannot decide what
- * it may do. `capabilities` is what the model believes was WANTED, which
- * verification later intersects with what the account can actually do.
+ * `credential`, no `apiKey`, no `verified`, no `lifecycle`, no
+ * `grantedCapabilities` — and no `endpointUrl`.
  *
+ * ─── WHY THE ADDRESS IS NOT HERE ────────────────────────────────────────────
+ *
+ * It was, and that was an authority leak. For a provider whose address is
+ * declared at setup, that URL is where somebody's credential gets sent — so a
+ * field for it here meant the MODEL chose the credential's destination. The
+ * address was network-checked, which is a different question:
+ *
+ *   SSRF_SAFE != AUTHORIZED_DESTINATION
+ *   MODEL_SUGGESTED_ENDPOINT != TRUSTED_ENDPOINT
+ *   CONVERSATION_URL != CREDENTIAL_TARGET
+ *
+ * A perfectly valid public HTTPS address can still be the wrong one, and
+ * nothing about a conversation makes it the right one. So the address is
+ * collected on the trusted surface, beside the credential it targets, and this
+ * schema has nowhere to put one — not even as a hint, because the trusted
+ * presentation contract carries no value, ever, so a hint would have nowhere
+ * to go either.
+ *
+ * A person may still write «موقعي هو https://…» and the model may still
+ * understand what they mean. Understanding is not deciding.
+ *
+ *   MODEL_CAN_SET_PROVIDER_ENDPOINT = NO
+ *   MODEL_OUTPUT_TO_BINDING_ENDPOINT_DIRECT_PATH = 0
+ *   CHAT_URL_AUTOMATICALLY_BECOMES_CREDENTIAL_DESTINATION = 0
  *   MODEL_CAN_SET_BINDING_SCOPE = NO
  *   MODEL_CAN_DECLARE_PROVIDER_CONNECTED = NO
  *   MODEL_SEES_PROVIDER_SECRET = 0
  */
-const ProviderBindingRequestSchema = z
+export const ProviderBindingRequestSchema = z
   .object({
     intent: z.enum(["CONNECT", "LIST", "CAPABILITIES", "DISCONNECT"]),
     /** A registered definition id. An unregistered one connects nothing. */
     definitionId: z.string().trim().min(1).max(120).optional(),
     bindingRef: z.string().trim().min(1).max(80).optional(),
     capabilities: z.array(z.string().trim().min(1).max(24)).max(16).optional(),
-    /** Custom providers only, and checked against the network boundary. */
-    endpointUrl: z.string().trim().min(1).max(512).optional(),
   })
   .strict();
 
@@ -7280,13 +7299,16 @@ export async function routeRuntimeConversationTurn(input: {
         scopeId: scope.scopeId,
         definitionId: providerRequest.definitionId,
         requestedCapabilities: providerRequest.capabilities ?? ["READ"],
-        ...(providerRequest.endpointUrl ? { endpointUrl: providerRequest.endpointUrl } : {}),
       });
       return respondRouted({
         // Every word of this is the lifecycle. Nothing is connected yet, and
         // the sentence says so rather than letting the link imply otherwise.
-        message:
-          "فتحتُ سطحاً آمناً لإدخال بيانات الاعتماد. لا تكتبها هنا في المحادثة. لن يصبح الربط قائماً بمجرد حفظها — بعدها أتحقق من الاتصال وممّا يسمح به فعلاً.",
+        // When the provider's address is declared at setup, the sentence says
+        // so — because the person is the one who decides it, and a sentence
+        // that did not ask would be a sentence that decided for them.
+        message: opening.collects.some((field) => field.key === "endpoint")
+          ? "فتحتُ سطحاً آمناً. أدخل فيه عنوان النظام وبيانات الربط — لا تكتبها هنا في المحادثة. العنوان الذي تكتبه هناك هو الذي سأستخدمه، ولن يصبح الربط قائماً بمجرد حفظه."
+          : "فتحتُ سطحاً آمناً لإدخال بيانات الاعتماد. لا تكتبها هنا في المحادثة. لن يصبح الربط قائماً بمجرد حفظها — بعدها أتحقق من الاتصال وممّا يسمح به فعلاً.",
         state: "SETUP_PENDING",
         cause: "PROVIDER_SETUP_OPENED",
         extra: {
