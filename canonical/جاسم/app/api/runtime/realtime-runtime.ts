@@ -70,7 +70,16 @@ export type RealtimeStream = (typeof REALTIME_STREAMS)[number];
  * `monitor`, and a client that learned one would have learned nothing it could
  * use.
  */
-export const REALTIME_ENTITY_KINDS = ["world", "monitor", "run", "conversation"] as const;
+export const REALTIME_ENTITY_KINDS = [
+  "world",
+  "monitor",
+  "run",
+  "conversation",
+  // A durable handle on a followed subject. It is a SUBJECT of change like any
+  // other, not a channel: no socket, no cursor and no reconnect protocol of its
+  // own comes with it.
+  "living_object",
+] as const;
 export type RealtimeEntityKind = (typeof REALTIME_ENTITY_KINDS)[number];
 
 export const REALTIME_CONNECTION_STATES = [
@@ -225,6 +234,10 @@ const SIGNAL_FIELDS: Readonly<Record<string, readonly string[]>> = Object.freeze
     "ACTIVE", "PAUSED", "TRIGGERED", "COMPLETED", "CANCELLED", "BLOCKED",
     "draft", "active", "paused", "deprecated", "archived",
   ],
+  // A follower's own state. Neither value says anything about the subject —
+  // HIDE != CANCEL and RESOLVED != ERASED hold on the wire too.
+  followState: ["FOLLOWING", "RESOLVED", "RELEASED"],
+  surfaceState: ["VISIBLE", "HIDDEN"],
 });
 
 /** Reference keys that name WHAT changed. Ids only — never contents. */
@@ -233,6 +246,7 @@ const SUBJECT_KEYS: Readonly<Record<string, RealtimeEntityKind>> = Object.freeze
   monitorId: "monitor",
   runId: "run",
   conversationId: "conversation",
+  livingObjectId: "living_object",
 });
 
 const REVISION_PATTERN = /^[0-9]+\.[0-9]+\.[0-9]+$/;

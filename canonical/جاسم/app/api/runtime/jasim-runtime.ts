@@ -190,6 +190,14 @@ function getGeneratedWorldService(): GeneratedWorldService {
 }
 import { orchestrateConversationCommerce } from "./block31";
 import {
+  LivingObjectError,
+  materializeLivingObject,
+  projectLivingObjects,
+  readLivingObject,
+  setLivingObjectState,
+  type LivingObjectSubjectKind,
+} from "./living-object-runtime";
+import {
   projectStructuredResult,
   routePresentation,
   type PresentationDefinition,
@@ -5689,6 +5697,26 @@ const MonitoringRequestSchema = z
  * `worldRef` is how «أضف له المورد» finds what «له» means — a canonical id the
  * conversation already carries, never an ordinal position on a screen.
  */
+/**
+ * A REQUEST about things this scope is FOLLOWING. Never a grant of one, and
+ * never a way to change one.
+ *
+ * There is no `subjectKind`, no `subjectId`, no `scopeId` and no `status` here,
+ * and there must not be: a model may say the person is asking about what they
+ * are following, and it may name a handle the conversation already carries. It
+ * may not say that something exists, whose it is, or what state it is in.
+ *
+ *   LLM != AUTHORITY
+ *   MODEL_INVENTED_SUBJECTS = 0
+ */
+const LivingObjectRequestSchema = z
+  .object({
+    intent: z.enum(["LIST", "READ", "HIDE", "RESOLVE"]),
+    /** For READ/HIDE/RESOLVE. A canonical handle id, never a screen position. */
+    livingObjectRef: z.string().trim().min(1).max(80).optional(),
+  })
+  .strict();
+
 const WorldRequestSchema = z
   .object({
     intent: z.enum(["MATERIALIZE", "MUTATE"]),
@@ -5938,6 +5966,7 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       productAction: ProductActionRequestSchema.optional(),
       world: WorldRequestSchema.optional(),
       monitoring: MonitoringRequestSchema.optional(),
+      livingObject: LivingObjectRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -6960,6 +6989,146 @@ export async function routeRuntimeConversationTurn(input: {
   // «راقب هذا وأخبرني إذا تغيّر» ends here and goes no further. A monitor is
   // durable state, not a run: nothing is executed, nothing is scheduled by
   // hand, and the condition is evaluated by the sweep that already exists.
+  /**
+   * A turn that left something durable behind gets a handle on it.
+   *
+   * ONE call site shape for every subject kind. What decides is the structural
+   * pair (sideEffect, durability) and the subject's own liveness — never what
+   * the turn was about. A discovery turn reaches this with an EPHEMERAL result
+   * and gets nothing, which is why:
+   *
+   *   EVERY_TURN_BECOMES_LIVING_OBJECT = NO
+   *
+   * Failing to make a handle never fails the turn: the world was materialized,
+   * the monitor was armed, and a surface convenience is not allowed to undo it.
+   */
+  const noteDurableSubject = async (
+    subjectKind: LivingObjectSubjectKind,
+    subjectId: string,
+    shape: { sideEffect: "NONE" | "INTERNAL_STATE" | "EXTERNAL"; durability: "EPHEMERAL" | "ONGOING" | "PERSISTENT" },
+  ): Promise<void> => {
+    try {
+      await materializeLivingObject({
+        principalId: scopeResolution.scope.principalId,
+        ...(scopeResolution.scope.kind === "ORGANIZATION"
+          ? { organizationId: scopeResolution.scope.organizationId }
+          : {}),
+        subjectKind,
+        subjectId,
+        sideEffect: shape.sideEffect,
+        durability: shape.durability,
+        conversationId: input.conversationId,
+      });
+    } catch {
+      // Deliberately swallowed. See above.
+    }
+  };
+
+  // ── LIVING OBJECTS ────────────────────────────────────────────────────────
+  //
+  //   LIVING_OBJECT != CANONICAL_SUBJECT
+  //   SURFACE_EXIT != LIVING_OBJECT_DELETE
+  //   HIDE != CANCEL · CANCEL != DELETE · RESOLVED != ERASED
+  //
+  // «أين وصل طلبي؟» ends here. What comes back is read from the canonical
+  // subjects in this call — nothing is remembered from the turn that created
+  // them — so an answer can never be more current than the thing it is about,
+  // and can never be current when the thing is unreadable.
+  //
+  // When this scope follows nothing, the answer is that it follows nothing. A
+  // question about an order does not conjure an order:
+  //
+  //   MODEL_INVENTED_SUBJECTS = 0
+  const livingObjectRequest = "livingObject" in envelope ? envelope.livingObject : undefined;
+  if (livingObjectRequest || routeDecision.route === "PERSISTENT_LIVING_OBJECT") {
+    const scope = scopeResolution.scope;
+    try {
+      const intent = livingObjectRequest?.intent ?? "LIST";
+
+      if (intent === "HIDE" || intent === "RESOLVE") {
+        if (!livingObjectRequest?.livingObjectRef) {
+          return respondRouted({
+            message: "لم يتضح أي متابعة تقصد. سمِّ لي واحدة مما أتابعه لك.",
+            state: "NEEDS_INPUT",
+            cause: "LIVING_OBJECT_REF_MISSING",
+          });
+        }
+        const updated = await setLivingObjectState({
+          principalId: scope.principalId,
+          ...(scope.kind === "ORGANIZATION" ? { organizationId: scope.organizationId } : {}),
+          id: livingObjectRequest.livingObjectRef,
+          ...(intent === "HIDE"
+            ? { surfaceState: "HIDDEN" as const }
+            : { followState: "RESOLVED" as const }),
+        });
+        return respondRouted({
+          // Said plainly, because the difference is the whole point: a surface
+          // stopped showing it, and nothing happened to the thing itself.
+          message:
+            intent === "HIDE"
+              ? "أخفيتها من الواجهة. لم ألغِ شيئاً ولم أحذف شيئاً — ما زالت قائمة كما هي."
+              : "علّمتها كمنتهية عندي. لم أمسح شيئاً، وسجلّها باقٍ كما هو.",
+          state: intent === "HIDE" ? "HIDDEN" : "RESOLVED",
+          cause: intent === "HIDE" ? "LIVING_OBJECT_HIDDEN" : "LIVING_OBJECT_RESOLVED",
+          extra: { livingObject: { id: updated.id, surfaceState: updated.surfaceState, followState: updated.followState } },
+        });
+      }
+
+      if (intent === "READ" && livingObjectRequest?.livingObjectRef) {
+        const one = await readLivingObject({
+          principalId: scope.principalId,
+          ...(scope.kind === "ORGANIZATION" ? { organizationId: scope.organizationId } : {}),
+          id: livingObjectRequest.livingObjectRef,
+        });
+        return respondRouted({
+          message: one.unreadable
+            ? "لم أعد أستطيع قراءة هذه المتابعة. لا أعرف حالتها، ولن أخمّنها."
+            : `«${one.title}» — الحالة الآن: ${one.status}.`,
+          state: one.unreadable ? "UNKNOWN" : "TRACKED",
+          cause: one.unreadable ? "LIVING_OBJECT_UNREADABLE" : "LIVING_OBJECT_READ",
+          extra: { livingObject: one },
+        });
+      }
+
+      const projection = await projectLivingObjects({
+        principalId: scope.principalId,
+        ...(scope.kind === "ORGANIZATION" ? { organizationId: scope.organizationId } : {}),
+      });
+      if (projection.objects.length === 0) {
+        return respondRouted({
+          // The honest empty answer. Nothing is invented to fill it.
+          message:
+            "لا أتابع لك شيئاً الآن. المتابعة تنشأ حين يبقى شيء قائم بعد انتهاء المحادثة — التزام، أو تنفيذ مستمر، أو مراقبة، أو نظام دائم — والبحث والمقارنة وحدهما لا ينشئان شيئاً.",
+          state: "NOTHING_TRACKED",
+          cause: "NO_LIVING_OBJECTS",
+          extra: { livingObjects: projection },
+        });
+      }
+      const unreadable = projection.objects.filter((entry) => entry.unreadable).length;
+      return respondRouted({
+        message: `أتابع لك ${projection.objects.length}: ${projection.objects
+          .filter((entry) => !entry.unreadable)
+          .map((entry) => `«${entry.title}» (${entry.status})`)
+          .join("، ")}${unreadable > 0 ? ` — و${unreadable} لم أعد أستطيع قراءتها، ولن أخمّن حالتها.` : "."}`,
+        state: "TRACKED",
+        cause: "LIVING_OBJECTS_LISTED",
+        extra: { livingObjects: projection },
+      });
+    } catch (error) {
+      if (error instanceof LivingObjectError) {
+        return respondRouted({
+          message:
+            error.code === "NOT_FOUND"
+              ? "لا أتابع شيئاً بهذا المعرّف."
+              : error.message,
+          state: "REFUSED",
+          cause: `LIVING_OBJECT_${error.code}`,
+        });
+      }
+      throw error;
+    }
+  }
+
   const monitoringRequest = "monitoring" in envelope ? envelope.monitoring : undefined;
   if (monitoringRequest || routeDecision.route === "MONITORING") {
     const scope = scopeResolution.scope;
@@ -6997,6 +7166,10 @@ export async function routeRuntimeConversationTurn(input: {
           request: monitoringRequest.monitor,
           scope,
           conversationId: input.conversationId,
+        });
+        await noteDurableSubject("monitor", monitor.monitorId, {
+          sideEffect: "INTERNAL_STATE",
+          durability: "ONGOING",
         });
         const projection = await projectMonitor(monitor);
         const delivery = projection.delivery as { unconfiguredChannels: string[] };
@@ -7105,6 +7278,10 @@ export async function routeRuntimeConversationTurn(input: {
           requestKey: userMessage.id,
           ...(conversationId !== undefined ? { conversationId } : {}),
           statedAs: input.content,
+        });
+        await noteDurableSubject("world", record.worldId, {
+          sideEffect: "INTERNAL_STATE",
+          durability: "PERSISTENT",
         });
         return respondRouted({
           message: created

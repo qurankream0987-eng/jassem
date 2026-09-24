@@ -998,3 +998,60 @@ only *"do the data, capabilities and providers needed to achieve this goal
 exist in the real world?"*
 
 That is the level this project is aiming at.
+
+---
+
+## §4.14 — A HANDLE ON SOMETHING THAT KEEPS GOING
+
+```
+LIVING_OBJECT != CANONICAL_SUBJECT
+LIVING_OBJECT != WORLD · != RUN · != MONITOR_EXECUTION
+DUPLICATE_OPERATIONAL_TRUTH = 0
+SURFACE_EXIT != LIVING_OBJECT_DELETE
+HIDE != CANCEL · CANCEL != DELETE · RESOLVED != ERASED
+EVERY_TURN_BECOMES_LIVING_OBJECT = NO
+```
+
+A living object is a **durable, authorized handle** on a canonical subject a
+scope is following. It is not the subject, and it is not a second place where
+the subject's truth lives.
+
+**The handle stores follower state and nothing else.** Who follows what, since
+when, why, whether the surface still shows it, and how far that follower has
+been reconciled. There is no status, title, progress or payload column, and
+there must never be one. Everything a follower is shown is read from the
+canonical row at projection time, so a handle cannot drift from, contradict or
+outlive the truth of the thing it points at.
+
+**A surface gesture never reaches the subject.** Hiding an order does not cancel
+it. Resolving a tracked obligation does not fulfil it. Releasing a handle does
+not erase what happened. Cancelling a subject belongs to the subject's own
+runtime, and no living object API may offer it.
+
+**Materialization is structural, never topical.** What decides is the pair
+(side effect, durability) together with the subject's own liveness. A turn earns
+a handle when it left something behind that keeps running, keeps owing, keeps
+watching or keeps existing. Reading, ranking and choosing leave nothing behind,
+however long the answer was and however much the person cared about it. A
+discovery turn therefore produces no living object, and this needs no list of
+verbs and no list of nouns.
+
+**Subject kinds are JASIM primitives, never domain nouns.** An order, a
+delivery, a booking, a job application and a price watch are not kinds of thing:
+they are terms inside an obligation, a held claim or a standing condition. A
+runtime that needed a type per noun would have no generality to speak of.
+
+**Authorization is re-asked, never remembered.** The subject answers who may see
+it. A handle grants no visibility; it only records that somebody already allowed
+to look is following. A revoked standing closes the projection on the next read.
+A guessed id and a forbidden one give the identical refusal, because a refusal
+that distinguishes them turns guessing into an existence oracle.
+
+**A vanished subject is UNKNOWN, never absent and never false.** When a subject
+can no longer be read, the handle stays and says so. It never invents a status
+for a thing it cannot see.
+
+**Following something is not seeing where it is.** A delivery can be followed
+like anything else; where the driver is standing is a separate question with a
+separate answer, and when nothing can observe it, a map must say so rather than
+draw a line.

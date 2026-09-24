@@ -224,16 +224,16 @@ claim this catalog exists to prevent.
 |---|---:|---:|---:|---:|---:|
 | **REPRESENTABLE** | 162 | 0 | 0 | 0 | 0 |
 | **ROUTABLE** | 162 | 0 | 0 | 0 | 0 |
-| **PLANNABLE** | 161 | 1 | 0 | 0 | 0 |
-| **EXECUTABLE** | 103 | 20 | 37 | 2 | 0 |
-| **OBSERVABLE** | 87 | 4 | 30 | 0 | 41 |
-| **VERIFIABLE** | 86 | 5 | 30 | 0 | 41 |
+| **PLANNABLE** | 162 | 0 | 0 | 0 | 0 |
+| **EXECUTABLE** | 110 | 13 | 37 | 2 | 0 |
+| **OBSERVABLE** | 88 | 3 | 30 | 0 | 41 |
+| **VERIFIABLE** | 87 | 4 | 30 | 0 | 41 |
 | **PRESENTABLE** | 162 | 0 | 0 | 0 | 0 |
 | **PERSISTENT** | 145 | 0 | 0 | 0 | 17 |
 
 Scenarios blocked by an absent **provider**: **41**
 Scenarios blocked by this **environment**: **2**
-Scenarios waiting on a **general capability**: **20**
+Scenarios waiting on a **general capability**: **13**
 
 ### General gaps
 
@@ -243,7 +243,6 @@ Each of these closes many scenarios at once. That is what makes it general.
 - `DATA_ERASURE_POLICY`
 - `DELEGATED_ACCESS_RUNTIME`
 - `EXTERNAL_DISCOVERY_PROVIDER`
-- `LIVING_OBJECT_RUNTIME`
 - `LOCATION_OBSERVATION`
 - `RESOURCE_SCOPED_PERMISSION_GRANT`
 - `SCOPE_BRANDING_SURFACE`
@@ -273,7 +272,7 @@ Each of these closes many scenarios at once. That is what makes it general.
 | `route.product_action` | سجّلني خروج | TRUSTED_PRODUCT_ACTION | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `route.plangraph` | رتب لي مؤتمرًا الشهر القادم | GENERAL_PLANGRAPH | ● | ● | ● | P | ● | ● | ● | ● | — |
 | `route.monitoring` | راقب السعر وأخبرني إذا نزل | MONITORING | ● | ● | ● | ● | ● | ● | ● | ● | — |
-| `route.living_object` | أين وصل طلبي؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ○ | ○ | ○ | ○ | ● | ● | LIVING_OBJECT_RUNTIME |
+| `route.living_object` | أين وصل طلبي؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `route.persistent_world` | أنشئ نظامًا دائمًا لشركتي | PERSISTENT_WORLD | ● | ● | ● | ● | ● | ● | ● | ● | — |
 
 ### DATA · 12
@@ -406,12 +405,12 @@ Each of these closes many scenarios at once. That is what makes it general.
 
 | id | goal | route | REPR | ROUT | PLAN | EXEC | OBSE | VERI | PRES | PERS | blocker |
 |---|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|
-| `realtime.order_status` | أين وصل طلبي؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ○ | ● | ● | ● | ● | LIVING_OBJECT_RUNTIME |
-| `realtime.delivery_tracker` | أرني السائق على الخريطة | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ○ | P | P | ● | ● | LOCATION_OBSERVATION |
-| `realtime.negotiation_session` | أين وصل التفاوض؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ○ | ● | ● | ● | ● | LIVING_OBJECT_RUNTIME |
-| `realtime.application` | أين وصل طلب التوظيف؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ○ | ● | ● | ● | ● | LIVING_OBJECT_RUNTIME |
-| `realtime.booking` | أين وصل الحجز؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ○ | ● | ● | ● | ● | LIVING_OBJECT_RUNTIME |
-| `realtime.price_monitor` | أرني مراقبة السعر | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ○ | ● | ● | ● | ● | LIVING_OBJECT_RUNTIME |
+| `realtime.order_status` | أين وصل طلبي؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `realtime.delivery_tracker` | أرني السائق على الخريطة | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ● | P | P | ● | ● | LOCATION_OBSERVATION |
+| `realtime.negotiation_session` | أين وصل التفاوض؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `realtime.application` | أين وصل طلب التوظيف؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `realtime.booking` | أين وصل الحجز؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `realtime.price_monitor` | أرني مراقبة السعر | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ● | ● | ● | ● | ● | — |
 
 ### WORLDS · 6
 

@@ -145,7 +145,15 @@ export const GENERAL_GAPS = [
    * authority nobody gave it.
    */
   "STANDING_ACTION_AUTHORITY",
-  "LIVING_OBJECT_RUNTIME",
+  // LIVING_OBJECT_RUNTIME was here and is closed: a scope now holds durable,
+  // authorized HANDLES on the canonical subjects it is following, each one
+  // read back from its own table on every projection. What the name was
+  // covering was four things — that only execution artifacts could be
+  // followed, that nothing recorded a follow, that the rail was owner-scoped
+  // rather than acting-scoped, and that a follower had no cursor — and all
+  // four are closed rather than renamed.
+  //
+  //   LIVING_OBJECT != CANONICAL_SUBJECT · DUPLICATE_OPERATIONAL_TRUTH = 0
   // PERSISTENT_WORLD_MATERIALIZATION was here and is closed: a turn validates
   // a definition, authorizes it against the acting scope, commits it in one
   // transaction with a version precondition, records a durable event and reads
@@ -421,10 +429,14 @@ const SCENARIOS_A_E: readonly Scenario[] = Object.freeze([
     providers: ["NONE"],
     sideEffect: "NONE",
     requiresApproval: false,
-    gates: ROUTED_ONLY({ PRESENTABLE: "PASS", PERSISTENT: "PASS" }),
-    currentBlocker: "LIVING_OBJECT_RUNTIME",
+    gates: gates({
+      REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+      EXECUTABLE: "PASS", OBSERVABLE: "PASS", VERIFIABLE: "PASS",
+      PRESENTABLE: "PASS", PERSISTENT: "PASS",
+    }),
+    currentBlocker: null,
     truthfulRuntimeState:
-      "A living-objects projection exists and is read-only; nothing keeps it live.",
+      "A turn reaches the living object runtime, which answers from DURABLE HANDLES this acting scope holds and reads each subject's truth from its own canonical table in the same call. With nothing followed, the answer is that nothing is followed — no order is conjured to fill the silence.",
     domainBranchesRequired: 0,
   },
   {
@@ -1543,7 +1555,7 @@ const REALTIME_SCENARIOS: readonly Scenario[] = Object.freeze(
       REPRESENTABLE: "PASS",
       ROUTABLE: "PASS",
       PLANNABLE: "PASS",
-      EXECUTABLE: "NOT_YET_IMPLEMENTED",
+      EXECUTABLE: "PASS",
       OBSERVABLE: id === "delivery_tracker" ? "BLOCKED_BY_PROVIDER" : "PASS",
       // A location that cannot be observed cannot be verified either, and a
       // MAP must never invent one.
@@ -1552,11 +1564,9 @@ const REALTIME_SCENARIOS: readonly Scenario[] = Object.freeze(
       PERSISTENT: "PASS",
     }),
     currentBlocker:
-      id === "delivery_tracker"
-        ? ("LOCATION_OBSERVATION" as const)
-        : ("LIVING_OBJECT_RUNTIME" as const),
+      id === "delivery_tracker" ? ("LOCATION_OBSERVATION" as const) : null,
     truthfulRuntimeState:
-      "A client now subscribes: an authorized socket carries durable change notifications and a cursor recovers what a disconnect missed. What is still missing is the LIVING OBJECT itself — a durable tracked thing «أين وصل طلبي؟» can be about — and the transport was never what that needed. It still never claims «مباشر» from being connected, and a MAP must never invent a location.",
+      "The living object exists: a durable, authorized handle on the canonical subject — an obligation, an exchange, a held claim, an engagement, a standing condition — that «أين وصل؟» is actually about, with its state read from that subject on every projection and never stored beside it. An authorized socket carries the change and a cursor recovers what a disconnect missed. It still never claims «مباشر» from being connected, and a MAP must never invent a location.",
     domainBranchesRequired: 0 as const,
   })),
 );

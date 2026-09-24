@@ -92,6 +92,7 @@ export function makeContinuationDispatcher(deps: {
 export type SweepResult = {
   temporal: { scanned: number; fired: number; rescheduled: number; completed: number; expired: number };
   monitors: { evaluated: number; triggered: number; replayed: number };
+  livingObjects: { scopes: number; changed: number; resolved: number };
   realtime: { connections: number; delivered: number; resyncRequired: number };
   reservationsExpired: number;
   assignmentOffersExpired: number;
@@ -122,6 +123,14 @@ export async function runBlock2Sweep(
   //   SECOND_SCHEDULERS_ADDED = 0
   const { sweepDueMonitors } = await import("../monitoring-runtime");
   const monitors = await sweepDueMonitors({ now });
+
+  // Living objects reconcile HERE, and BEFORE realtime delivery, so a handle
+  // whose subject moved reaches its follower inside the same cycle rather than
+  // the next one. Nothing is pushed into a handle: each one asks its subject.
+  //
+  //   SECOND_SCHEDULERS_ADDED = 0
+  const { sweepLivingObjects } = await import("../living-object-runtime");
+  const livingObjects = await sweepLivingObjects();
 
   // Realtime delivery and heartbeat are steps in the SAME duty cycle. A socket
   // that stopped answering is closed here, and the ledger is carried to every
@@ -158,6 +167,7 @@ export async function runBlock2Sweep(
   return {
     temporal,
     monitors,
+    livingObjects,
     realtime,
     reservationsExpired,
     assignmentOffersExpired,

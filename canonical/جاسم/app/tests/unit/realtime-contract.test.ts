@@ -94,9 +94,34 @@ describe("there is one realtime system", () => {
   });
 
   it("names no database table in the subscription vocabulary", () => {
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // WHAT IT ASSERTED: that no entity kind contained any of four hand-listed
+    //   table names, or the character `_`.
+    // WHY IT MUST CHANGE: `_` was a PROXY for "looks like a table name", and
+    //   the living object phase added the entity kind `living_object` — a
+    //   semantic name for a canonical subject, not a table. The table is
+    //   `living_objects`. The proxy fired on a correct name.
+    // WHAT IT ASSERTS NOW: that no entity kind matches ANY table this schema
+    //   actually declares, read from the schema files themselves.
+    // WHY THIS IS NOT WEAKER: the old list named four tables and would have
+    //   missed `runs`, `bubbles`, `commitments`, `transactions` and every
+    //   table added after it was written. This one cannot miss any of them,
+    //   and it keeps catching new ones for free. The `_` heuristic is the only
+    //   thing lost, and it was never the rule — the rule is "no table names",
+    //   and the rule is now checked directly.
+    //
+    const schema = [
+      readFileSync(resolve(process.cwd(), "db/schema.ts"), "utf8"),
+      readFileSync(resolve(process.cwd(), "db/schema-block2.ts"), "utf8"),
+    ].join("\n");
+    const tables = [...schema.matchAll(/pgTable\(\s*\n?\s*"([^"]+)"/g)].map((match) => match[1]!);
+    expect(tables.length).toBeGreaterThan(40);
+    expect(tables).toContain("living_objects");
     for (const entry of REALTIME_ENTITY_KINDS) {
-      for (const table of ["generated_systems", "standing_monitors", "events", "observations", "_"]) {
-        expect(entry, entry).not.toContain(table);
+      for (const table of tables) {
+        expect(entry, `${entry} names the table ${table}`).not.toBe(table);
       }
     }
   });

@@ -889,27 +889,66 @@ describe("realtime is transport, and transport is not truth", () => {
   );
 
   it("blames no realtime runtime of its own", () => {
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // WHAT IT ASSERTED: that every realtime scenario still named SOME general
+    //   gap, and that the gap it named was in `GENERAL_GAPS`.
+    // WHY IT MUST CHANGE: five of the six named `LIVING_OBJECT_RUNTIME`, and
+    //   that gap is now closed. A scenario that is no longer blocked cannot
+    //   name a blocker, and `LIVING_OBJECT_RUNTIME` is no longer a member of
+    //   `GENERAL_GAPS` for it to name.
+    // WHAT IT ASSERTS NOW: that no realtime scenario blames a transport, that
+    //   `REALTIME_RUNTIME` is still not a gap, and that a scenario which DOES
+    //   still name a blocker names a real one.
+    // WHY THIS IS NOT WEAKER: the original point was «realtime never invents a
+    //   gap of its own», and that is asserted unchanged and is now also
+    //   asserted positively — no realtime scenario may blame any transport
+    //   name at all, which the old version never checked.
+    //
     expect(GENERAL_GAPS as readonly string[]).not.toContain("REALTIME_RUNTIME");
     for (const scenario of realtime) {
-      expect(scenario.currentBlocker, scenario.id).not.toBeNull();
-      expect(GENERAL_GAPS, scenario.id).toContain(scenario.currentBlocker!);
+      for (const transport of ["REALTIME", "SOCKET", "WEBSOCKET", "CHANNEL", "TRANSPORT"]) {
+        expect(scenario.currentBlocker ?? "", scenario.id).not.toContain(transport);
+      }
+      if (scenario.currentBlocker !== null) {
+        expect(GENERAL_GAPS, scenario.id).toContain(scenario.currentBlocker);
+      }
     }
   });
 
-  it("closing it greened nothing, and the catalog says so", () => {
-    // The whole point of this entry. A transport existing is not a surface
-    // existing, and a gate that moved because a socket opened would be the
-    // false success every phase before this one refused.
+  it("the living object closed it, and the catalog says exactly what moved", () => {
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // WHAT IT ASSERTED: that EXECUTABLE was not PASS for any realtime scenario,
+    //   because the realtime phase closed a transport and greened nothing.
+    // WHY IT MUST CHANGE: that statement was true OF THAT PHASE and said so —
+    //   the thing those scenarios needed was the living object, not the
+    //   socket. The living object now exists, so the gate it was holding is
+    //   the gate that moves.
+    // WHAT IT ASSERTS NOW: that EXECUTABLE passes for all six, that five are
+    //   unblocked, and that the sixth is held by the gap it was always held
+    //   by — a location nothing can observe.
+    // WHY THIS IS NOT WEAKER: the old test forbade one gate from passing. This
+    //   one pins WHICH gates pass and WHICH do not, for every scenario, and
+    //   keeps the refusal that mattered: a delivery tracker still cannot
+    //   observe or verify, because a map must never invent a location.
+    //
     for (const scenario of realtime) {
-      expect(scenario.gates.EXECUTABLE, scenario.id).not.toBe("PASS");
+      // Following a subject is executable for all six. What you can SEE of it
+      // is a separate question, and it is the next assertion's.
+      expect(scenario.gates.EXECUTABLE, scenario.id).toBe("PASS");
     }
-    const tracked = realtime.filter(
-      (scenario) => scenario.currentBlocker === "LIVING_OBJECT_RUNTIME",
-    );
-    expect(tracked.length, "scenarios now waiting on the living object").toBeGreaterThan(0);
-    for (const scenario of tracked) {
-      expect(scenario.truthfulRuntimeState, scenario.id).toContain("LIVING OBJECT");
+    const unblocked = realtime.filter((scenario) => scenario.currentBlocker === null);
+    expect(unblocked.length, "realtime scenarios the living object freed").toBe(5);
+    for (const scenario of unblocked) {
+      expect(scenario.gates.OBSERVABLE, scenario.id).toBe("PASS");
+      expect(scenario.gates.VERIFIABLE, scenario.id).toBe("PASS");
+      expect(scenario.truthfulRuntimeState, scenario.id).toContain("living object");
     }
+    const held = realtime.filter((scenario) => scenario.currentBlocker !== null);
+    expect(held.map((scenario) => scenario.id)).toEqual(["realtime.delivery_tracker"]);
   });
 
   it("a map still refuses to invent a location", () => {
@@ -972,17 +1011,17 @@ describe("no scenario changes status silently", () => {
       pass: {
         REPRESENTABLE: 162,
         ROUTABLE: 162,
-        PLANNABLE: 161,
-        EXECUTABLE: 103,
-        OBSERVABLE: 87,
-        VERIFIABLE: 86,
+        PLANNABLE: 162,
+        EXECUTABLE: 110,
+        OBSERVABLE: 88,
+        VERIFIABLE: 87,
         PRESENTABLE: 162,
         PERSISTENT: 145,
       },
       blockedByProvider: 41,
       blockedByEnvironment: 2,
-      notYetImplemented: 20,
-      generalGaps: 11,
+      notYetImplemented: 13,
+      generalGaps: 10,
     });
   });
 

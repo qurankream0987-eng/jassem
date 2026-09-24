@@ -97,6 +97,14 @@ import {
 } from "../runtime/jasim-runtime";
 import { getActiveWorkspaceProjection } from "../runtime/active-workspace-projection";
 import { getLivingObjectsProjection } from "../runtime/living-object-projection";
+import {
+  LivingObjectError,
+  acknowledgeLivingObject,
+  livingObjectMetrics,
+  projectLivingObjects,
+  readLivingObject,
+  setLivingObjectState,
+} from "../runtime/living-object-runtime";
 import { resolveSubjectObservationPresentation } from "../runtime/observation-presentation";
 import { resolveObservableSubject } from "../runtime/subject-resolution";
 import { decidePresentation } from "../runtime/presentation-fabric";
@@ -193,6 +201,20 @@ async function requireScope(
 // ── Error mapping ─────────────────────────────────────────────────────────────
 
 function handleRuntimeError(error: unknown): never {
+  if (error instanceof LivingObjectError) {
+    throw new TRPCError({
+      code:
+        error.code === "FORBIDDEN"
+          ? "FORBIDDEN"
+          : error.code === "NOT_FOUND"
+            ? "NOT_FOUND"
+            : error.code === "CONFLICT" || error.code === "STATE"
+              ? "CONFLICT"
+              : "BAD_REQUEST",
+      message: error.message,
+      cause: error,
+    });
+  }
   if (error instanceof RealtimeError) {
     throw new TRPCError({
       code:
@@ -725,6 +747,134 @@ export const runtimeRouter = router({
           ownerId: ownerIdOf(ctx),
           limit: input?.limit,
         });
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  // ── LIVING OBJECTS ────────────────────────────────────────────────────────
+  //
+  // The DURABLE handles, scoped to the acting scope. The rail above stays what
+  // it always was — a derivation over this person's own execution artifacts —
+  // and these are the things a scope is following, whatever kind they are.
+  //
+  // Every read re-asks the subject; none of them trusts the handle.
+
+  /** What this scope is following, with each subject's truth read live. */
+  livingObjects: authedQuery
+    .input(
+      z
+        .object({
+          organizationId: z.string().trim().min(1).max(64).optional(),
+          includeHidden: z.boolean().optional(),
+          includeResolved: z.boolean().optional(),
+          limit: z.number().int().min(1).max(200).optional(),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        return await projectLivingObjects({
+          principalId: String(ctx.user!.id),
+          ...(input?.organizationId ? { organizationId: input.organizationId } : {}),
+          ...(input?.includeHidden === undefined ? {} : { includeHidden: input.includeHidden }),
+          ...(input?.includeResolved === undefined
+            ? {}
+            : { includeResolved: input.includeResolved }),
+          ...(input?.limit === undefined ? {} : { limit: input.limit }),
+        });
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  /** One handle. A handle in another scope is NOT_FOUND, never FORBIDDEN. */
+  livingObjectRead: authedQuery
+    .input(
+      z.object({
+        id: z.string().trim().min(1).max(80),
+        organizationId: z.string().trim().min(1).max(64).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        return await readLivingObject({
+          principalId: String(ctx.user!.id),
+          id: input.id,
+          ...(input.organizationId ? { organizationId: input.organizationId } : {}),
+        });
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  /**
+   * What the SURFACE does with a handle, and what the FOLLOWER says about it.
+   *
+   *   HIDE != CANCEL · CANCEL != DELETE · RESOLVED != ERASED
+   *
+   * There is no `cancel` and no `delete` here, and that is not an omission:
+   * cancelling the subject belongs to the subject's own runtime, and nothing a
+   * surface does may reach it through this door.
+   */
+  livingObjectSetState: authedQuery
+    .input(
+      z
+        .object({
+          id: z.string().trim().min(1).max(80),
+          organizationId: z.string().trim().min(1).max(64).optional(),
+          surfaceState: z.enum(["VISIBLE", "HIDDEN"]).optional(),
+          followState: z.enum(["FOLLOWING", "RESOLVED", "RELEASED"]).optional(),
+        })
+        .strict(),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        return await setLivingObjectState({
+          principalId: String(ctx.user!.id),
+          id: input.id,
+          ...(input.organizationId ? { organizationId: input.organizationId } : {}),
+          ...(input.surfaceState ? { surfaceState: input.surfaceState } : {}),
+          ...(input.followState ? { followState: input.followState } : {}),
+        });
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  /** Mark how far this follower has been reconciled. Never the subject's state. */
+  livingObjectAcknowledge: authedQuery
+    .input(
+      z
+        .object({
+          id: z.string().trim().min(1).max(80),
+          organizationId: z.string().trim().min(1).max(64).optional(),
+        })
+        .strict(),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        return await acknowledgeLivingObject({
+          principalId: String(ctx.user!.id),
+          id: input.id,
+          ...(input.organizationId ? { organizationId: input.organizationId } : {}),
+        });
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  /** Totals for an operator. Ids and counts; never contents. */
+  livingObjectMetrics: authedQuery
+    .input(
+      z
+        .object({ organizationId: z.string().trim().min(1).max(64).optional() })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const scope = await requireScope(ctx, input?.organizationId);
+        return await livingObjectMetrics(scope.scopeId);
       } catch (error) {
         handleRuntimeError(error);
       }

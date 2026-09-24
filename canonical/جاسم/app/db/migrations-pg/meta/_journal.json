@@ -148,6 +148,13 @@
       "when": 1788273600002,
       "tag": "0020_standing_monitors",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1788273600003,
+      "tag": "0021_living_objects",
+      "breakpoints": true
     }
   ]
 }

@@ -1034,3 +1034,80 @@ export const monitorEvaluations = pgTable(
 
 export type StandingMonitor = typeof standingMonitors.$inferSelect;
 export type MonitorEvaluation = typeof monitorEvaluations.$inferSelect;
+
+// ---------------------------------------------------------------------------
+// 23. LIVING OBJECTS — a durable, authorized HANDLE on a subject a scope is
+//     following.
+//
+//     LIVING_OBJECT != CANONICAL_SUBJECT
+//     LIVING_OBJECT != WORLD · != RUN · != MONITOR_EXECUTION
+//     DUPLICATE_OPERATIONAL_TRUTH = 0
+//
+//     There is no status, title, progress or payload column here, and there
+//     must never be one. Everything a follower is shown is read from the
+//     canonical row at projection time, so a handle can never disagree with
+//     the thing it points at. What is stored is FOLLOWER state: who follows
+//     what, since when, why, whether the surface still shows it, and how far
+//     this follower has been reconciled.
+//
+//     SURFACE_EXIT != LIVING_OBJECT_DELETE
+//     HIDE != CANCEL · CANCEL != DELETE · RESOLVED != ERASED
+// ---------------------------------------------------------------------------
+
+/** FOLLOWING · RESOLVED · RELEASED. None of the three touches the subject. */
+export type LivingObjectFollowState = "FOLLOWING" | "RESOLVED" | "RELEASED";
+
+/** VISIBLE · HIDDEN. Leaving a surface is a surface fact and nothing more. */
+export type LivingObjectSurfaceState = "VISIBLE" | "HIDDEN";
+
+export const livingObjects = pgTable(
+  "living_objects",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    /**
+     * The ACTING scope that follows it. An organization's tracked things are
+     * the organization's; a person's own scope does not see them, and a
+     * membership that was revoked stops seeing them too.
+     */
+    scopeId: varchar("scopeId", { length: 64 }).notNull(),
+    /** A canonical subject kind. Never a domain noun. */
+    subjectKind: varchar("subjectKind", { length: 32 }).notNull(),
+    subjectId: varchar("subjectId", { length: 128 }).notNull(),
+    followState: varchar("followState", { length: 16 })
+      .notNull()
+      .$type<LivingObjectFollowState>()
+      .default("FOLLOWING"),
+    surfaceState: varchar("surfaceState", { length: 16 })
+      .notNull()
+      .$type<LivingObjectSurfaceState>()
+      .default("VISIBLE"),
+    /** Where it came from, so a handle is explainable without replaying a turn. */
+    originConversationId: varchar("originConversationId", { length: 64 }),
+    materializedBy: varchar("materializedBy", { length: 100 }).notNull(),
+    /** Why it exists, from a closed structural vocabulary. */
+    reason: varchar("reason", { length: 32 }).notNull(),
+    /**
+     * Reconciliation cursor: what this FOLLOWER has already been shown. It is
+     * follower state, not subject state — the subject's own revision is always
+     * read from the subject.
+     */
+    lastSeenRevision: varchar("lastSeenRevision", { length: 120 }),
+    lastSeenAt: timestamp("lastSeenAt", { withTimezone: true }),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    // Materialization is idempotent because of this constraint, not because of
+    // a check somebody remembered to write.
+    uniqueIndex("living_objects_scope_subject_key").on(
+      table.scopeId,
+      table.subjectKind,
+      table.subjectId,
+    ),
+    index("living_objects_scope_idx").on(table.scopeId, table.followState, table.surfaceState),
+    index("living_objects_subject_idx").on(table.subjectKind, table.subjectId),
+    index("living_objects_updated_idx").on(table.scopeId, table.updatedAt),
+  ],
+);
+
+export type LivingObjectRow = typeof livingObjects.$inferSelect;
