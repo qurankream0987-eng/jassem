@@ -41,8 +41,8 @@ import {
   type VerificationAssertion,
   type VerificationRequestRow,
 } from "@db/schema-block2";
-import { economicExpressions } from "@db/schema";
 import { resolveActingScope } from "./actor-scope";
+import { subjectAuthority } from "./subject-authority";
 import {
   assessSufficiency,
   requirementKeyFor,
@@ -70,49 +70,31 @@ export const DEFAULT_REQUEST_TTL_MS = 24 * 60 * 60 * 1000;
 /**
  * WHERE THE AUTHORITY TO ANSWER COMES FROM.
  *
- * One resolver per canonical subject kind, each reading the subject's own row.
- * The scope entitled to answer is a PROPERTY OF THE SUBJECT, never something a
- * model named, a caller passed, or the latest person in a conversation.
+ * Not from here. `subject-authority` reads the canonical row of whatever kind
+ * of thing this is and says which scopes may speak for THIS property of it —
+ * across subject kinds whose ownership shapes genuinely differ.
  *
  *   MODEL_CAN_CHOOSE_AUTHORITATIVE_COUNTERPARTY = NO
  *   COUNTERPARTY_SOURCE_DERIVED_CANONICALLY = PASS
  *
- * An organization's offering resolves to the ORGANIZATION's scope, not to
- * whichever member happens to be nearby — so who may actually answer is then
- * decided by that scope's own membership, the way every other scoped act is
- * decided.
- *
- *   WRONG_ORG_MEMBER_AS_AUTHORITY = 0
+ * A subject nobody canonically speaks for has nobody to ask, and that is the
+ * answer rather than a fallback.
  */
-type AuthorityResolver = (subjectId: string) => Promise<{
-  scopeId: string;
-  revision: string | null;
-} | null>;
-
-const SUBJECT_AUTHORITY: Readonly<Record<string, AuthorityResolver>> = Object.freeze({
-  offering: async (subjectId) => {
-    const [row] = await db
-      .select({
-        ownerId: economicExpressions.ownerId,
-        version: economicExpressions.version,
-        status: economicExpressions.status,
-      })
-      .from(economicExpressions)
-      .where(eq(economicExpressions.id, subjectId))
-      .limit(1);
-    if (!row || row.status === "closed") return null;
-    return { scopeId: String(row.ownerId), revision: String(row.version) };
-  },
-});
-
-/** The scope that may answer about this subject, or none. */
 export async function authorityFor(
   subjectKind: string,
   subjectId: string,
+  property?: string,
 ): Promise<{ scopeId: string; revision: string | null } | null> {
-  const resolver = SUBJECT_AUTHORITY[subjectKind];
-  if (!resolver) return null;
-  return resolver(subjectId.trim());
+  const authority = await subjectAuthority({
+    subjectKind,
+    subjectId,
+    ...(property ? { property } : {}),
+  });
+  if (!authority) return null;
+  // One question goes to one place. Where several scopes are entitled, the
+  // first canonical one is asked — and every other entitled scope may still
+  // answer it, because entitlement is re-checked when somebody does.
+  return { scopeId: authority.scopeIds[0]!, revision: authority.revision };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -165,7 +147,11 @@ export async function requireCounterpartyEvidence(input: {
     return { status: "ALREADY_SUFFICIENT", decision };
   }
 
-  const authority = await authorityFor(input.fact.subjectKind, input.fact.subjectId);
+  const authority = await authorityFor(
+    input.fact.subjectKind,
+    input.fact.subjectId,
+    input.fact.property,
+  );
   if (!authority) return { status: "NO_AUTHORIZED_SOURCE" };
 
   const requirementKey = requirementKeyFor(input.fact, input.purpose);
@@ -343,9 +329,22 @@ export async function answerVerificationRequest(input: {
       ? { request: { intent: "ORGANIZATION" as const, organizationId: input.organizationId } }
       : {}),
   });
-  if (resolution.status !== "RESOLVED" || resolution.scope.scopeId !== request.respondingScopeId) {
-    // Not the scope entitled to speak for this subject. The same refusal for a
-    // stranger and for somebody whose standing was taken away.
+  if (resolution.status !== "RESOLVED") {
+    throw new VerificationError("You are not who may answer this.", "FORBIDDEN");
+  }
+  // ENTITLEMENT IS RE-READ FROM THE SUBJECT, not taken from the row written
+  // when the question was sent. Somebody may have lost standing in between, and
+  // somebody else entitled all along may be the one who actually answers.
+  //
+  //   AUTHORIZED_AT_REQUEST != AUTHORIZED_FOREVER
+  const entitled = await subjectAuthority({
+    subjectKind: request.subjectKind,
+    subjectId: request.subjectId,
+    property: request.property,
+  });
+  if (!entitled || !entitled.scopeIds.includes(resolution.scope.scopeId)) {
+    // The same refusal for a stranger and for somebody whose standing was taken
+    // away, so neither learns anything from being told no.
     throw new VerificationError("You are not who may answer this.", "FORBIDDEN");
   }
 

@@ -322,30 +322,52 @@ describe("asking the person who knows", () => {
   });
 
   it("authority is re-checked when they answer, not when they were asked", async () => {
-    //   AUTHORIZED_AT_REQUEST != AUTHORIZED_FOREVER · RESPONSE_AUTHORITY_RECHECK
-    //   REVOKED_MEMBER_CONFIRMATION_ACCEPTED = 0
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: after the subject changed hands, the NEW owner was
+    //   refused, because the scope stored when the question was sent was the
+    //   only one allowed to answer it.
+    // WHY_IT_IS_WRONG: that made authority a SNAPSHOT. It refused the person
+    //   who genuinely speaks for the thing now, and — worse — it would have
+    //   kept accepting the previous owner, who no longer does. A stored scope
+    //   is a record of who was asked, not a standing entitlement.
+    // NEW_EXPECTATION: entitlement is re-read from the SUBJECT at answer time.
+    //   The former owner can no longer answer; the current owner can.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: it closes a direction the old one
+    //   left open. Under the old rule a party who had lost the subject kept
+    //   answering for it indefinitely; under this one nobody answers for
+    //   anything they do not presently own, which is the same rule that
+    //   refuses a revoked member below.
+    //
     const subject = await offering("garment.listing");
     const asked = await need(subject, "COMMIT", at(MINUTE));
     const request = asked.status === "REQUESTED" ? asked.request : null;
+    expect(request!.respondingScopeId).toBe(ownerScope);
 
-    // The subject changes hands after the question was sent. The person who
-    // could have answered a moment ago no longer speaks for it.
+    // The subject changes hands after the question was sent.
     await handle.db.execute(
       sql.raw(`UPDATE economic_expressions SET "ownerId" = '${stranger.id}' WHERE id = '${subject}'`),
     );
-    const reresolved = await verification.authorityFor("offering", subject);
+    const reresolved = await verification.authorityFor("offering", subject, "availability");
     expect(reresolved!.scopeId).toBe(String(stranger.id));
 
-    // The stored responding scope is still the old owner, and they may still
-    // answer the question that was put to them — what must NOT happen is the
-    // new owner answering somebody else's question, or a revoked principal
-    // slipping through. Both are the same refusal.
+    // The person who was asked no longer speaks for it, and is refused.
     await expect(
       verification.answerVerificationRequest({
-        requestId: request!.id, respondingPrincipalId: String(stranger.id),
+        requestId: request!.id, respondingPrincipalId: ownerScope,
         assertion: "AFFIRMED", now: at(2 * MINUTE),
       }),
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(await count("observations")).toBe(0);
+
+    // The party who does speak for it now may answer it.
+    const answered = await verification.answerVerificationRequest({
+      requestId: request!.id, respondingPrincipalId: String(stranger.id),
+      assertion: "AFFIRMED", now: at(3 * MINUTE),
+    });
+    expect(answered.request.state).toBe("ANSWERED");
+    expect(answered.request.answeredByPrincipalId).toBe(String(stranger.id));
   });
 
   it("a member whose standing was revoked cannot confirm afterwards", async () => {
