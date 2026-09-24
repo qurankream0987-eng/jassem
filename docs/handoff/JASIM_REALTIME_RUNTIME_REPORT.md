@@ -170,7 +170,7 @@ RECONNECT_STATE_MACHINE         = PASS
 HEARTBEAT                       = PASS
 BACKPRESSURE                    = PASS
 SERVER_RESTART_RECOVERY         = PASS
-PERMISSION_REVOCATION           = PARTIAL
+PERMISSION_REVOCATION           = PARTIAL   (closed in the microclosure below)
 MONITOR_REALTIME                = PASS
 WORLD_REALTIME                  = PASS
 OBSERVATION_REALTIME            = PASS
@@ -213,12 +213,12 @@ NEXT_GENERIC_GAP = LIVING_OBJECT_RUNTIME
 
 ### Why four of those are not PASS
 
-**`PERMISSION_REVOCATION = PARTIAL`.** Authorization happens once, at subscribe.
-A revoked member's **re-authorization** is refused — proven — and every deploy,
-restart and heartbeat failure forces one. What is NOT built is per-event
-re-authorization on a connection that stays open through a revocation. The
-Railway runbook names the operator action in the meantime rather than leaving
-it to be discovered.
+**`PERMISSION_REVOCATION = PARTIAL`** — **closed.** It was the one declared
+security PARTIAL and it did not survive the phase: see
+`JASIM_REALTIME_REVOCATION_REPORT.md`. A subscription is now re-established
+against current authority before any event is delivered to it, so a membership
+revoked while a socket stays open ends that subscription rather than outliving
+it.
 
 **`DATASET_REALTIME_READINESS = PARTIAL`.** An event invalidates and a client
 re-queries through the authorized path; nothing mutates a row from a client

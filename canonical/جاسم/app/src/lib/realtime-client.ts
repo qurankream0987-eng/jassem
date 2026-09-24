@@ -75,6 +75,8 @@ export class RealtimeSession {
   private attempt = 0;
   private readonly seen = new Set<string>();
   private readonly order: string[] = [];
+  /** Set when the server ended the subscription. Never unset. */
+  private terminal = false;
 
   private readonly onChange: ((state: RealtimeConnectionState) => void) | undefined;
 
@@ -143,6 +145,29 @@ export class RealtimeSession {
   resynced(cursor: number): void {
     this.cursor = cursor;
     this.moveTo("CONNECTED");
+  }
+
+  /**
+   * The authority behind this subscription ended.
+   *
+   *   AUTHORIZED_AT_SUBSCRIBE != AUTHORIZED_FOREVER
+   *
+   * Terminal. Reconnecting would be a client arguing with a refusal, and the
+   * surface's own authorized reads are where that answer belongs — they will
+   * refuse too, and say so in the words the runtime uses for it.
+   */
+  revoked(): void {
+    this.terminal = true;
+    this.attempt = 0;
+    this.cursor = 0;
+    this.seen.clear();
+    this.order.length = 0;
+    this.moveTo("DISCONNECTED");
+  }
+
+  /** Whether this session may open another socket. */
+  mayReconnect(): boolean {
+    return !this.terminal;
   }
 
   /**

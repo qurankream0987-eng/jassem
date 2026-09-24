@@ -98,13 +98,22 @@ would be a second truth.
 
 ## 8. Security note for operators
 
-A long-lived connection is authorized at subscribe time. If a membership or
-permission is revoked while a connection is open, that connection must not keep
-its authority indefinitely — today it is re-authorized on every reconnect, and
-a reconnect is forced by any deploy, restart or heartbeat failure. **A
-deliberate revocation should be followed by terminating that principal's open
-connections**, which is a one-line operator action and not a substitute for the
-design change that would re-authorize per event class.
+**No operator action is required after a revocation.**
+
+```
+AUTHORIZED_AT_SUBSCRIBE != AUTHORIZED_FOREVER
+```
+
+A subscription is re-established against current authority before any event is
+delivered to it. A membership or policy change bumps the scope's authority
+revision and invalidates the authorization the instant it happens; a bounded
+maximum age (5 s) catches what a revision cannot see, such as an entity that
+left the scope. Both checks run **only when there is something to deliver**, so
+an idle connection costs nothing and no client polls for permissions.
+
+A subscription whose authority has gone receives one frame — `ACCESS_REVOKED`,
+a code and nothing else — and is ended. The client does not reconnect into a
+refusal; the surface's own authorized reads answer that.
 
 ```
 No secret, no message body, no observation payload and no identity is logged.

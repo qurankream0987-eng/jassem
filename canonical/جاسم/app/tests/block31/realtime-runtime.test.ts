@@ -570,20 +570,172 @@ describe("one realtime runtime over one durable ledger", () => {
 
   // ── 11. Permission revocation during a live connection (§27) ──────────────
 
-  it("a revoked member stops receiving the organization's events", async () => {
+  /**
+   * A member of an organization, with a live socket on that scope.
+   *
+   * Returned with the handle to revoke it, so a test can take the authority
+   * away WITHOUT touching the connection — which is the whole point.
+   */
+  async function connectedMember(url: string) {
     const organization = await scopes.createOrganization({
       principalId: String(actor.id),
       displayName: "شركة",
     });
+    const orgScopeId = scopes.organizationScopeId(organization.id);
+    const { grantMembership, revokeMembership } = await import("../../api/runtime/block2/membership");
+    const granted = await grantMembership(handle.db, {
+      ownerId: orgScopeId,
+      subjectId: String(other.id),
+      resourceKind: "organization",
+      resourceId: "*",
+      permissions: ["view"],
+      purpose: undefined,
+    });
+    const member = await connect(url, other, {
+      topics: scopeTopics,
+      organizationId: organization.id,
+    });
+    expect(member.frames.some((frame) => frame.type === "realtime.subscribed")).toBe(true);
     const orgScope: ActingScope = {
       kind: "ORGANIZATION",
-      scopeId: scopes.organizationScopeId(organization.id),
+      scopeId: orgScopeId,
       principalId: String(other.id),
       organizationId: organization.id,
       displayName: "شركة",
     };
-    const { grantMembership, revokeMembership } = await import("../../api/runtime/block2/membership");
-    const granted = await grantMembership(handle.db, {
+    return {
+      organization,
+      orgScope,
+      member,
+      revoke: () =>
+        revokeMembership(handle.db, {
+          membershipId: granted.membership.id,
+          actorOwnerId: orgScopeId,
+        }),
+    };
+  }
+
+  /** An event in the organization's scope, for a member to receive or not. */
+  const orgEvent = (orgScope: ActingScope, note: string) =>
+    handle.db.execute(
+      sql.raw(`INSERT INTO events (type, source, payload, "ownerId", "correlationId", priority, processed)
+        VALUES ('WORLD_MATERIALIZED', 'runtime', '{"worldId":"${note}"}'::jsonb,
+                '${orgScope.scopeId}', '${note}', 'normal', true)`),
+    );
+
+  // ── 11b. Revocation while the socket stays open ───────────────────────────
+
+  it("an authorized member receives, and stops the moment the membership ends", async () => {
+    //   AUTHORIZED_AT_SUBSCRIBE != AUTHORIZED_FOREVER
+    const url = await startServer();
+    const { orgScope, member, revoke } = await connectedMember(url);
+
+    await orgEvent(orgScope, "before-revocation");
+    await deliver();
+    expect(member.events.some((event) => event.subject?.id === "before-revocation")).toBe(true);
+
+    // The authority is taken away. The SOCKET is untouched and still open.
+    await revoke();
+    expect(member.socket.readyState).toBe(WebSocket.OPEN);
+
+    await orgEvent(orgScope, "after-revocation");
+    await deliver();
+
+    expect(member.events.some((event) => event.subject?.id === "after-revocation")).toBe(false);
+    const ended = member.frames.find((frame) => frame.type === "realtime.revoked");
+    expect(ended?.code).toBe("ACCESS_REVOKED");
+    // §8: a code, and nothing else.
+    expect(JSON.stringify(ended)).not.toContain("after-revocation");
+    expect(JSON.stringify(ended)).not.toContain(orgScope.scopeId);
+    expect(JSON.stringify(ended)).not.toContain("view");
+  });
+
+  it("an event written BEFORE the revocation is still not delivered after it", async () => {
+    //   AUTHORIZATION TO OBSERVE AN EVENT IS EVALUATED AGAINST CURRENT
+    //   AUTHORITY, NOT AGAINST THE AUTHORITY THE SUBSCRIPTION WAS MADE WITH
+    const url = await startServer();
+    const { orgScope, member, revoke } = await connectedMember(url);
+
+    // The event exists first. Then the permission goes. Then the sweep runs.
+    await orgEvent(orgScope, "written-first");
+    await revoke();
+    await deliver();
+
+    expect(member.events).toHaveLength(0);
+    expect(member.frames.some((frame) => frame.type === "realtime.revoked")).toBe(true);
+  });
+
+  it("catch-up refuses the same revoked principal the socket refused", async () => {
+    // Live push and catch-up must never disagree about what may be heard.
+    const url = await startServer();
+    const { organization, orgScope, revoke } = await connectedMember(url);
+    await orgEvent(orgScope, "e1");
+    await revoke();
+
+    await expect(
+      realtime.authorizeSubscription({
+        principalId: String(other.id),
+        request: { topics: scopeTopics, organizationId: organization.id },
+      }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("every device of a revoked member stops, not just the one that noticed", async () => {
+    const url = await startServer();
+    const { organization, orgScope, member, revoke } = await connectedMember(url);
+    // A second device for the SAME person on the SAME scope.
+    const phone = await connect(url, other, {
+      topics: scopeTopics,
+      organizationId: organization.id,
+    });
+    expect(phone.frames.some((frame) => frame.type === "realtime.subscribed")).toBe(true);
+
+    await revoke();
+    await orgEvent(orgScope, "after");
+    await deliver();
+
+    for (const device of [member, phone]) {
+      expect(device.events.some((event) => event.subject?.id === "after")).toBe(false);
+      expect(device.frames.some((frame) => frame.type === "realtime.revoked")).toBe(true);
+    }
+  });
+
+  it("an unrelated authority change does not end an unrelated subscription", async () => {
+    const url = await startServer();
+    const { orgScope, member } = await connectedMember(url);
+    // A DIFFERENT scope's authority moves: the actor's own personal scope.
+    const mine = await connect(url, actor, { topics: scopeTopics });
+    await scopes.setScopePolicy({
+      principalId: String(actor.id),
+      scopeId: scope.scopeId,
+      policyKey: "unrelated",
+      value: { policySchema: "jasim.policy/1", actions: ["nothing.at.all"], conditions: [], effect: "DENY" },
+    });
+
+    await orgEvent(orgScope, "still-allowed");
+    await observe("subj-a", 9);
+    await deliver();
+
+    // Neither subscription was ended by the other's change.
+    expect(member.events.some((event) => event.subject?.id === "still-allowed")).toBe(true);
+    expect(member.frames.some((frame) => frame.type === "realtime.revoked")).toBe(false);
+    expect(mine.events.length).toBeGreaterThan(0);
+    expect(mine.frames.some((frame) => frame.type === "realtime.revoked")).toBe(false);
+  });
+
+  it("a restored membership is honoured by subscribing again, not by the old socket", async () => {
+    // Revocation is terminal for the connection it ended. Getting the
+    // permission back is a new subscription, authorized by what is true now —
+    // which is the only thing that could have changed.
+    const url = await startServer();
+    const { organization, orgScope, member, revoke } = await connectedMember(url);
+    await revoke();
+    await orgEvent(orgScope, "while-revoked");
+    await deliver();
+    expect(member.frames.some((frame) => frame.type === "realtime.revoked")).toBe(true);
+
+    const { grantMembership } = await import("../../api/runtime/block2/membership");
+    await grantMembership(handle.db, {
       ownerId: orgScope.scopeId,
       subjectId: String(other.id),
       resourceKind: "organization",
@@ -592,26 +744,31 @@ describe("one realtime runtime over one durable ledger", () => {
       purpose: undefined,
     });
 
-    const url = await startServer();
-    const member = await connect(url, other, {
+    const back = await connect(url, other, {
       topics: scopeTopics,
       organizationId: organization.id,
     });
-    expect(member.frames.some((frame) => frame.type === "realtime.subscribed")).toBe(true);
+    expect(back.frames.some((frame) => frame.type === "realtime.subscribed")).toBe(true);
+    await orgEvent(orgScope, "after-restore");
+    await deliver();
+    expect(back.events.some((event) => event.subject?.id === "after-restore")).toBe(true);
+    // And the connection that was ended stays ended.
+    expect(member.events.some((event) => event.subject?.id === "after-restore")).toBe(false);
+  });
 
-    await revokeMembership(handle.db, {
-      membershipId: granted.membership.id,
-      actorOwnerId: orgScope.scopeId,
+  it("a scope's authority revision moves when a membership or a policy does", async () => {
+    // The cheap signal the sweep asks for — ONE query per scope, not per frame.
+    const before = await realtime.authorityRevisionOf(scope.scopeId);
+    await scopes.setScopePolicy({
+      principalId: String(actor.id),
+      scopeId: scope.scopeId,
+      policyKey: "some_rule",
+      value: { policySchema: "jasim.policy/1", actions: ["x"], conditions: [], effect: "DENY" },
     });
-
-    // The long-lived connection may not keep the authority it had. Re-running
-    // the authorization is what the reconnect path does, and it now refuses.
-    await expect(
-      realtime.authorizeSubscription({
-        principalId: String(other.id),
-        request: { topics: scopeTopics, organizationId: organization.id },
-      }),
-    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    const after = await realtime.authorityRevisionOf(scope.scopeId);
+    expect(after).toBeGreaterThan(before);
+    // And a scope with neither has no revision rather than a wrong one.
+    expect(await realtime.authorityRevisionOf(`no-such-scope-${randomUUID()}`)).toBe(0);
   });
 
   // ── 12. Nothing sensitive on the wire (§15, §27) ──────────────────────────

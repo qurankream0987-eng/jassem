@@ -101,6 +101,18 @@ export const REALTIME_LIMITS = Object.freeze({
    * this window bounds the hazard rather than hiding it.
    */
   STABILITY_LAG_MS: 250,
+  /**
+   * How long an authorization may stand before it is re-established.
+   *
+   *   AUTHORIZED_AT_SUBSCRIBE != AUTHORIZED_FOREVER
+   *
+   * A membership or policy change bumps the scope's authority revision and
+   * invalidates an authorization the instant it happens. This bound catches
+   * everything a revision cannot see — an entity that left the scope, a
+   * conversation that was deleted — and it is checked only when there is
+   * something to deliver, so an idle connection costs nothing.
+   */
+  REAUTH_MAX_AGE_MS: 5_000,
 });
 
 /**
@@ -425,6 +437,75 @@ export function subscriptionWants(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Authority that can be taken away
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * When this scope's authority last changed.
+ *
+ *   AUTHORIZED_AT_SUBSCRIBE != AUTHORIZED_FOREVER
+ *
+ * The canonical sources the rest of JASIM already authorizes from, and no
+ * second permission model: a membership's own `updatedAt` (which its
+ * `$onUpdate` moves on every grant, narrowing and revocation) and a scope
+ * policy's `createdAt` (a policy is versioned by appending, so a new row IS
+ * the change).
+ *
+ * ONE query per scope per sweep — not one per frame, and not one per socket.
+ * A hundred tabs on one scope ask this once.
+ *
+ * Returns epoch milliseconds, and 0 when a scope has never had either. A
+ * personal scope usually has neither, and cannot be revoked by a membership
+ * that does not exist — which is why the bounded re-authorization above is the
+ * other half of this and not an optimization.
+ */
+export async function authorityRevisionOf(scopeId: string): Promise<number> {
+  const { memberships, scopePolicies } = await import("../../db/schema");
+  const [row] = await db
+    .select({
+      revised: sql<string | null>`GREATEST(
+        (SELECT MAX(GREATEST(m."updatedAt", COALESCE(m."revokedAt", m."updatedAt")))
+           FROM ${memberships} m WHERE m."ownerId" = ${scopeId}),
+        (SELECT MAX(p."createdAt") FROM ${scopePolicies} p WHERE p."scopeId" = ${scopeId})
+      )`,
+    })
+    .from(sql`(SELECT 1) AS one`);
+  const revised = row?.revised ? new Date(row.revised).getTime() : 0;
+  return Number.isFinite(revised) ? revised : 0;
+}
+
+/**
+ * Is this subscription still the one the server agreed to?
+ *
+ *   FAIL CLOSED
+ *
+ * Re-authorization is the SAME function that authorized it in the first place,
+ * so live delivery and catch-up can never diverge about what a principal may
+ * hear. A failure is not a retry and not a silence: the caller is told its
+ * access ended and nothing further is sent.
+ */
+export async function stillAuthorized(input: {
+  principalId: string;
+  subscription: AuthorizedSubscription;
+}): Promise<AuthorizedSubscription | null> {
+  try {
+    return await authorizeSubscription({
+      principalId: input.principalId,
+      request: {
+        topics: input.subscription.topics,
+        ...(input.subscription.scope.kind === "ORGANIZATION"
+          ? { organizationId: input.subscription.scope.organizationId }
+          : {}),
+      },
+    });
+  } catch {
+    // Any refusal at all — a lost membership, a vanished entity, a policy that
+    // now denies — ends the subscription. There is no partial re-authorization.
+    return null;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // The cursor — durable, and the only resume truth
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -639,17 +720,32 @@ export type TailResult = {
   readonly connections: number;
   readonly delivered: number;
   readonly resyncRequired: number;
+  /** Subscriptions ended because the authority behind them had gone. */
+  readonly revoked: number;
 };
 
 export type TailSink = {
   socketId: unknown;
   scopeId: string;
+  /** WHO this subscription belongs to, so it can be re-authorized as them. */
+  principalId: string;
   cursor: number;
   queued: number;
   stalled: boolean;
   subscription: AuthorizedSubscription;
+  /** When the authorization behind this sink was last established. */
+  authorizedAt: number;
   deliver: (events: readonly RealtimeEvent[], cursor: number) => void;
   requireResync: (cursor: number, reason: string) => void;
+  /**
+   * The authority ended. Nothing further is sent on this subscription.
+   *
+   * The frame carries a code and nothing else — not the object that became
+   * forbidden, not whether it still exists, not which permission was lost.
+   */
+  revoke: () => void;
+  /** Accept a re-established authorization and the instant it was made. */
+  reauthorized: (subscription: AuthorizedSubscription, at: number) => void;
 };
 
 /**
@@ -664,7 +760,7 @@ export async function tailRealtime(
   options?: { now?: Date; limit?: number },
 ): Promise<TailResult> {
   const now = options?.now ?? new Date();
-  const result = { connections: sinks.length, delivered: 0, resyncRequired: 0 };
+  const result = { connections: sinks.length, delivered: 0, resyncRequired: 0, revoked: 0 };
   if (sinks.length === 0) return result;
 
   const byScope = new Map<string, TailSink[]>();
@@ -699,10 +795,47 @@ export async function tailRealtime(
     const envelopes = rows.map((row) => envelopeOf(row as LedgerRow));
     const head = rows.at(-1)!.id;
 
+    // There is something to deliver to this scope, so ask — ONCE for the whole
+    // bucket — whether the authority behind it has moved since.
+    const revision = await authorityRevisionOf(scopeId);
+
     for (const sink of bucket) {
       if (sink.stalled) continue;
       const fresh = envelopes.filter((event) => event.cursor > sink.cursor);
       const wanted = fresh.filter((event) => subscriptionWants(sink.subscription, event));
+
+      // Re-authorize BEFORE deciding anything about these events.
+      //
+      //   AUTHORIZATION TO OBSERVE AN EVENT IS EVALUATED AGAINST CURRENT
+      //   AUTHORITY, NOT AGAINST THE AUTHORITY THE SUBSCRIPTION WAS MADE WITH
+      //
+      // An event written before a revocation is not delivered after it merely
+      // because it is older than the revocation. Only checked when there is
+      // something to send, so an idle connection costs nothing.
+      if (wanted.length > 0) {
+        const stale =
+          revision > sink.authorizedAt ||
+          now.getTime() - sink.authorizedAt > REALTIME_LIMITS.REAUTH_MAX_AGE_MS;
+        if (stale) {
+          const reauthorized = await stillAuthorized({
+            principalId: sink.principalId,
+            subscription: sink.subscription,
+          });
+          if (!reauthorized) {
+            sink.revoke();
+            recordMetric("authorizationRejects");
+            result.revoked += 1;
+            continue;
+          }
+          sink.reauthorized(reauthorized, now.getTime());
+          // The re-established authorization may be NARROWER than the one that
+          // selected these events. Filter again against what it says now.
+          const permitted = wanted.filter((event) => subscriptionWants(reauthorized, event));
+          wanted.length = 0;
+          wanted.push(...permitted);
+        }
+      }
+
       const decision = decideDelivery({
         queued: sink.queued,
         incoming: wanted,

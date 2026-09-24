@@ -59,8 +59,15 @@ export function useRealtime(input: {
   onChange?: (changes: readonly RealtimeChange[]) => void;
   /** Re-read everything: called when the server says the cursor is unusable. */
   onResync?: () => void;
+  /**
+   * The subscription's authority ended while it was open.
+   *
+   * The surface re-reads through its ordinary authorized queries, which is
+   * where a refusal belongs — the socket says only that it stopped.
+   */
+  onRevoked?: () => void;
 }): UseRealtimeResult {
-  const { topics, enabled = true, onChange, onResync } = input;
+  const { topics, enabled = true, onChange, onResync, onRevoked } = input;
   const [state, setState] = useState<RealtimeConnectionState>("DISCONNECTED");
   const [changes, setChanges] = useState<readonly RealtimeChange[]>([]);
   const sessionRef = useRef<RealtimeSession | null>(null);
@@ -68,8 +75,10 @@ export function useRealtime(input: {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const changeRef = useRef(onChange);
   const resyncRef = useRef(onResync);
+  const revokedRef = useRef(onRevoked);
   changeRef.current = onChange;
   resyncRef.current = onResync;
+  revokedRef.current = onRevoked;
 
   const topicKey = JSON.stringify(topics);
 
@@ -113,6 +122,16 @@ export function useRealtime(input: {
           session.opened(Number(message.cursor ?? 0));
           return;
         }
+        if (message.type === "realtime.revoked") {
+          // Terminal. The socket is closed and NOT reopened: reconnecting
+          // would be arguing with a refusal, and the surface's own authorized
+          // reads are where that answer belongs.
+          session.revoked();
+          revokedRef.current?.();
+          socket.onclose = null;
+          socket.close();
+          return;
+        }
         if (message.type === "realtime.resync") {
           session.resyncRequired(Number(message.cursor ?? 0));
           resyncRef.current?.();
@@ -130,7 +149,7 @@ export function useRealtime(input: {
       };
 
       const reopen = (): void => {
-        if (disposed) return;
+        if (disposed || !session.mayReconnect()) return;
         const delay = session.dropped();
         timerRef.current = setTimeout(open, delay);
       };

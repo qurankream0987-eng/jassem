@@ -69,6 +69,8 @@ export class MobileRealtimeSession {
   private attempt = 0;
   private readonly seen = new Set<string>();
   private readonly order: string[] = [];
+  /** Set when the server ended the subscription. Never unset. */
+  private terminal = false;
   private readonly onChange: ((state: RealtimeConnectionState) => void) | undefined;
 
   constructor(onChange?: (state: RealtimeConnectionState) => void) {
@@ -126,6 +128,28 @@ export class MobileRealtimeSession {
   resynced(cursor: number): void {
     this.cursor = cursor;
     this.moveTo("CONNECTED");
+  }
+
+  /**
+   * The authority behind this subscription ended.
+   *
+   *   AUTHORIZED_AT_SUBSCRIBE != AUTHORIZED_FOREVER
+   *
+   * Terminal, exactly as on the web: reconnecting would be a client arguing
+   * with a refusal, and the surface's own authorized reads are where that
+   * answer belongs.
+   */
+  revoked(): void {
+    this.terminal = true;
+    this.attempt = 0;
+    this.cursor = 0;
+    this.seen.clear();
+    this.order.length = 0;
+    this.moveTo("DISCONNECTED");
+  }
+
+  mayReconnect(): boolean {
+    return !this.terminal;
   }
 
   /** In order, and once each. A replay produces one projection transition. */

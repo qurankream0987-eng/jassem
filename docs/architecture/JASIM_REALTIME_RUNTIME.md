@@ -140,7 +140,7 @@ announcement.
 | | |
 |---|---|
 | a living object | every catalogued scenario that named `REALTIME_RUNTIME` also needs a durable tracked thing «أين وصل طلبي؟» can be about. Closing this gap greened **none** of them |
-| per-event re-authorization | authorization is at subscribe time. A membership revoked mid-connection is caught on the next reconnect, and the Railway runbook says what an operator does in the meantime |
+| ~~per-event re-authorization~~ | **closed.** A subscription is re-established against current authority before any event reaches it — see `JASIM_REALTIME_REVOCATION_REPORT.md` |
 | a device proof | the mobile client compiles, exports and calls the same procedures. No emulator ran |
 | dataset deltas | an event invalidates a dataset; it never mutates rows from a client frame. Incremental deltas are a later phase, and correctness came first |
 

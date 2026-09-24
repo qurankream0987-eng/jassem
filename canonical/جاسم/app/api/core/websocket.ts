@@ -25,10 +25,18 @@ const clients = new Map<string, Set<WebSocket>>();
 /** What one connection is listening to, and where it has got to. */
 type RealtimeAttachment = {
   subscription: import("../runtime/realtime-runtime").AuthorizedSubscription;
+  /** WHO holds it, so it can be re-authorized as them rather than trusted. */
+  principalId: string;
   cursor: number;
   queued: number;
   /** Set when the socket must resync before it is fed anything else. */
   stalled: boolean;
+  /**
+   * When the authorization behind this attachment was last established.
+   *
+   *   AUTHORIZED_AT_SUBSCRIBE != AUTHORIZED_FOREVER
+   */
+  authorizedAt: number;
 };
 
 const attachments = new WeakMap<WebSocket, RealtimeAttachment>();
@@ -306,7 +314,14 @@ export class JasimWebSocketServer {
         typeof requested === "number" && Number.isInteger(requested) && requested >= 0
           ? requested
           : await realtime.head();
-      attachments.set(ws, { subscription, cursor, queued: 0, stalled: false });
+      attachments.set(ws, {
+        subscription,
+        principalId: principal.userId,
+        cursor,
+        queued: 0,
+        stalled: false,
+        authorizedAt: Date.now(),
+      });
       realtime.recordMetric("subscriptions");
       ws.send(JSON.stringify({ type: "realtime.subscribed", cursor }));
     } catch (error) {
@@ -399,18 +414,23 @@ export async function deliverRealtime(options?: { now?: Date }): Promise<{
   connections: number;
   delivered: number;
   resyncRequired: number;
+  revoked: number;
 }> {
   const open = realtimeAttachments();
-  if (open.length === 0) return { connections: 0, delivered: 0, resyncRequired: 0 };
+  if (open.length === 0) {
+    return { connections: 0, delivered: 0, resyncRequired: 0, revoked: 0 };
+  }
   const { tailRealtime } = await import("../runtime/realtime-runtime");
   return tailRealtime(
     open.map(({ socket, attachment }) => ({
       socketId: socket,
       scopeId: attachment.subscription.scope.scopeId,
+      principalId: attachment.principalId,
       cursor: attachment.cursor,
       queued: attachment.queued,
       stalled: attachment.stalled,
       subscription: attachment.subscription,
+      authorizedAt: attachment.authorizedAt,
       deliver: (batch, cursor) => {
         attachment.cursor = cursor;
         if (batch.length === 0) return;
@@ -425,6 +445,22 @@ export async function deliverRealtime(options?: { now?: Date }): Promise<{
           // Not a subset, and not silence. The client re-reads the canonical
           // projection and comes back with a cursor that means something.
           socket.send(JSON.stringify({ type: "realtime.resync", cursor, reason }));
+        }
+      },
+      reauthorized: (subscription, at) => {
+        attachment.subscription = subscription;
+        attachment.authorizedAt = at;
+      },
+      revoke: () => {
+        // The subscription ends here. The attachment is removed FIRST, so a
+        // sweep that overlaps this one has nothing left to deliver to.
+        attachments.delete(socket);
+        if (socket.readyState === WebSocket.OPEN) {
+          // A code, and nothing else: not the object that became forbidden,
+          // not whether it still exists, not which permission was lost. A
+          // client that reconnects will be told the same by the subscribe
+          // path, which is the only place that answer belongs.
+          socket.send(JSON.stringify({ type: "realtime.revoked", code: "ACCESS_REVOKED" }));
         }
       },
     })),

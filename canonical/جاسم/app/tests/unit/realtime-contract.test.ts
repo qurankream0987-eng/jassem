@@ -332,6 +332,106 @@ describe("a subscriber that cannot keep up", () => {
   });
 });
 
+// ── Authority can be taken away ─────────────────────────────────────────────
+
+describe("an authorization does not outlive the authority behind it", () => {
+  it("is re-established on a bound, not trusted forever", () => {
+    //   AUTHORIZED_AT_SUBSCRIBE != AUTHORIZED_FOREVER
+    expect(REALTIME_LIMITS.REAUTH_MAX_AGE_MS).toBeGreaterThan(0);
+    expect(REALTIME_LIMITS.REAUTH_MAX_AGE_MS).toBeLessThanOrEqual(30_000);
+  });
+
+  it("re-authorizes through the SAME function that authorized it", () => {
+    // Live push and catch-up cannot diverge about what a principal may hear
+    // if there is one answer to the question.
+    const runtime = source("api/runtime/realtime-runtime.ts");
+    const reauth = runtime.slice(
+      runtime.indexOf("export async function stillAuthorized"),
+      runtime.indexOf("export async function stillAuthorized") + 900,
+    );
+    expect(reauth).toContain("authorizeSubscription(");
+    // Any refusal at all ends it. There is no partial re-authorization.
+    expect(reauth).toContain("return null");
+  });
+
+  it("checks only when there is something to deliver", () => {
+    // An idle connection must not become a permission poll loop.
+    //   ONE PERMISSION POLL LOOP PER CLIENT = 0
+    const runtime = source("api/runtime/realtime-runtime.ts");
+    const tail = runtime.slice(runtime.indexOf("export async function tailRealtime"));
+    expect(tail).toContain("if (wanted.length > 0)");
+    // And asks the scope's revision ONCE per bucket, not once per sink.
+    const perBucket = tail.indexOf("const revision = await authorityRevisionOf(scopeId)");
+    const perSink = tail.indexOf("for (const sink of bucket)");
+    expect(perBucket).toBeGreaterThan(0);
+    expect(perBucket).toBeLessThan(perSink);
+  });
+
+  it("re-filters against the NARROWER authorization, not the original", () => {
+    const runtime = source("api/runtime/realtime-runtime.ts");
+    expect(runtime).toContain("subscriptionWants(reauthorized, event)");
+  });
+
+  it("adds no scheduler, no stream and no revocation type of its own", () => {
+    //   SECOND_SCHEDULERS_ADDED = 0 · DOMAIN_REVOCATION_TYPES_ADDED = 0
+    const runtime = source("api/runtime/realtime-runtime.ts");
+    for (const forbidden of ["setInterval(", "setTimeout(", "new WebSocketServer(", "pgTable("]) {
+      expect(runtime, forbidden).not.toContain(forbidden);
+    }
+    for (const forbidden of ["OrderRevocation", "NegotiationRevocation", "DriverRevocation", "WorldRevocation"]) {
+      expect(runtime, forbidden).not.toContain(forbidden);
+    }
+    // And it reads the canonical authorization sources, not a second model.
+    expect(runtime).toContain("memberships");
+    expect(runtime).toContain("scopePolicies");
+  });
+
+  it("the client stops rather than arguing with a refusal", () => {
+    const session = new RealtimeSession();
+    session.opened(5);
+    session.accept([event({ cursor: 6, eventId: "evt_6" })]);
+    expect(session.mayReconnect()).toBe(true);
+
+    session.revoked();
+    expect(session.mayReconnect()).toBe(false);
+    expect(session.connectionState()).toBe("DISCONNECTED");
+    // The cursor is dropped too: resuming a subscription it may not have would
+    // be asking the same refused question with a position attached.
+    expect(session.currentCursor()).toBe(0);
+  });
+
+  it("both surfaces stop the same way", () => {
+    const web = source("src/lib/realtime-client.ts");
+    const mobile = source("../../../artifacts/jasim-mobile/lib/realtime.ts");
+    for (const text of [web, mobile]) {
+      expect(text).toContain("revoked()");
+      expect(text).toContain("mayReconnect()");
+      expect(text).toContain("AUTHORIZED_AT_SUBSCRIBE != AUTHORIZED_FOREVER");
+    }
+    // The web hook honours it: a revoked session never reopens.
+    const hook = source("src/hooks/use-realtime.ts");
+    expect(hook).toContain("!session.mayReconnect()");
+    expect(hook).toContain("realtime.revoked");
+  });
+
+  it("the ending frame carries a code and nothing else", () => {
+    //   NO DATA LEAK IN ERROR FRAMES
+    const socket = source("api/core/websocket.ts");
+    const start = socket.indexOf("revoke: () => {");
+    expect(start).toBeGreaterThan(0);
+    // The FRAME, not the comment above it: what is actually put on the wire.
+    const frame = socket.slice(start, start + 900).match(/socket\.send\(([\s\S]*?)\);/)?.[1] ?? "";
+    expect(frame).toContain('code: "ACCESS_REVOKED"');
+    for (const key of ["entityId", "worldId", "monitorId", "permission", "scopeId", "events", "cursor"]) {
+      expect(frame, key).not.toContain(key);
+    }
+    // And the attachment is dropped BEFORE the frame, so an overlapping sweep
+    // has nothing left to deliver to.
+    const body = socket.slice(start, start + 900);
+    expect(body.indexOf("attachments.delete(socket)")).toBeLessThan(body.indexOf("socket.send("));
+  });
+});
+
 // ── The web product ─────────────────────────────────────────────────────────
 
 describe("the active web product", () => {
