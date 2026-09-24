@@ -612,6 +612,45 @@ export const scopeProviderBindings = pgTable(
     boundByPrincipalId: varchar("boundByPrincipalId", { length: 100 }).notNull(),
     createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
     revokedAt: timestamp("revokedAt", { withTimezone: true }),
+
+    // ── THE CONNECTOR BINDING RUNTIME ────────────────────────────────────
+    //
+    //   CONNECTED != VERIFIED · READ != WRITE
+    //   SETUP_LINK_CREATED != CREDENTIAL_STORED != AUTHENTICATED != VERIFIED
+    //
+    // A NULL `lifecycle` is a legacy environment-named binding. The connector
+    // runtime refuses to use one, so nothing became usable by being migrated.
+
+    /** Which registered PROVIDER DEFINITION this is an instance of. */
+    definitionId: varchar("definitionId", { length: 120 }),
+    lifecycle: varchar("lifecycle", { length: 16 }),
+    /** What was asked for. A request, never a grant. */
+    requestedCapabilities: jsonb("requestedCapabilities")
+      .$type<string[]>()
+      .notNull()
+      .default([]),
+    /** What the provider itself says this connection can do. */
+    discoveredCapabilities: jsonb("discoveredCapabilities")
+      .$type<string[]>()
+      .notNull()
+      .default([]),
+    /** What it may actually do. Written only by verification. */
+    grantedCapabilities: jsonb("grantedCapabilities").$type<string[]>().notNull().default([]),
+    /** A REFERENCE into the credential vault. Never credential material. */
+    credentialRef: varchar("credentialRef", { length: 64 }),
+    /** Exactly one version is current, so a rotation is never ambiguous. */
+    credentialVersion: integer("credentialVersion").notNull().default(0),
+    /** Non-sensitive identity of the far side, as the provider reported it. */
+    accountRef: varchar("accountRef", { length: 191 }),
+    accountLabel: varchar("accountLabel", { length: 191 }),
+    /** Declared at setup for custom providers; checked before it is stored. */
+    endpointUrl: varchar("endpointUrl", { length: 512 }),
+    setupSessionId: varchar("setupSessionId", { length: 64 }),
+    setupExpiresAt: timestamp("setupExpiresAt", { withTimezone: true }),
+    setupConsumedAt: timestamp("setupConsumedAt", { withTimezone: true }),
+    authenticatedAt: timestamp("authenticatedAt", { withTimezone: true }),
+    verifiedAt: timestamp("verifiedAt", { withTimezone: true }),
+    suspendedReason: varchar("suspendedReason", { length: 191 }),
   },
   (table) => [
     uniqueIndex("scope_provider_bindings_unique_idx").on(
@@ -619,8 +658,42 @@ export const scopeProviderBindings = pgTable(
       table.providerClass,
       table.providerId,
     ),
+    index("scope_provider_bindings_lifecycle_idx").on(table.scopeId, table.lifecycle),
   ],
 );
+
+/**
+ * WHERE CREDENTIAL MATERIAL LIVES, AND THE ONLY PLACE IT LIVES.
+ *
+ *   RAW_PROVIDER_SECRET_IN_CANONICAL_BINDING = 0
+ *   RAW_PROVIDER_SECRET_IN_EVENT_LOG = 0
+ *   MODEL_SEES_PROVIDER_SECRET = 0
+ *
+ * Sealed with the repository's own AES-256-GCM envelope, additionally
+ * authenticated over the scope, the binding and the credential version — so a
+ * sealed value cannot be replayed into another binding or an older rotation.
+ * No column here can be read as plaintext by anything that does not hold the
+ * key, and nothing in this table is ever projected to a person or a model.
+ */
+export const providerCredentials = pgTable(
+  "provider_credentials",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    scopeId: varchar("scopeId", { length: 100 }).notNull(),
+    bindingId: varchar("bindingId", { length: 64 }).notNull(),
+    version: integer("version").notNull(),
+    ciphertext: text("ciphertext").notNull(),
+    iv: varchar("iv", { length: 64 }).notNull(),
+    authTag: varchar("authTag", { length: 64 }).notNull(),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+    retiredAt: timestamp("retiredAt", { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex("provider_credentials_binding_version_idx").on(table.bindingId, table.version),
+  ],
+);
+
+export type ProviderCredentialRow = typeof providerCredentials.$inferSelect;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // THE GENERAL AGREEMENT RUNTIME

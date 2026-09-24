@@ -198,6 +198,13 @@ import {
   type LivingObjectSubjectKind,
 } from "./living-object-runtime";
 import {
+  beginProviderSetup,
+  bindingCapabilities,
+  projectBindings,
+  revokeBinding,
+  ProviderBindingError,
+} from "./provider-binding";
+import {
   projectStructuredResult,
   routePresentation,
   type PresentationDefinition,
@@ -5727,6 +5734,34 @@ const LivingObjectRequestSchema = z
   })
   .strict();
 
+/**
+ * A REQUEST to connect an external system. Never a connection.
+ *
+ * «جاسم اربطك بموقعي» · «اربط المخزون» · «ما الأنظمة المربوطة؟» · «افصل هذا»
+ *
+ * Note what this schema has nowhere to put. There is no `scopeId`, no
+ * `credential`, no `apiKey`, no `verified`, no `lifecycle` and no
+ * `grantedCapabilities` — so the model cannot say whose the connection is,
+ * cannot carry a secret, cannot declare it connected, and cannot decide what
+ * it may do. `capabilities` is what the model believes was WANTED, which
+ * verification later intersects with what the account can actually do.
+ *
+ *   MODEL_CAN_SET_BINDING_SCOPE = NO
+ *   MODEL_CAN_DECLARE_PROVIDER_CONNECTED = NO
+ *   MODEL_SEES_PROVIDER_SECRET = 0
+ */
+const ProviderBindingRequestSchema = z
+  .object({
+    intent: z.enum(["CONNECT", "LIST", "CAPABILITIES", "DISCONNECT"]),
+    /** A registered definition id. An unregistered one connects nothing. */
+    definitionId: z.string().trim().min(1).max(120).optional(),
+    bindingRef: z.string().trim().min(1).max(80).optional(),
+    capabilities: z.array(z.string().trim().min(1).max(24)).max(16).optional(),
+    /** Custom providers only, and checked against the network boundary. */
+    endpointUrl: z.string().trim().min(1).max(512).optional(),
+  })
+  .strict();
+
 const WorldRequestSchema = z
   .object({
     intent: z.enum(["MATERIALIZE", "MUTATE"]),
@@ -5977,6 +6012,7 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       world: WorldRequestSchema.optional(),
       monitoring: MonitoringRequestSchema.optional(),
       livingObject: LivingObjectRequestSchema.optional(),
+      providerBinding: ProviderBindingRequestSchema.optional(),
       need: NeedRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
@@ -7134,6 +7170,152 @@ export async function routeRuntimeConversationTurn(input: {
   // question about an order does not conjure an order:
   //
   //   MODEL_INVENTED_SUBJECTS = 0
+  // ── CONNECTING AN EXTERNAL SYSTEM ───────────────────────────────────────
+  //
+  //   SETUP_LINK != AUTHORIZATION · SETUP_LINK != CONNECTED_PROVIDER
+  //   CREDENTIAL_INPUT != CHAT_INPUT · CONNECTED != VERIFIED
+  //
+  // «جاسم اربطك بموقعي» arrives here as an INTENT and nothing else. What goes
+  // back is an opened setup and the name of the trusted surface that will
+  // collect the credential — never a field to type a key into, and never a
+  // sentence claiming the system is connected.
+  //
+  // The credential itself never passes through this function, this envelope,
+  // this conversation or this model. It is collected by `provider.connect`,
+  // which is an ordinary registered product action, on the trusted surface
+  // this repository already had.
+  const providerRequest =
+    "providerBinding" in envelope ? envelope.providerBinding : undefined;
+  if (providerRequest) {
+    const scope = scopeResolution.scope;
+    try {
+      if (providerRequest.intent === "LIST") {
+        const bound = await projectBindings({
+          principalId: scope.principalId,
+          scopeId: scope.scopeId,
+        });
+        return respondRouted({
+          message:
+            bound.length === 0
+              ? "لا يوجد نظام خارجي مربوط هنا."
+              : bound
+                  .map(
+                    (row) =>
+                      `«${row.providerName}» — ${row.lifecycle}${
+                        row.capabilities.length > 0 ? ` (${row.capabilities.join("، ")})` : ""
+                      }`,
+                  )
+                  .join("، "),
+          state: bound.length === 0 ? "NOTHING_CONNECTED" : "CONNECTED_SYSTEMS",
+          cause: "PROVIDER_BINDINGS_LISTED",
+          // Safe metadata only. No key, no token, no reference.
+          extra: { providerBindings: bound },
+        });
+      }
+
+      if (providerRequest.intent === "CAPABILITIES") {
+        if (!providerRequest.bindingRef) {
+          return respondRouted({
+            message: "أي ربط تقصد؟",
+            state: "NEEDS_INPUT",
+            cause: "PROVIDER_BINDING_REF_MISSING",
+          });
+        }
+        const capabilities = await bindingCapabilities({
+          bindingId: providerRequest.bindingRef,
+          principalId: scope.principalId,
+        });
+        if (!capabilities) {
+          return respondRouted({
+            message: "لا يوجد ربط بهذا المعرّف.",
+            state: "NOT_FOUND",
+            cause: "PROVIDER_BINDING_NOT_FOUND",
+          });
+        }
+        return respondRouted({
+          // Granted, and said apart from what the provider merely supports —
+          // because that difference is what «ما الذي تستطيع فعله» is asking.
+          message: `أستطيع: ${capabilities.granted.join("، ") || "لا شيء"}.${
+            capabilities.supportedButNotGranted.length > 0
+              ? ` وهذا النظام يدعم أيضاً ${capabilities.supportedButNotGranted.join("، ")} لكن هذا الربط لا يملكها.`
+              : ""
+          }`,
+          state: "PROVIDER_CAPABILITIES",
+          cause: "PROVIDER_CAPABILITIES_READ",
+          extra: { providerCapabilities: capabilities },
+        });
+      }
+
+      if (providerRequest.intent === "DISCONNECT") {
+        if (!providerRequest.bindingRef) {
+          return respondRouted({
+            message: "أي ربط تريد فصله؟",
+            state: "NEEDS_INPUT",
+            cause: "PROVIDER_BINDING_REF_MISSING",
+          });
+        }
+        const revoked = await revokeBinding({
+          bindingId: providerRequest.bindingRef,
+          principalId: scope.principalId,
+        });
+        return respondRouted({
+          message: "فصلته. لن أستخدمه مرة أخرى.",
+          state: revoked.lifecycle,
+          cause: "PROVIDER_BINDING_REVOKED",
+          extra: { providerBinding: revoked },
+        });
+      }
+
+      if (!providerRequest.definitionId) {
+        return respondRouted({
+          // No guess at which system is meant. A binding to a system nobody
+          // named is a binding to nothing.
+          message: "أي نظام تريد ربطه؟ سمِّه لي.",
+          state: "NEEDS_INPUT",
+          cause: "PROVIDER_DEFINITION_MISSING",
+        });
+      }
+      const opening = await beginProviderSetup({
+        principalId: scope.principalId,
+        scopeId: scope.scopeId,
+        definitionId: providerRequest.definitionId,
+        requestedCapabilities: providerRequest.capabilities ?? ["READ"],
+        ...(providerRequest.endpointUrl ? { endpointUrl: providerRequest.endpointUrl } : {}),
+      });
+      return respondRouted({
+        // Every word of this is the lifecycle. Nothing is connected yet, and
+        // the sentence says so rather than letting the link imply otherwise.
+        message:
+          "فتحتُ سطحاً آمناً لإدخال بيانات الاعتماد. لا تكتبها هنا في المحادثة. لن يصبح الربط قائماً بمجرد حفظها — بعدها أتحقق من الاتصال وممّا يسمح به فعلاً.",
+        state: "SETUP_PENDING",
+        cause: "PROVIDER_SETUP_OPENED",
+        extra: {
+          providerSetup: {
+            bindingId: opening.bindingId,
+            definitionId: opening.definitionId,
+            lifecycle: opening.lifecycle,
+            // The trusted surface, named. Not a field, and not a value.
+            actionId: "provider.connect",
+            collects: opening.collects,
+            expiresAt: opening.expiresAt.toISOString(),
+          },
+        },
+      });
+    } catch (error) {
+      if (error instanceof ProviderBindingError) {
+        return respondRouted({
+          message:
+            error.code === "FORBIDDEN"
+              ? "لا تملك صلاحية ربط الأنظمة في هذه الجهة."
+              : error.message,
+          state: error.code === "FORBIDDEN" ? "FORBIDDEN" : "PROVIDER_SETUP_REFUSED",
+          cause: `PROVIDER_${error.code}`,
+        });
+      }
+      throw error;
+    }
+  }
+
   const livingObjectRequest = "livingObject" in envelope ? envelope.livingObject : undefined;
   if (livingObjectRequest || routeDecision.route === "PERSISTENT_LIVING_OBJECT") {
     const scope = scopeResolution.scope;

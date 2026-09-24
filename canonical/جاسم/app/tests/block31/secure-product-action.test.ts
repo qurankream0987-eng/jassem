@@ -65,11 +65,29 @@ describe("a product action opens a door and carries no secret", () => {
   // ── 1. The registry defines, the model does not ───────────────────────────
 
   it("every registered action is a general product verb", () => {
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: exactly six actions are registered.
+    // WHY_IT_IS_WRONG: it is not wrong. It is an INVENTORY LOCK, and it did
+    //   its job — the provider binding phase registered a seventh and this
+    //   assertion is what said so. An inventory that may never grow would
+    //   forbid the registry from being a registry.
+    // NEW_EXPECTATION: seven, with `provider.connect` named, AND each of the
+    //   properties that make the new one safe asserted here rather than only
+    //   in its own suite.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: the old list constrained only
+    //   NAMES. Adding an action with model-definable fields, no sensitivity
+    //   marking or no re-authentication would have passed it by renaming one
+    //   line. Now the collection boundary of the credential surface is pinned
+    //   in the place that inventories the registry.
+    //
     const ids = actions.listProductActions().map((action) => action.id).sort();
     expect(ids).toEqual([
       "account.close",
       "account.create",
       "credential.rotate",
+      "provider.connect",
       "session.establish",
       "session.revoke",
       "settings.update",
@@ -79,6 +97,18 @@ describe("a product action opens a door and carries no secret", () => {
         expect(action.id, action.id).not.toContain(word);
       }
     }
+    // The surface a provider credential is typed into. Every field that could
+    // carry material is SENSITIVE, the only field that is not carries an
+    // identifier the runtime re-authorizes anyway, and it is single-use.
+    const connect = actions.getProductAction("provider.connect")!;
+    expect(connect.reauthentication).toBe(true);
+    expect(connect.idempotency).toBe("SINGLE_USE");
+    expect(connect.risk).toBe("HIGH");
+    expect(
+      connect.fields.filter((field) => field.kind !== "SENSITIVE").map((field) => field.key),
+    ).toEqual(["bindingId"]);
+    // And nothing it renders carries a value, same as every other action.
+    expect(JSON.stringify(actions.presentationFor(connect))).not.toContain("value");
   });
 
   it("the presentation contract carries labels and kinds, never a value", () => {

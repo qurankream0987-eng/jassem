@@ -183,6 +183,13 @@
       "when": 1788273600007,
       "tag": "0025_verification_requests",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1788273600008,
+      "tag": "0026_provider_bindings",
+      "breakpoints": true
     }
   ]
 }

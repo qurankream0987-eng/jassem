@@ -944,3 +944,88 @@ registerProductAction({
     };
   },
 });
+
+/**
+ * «اربط نظامي» — the trusted surface a provider credential is collected on.
+ *
+ * ─── WHY THIS IS ONE ACTION AND NOT ONE PER PROVIDER ─────────────────────────
+ *
+ * The credential's SHAPE differs by authentication method — an API key, a
+ * username and password, a token, a certificate — but the boundary does not.
+ * So there is one action, its sensitive fields are the superset, and which of
+ * them are required is read from the provider DEFINITION at submission time.
+ *
+ *   No ShopifySetupAction. No StripeCredentialAction.
+ *   DOMAIN_PRODUCT_ACTION_TYPES_ADDED = 0
+ *
+ * ─── WHAT THE CONVERSATION CARRIES ──────────────────────────────────────────
+ *
+ * The intent, and the id of a binding that a person with `manage_providers`
+ * already opened in their own acting scope. Not the secret.
+ *
+ *   CREDENTIAL_INPUT != CHAT_INPUT
+ *   MODEL_SEES_PROVIDER_SECRET = 0 · CHAT_TRANSCRIPT_CONTAINS_SECRET = 0
+ *
+ * ─── THE BINDING ID IS NOT AUTHORITY ────────────────────────────────────────
+ *
+ * It is typed into a surface, so it is a claim. `completeProviderSetup`
+ * re-reads standing in the binding's own scope before it accepts anything, and
+ * answers a guessed id, another scope's id and a former member's id with the
+ * identical refusal.
+ *
+ *   CROSS_SCOPE_SETUP_LINK_ACCEPTED = 0 · SETUP_LINK != AUTHORIZATION
+ */
+registerProductAction({
+  id: "provider.connect",
+  version: 1,
+  title: "ربط نظام خارجي",
+  consequence:
+    "تُجمع بيانات الاعتماد في سطح آمن ولا تمر عبر المحادثة. الربط لا يصبح مُتحقّقًا بمجرد حفظها.",
+  authentication: "AUTHENTICATED",
+  reauthentication: true,
+  risk: "HIGH",
+  fields: [
+    { key: "bindingId", label: "الربط", kind: "TEXT", required: true },
+    { key: "apiKey", label: "مفتاح الواجهة", kind: "SENSITIVE", required: false },
+    { key: "username", label: "اسم المستخدم", kind: "SENSITIVE", required: false },
+    { key: "password", label: "كلمة المرور", kind: "SENSITIVE", required: false },
+    { key: "token", label: "الرمز", kind: "SENSITIVE", required: false },
+    { key: "accessToken", label: "رمز الوصول", kind: "SENSITIVE", required: false },
+    { key: "certificate", label: "الشهادة", kind: "SENSITIVE", required: false },
+  ],
+  confirmation: "EXPLICIT",
+  availability: "AVAILABLE",
+  ttlSeconds: 600,
+  idempotency: "SINGLE_USE",
+  execute: async ({ actor, values }) => {
+    if (!actor) return { outcome: "DENIED", detail: "Nobody is signed in." };
+    // Imported here rather than at the top: the binding runtime reads this
+    // module's registry, and a cycle between them would be a load-order bug
+    // waiting to happen.
+    const { completeProviderSetup, ProviderBindingError } = await import("./provider-binding");
+    const material: Record<string, string> = {};
+    for (const key of ["apiKey", "username", "password", "token", "accessToken", "certificate"]) {
+      const value = values[key];
+      if (typeof value === "string" && value.length > 0) material[key] = value;
+    }
+    try {
+      const done = await completeProviderSetup({
+        bindingId: String(values.bindingId ?? ""),
+        principalId: String(actor.id),
+        material,
+      });
+      return {
+        outcome: "EXECUTED",
+        // The lifecycle, said plainly, because this is exactly the moment
+        // somebody would otherwise believe they are connected.
+        record: { lifecycle: done.lifecycle },
+        detail: "A credential reference was attached. The connection is not verified yet.",
+      };
+    } catch (error) {
+      if (error instanceof ProviderBindingError) {
+        return { outcome: "DENIED", detail: error.message };
+      }
+      throw error;
+    }
+  },
+});

@@ -430,6 +430,14 @@ function narrowestMismatch(
 const SOURCE_BY_PROOF_CLASS: Readonly<Record<string, EffectClaimSource>> = Object.freeze({
   self_report: "SELF_REPORTED",
   counterparty_confirm: "OWNER_CONFIRMATION",
+  // A verified provider binding read it. `BOUND_PROVIDER_RECEIPT` was already
+  // in the vocabulary and already in CONSEQUENTIAL_SOURCES below — but until
+  // the binding runtime existed, no proof class mapped to it, so on this axis
+  // the strongest machine source a policy accepted was one nothing could
+  // produce. It is set by the binding runtime from the CHANNEL, never lifted
+  // from a payload, and it still only makes the answer ELIGIBLE: age, purpose
+  // and the scope's own policy decide the rest.
+  bound_provider_receipt: "BOUND_PROVIDER_RECEIPT",
   authenticated_webhook: "INDEPENDENT_READBACK",
   signed_proof: "INTERNAL_READBACK",
   system: "INTERNAL_READBACK",
