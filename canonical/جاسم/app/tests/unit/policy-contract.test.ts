@@ -157,24 +157,27 @@ describe("no model is consulted at enforcement time", () => {
       .split("\n")
       .filter(Boolean)
       .sort();
-    // One boundary, named in exactly six places: the five that ACT — the turn,
-    // the executor, the commitment, the transaction and the world — and one
-    // comment recording that the refused-keys set is mirrored. Nothing
-    // interprets. The world runtime joined the list by CALLING the boundary
-    // rather than by reading a rule of its own, which is the distinction this
-    // test exists to hold.
+    // One boundary, named in exactly seven places: the six that ACT — the
+    // turn, the executor, the commitment, the transaction, the world and the
+    // standing monitor — and one comment recording that the refused-keys set
+    // is mirrored. Nothing interprets. Each of those joined the list by
+    // CALLING the boundary rather than by reading a rule of its own, which is
+    // the distinction this test exists to hold.
     expect(callers).toEqual([
       "api/runtime/agreement-runtime.ts",
       "api/runtime/authority-acts.ts",
       "api/runtime/jasim-runtime.ts",
       "api/runtime/model-output-trust.ts",
+      "api/runtime/monitoring-runtime.ts",
       "api/runtime/transaction-runtime.ts",
       "api/runtime/world-runtime.ts",
     ]);
-    // And it consults it the same way everything else does: one call, no
+    // And each consults it the same way everything else does: one call, no
     // branch per class, no interpretation of what a rule means.
-    const world = readFileSync(resolve(process.cwd(), "api/runtime/world-runtime.ts"), "utf8");
-    expect(world.match(/evaluatePolicies\(/g)).toHaveLength(1);
+    for (const file of ["api/runtime/world-runtime.ts", "api/runtime/monitoring-runtime.ts"]) {
+      const text = readFileSync(resolve(process.cwd(), file), "utf8");
+      expect(text.match(/evaluatePolicies\(/g), file).toHaveLength(1);
+    }
   });
 
   it("no capability reads a policy of its own", () => {

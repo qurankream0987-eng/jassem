@@ -214,7 +214,10 @@ const EXECUTABLE_SHAPES: readonly RegExp[] = Object.freeze([
   /\beval\s*\(/i,
   /\bnew\s+Function\s*\(/i,
   /\bfunction\s*\*?\s*\(/i,
-  /=>\s*[{(]/,
+  // An arrow followed by anything that could be a body. The narrower form
+  // `=>\s*[{(]` let `() => true` through, which is every bit as much a program
+  // as `() => { return true }`.
+  /=>\s*[\w{(['"`]/,
   /\brequire\s*\(/i,
   /\bimport\s*\(/i,
   /\bprocess\s*\.\s*env\b/i,

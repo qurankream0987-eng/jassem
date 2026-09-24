@@ -698,6 +698,123 @@ FALSE_WORLD_SUCCESS = 0
 FALSE_PERSISTENCE   = 0
 ```
 
+## 4.12 A STANDING CONDITION
+
+Some of what a person asks for is not a question but a **watch**: «راقب السعر
+وأخبرني إذا نزل», «إذا وصلت الحرارة إلى ٥ أخبرني», «نبّهني إذا تأخر». A
+standing condition outlives the turn that created it and is evaluated durably,
+whether or not anybody is looking.
+
+```
+CONVERSATION
+  -> MONITORING INTENT
+    -> STANDING CONDITION
+      -> AUTHORIZED OBSERVATION SOURCE
+        -> DURABLE EVALUATION
+          -> STATE TRANSITION
+            -> NOTIFICATION INTENT
+              -> observation · verification · persistence
+```
+
+```
+CONDITION_MATCHED != USER_NOTIFIED
+LEVEL             != EDGE
+UNKNOWN           != FALSE
+UNKNOWN           != ABSENT
+ROUTED            != EVALUATED
+MONITORING AUTHORITY != EXECUTION AUTHORITY
+```
+
+### One engine, and the subject is data
+
+«راقب السعر», «راقب الحرارة» and «راقب حالة الطلب» are one mechanism over three
+payloads. What is being measured belongs to the observation, never to the
+monitor's type.
+
+```
+DOMAIN_MONITOR_TYPES_ADDED = 0
+DOMAIN_WATCHERS_ADDED      = 0
+DOMAIN_SCHEDULE_TYPES_ADDED = 0
+DOMAIN_NOTIFICATION_TYPES_ADDED = 0
+```
+
+`PriceMonitor`, `DeliveryMonitor`, `FlightMonitor`, `DeviceMonitor` and
+`StockMonitor` are the names this section exists to prevent.
+
+### A condition is typed, and never a program
+
+A model may PROPOSE a condition; the runtime owns it. Every leaf is an operator
+from a closed set — equals, greater_than, contains, exists, changed,
+entered_state, left_state, within_range — over a dotted field path and a
+scalar, composed with all, any and not. There is no raw JavaScript, no `eval`,
+no SQL and no expression string, because a condition that could compute could
+also act.
+
+### A verdict has three values
+
+```
+TRUE · FALSE · UNKNOWN
+```
+
+A missing fact is UNKNOWN, not false. A comparison against the wrong kind of
+value is UNKNOWN. An unknown leaf survives `all` and `any` rather than
+collapsing, and negating unknown is unknown. A monitor whose verdict is unknown
+has NOT decided that the world is fine.
+
+### Freshness decides who may decide
+
+A reading with no declared horizon is UNKNOWN, never CURRENT. A monitor asking
+about the state NOW may not be decided by yesterday's temperature — unless it
+explicitly permits history, which is a different monitor and says so.
+
+### Level is not edge
+
+`price < 50` is a LEVEL question. *Crossed from ≥ 50 to < 50* is an EDGE one.
+A repeating poll over an unchanged fact must notify once, not every minute, so
+the previous verdict is persisted and a REPEAT is told apart from a RISE. A
+LEVEL condition that repeats AND notifies is refused, and the refusal names
+EDGE.
+
+### Absence is claimed, never inferred
+
+```
+UNKNOWN != ABSENT
+```
+
+«إذا لم يصل الرد خلال يوم» needs an expected observation, the window it had to
+arrive in, and a clock. Nothing having been seen is not the same as nothing
+having happened, and a monitor never turns silence into a fact without the
+window that makes it one.
+
+### A match is not a notification
+
+```
+CONDITION_MATCHED -> NOTIFICATION_INTENT -> trusted delivery -> receipt
+```
+
+A monitor transitions and creates an INTENT. It delivers nothing and speaks for
+no delivery. When the channels a person asked for have no provider, the trigger
+still stands and the projection says which channels are unconfigured — the
+trigger is never lost to make the delivery look clean.
+
+### Detecting is not authority to act
+
+«إذا نزل السعر تحت ٩٥ اشترِ» contains two authorities. A standing monitor may
+hold the first and never the second: its only actions are NOTIFY and NONE, and
+anything further must satisfy its own envelope at the moment it happens. A
+monitor creates no authority.
+
+### No fake live
+
+A monitor polls, on the durable duty cycle that already existed. Its evaluation
+ledger is ordered and resumable from a cursor — which a later transport will
+subscribe from — and until then nothing claims «مباشر».
+
+```
+FALSE_TRIGGERS      = 0
+FALSE_NOTIFICATIONS = 0
+```
+
 ## 5. Business is a scope, not an app
 
 A Business may own data, Needs, Offerings, Resources, Capacity, Policies,

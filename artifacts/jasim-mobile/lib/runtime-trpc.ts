@@ -269,3 +269,81 @@ export async function getWorldEvents(
     ...(after !== undefined ? { after } : {}),
   });
 }
+
+// ── Standing monitors ────────────────────────────────────────────────────────
+//
+//   NO FAKE «LIVE»
+//
+// The SAME `runtime.*` procedures the web app calls. There is no
+// MobileMonitorRuntime: a monitor is created by talking, evaluated by the
+// server's own sweep, and read back here. This polls a durable ledger and
+// never claims to be subscribed to anything.
+
+export type MobileMonitor = {
+  monitorId: string;
+  label: string;
+  watching: { kind: string; id: string; observationType: string };
+  condition: string;
+  mode: string;
+  repeat: string;
+  state: string;
+  lastCheckedAt: string | null;
+  lastResult: string;
+  lastFreshness: string;
+  lastMatchedAt: string | null;
+  triggerCount: number;
+  delivery: {
+    action: string;
+    requestedChannels: string[];
+    unconfiguredChannels: string[];
+    deliveryConfigured: boolean;
+  };
+  live: boolean;
+};
+
+export type MobileMonitorEvaluation = {
+  cursor: number;
+  evaluatedAt: string;
+  sourceClass: string;
+  result: string;
+  freshness: string;
+  transition: string;
+  triggered: boolean;
+};
+
+export async function listMonitors(organizationId?: string): Promise<MobileMonitor[]> {
+  const result = await call<{ monitors: MobileMonitor[] }>(
+    "runtime.monitorList",
+    "GET",
+    organizationId ? { organizationId } : undefined,
+  );
+  return result.monitors;
+}
+
+export function getMonitor(
+  monitorId: string,
+  organizationId?: string,
+): Promise<{ projection: MobileMonitor }> {
+  return call("runtime.monitorRead", "GET", {
+    monitorId,
+    ...(organizationId ? { organizationId } : {}),
+  });
+}
+
+/** Resumed from a cursor, so nothing between two polls is missed. */
+export async function getMonitorEvaluations(
+  monitorId: string,
+  after?: number,
+): Promise<{ evaluations: MobileMonitorEvaluation[]; cursor: number }> {
+  return call("runtime.monitorEvaluations", "GET", {
+    monitorId,
+    ...(after !== undefined ? { after } : {}),
+  });
+}
+
+export function transitionMonitor(
+  monitorId: string,
+  action: "pause" | "resume" | "cancel",
+): Promise<{ projection: MobileMonitor }> {
+  return call("runtime.monitorTransition", "POST", { monitorId, action });
+}

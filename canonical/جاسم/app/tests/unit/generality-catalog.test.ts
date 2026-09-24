@@ -800,6 +800,87 @@ describe("a world is durable state, not a generated application", () => {
   });
 });
 
+// ── A standing condition ─────────────────────────────────────────────────────
+
+describe("a standing condition is one engine, not one watcher per subject", () => {
+  const monitoring = SCENARIOS.filter((scenario) => scenario.family === "MONITORING");
+
+  it("blames no monitoring engine of its own", () => {
+    expect(GENERAL_GAPS as readonly string[]).not.toContain("MONITORING_ENGINE");
+    for (const scenario of [...monitoring, SCENARIOS.find((s) => s.id === "route.monitoring")!]) {
+      expect(scenario.route, scenario.id).toBe("MONITORING");
+      expect(scenario.gates.PLANNABLE, scenario.id).toBe("PASS");
+      // A standing condition that did not survive a restart would not be
+      // standing. This is the gate that says it does.
+      expect(scenario.gates.PERSISTENT, scenario.id).toBe("PASS");
+      if (scenario.currentBlocker === null) continue;
+      expect(GENERAL_GAPS, scenario.id).toContain(scenario.currentBlocker);
+    }
+  });
+
+  it("stopped being one block with one verdict", () => {
+    const running = monitoring.filter((scenario) => scenario.gates.EXECUTABLE === "PASS");
+    const waitingOnProvider = monitoring.filter(
+      (scenario) => scenario.gates.EXECUTABLE === "BLOCKED_BY_PROVIDER",
+    );
+    const waitingOnCapability = monitoring.filter(
+      (scenario) => scenario.gates.EXECUTABLE === "NOT_YET_IMPLEMENTED",
+    );
+    expect(running.length, "a condition that runs today").toBeGreaterThan(0);
+    expect(waitingOnProvider.length, "one waiting on something to read").toBeGreaterThan(0);
+    expect(waitingOnCapability.length, "one waiting on a capability").toBeGreaterThan(0);
+  });
+
+  it("watching writes rows, and rows are read back", () => {
+    for (const scenario of monitoring.filter((entry) => entry.gates.EXECUTABLE === "PASS")) {
+      expect(scenario.sideEffect, scenario.id).toBe("INTERNAL_STATE");
+      expect(scenario.gates.OBSERVABLE, scenario.id).toBe("PASS");
+      expect(scenario.gates.VERIFIABLE, scenario.id).toBe("PASS");
+      expect(scenario.currentBlocker, scenario.id).toBeNull();
+    }
+  });
+
+  it("detecting a condition is not authority to act on it", () => {
+    //   MONITORING AUTHORITY != EXECUTION AUTHORITY
+    expect(GENERAL_GAPS as readonly string[]).toContain("STANDING_ACTION_AUTHORITY");
+    const acting = monitoring.find((scenario) => scenario.id === "monitoring.standing_condition")!;
+    expect(acting.currentBlocker).toBe("STANDING_ACTION_AUTHORITY");
+    expect(acting.gates.EXECUTABLE).not.toBe("PASS");
+    // The DETECTION half is still real, and the entry says which half is which.
+    expect(acting.gates.OBSERVABLE).toBe("PASS");
+    expect(acting.truthfulRuntimeState).toContain("MONITORING AUTHORITY != EXECUTION AUTHORITY");
+  });
+
+  it("the runtime declares no per-subject monitor, watcher or scheduler", () => {
+    const source = readFileSync(resolve(process.cwd(), "api/runtime/monitoring-runtime.ts"), "utf8");
+    const declared = [...source.matchAll(/export (?:type|function|const|class|async function) (\w+)/g)]
+      .map((match) => match[1]!);
+    for (const name of declared) {
+      for (const word of ["Price", "Delivery", "Temperature", "Flight", "Device", "Stock", "Watcher", "Cron", "Scheduler"]) {
+        expect(name, `${name} names ${word}`).not.toContain(word);
+      }
+    }
+  });
+
+  it("the governing law records that a match is not a notification", () => {
+    const law = readFileSync(LAW, "utf8");
+    for (const clause of [
+      "A STANDING CONDITION",
+      "CONDITION_MATCHED != USER_NOTIFIED",
+      "LEVEL             != EDGE",
+      "UNKNOWN           != FALSE",
+      "UNKNOWN           != ABSENT",
+      "MONITORING AUTHORITY != EXECUTION AUTHORITY",
+      "DOMAIN_MONITOR_TYPES_ADDED = 0",
+      "DOMAIN_WATCHERS_ADDED      = 0",
+      "PriceMonitor",
+      "DeliveryMonitor",
+    ]) {
+      expect(law, clause).toContain(clause);
+    }
+  });
+});
+
 // ── The scoreboard, pinned ───────────────────────────────────────────────────
 
 describe("no scenario changes status silently", () => {
@@ -823,16 +904,16 @@ describe("no scenario changes status silently", () => {
       pass: {
         REPRESENTABLE: 162,
         ROUTABLE: 162,
-        PLANNABLE: 154,
-        EXECUTABLE: 99,
+        PLANNABLE: 161,
+        EXECUTABLE: 103,
         OBSERVABLE: 87,
-        VERIFIABLE: 81,
-        PRESENTABLE: 161,
-        PERSISTENT: 144,
+        VERIFIABLE: 86,
+        PRESENTABLE: 162,
+        PERSISTENT: 145,
       },
-      blockedByProvider: 39,
+      blockedByProvider: 41,
       blockedByEnvironment: 2,
-      notYetImplemented: 26,
+      notYetImplemented: 20,
       generalGaps: 12,
     });
   });

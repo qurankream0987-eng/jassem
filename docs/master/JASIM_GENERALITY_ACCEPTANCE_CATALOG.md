@@ -224,16 +224,16 @@ claim this catalog exists to prevent.
 |---|---:|---:|---:|---:|---:|
 | **REPRESENTABLE** | 162 | 0 | 0 | 0 | 0 |
 | **ROUTABLE** | 162 | 0 | 0 | 0 | 0 |
-| **PLANNABLE** | 154 | 8 | 0 | 0 | 0 |
-| **EXECUTABLE** | 99 | 26 | 35 | 2 | 0 |
-| **OBSERVABLE** | 87 | 6 | 28 | 0 | 41 |
-| **VERIFIABLE** | 81 | 12 | 28 | 0 | 41 |
-| **PRESENTABLE** | 161 | 1 | 0 | 0 | 0 |
-| **PERSISTENT** | 144 | 1 | 0 | 0 | 17 |
+| **PLANNABLE** | 161 | 1 | 0 | 0 | 0 |
+| **EXECUTABLE** | 103 | 20 | 37 | 2 | 0 |
+| **OBSERVABLE** | 87 | 4 | 30 | 0 | 41 |
+| **VERIFIABLE** | 86 | 5 | 30 | 0 | 41 |
+| **PRESENTABLE** | 162 | 0 | 0 | 0 | 0 |
+| **PERSISTENT** | 145 | 0 | 0 | 0 | 17 |
 
-Scenarios blocked by an absent **provider**: **39**
+Scenarios blocked by an absent **provider**: **41**
 Scenarios blocked by this **environment**: **2**
-Scenarios waiting on a **general capability**: **26**
+Scenarios waiting on a **general capability**: **20**
 
 ### General gaps
 
@@ -245,11 +245,11 @@ Each of these closes many scenarios at once. That is what makes it general.
 - `EXTERNAL_DISCOVERY_PROVIDER`
 - `LIVING_OBJECT_RUNTIME`
 - `LOCATION_OBSERVATION`
-- `MONITORING_ENGINE`
 - `REALTIME_RUNTIME`
 - `RESOURCE_SCOPED_PERMISSION_GRANT`
 - `SCOPE_BRANDING_SURFACE`
 - `SPONSORED_DISCOVERY_RUNTIME`
+- `STANDING_ACTION_AUTHORITY`
 - `SUBSCRIPTION_RUNTIME`
 
 ### Ratchets
@@ -273,7 +273,7 @@ Each of these closes many scenarios at once. That is what makes it general.
 | `route.generated_presentation` | اعرض لي هذا كبطاقة | GENERATED_PRESENTATION | ● | ● | ● | E | — | — | ● | — | — |
 | `route.product_action` | سجّلني خروج | TRUSTED_PRODUCT_ACTION | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `route.plangraph` | رتب لي مؤتمرًا الشهر القادم | GENERAL_PLANGRAPH | ● | ● | ● | P | ● | ● | ● | ● | — |
-| `route.monitoring` | راقب السعر وأخبرني إذا نزل | MONITORING | ● | ● | ○ | ○ | ○ | ○ | ○ | ○ | MONITORING_ENGINE |
+| `route.monitoring` | راقب السعر وأخبرني إذا نزل | MONITORING | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `route.living_object` | أين وصل طلبي؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ○ | ○ | ○ | ○ | ● | ● | LIVING_OBJECT_RUNTIME |
 | `route.persistent_world` | أنشئ نظامًا دائمًا لشركتي | PERSISTENT_WORLD | ● | ● | ● | ● | ● | ● | ● | ● | — |
 
@@ -397,11 +397,11 @@ Each of these closes many scenarios at once. That is what makes it general.
 
 | id | goal | route | REPR | ROUT | PLAN | EXEC | OBSE | VERI | PRES | PERS | blocker |
 |---|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|
-| `monitoring.price` | راقب السعر وأخبرني إذا نزل | MONITORING | ● | ● | ○ | ○ | ● | ○ | ● | ● | MONITORING_ENGINE |
-| `monitoring.state` | راقب حالة الطلب | MONITORING | ● | ● | ○ | ○ | ● | ○ | ● | ● | MONITORING_ENGINE |
-| `monitoring.standing_condition` | إذا نزل تحت 200 اشترِ | MONITORING | ● | ● | ○ | ○ | ● | ○ | ● | ● | MONITORING_ENGINE |
-| `monitoring.notify_on_condition` | نبّهني إذا تأخر | MONITORING | ● | ● | ○ | ○ | ● | ○ | ● | ● | MONITORING_ENGINE |
-| `monitoring.repeated_observation` | اقرأ الحرارة كل ساعة | MONITORING | ● | ● | ○ | ○ | ● | ○ | ● | ● | MONITORING_ENGINE |
+| `monitoring.price` | راقب السعر وأخبرني إذا نزل | MONITORING | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `monitoring.state` | راقب حالة الطلب | MONITORING | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `monitoring.standing_condition` | إذا نزل تحت 200 اشترِ | MONITORING | ● | ● | ● | ○ | ● | ● | ● | ● | STANDING_ACTION_AUTHORITY |
+| `monitoring.notify_on_condition` | نبّهني إذا تأخر | MONITORING | ● | ● | ● | ● | ● | ● | ● | ● | — |
+| `monitoring.repeated_observation` | اقرأ الحرارة كل ساعة | MONITORING | ● | ● | ● | P | P | P | ● | ● | — |
 
 ### REALTIME_LIVING_OBJECTS · 6
 
@@ -514,7 +514,7 @@ Each of these closes many scenarios at once. That is what makes it general.
 | `idea.rare_seed_lending_ring` | فكرة: حلقة إعارة بذور نادرة، تُرجَع بضعف الكمية بعد الموسم | GENERAL_PLANGRAPH | ● | ● | ● | ● | ● | ● | ● | ● | — |
 | `idea.vanishing_dialect_archive` | فكرة: أرشيف للهجات التي تنقرض، يسجّله كبار السن وتُفهرس مقاطعه | GENERAL_PLANGRAPH | ● | ● | ● | P | P | P | ● | ● | — |
 | `idea.dark_sky_map` | فكرة: خريطة لأماكن الظلام الصالحة لرصد النجوم يحدّثها الراصدون | GENERAL_PLANGRAPH | ● | ● | ● | ○ | ○ | ○ | ● | ● | LOCATION_OBSERVATION |
-| `idea.flood_channel_watch` | فكرة: أهل الوادي يتابعون مجرى السيل ويُنبَّهون قبل الفيضان | MONITORING | ● | ● | ○ | ○ | ○ | ○ | ● | ● | MONITORING_ENGINE |
+| `idea.flood_channel_watch` | فكرة: أهل الوادي يتابعون مجرى السيل ويُنبَّهون قبل الفيضان | MONITORING | ● | ● | ● | P | P | P | ● | ● | — |
 
 <!-- END GENERATED -->
 

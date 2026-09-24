@@ -137,8 +137,13 @@ const NOT_IMPLEMENTED: ReadonlySet<SemanticRoute> = new Set<SemanticRoute>([
   // unavailable cases are that runtime's own — NEEDS_INPUT for a definition
   // that never arrived, DENIED for a rule of the scope, CONFLICT for a stale
   // version — and every one of them is more specific than "not built".
+  // MONITORING left this set when the standing-condition runtime landed. A
+  // turn now creates a durable monitor, pauses one, resumes one and lists
+  // them, and its condition is evaluated by the sweep that already existed.
+  // Its unavailable cases are that runtime's own — NEEDS_INPUT for a subject
+  // that never arrived, DENIED for a rule of the scope or a condition that
+  // would notify forever — and each says far more than "not built".
   "TRUSTED_PRODUCT_ACTION",
-  "MONITORING",
 ]);
 
 // ── Precedence, as data ──────────────────────────────────────────────────────

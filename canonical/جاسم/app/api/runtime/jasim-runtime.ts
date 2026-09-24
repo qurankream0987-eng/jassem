@@ -97,6 +97,15 @@ import {
   readWorld,
 } from "./world-runtime";
 import {
+  MonitorError,
+  conversationMonitors,
+  createMonitor,
+  describeCondition,
+  listMonitors,
+  projectMonitor,
+  transitionMonitor,
+} from "./monitoring-runtime";
+import {
   CONVERSATION_SCOPE_KEY,
   authorizeScopeAction,
   conversationScopeMemory,
@@ -5645,6 +5654,27 @@ const ActingScopeRequestSchema = z
   .strict();
 
 /**
+ * A REQUEST to keep watching something. Never a grant of authority to act.
+ *
+ *   MONITORING AUTHORITY != EXECUTION AUTHORITY
+ *
+ * «إذا نزل السعر تحت ٩٥ اشترِ» is two things, and this schema carries exactly
+ * one of them. The model may say what to watch and what counts as a match; it
+ * may not say whose it is, that it matched, that anybody was told, or that a
+ * purchase is authorized. `MONITOR_AUTHORITY_KEYS` refuses all of that before
+ * this schema is reached, and the only actions a monitor has are NOTIFY and
+ * NONE.
+ */
+const MonitoringRequestSchema = z
+  .object({
+    intent: z.enum(["CREATE", "PAUSE", "RESUME", "CANCEL", "LIST"]),
+    /** For PAUSE/RESUME/CANCEL. Omitted, this conversation's own is used. */
+    monitorRef: z.string().trim().min(1).max(80).optional(),
+    monitor: z.record(z.string(), z.unknown()).optional(),
+  })
+  .strict();
+
+/**
  * A REQUEST for a durable world. Never a grant of one.
  *
  *   ROUTED != MATERIALIZED
@@ -5907,6 +5937,7 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       authorityRequest: AuthorityRequestSchema.optional(),
       productAction: ProductActionRequestSchema.optional(),
       world: WorldRequestSchema.optional(),
+      monitoring: MonitoringRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -5944,6 +5975,7 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       authorityRequest: AuthorityRequestSchema.optional(),
       productAction: ProductActionRequestSchema.optional(),
       world: WorldRequestSchema.optional(),
+      monitoring: MonitoringRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -5981,6 +6013,7 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       authorityRequest: AuthorityRequestSchema.optional(),
       productAction: ProductActionRequestSchema.optional(),
       world: WorldRequestSchema.optional(),
+      monitoring: MonitoringRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -6909,6 +6942,122 @@ export async function routeRuntimeConversationTurn(input: {
               ? "هذا الإجراء يحتاج تسجيل دخول أولاً."
               : error.message,
           state: error.code === "UNAUTHENTICATED" ? "NEEDS_INPUT" : "DENIED",
+          cause: error.code,
+        });
+      }
+      throw error;
+    }
+  }
+
+  // ── A STANDING CONDITION: WATCH, AND SAY WHAT WATCHING MEANS ─────────────
+  //
+  //   CONVERSATION · MONITORING INTENT · STANDING CONDITION
+  //   AUTHORIZED OBSERVATION · DURABLE EVALUATION · NOTIFICATION INTENT
+  //
+  //   CONDITION_MATCHED != USER_NOTIFIED
+  //   MONITORING AUTHORITY != EXECUTION AUTHORITY
+  //
+  // «راقب هذا وأخبرني إذا تغيّر» ends here and goes no further. A monitor is
+  // durable state, not a run: nothing is executed, nothing is scheduled by
+  // hand, and the condition is evaluated by the sweep that already exists.
+  const monitoringRequest = "monitoring" in envelope ? envelope.monitoring : undefined;
+  if (monitoringRequest || routeDecision.route === "MONITORING") {
+    const scope = scopeResolution.scope;
+    try {
+      const intent = monitoringRequest?.intent ?? "CREATE";
+
+      if (intent === "LIST") {
+        const watching = await listMonitors(scope);
+        const live = watching.filter((entry) => entry.state === "ACTIVE");
+        return respondRouted({
+          message:
+            watching.length === 0
+              ? "لا أراقب لك شيئاً الآن."
+              : `أراقب لك ${live.length} من ${watching.length}: ${watching
+                  .map((entry) => `«${entry.label}» (${entry.state})`)
+                  .join("، ")}.`,
+          state: "WATCHING",
+          cause: "MONITORS_LISTED",
+          extra: {
+            monitoring: { monitors: await Promise.all(watching.map(projectMonitor)) },
+          },
+        });
+      }
+
+      if (intent === "CREATE") {
+        if (!monitoringRequest?.monitor) {
+          return respondRouted({
+            message:
+              "فهمت أنك تريد مراقبة مستمرة، لكن لم يتضح ما أراقبه ولا ما الذي يُعدّ تغيّراً. حدّد لي ذلك.",
+            state: "NEEDS_INPUT",
+            cause: "MONITOR_SUBJECT_MISSING",
+          });
+        }
+        const monitor = await createMonitor({
+          request: monitoringRequest.monitor,
+          scope,
+          conversationId: input.conversationId,
+        });
+        const projection = await projectMonitor(monitor);
+        const delivery = projection.delivery as { unconfiguredChannels: string[] };
+        return respondRouted({
+          // What was actually promised, including the part a person would
+          // otherwise assume: a channel with no provider will not carry this.
+          message:
+            delivery.unconfiguredChannels.length > 0
+              ? `سأراقب «${monitor.label}». الشرط: ${describeCondition(monitor.condition)}. لا يوجد مزوّد لـ${delivery.unconfiguredChannels.join("، ")}، فسيصلك التنبيه داخل جاسم فقط.`
+              : `سأراقب «${monitor.label}». الشرط: ${describeCondition(monitor.condition)}، وسأخبرك عندما يتحقق.`,
+          state: "WATCHING",
+          cause: "MONITOR_CREATED",
+          extra: { monitoring: { monitor: projection } },
+          presentation: routePresentation({
+            interactionNeed: "show_state",
+            data: projection,
+          }),
+        });
+      }
+
+      // PAUSE · RESUME · CANCEL. The reference comes from what the model named
+      // or from this conversation's own monitors — never an ordinal.
+      const named = monitoringRequest?.monitorRef;
+      const mine = await conversationMonitors({ scope, conversationId: input.conversationId });
+      const target = named ?? (mine.length === 1 ? mine[0]!.monitorId : undefined);
+      if (!target) {
+        return respondRouted({
+          message:
+            mine.length === 0
+              ? "لا أراقب لك شيئاً في هذه المحادثة."
+              : `تراقب أكثر من شيء هنا: ${mine.map((entry) => `«${entry.label}»`).join("، ")}. أيها تقصد؟`,
+          state: "NEEDS_INPUT",
+          cause: "MONITOR_REFERENCE_MISSING",
+        });
+      }
+      const moved = await transitionMonitor({
+        monitorId: target,
+        scope,
+        action: intent.toLowerCase() as "pause" | "resume" | "cancel",
+      });
+      return respondRouted({
+        message:
+          moved.state === "PAUSED"
+            ? `أوقفت مراقبة «${moved.label}». لن أقيّم شيئاً حتى تستأنفها.`
+            : moved.state === "ACTIVE"
+              ? `استأنفت مراقبة «${moved.label}».`
+              : `ألغيت مراقبة «${moved.label}».`,
+        state: "WATCHING",
+        cause: `MONITOR_${moved.state}`,
+        extra: { monitoring: { monitor: await projectMonitor(moved) } },
+      });
+    } catch (error) {
+      if (error instanceof MonitorError) {
+        return respondRouted({
+          message: error.message,
+          state:
+            error.code === "NOT_FOUND"
+              ? "UNAVAILABLE"
+              : error.code === "STATE" || error.code === "CONFLICT"
+                ? "CONFLICT"
+                : "DENIED",
           cause: error.code,
         });
       }

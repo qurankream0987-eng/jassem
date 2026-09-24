@@ -155,12 +155,11 @@ describe("with no plan, the envelope still decides — unchanged", () => {
 });
 
 describe("an unbuilt mechanism says so", () => {
-  it.each(["TRUSTED_PRODUCT_ACTION", "MONITORING"] as const)(
+  it.each(["TRUSTED_PRODUCT_ACTION"] as const)(
     "%s reports NOT_IMPLEMENTED",
     (planKind) => {
       const map = {
         TRUSTED_PRODUCT_ACTION: "IDENTITY_CHANGE",
-        MONITORING: "MONITORING",
       } as const;
       const decision = route({
         envelopeKind: "direct_action",
@@ -169,6 +168,18 @@ describe("an unbuilt mechanism says so", () => {
       expect(decision.downstream).toBe("NOT_IMPLEMENTED");
     },
   );
+
+  it("MONITORING is AVAILABLE now that the standing-condition runtime exists", () => {
+    // The third route to leave NOT_IMPLEMENTED, and for the same reason as
+    // the other two: the mechanism behind it was built. A turn creates a
+    // durable monitor, and the condition is evaluated by the sweep that
+    // already existed rather than by a scheduler invented for it.
+    const decision = route({ envelopeKind: "direct_action", plan: planOf("MONITORING") });
+    expect(decision.route).toBe("MONITORING");
+    expect(decision.downstream).toBe("AVAILABLE");
+    // And it still routes AWAY from execution: «راقب السعر» is not «ما السعر».
+    expect(decision.reason).toBe("PLAN_MONITORING");
+  });
 
   it("PERSISTENT_WORLD is AVAILABLE now that the world runtime exists", () => {
     // It left NOT_IMPLEMENTED for the same reason DIRECT_READ did: the

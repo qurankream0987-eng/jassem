@@ -91,6 +91,7 @@ export function makeContinuationDispatcher(deps: {
 
 export type SweepResult = {
   temporal: { scanned: number; fired: number; rescheduled: number; completed: number; expired: number };
+  monitors: { evaluated: number; triggered: number; replayed: number };
   reservationsExpired: number;
   assignmentOffersExpired: number;
   trackSessionsExpired: number;
@@ -112,6 +113,14 @@ export async function runBlock2Sweep(
   const reservationsExpired = await expireDueReservations(db, { now });
   const assignmentOffersExpired = await expireDueAssignmentOffers(db, { now });
   const trackSessionsExpired = (await expireDueTrackSessions(db, { now })).length;
+
+  // Standing monitors evaluate HERE, inside the duty cycle that already
+  // exists. That is the whole of the scheduling story: no timer, no worker of
+  // its own, and restart recovery inherited rather than written again.
+  //
+  //   SECOND_SCHEDULERS_ADDED = 0
+  const { sweepDueMonitors } = await import("../monitoring-runtime");
+  const monitors = await sweepDueMonitors({ now });
 
   // resumeAt is part of the canonical Run record. Discovery only schedules
   // explicitly timed WAITING runs; input/approval waits remain parked.
@@ -137,6 +146,7 @@ export async function runBlock2Sweep(
   }
   return {
     temporal,
+    monitors,
     reservationsExpired,
     assignmentOffersExpired,
     trackSessionsExpired,

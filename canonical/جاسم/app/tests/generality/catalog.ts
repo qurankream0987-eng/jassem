@@ -125,7 +125,21 @@ export const GENERAL_GAPS = [
   // the same completion policy every effect uses. What reaches OUTSIDE JASIM
   // is a provider gap, which is a different thing and says so.
   "REALTIME_RUNTIME",
-  "MONITORING_ENGINE",
+  // MONITORING_ENGINE was here and is closed: a turn creates a durable
+  // standing condition, it is evaluated by the duty cycle that already
+  // existed, and the difference between «it is true» and «it just became
+  // true» is kept so a poll cannot notify forever. What it was covering
+  // separately is below.
+  /**
+   * A standing condition can DETECT. It cannot ACT.
+   *
+   * «إذا نزل تحت ٢٠٠ اشترِ» is two things — watching, and buying — and the
+   * second needs an authority envelope evaluated at trigger time, which
+   * nothing issues. A monitor's only actions are NOTIFY and NONE, and
+   * widening that without the envelope would be a monitor granting itself
+   * authority nobody gave it.
+   */
+  "STANDING_ACTION_AUTHORITY",
   "LIVING_OBJECT_RUNTIME",
   // PERSISTENT_WORLD_MATERIALIZATION was here and is closed: a turn validates
   // a definition, authorizes it against the acting scope, commits it in one
@@ -377,10 +391,17 @@ const SCENARIOS_A_E: readonly Scenario[] = Object.freeze([
     primitives: ["Goal", "Constraint", "Observation", "Event", "Time"],
     capabilities: ["UNDERSTAND", "ROUTE", "MONITOR", "NOTIFY"],
     providers: ["NONE"],
-    sideEffect: "NONE",
+    // Watching writes durable rows of JASIM's own, and those rows are read
+    // back. A scenario that called this a pure read would be the false pure
+    // read this catalog refuses.
+    sideEffect: "INTERNAL_STATE",
     requiresApproval: false,
-    gates: ROUTED_ONLY(),
-    currentBlocker: "MONITORING_ENGINE",
+    gates: gates({
+      REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+      EXECUTABLE: "PASS", OBSERVABLE: "PASS", VERIFIABLE: "PASS",
+      PRESENTABLE: "PASS", PERSISTENT: "PASS",
+    }),
+    currentBlocker: null,
     truthfulRuntimeState:
       "Routed to MONITORING, which reports NOT_IMPLEMENTED. Durable temporal triggers exist; no standing-condition engine consumes them.",
     domainBranchesRequired: 0,
@@ -1402,26 +1423,87 @@ const OBSERVATION_SCENARIOS: readonly Scenario[] = Object.freeze([
 // ── J · MONITORING ──────────────────────────────────────────────────────────
 
 const MONITORING_SCENARIOS: readonly Scenario[] = Object.freeze(
+  //
+  // These five shared one verdict while a standing condition could be routed
+  // to and never evaluated. They stop being one block: three run end to end,
+  // one waits on a provider to read from, and one is held by the half of it
+  // that a monitor deliberately cannot do.
+  //
+  // All five go through ONE engine. A price and a temperature differ in an
+  // observation's payload and in nothing the engine knows about.
+  //
+  //   DOMAIN_MONITOR_TYPES_ADDED = 0 · DOMAIN_WATCHERS_ADDED = 0
   ([
-    ["price", "راقب السعر وأخبرني إذا نزل"],
-    ["state", "راقب حالة الطلب"],
-    ["standing_condition", "إذا نزل تحت 200 اشترِ"],
-    ["notify_on_condition", "نبّهني إذا تأخر"],
-    ["repeated_observation", "اقرأ الحرارة كل ساعة"],
-  ] as const).map(([id, goal]) => ({
-    id: `monitoring.${id}`,
-    goal,
+    {
+      id: "price",
+      goal: "راقب السعر وأخبرني إذا نزل",
+      providers: ["NONE"] as const,
+      executable: "PASS" as const,
+      blocker: null,
+      state:
+        "A durable standing condition over the canonical observation for that subject. It fires on the transition and not on the fact, so a poll every minute on an unchanged price notifies once.",
+    },
+    {
+      id: "state",
+      goal: "راقب حالة الطلب",
+      providers: ["NONE"] as const,
+      executable: "PASS" as const,
+      blocker: null,
+      state:
+        "`changed`, `entered_state` and `left_state` are operators of the same condition language, and each is UNKNOWN rather than false until there is a previous reading to compare against.",
+    },
+    {
+      id: "standing_condition",
+      goal: "إذا نزل تحت 200 اشترِ",
+      providers: ["NONE"] as const,
+      executable: "NOT_YET_IMPLEMENTED" as const,
+      blocker: "STANDING_ACTION_AUTHORITY" as const,
+      state:
+        "The watching half runs: the condition is detected, recorded and notified. The buying half does not, and deliberately — a monitor's only actions are NOTIFY and NONE, because acting on a trigger needs an authority envelope evaluated at trigger time that nothing issues yet. MONITORING AUTHORITY != EXECUTION AUTHORITY.",
+    },
+    {
+      id: "notify_on_condition",
+      goal: "نبّهني إذا تأخر",
+      providers: ["NONE"] as const,
+      executable: "PASS" as const,
+      blocker: null,
+      state:
+        "Lateness is an ABSENCE, and it is claimed only with an expected observation and the window it had to arrive in — UNKNOWN != ABSENT. A match makes a notification INTENT and delivers nothing: CONDITION_MATCHED != USER_NOTIFIED, and the projection says which channels have no provider.",
+    },
+    {
+      id: "repeated_observation",
+      goal: "اقرأ الحرارة كل ساعة",
+      providers: ["DEVICE"] as const,
+      executable: "BLOCKED_BY_PROVIDER" as const,
+      blocker: null,
+      state:
+        "The hourly evaluation is real and durable — it survives a restart because it is a step in a duty cycle that re-enqueues itself. READING the temperature is the part with nothing plugged in; the engine evaluates what is there and never invents a number.",
+    },
+  ] as const).map((entry) => ({
+    id: `monitoring.${entry.id}`,
+    goal: entry.goal,
     family: "MONITORING" as const,
     route: "MONITORING" as const,
     primitives: ["Goal", "Constraint", "Observation", "Event", "Time", "Authority"] as const,
     capabilities: ["MONITOR", "OBSERVE", "NOTIFY"] as const,
-    providers: ["NONE"] as const,
-    sideEffect: "NONE" as const,
+    providers: entry.providers,
+    // A monitor writes rows of JASIM's own and reads them back.
+    sideEffect: "INTERNAL_STATE" as const,
     requiresApproval: false,
-    gates: ROUTED_ONLY({ OBSERVABLE: "PASS", PRESENTABLE: "PASS", PERSISTENT: "PASS" }),
-    currentBlocker: "MONITORING_ENGINE" as const,
-    truthfulRuntimeState:
-      "Routed to MONITORING, which reports NOT_IMPLEMENTED. Durable temporal triggers and canonical observations both exist; nothing evaluates a standing condition over them.",
+    gates: gates({
+      REPRESENTABLE: "PASS",
+      ROUTABLE: "PASS",
+      PLANNABLE: "PASS",
+      EXECUTABLE: entry.executable,
+      // The verdict, the freshness and the transition are written to a ledger
+      // and read back. What is NOT observable is a reading nobody can take.
+      OBSERVABLE: entry.executable === "BLOCKED_BY_PROVIDER" ? "BLOCKED_BY_PROVIDER" : "PASS",
+      VERIFIABLE: entry.executable === "BLOCKED_BY_PROVIDER" ? "BLOCKED_BY_PROVIDER" : "PASS",
+      PRESENTABLE: "PASS",
+      PERSISTENT: "PASS",
+    }),
+    currentBlocker: entry.blocker,
+    truthfulRuntimeState: entry.state,
     domainBranchesRequired: 0 as const,
   })),
 );
@@ -2044,12 +2126,15 @@ const IDEA_CASES: readonly Omit<Scenario, "family" | "domainBranchesRequired">[]
     sideEffect: "MESSAGE_DISPATCH",
     requiresApproval: false,
     gates: gates({
-      REPRESENTABLE: "PASS", ROUTABLE: "PASS",
+      REPRESENTABLE: "PASS", ROUTABLE: "PASS", PLANNABLE: "PASS",
+      EXECUTABLE: "BLOCKED_BY_PROVIDER",
+      OBSERVABLE: "BLOCKED_BY_PROVIDER",
+      VERIFIABLE: "BLOCKED_BY_PROVIDER",
       PRESENTABLE: "PASS", PERSISTENT: "PASS",
     }),
-    currentBlocker: "MONITORING_ENGINE",
+    currentBlocker: null,
     truthfulRuntimeState:
-      "Routed to MONITORING, which reports NOT_IMPLEMENTED — the same answer «راقب السعر» gets. A standing condition over an Observation stream is one missing engine, not one missing per subject.",
+      "The standing condition, the window, the transition and the notification intent are all real now — and the same engine «راقب السعر» uses. What is missing is a telemetry provider that knows the water level, which is a different fact and says so.",
   },
 ];
 

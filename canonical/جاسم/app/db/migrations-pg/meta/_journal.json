@@ -141,6 +141,13 @@
       "when": 1788273600001,
       "tag": "0019_world_scope",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1788273600002,
+      "tag": "0020_standing_monitors",
+      "breakpoints": true
     }
   ]
 }

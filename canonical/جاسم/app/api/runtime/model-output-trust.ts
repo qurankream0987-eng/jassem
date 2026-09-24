@@ -169,6 +169,16 @@ export const AUTHORITY_KEYS: ReadonlySet<string> = new Set([
   "worldkey",
   "visibility",
   "createdby",
+  // Monitoring authority. A model may say what to watch and what counts as a
+  // match. It may never say that a condition matched, that anybody was told,
+  // or that a delivery happened — those are the engine's own words, decided
+  // after an evaluation nobody asked the model about. Mirrored as
+  // `MONITOR_AUTHORITY_KEYS` in `monitoring-runtime.ts`, tested against this
+  // set.
+  "triggered",
+  "matched",
+  "notified",
+  "delivered",
   "transactionid",
   "settled",
   "fulfilled",

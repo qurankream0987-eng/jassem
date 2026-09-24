@@ -8,6 +8,8 @@
 // ============================================================================
 
 import {
+  bigint,
+  bigserial,
   boolean,
   index,
   integer,
@@ -892,3 +894,143 @@ export type Commitment = typeof commitments.$inferSelect;
 export type Organization = typeof organizations.$inferSelect;
 export type ScopePolicy = typeof scopePolicies.$inferSelect;
 export type ScopeProviderBinding = typeof scopeProviderBindings.$inferSelect;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// THE GENERAL MONITORING ENGINE
+//
+//   CONVERSATION · STANDING CONDITION · AUTHORIZED OBSERVATION
+//   DURABLE EVALUATION · STATE TRANSITION · NOTIFICATION INTENT
+//
+//   CONDITION_MATCHED != USER_NOTIFIED
+//   UNKNOWN != ABSENT · UNKNOWN != FALSE
+//   LEVEL != EDGE
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * ONE standing condition a person asked the runtime to keep watching.
+ *
+ * There is no second scheduler here and no second observation system: the
+ * evaluation runs inside the Block 2 sweep that already exists, and what it
+ * reads is a canonical observation or an authorized query. This row is the
+ * thing that did not exist — somewhere to keep WHAT is being watched, WHAT
+ * counts as a match, and what the last evaluation concluded, so that a
+ * repeating poll can tell "it is true" apart from "it just became true".
+ */
+export const standingMonitors = pgTable(
+  "standing_monitors",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    /** The acting scope. A person's own id, or an organization's. */
+    scopeId: varchar("scopeId", { length: 64 }).notNull(),
+    createdBy: varchar("createdBy", { length: 100 }).notNull(),
+    conversationId: varchar("conversationId", { length: 64 }),
+    /** What a person would call it. Rendered, never interpreted. */
+    label: varchar("label", { length: 200 }).notNull(),
+    /**
+     * WHAT is watched, in the canonical observation vocabulary that already
+     * exists. A property being a price or a temperature belongs to the data,
+     * never to the monitor's type.
+     */
+    subjectKind: varchar("subjectKind", { length: 64 }).notNull(),
+    subjectId: varchar("subjectId", { length: 64 }).notNull(),
+    observationType: varchar("observationType", { length: 64 }).notNull(),
+    /** OBSERVATION · AUTHORIZED_QUERY · WORLD_EVENT · ABSENCE. */
+    sourceClass: varchar("sourceClass", { length: 24 }).notNull(),
+    /** A typed condition tree the runtime validated. Never executable text. */
+    condition: jsonb("condition").$type<Record<string, unknown>>().notNull(),
+    /** LEVEL — it is true. EDGE — it just became true. */
+    evaluationMode: varchar("evaluationMode", { length: 8 }).notNull().default("EDGE"),
+    /** ONE_SHOT · REPEATING. */
+    repeatPolicy: varchar("repeatPolicy", { length: 12 }).notNull().default("ONE_SHOT"),
+    /** CURRENT — a stale reading may not decide. ANY — history is allowed. */
+    freshnessRequirement: varchar("freshnessRequirement", { length: 8 })
+      .notNull()
+      .default("CURRENT"),
+    /** For ABSENCE: the window an expected observation had to arrive in. */
+    windowMs: integer("windowMs"),
+    /** How often a scheduled evaluation runs. Never a cron string. */
+    pollMs: integer("pollMs").notNull().default(60000),
+    /** NOTIFY · NONE. A monitor creates no authority, so nothing else yet. */
+    actionKind: varchar("actionKind", { length: 16 }).notNull().default("NOTIFY"),
+    /** Channels the PERSON asked for. What is configured is a separate fact. */
+    actionChannels: jsonb("actionChannels").$type<string[]>().notNull().default([]),
+    /** ACTIVE · PAUSED · TRIGGERED · COMPLETED · CANCELLED · BLOCKED. */
+    state: varchar("state", { length: 16 }).notNull().default("ACTIVE"),
+    lastEvaluationAt: timestamp("lastEvaluationAt", { withTimezone: true }),
+    /** TRUE · FALSE · UNKNOWN. Never collapsed to a boolean. */
+    lastResult: varchar("lastResult", { length: 8 }),
+    lastFreshness: varchar("lastFreshness", { length: 8 }),
+    /** The observation id the last evaluation read. Replay is caught by it. */
+    lastObservationRef: varchar("lastObservationRef", { length: 64 }),
+    /** Facts the previous evaluation saw, so `changed` means something. */
+    lastFacts: jsonb("lastFacts").$type<Record<string, unknown>>().notNull().default({}),
+    lastMatchedAt: timestamp("lastMatchedAt", { withTimezone: true }),
+    triggerCount: integer("triggerCount").notNull().default(0),
+    /**
+     * The `events.id` this monitor has consumed up to.
+     *
+     * Ordered, durable and resumable — which is what a later realtime
+     * transport will subscribe from. This phase builds the cursor and none of
+     * the transport.
+     */
+    cursor: bigint("cursor", { mode: "number" }).notNull().default(0),
+    /** Bumped by every write, and every write is guarded by it. */
+    version: integer("version").notNull().default(0),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("standing_monitors_scope_idx").on(table.scopeId, table.state),
+    index("standing_monitors_subject_idx").on(
+      table.subjectKind,
+      table.subjectId,
+      table.observationType,
+      table.state,
+    ),
+    index("standing_monitors_due_idx").on(table.state, table.lastEvaluationAt),
+  ],
+);
+
+/**
+ * ONE evaluation, recorded.
+ *
+ * The ledger a person is shown and a later transport resumes from. It holds
+ * the verdict, the freshness and the transition — and deliberately not the
+ * payload it read, because a private row is not an audit record.
+ */
+export const monitorEvaluations = pgTable(
+  "monitor_evaluations",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    /**
+     * The ordered cursor. A uuid sorts by nothing, and «resume from where I
+     * was» needs an ordering the database assigns rather than one a caller
+     * hopes for.
+     */
+    cursor: bigserial("cursor", { mode: "number" }).notNull(),
+    monitorId: varchar("monitorId", { length: 64 }).notNull(),
+    scopeId: varchar("scopeId", { length: 64 }).notNull(),
+    evaluatedAt: timestamp("evaluatedAt", { withTimezone: true }).defaultNow().notNull(),
+    /** SCHEDULED · EVENT · ABSENCE_WINDOW. */
+    sourceClass: varchar("sourceClass", { length: 24 }).notNull(),
+    /** TRUE · FALSE · UNKNOWN. */
+    result: varchar("result", { length: 8 }).notNull(),
+    freshness: varchar("freshness", { length: 8 }).notNull(),
+    /** NONE · RISING · FALLING · REPEAT. What changed, not what was read. */
+    transition: varchar("transition", { length: 8 }).notNull().default("NONE"),
+    triggered: boolean("triggered").notNull().default(false),
+    observationRef: varchar("observationRef", { length: 64 }),
+    /** The notification INTENT, when one was made. Not a delivery receipt. */
+    notificationIntentId: varchar("notificationIntentId", { length: 64 }),
+    /** What made this evaluation unique. A replay collides on it. */
+    evaluationKey: varchar("evaluationKey", { length: 200 }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("monitor_evaluations_key_idx").on(table.monitorId, table.evaluationKey),
+    index("monitor_evaluations_monitor_idx").on(table.monitorId, table.cursor),
+    index("monitor_evaluations_scope_idx").on(table.scopeId, table.evaluatedAt),
+  ],
+);
+
+export type StandingMonitor = typeof standingMonitors.$inferSelect;
+export type MonitorEvaluation = typeof monitorEvaluations.$inferSelect;

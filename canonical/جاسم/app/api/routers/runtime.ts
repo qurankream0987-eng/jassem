@@ -36,6 +36,14 @@ import {
   worldEventsSince,
   worldHistory,
 } from "../runtime/world-runtime";
+import {
+  MonitorError,
+  listMonitors,
+  monitorEvaluationsSince,
+  projectMonitor,
+  readMonitor,
+  transitionMonitor,
+} from "../runtime/monitoring-runtime";
 import { resolveActingScope } from "../runtime/actor-scope";
 import {
   actOnRuntimeTask,
@@ -177,6 +185,20 @@ async function requireScope(
 // ── Error mapping ─────────────────────────────────────────────────────────────
 
 function handleRuntimeError(error: unknown): never {
+  if (error instanceof MonitorError) {
+    throw new TRPCError({
+      code:
+        error.code === "FORBIDDEN"
+          ? "FORBIDDEN"
+          : error.code === "NOT_FOUND"
+            ? "NOT_FOUND"
+            : error.code === "CONFLICT" || error.code === "STATE"
+              ? "CONFLICT"
+              : "BAD_REQUEST",
+      message: error.message,
+      cause: error,
+    });
+  }
   if (error instanceof WorldError) {
     throw new TRPCError({
       code:
@@ -1449,6 +1471,109 @@ export const runtimeRouter = router({
           ...(input.limit !== undefined ? { limit: input.limit } : {}),
         });
         return { events: ledger, cursor: ledger.at(-1)?.cursor ?? input.after ?? 0 };
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  // ── Standing monitors ────────────────────────────────────────────────────
+  //
+  //   NO FAKE «LIVE»
+  //
+  // The same procedures serve the web app and the mobile app. A monitor is
+  // CREATED by talking — that is the whole conversational path — and these
+  // read it back and drive its lifecycle. There is no MobileMonitorRuntime
+  // and no web-only authority.
+
+  monitorList: authedQuery
+    .input(z.object({ organizationId: z.string().trim().min(1).max(64).optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      try {
+        const scope = await requireScope(ctx, input?.organizationId);
+        const monitors = await listMonitors(scope);
+        return { monitors: await Promise.all(monitors.map(projectMonitor)) };
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  monitorRead: authedQuery
+    .input(
+      z.object({
+        monitorId: z.string().trim().min(1).max(80),
+        organizationId: z.string().trim().min(1).max(64).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const scope = await requireScope(ctx, input.organizationId);
+        const monitor = await readMonitor({ monitorId: input.monitorId, scope });
+        if (!monitor) throw new MonitorError("No such monitor in this scope.", "NOT_FOUND");
+        return { monitor, projection: await projectMonitor(monitor) };
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  /**
+   * The evaluation ledger, ordered and resumable from a cursor.
+   *
+   * The realtime preparation and none of the transport: a later subscriber
+   * resumes from `after` and misses nothing. Today a surface polls it.
+   */
+  monitorEvaluations: authedQuery
+    .input(
+      z.object({
+        monitorId: z.string().trim().min(1).max(80),
+        after: z.number().int().nonnegative().optional(),
+        limit: z.number().int().min(1).max(200).optional(),
+        organizationId: z.string().trim().min(1).max(64).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const scope = await requireScope(ctx, input.organizationId);
+        const ledger = await monitorEvaluationsSince({
+          monitorId: input.monitorId,
+          scope,
+          ...(input.after !== undefined ? { after: input.after } : {}),
+          ...(input.limit !== undefined ? { limit: input.limit } : {}),
+        });
+        return {
+          evaluations: ledger.map((entry) => ({
+            cursor: entry.cursor,
+            evaluatedAt: entry.evaluatedAt,
+            sourceClass: entry.sourceClass,
+            result: entry.result,
+            freshness: entry.freshness,
+            transition: entry.transition,
+            triggered: entry.triggered,
+          })),
+          cursor: ledger.at(-1)?.cursor ?? input.after ?? 0,
+        };
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  /** «أوقف المراقبة» · «استأنفها» · «ألغها», for a surface that has a button. */
+  monitorTransition: authedQuery
+    .input(
+      z.object({
+        monitorId: z.string().trim().min(1).max(80),
+        action: z.enum(["pause", "resume", "cancel"]),
+        organizationId: z.string().trim().min(1).max(64).optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const scope = await requireScope(ctx, input.organizationId);
+        const monitor = await transitionMonitor({
+          monitorId: input.monitorId,
+          scope,
+          action: input.action,
+        });
+        return { monitor, projection: await projectMonitor(monitor) };
       } catch (error) {
         handleRuntimeError(error);
       }
