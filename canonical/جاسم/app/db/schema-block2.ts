@@ -1169,3 +1169,67 @@ export const conversationNeeds = pgTable(
 );
 
 export type ConversationNeedRow = typeof conversationNeeds.$inferSelect;
+
+// ---------------------------------------------------------------------------
+// 25. COUNTERPARTY VERIFICATION REQUESTS — asking the person who knows, once.
+//
+//     QUESTION != PROPOSAL · COUNTERPARTY_ASSERTION != SYSTEM_OBSERVATION
+//     AVAILABILITY_CONFIRMATION != RESERVATION · AVAILABILITY != AUTHORITY
+//     NO_RESPONSE != YES · NO_RESPONSE != NO
+//
+//     A request binds an EXACT fact to the scope canonically entitled to speak
+//     for it. Nothing here is a domain type: a garment, a machine's hours and
+//     an interpreter's Thursday are one subject, one property and one
+//     configuration.
+//
+//       DOMAIN_COUNTERPARTY_TYPES_ADDED = 0
+// ---------------------------------------------------------------------------
+
+export type VerificationRequestState = "PENDING" | "ANSWERED" | "EXPIRED" | "CANCELLED";
+export type VerificationAssertion = "AFFIRMED" | "DENIED" | "CHANGED" | "UNKNOWN";
+
+export const verificationRequests = pgTable(
+  "verification_requests",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    subjectKind: varchar("subjectKind", { length: 64 }).notNull(),
+    subjectId: varchar("subjectId", { length: 128 }).notNull(),
+    subjectRevision: varchar("subjectRevision", { length: 64 }),
+    property: varchar("property", { length: 64 }).notNull(),
+    configuration: jsonb("configuration")
+      .$type<Record<string, string | number>>()
+      .notNull()
+      .default({}),
+    quantity: integer("quantity"),
+    purpose: varchar("purpose", { length: 24 }).notNull(),
+    requestingScopeId: varchar("requestingScopeId", { length: 64 }).notNull(),
+    /** DERIVED from the canonical subject. A model never names it. */
+    respondingScopeId: varchar("respondingScopeId", { length: 64 }).notNull(),
+    state: varchar("state", { length: 16 })
+      .notNull()
+      .$type<VerificationRequestState>()
+      .default("PENDING"),
+    assertion: varchar("assertion", { length: 16 }).$type<VerificationAssertion>(),
+    /** Delivery through the existing notification primitive. Presentation. */
+    notificationIntentId: varchar("notificationIntentId", { length: 64 }),
+    /** The evidence the answer became — when it became any. */
+    observationId: varchar("observationId", { length: 64 }),
+    answeredByPrincipalId: varchar("answeredByPrincipalId", { length: 100 }),
+    answeredAt: timestamp("answeredAt", { withTimezone: true }),
+    /** The freshness runtime's own deterministic name for this question. */
+    requirementKey: varchar("requirementKey", { length: 400 }).notNull(),
+    expiresAt: timestamp("expiresAt", { withTimezone: true }).notNull(),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("verification_requests_responder_idx").on(table.respondingScopeId, table.state),
+    index("verification_requests_subject_idx").on(
+      table.subjectKind,
+      table.subjectId,
+      table.property,
+    ),
+  ],
+);
+
+export type VerificationRequestRow = typeof verificationRequests.$inferSelect;
