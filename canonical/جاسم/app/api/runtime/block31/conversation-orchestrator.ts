@@ -191,13 +191,20 @@ async function discoverTurn(
   const stated = Array.isArray(values.hardConstraints)
     ? (values.hardConstraints as never[])
     : [];
-  const { hardConstraintsForDiscovery } = await import("../need-continuity");
+  const { currentNeed, hardConstraintsForDiscovery } = await import("../need-continuity");
   const carried = stated.length > 0
     ? stated
     : (await hardConstraintsForDiscovery({
         conversationId: input.conversationId,
         scopeId: input.ownerId,
-      })) as unknown as never[];
+      })) as never[];
+
+  // The need AT THE REVISION IT HAS NOW. A later refinement must not be able to
+  // claim evidence gathered for what it used to say.
+  const need = await currentNeed({
+    conversationId: input.conversationId,
+    scopeId: input.ownerId,
+  });
 
   const found = await discover(db, {
     ownerId: input.ownerId,
@@ -207,6 +214,7 @@ async function discoverTurn(
     explicitScope: values.scope,
     availability: { internal: true, web: Array.isArray(values.webResults) },
     hardConstraints: carried,
+    ...(need ? { need: { id: need.id, revision: need.revision } } : {}),
     webResults: Array.isArray(values.webResults) ? values.webResults as never[] : [],
     limit: typeof values.limit === "number" ? values.limit : 20,
   });
@@ -397,7 +405,13 @@ async function selectTurn(
   // confusable with this party configuring their own draft.
   await db
     .update(commercialOrders)
-    .set({ offeringFingerprint: termsFingerprint(publicTerms(offering)) })
+    .set({
+      offeringFingerprint: termsFingerprint(publicTerms(offering)),
+      // WHICH presented set this came out of, and which item it was. A
+      // selection that lost this would lose WHY the candidate was on screen.
+      resultSetId: resolution.value.resultSetId,
+      candidateId: resolution.value.id,
+    })
     .where(eq(commercialOrders.id, order.id));
   await bindReference(db, {
     ownerId: input.ownerId,
@@ -566,12 +580,24 @@ async function proposeTurn(
     offeringId: offering.id,
     createdByOwnerId: input.ownerId,
   });
+  // The need this attempt comes from, read from canonical state at the moment
+  // the attempt is made. The model never supplies it.
+  //
+  //   MODEL_CAN_BIND_TRANSACTION_TO_NEED = NO
+  const { currentNeed } = await import("../need-continuity");
+  const sourceNeed = await currentNeed({
+    conversationId: input.conversationId,
+    scopeId: input.ownerId,
+  });
   const engagement = await createEngagement({
     matchId: match.id,
     initiatorOwnerId: input.ownerId,
     // DERIVED from the authorized match. This party cannot nominate who the
     // other party is.
     participants: await participantsForMatch(match.id),
+    ...(sourceNeed
+      ? { need: { id: sourceNeed.id, revision: sourceNeed.revision } }
+      : {}),
   });
 
   const merged = mergedProposalTerms(

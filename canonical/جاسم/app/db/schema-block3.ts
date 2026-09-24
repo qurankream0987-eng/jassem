@@ -70,6 +70,9 @@ export const commercialOrders = pgTable(
      *   COMMERCIAL_ORDER != AGREEMENT · != COMMITMENT · != CANONICAL_TRANSACTION
      */
     proposalId: varchar("proposalId", { length: 64 }),
+    /** Which presented set this was picked out of, and which item it was. */
+    resultSetId: varchar("resultSetId", { length: 64 }),
+    candidateId: varchar("candidateId", { length: 64 }),
     status: varchar("status", { length: 24 }).notNull().default("DRAFT"),
     createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updatedAt", { withTimezone: true })

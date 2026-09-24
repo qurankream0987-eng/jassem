@@ -538,8 +538,52 @@ export function projectNeed(row: ConversationNeedRow, evaluation?: GoalEvaluatio
 export async function hardConstraintsForDiscovery(input: {
   conversationId: string;
   scopeId: string;
-}): Promise<readonly GoalConstraint[]> {
+}): Promise<readonly Record<string, unknown>[]> {
   const row = await currentNeed(input);
   if (!row) return [];
-  return evaluateGoalSpec(specOf(row)).hardConstraints;
+  return translateForDiscovery(evaluateGoalSpec(specOf(row)).hardConstraints);
+}
+
+/**
+ * A goal's vocabulary is not discovery's vocabulary.
+ *
+ * A `GoalConstraint` says «COST, AT_MOST, 3, KWD» — a DIMENSION with a unit
+ * somebody spoke in. A discovery hard constraint says «the stored field
+ * `priceMinor` is at most this many minor units». They are different languages
+ * about the same wish, and handing one to the other untranslated is how every
+ * candidate silently fails to match.
+ *
+ * ONLY FAITHFUL TRANSLATIONS ARE PASSED. A bound stated in major units cannot
+ * be turned into minor units without knowing a currency's exponent, and
+ * guessing one would quietly exclude things the person never excluded. Such a
+ * bound is therefore NOT applied as a hard filter — and because discovery
+ * stores the constraints it did apply, what was applied stays visible rather
+ * than being asserted.
+ *
+ * Constraints a bound cannot be read from at all — a direction like MINIMIZE,
+ * or a dimension the fabric stores nothing for — are preferences for ranking,
+ * never exclusions.
+ */
+export function translateForDiscovery(
+  constraints: readonly GoalConstraint[],
+): readonly Record<string, unknown>[] {
+  const translated: Record<string, unknown>[] = [];
+  for (const constraint of constraints) {
+    if (constraint.operator !== "AT_MOST" || typeof constraint.value !== "number") continue;
+    if (constraint.dimension === "COST") {
+      // Exact minor units only. Anything else is not faithfully translatable.
+      if (constraint.unit?.toLowerCase() !== "minor") continue;
+      translated.push({ field: "price", maxMinor: String(constraint.value) });
+      continue;
+    }
+    // A dimension the fabric stores as an ordinary numeric attribute.
+    if (constraint.unit) {
+      translated.push({
+        field: constraint.dimension.toLowerCase(),
+        operator: "max",
+        value: constraint.value,
+      });
+    }
+  }
+  return translated;
 }

@@ -318,6 +318,12 @@ export async function discover(
     hardConstraints?: HardConstraint[];
     webResults?: WebObservation[];
     limit?: number;
+    /**
+     * WHY this search is happening — the conversational need at the exact
+     * revision it had when the search ran. Supplied by the runtime, never by a
+     * caller's payload and never by the model.
+     */
+    need?: { id: string; revision: number };
   },
 ) {
   const sources = planSources(input.query, input.explicitScope, input.availability);
@@ -350,6 +356,7 @@ export async function discover(
       queryText: input.query,
       sources,
       hardConstraints: input.hardConstraints ?? [],
+      ...(input.need ? { needId: input.need.id, needRevision: input.need.revision } : {}),
     })
     .returning();
   const values = normalized.slice(0, input.limit ?? normalized.length).map((candidate, index) => ({

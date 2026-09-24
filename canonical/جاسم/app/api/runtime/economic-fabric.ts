@@ -701,6 +701,14 @@ export async function createEngagement(input: {
   initiatorOwnerId: string;
   participants: string[];
   context?: Record<string, unknown>;
+  /**
+   * WHICH conversational need this attempt came from, at the revision it had
+   * when the attempt was made. Runtime-supplied; a model never names it.
+   *
+   *   PROVENANCE != AUTHORITY — recording where something came from grants
+   *   nobody anything, and this value is read by no authorization check.
+   */
+  need?: { id: string; revision: number };
 }): Promise<EconomicEngagement> {
   // Engagements are match-backed: participants are DERIVED from an authorized
   // match, never caller-nominated. Unmatched engagements would require an
@@ -736,6 +744,9 @@ export async function createEngagement(input: {
       initiatorOwnerId: input.initiatorOwnerId,
       participants: input.participants,
       context: input.context ?? {},
+      ...(input.need
+        ? { needId: input.need.id, needRevision: input.need.revision }
+        : {}),
     })
     .returning();
   return row;

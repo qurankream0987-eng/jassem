@@ -59,6 +59,14 @@ export const discoveryResultSets = pgTable(
     sources: jsonb("sources").$type<DiscoverySourceKind[]>().notNull(),
     /** Hard constraints applied BEFORE any semantic ranking. */
     hardConstraints: jsonb("hardConstraints").$type<unknown[]>().notNull().default([]),
+    /**
+     * WHY this search happened: the conversational need, at the exact revision
+     * it had when the search ran. A need goes on being refined afterwards, and
+     * an edge carrying only its id would let a corrected need inherit evidence
+     * gathered for what it used to say.
+     */
+    needId: varchar("needId", { length: 64 }),
+    needRevision: integer("needRevision"),
     /** Result-set version; new search = new row, never silent reorder. */
     version: integer("version").notNull().default(1),
     createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),

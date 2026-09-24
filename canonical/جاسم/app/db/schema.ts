@@ -1249,6 +1249,18 @@ export const economicEngagements = pgTable(
     participants: jsonb("participants").$type<string[]>().notNull(),
     context: jsonb("context").$type<Record<string, unknown>>().notNull().default({}),
     state: economic_engagements_state_enum("state").notNull().default("open"),
+    /**
+     * WHICH NEED THIS ATTEMPT CAME FROM, at the revision it had when the
+     * attempt was made. This is the canonical carrier: an engagement is born
+     * the moment a conversational selection becomes a proposal, and it never
+     * changes afterwards, so the whole chain
+     *
+     *   transaction → agreement → proposal → engagement → need@revision
+     *
+     * is deterministic without consulting a draft, a transcript or a guess.
+     */
+    needId: varchar("needId", { length: 64 }),
+    needRevision: integer("needRevision"),
     createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull().$onUpdate(() => new Date()),
   },
