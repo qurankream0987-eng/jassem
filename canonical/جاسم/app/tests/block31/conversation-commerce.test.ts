@@ -12,6 +12,7 @@ import { eq, sql } from "drizzle-orm";
 import {
   commercialOrders,
   economicExpressions,
+  externalActionSessions,
   paymentIntents,
   plans,
   referenceBindings,
@@ -189,14 +190,57 @@ describe("conversation commerce wiring", () => {
         publicTerms: { money: { amountMinor: "12000", currency: "SAR" } },
       },
     });
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: paying after the offering moved returns
+    //   `reapproval_required` — the draft's fingerprints disagreed.
+    // WHY_OLD_EXPECTATION_WAS_FALSE: it asserted that a mutated DRAFT is what
+    //   stops a payment, which means an UNMUTATED draft would have let one
+    //   through. No agreement, commitment or transaction exists anywhere in
+    //   this test, so there was never an obligation to pay at all. The old
+    //   assertion passed for the wrong reason and would have hidden the
+    //   pre-agreement checkout bypass.
+    // NEW_EXPECTATION: `blocked`, with `NO_PAYABLE_OBLIGATION`, and no
+    //   checkout session.
+    // WHY_NEW_EXPECTATION_IS_STRONGER: the refusal no longer depends on the
+    //   draft having moved. It holds for every draft, moved or not, because
+    //   the question asked is «what obligation is this satisfying» rather than
+    //   «does this fingerprint still match». The old guard could be satisfied
+    //   by leaving the offering alone; this one cannot be satisfied at all
+    //   until the counterparty has actually agreed.
+    //
     const pay = await turn("ادفع", envelope(["commerce_pay"], { provider: "stub", adapterEndpoint: "http://127.0.0.1:9" }), { conversationId });
-    expect(pay?.status).toBe("reapproval_required");
+    expect(pay?.status).toBe("blocked");
+    expect(pay?.data.reason).toBe("NO_PAYABLE_OBLIGATION");
+    expect((await handle.db.select().from(externalActionSessions)).length).toBe(0);
+
+    // And with the offering left exactly as approved, the answer is the same.
+    const payUnmutated = await turn("ادفع", envelope(["commerce_pay"]), { conversationId });
+    expect(payUnmutated?.data.reason).toBe("NO_PAYABLE_OBLIGATION");
   });
 
-  it("bare pay language with no payment context clarifies instead of paying", async () => {
+  it("bare pay language with no payment context refuses on canonical grounds", async () => {
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: `awaiting_input` / «Clarification required» — the word
+    //   «ادفع» alone names no payment intent in this conversation.
+    // WHY_OLD_EXPECTATION_WAS_FALSE: it located the refusal in missing
+    //   CONVERSATION CONTEXT. That makes the guard a property of what the
+    //   conversation happens to remember, so a conversation that did carry a
+    //   draft payment reference would have passed it — which is exactly the
+    //   bypass this phase closed.
+    // NEW_EXPECTATION: `blocked` with `NO_PAYABLE_OBLIGATION`.
+    // WHY_NEW_EXPECTATION_IS_STRONGER: the refusal is now a property of
+    //   CANONICAL STATE rather than of conversational memory. It cannot be
+    //   escaped by giving the conversation more context, and it still asserts
+    //   everything the old one did — no effect, and no payment intent.
+    //
     const result = await turn("ادفع", envelope(["commerce_pay"]));
-    expect(result?.status).toBe("awaiting_input");
-    expect(result?.label).toBe("Clarification required");
+    expect(result?.status).toBe("blocked");
+    expect(result?.label).toBe("No payable obligation");
+    expect(result?.data.reason).toBe("NO_PAYABLE_OBLIGATION");
     expect(result?.data.effects).toBe("none");
     expect((await handle.db.select().from(paymentIntents)).length).toBe(0);
   });

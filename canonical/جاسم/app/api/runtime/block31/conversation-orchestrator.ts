@@ -3,7 +3,6 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import {
   commercialOrders,
   economicExpressions,
-  paymentIntents,
   plans,
   referenceBindings,
 } from "@db/schema";
@@ -30,6 +29,7 @@ import { createWorldPlan } from "../block3/generated-business-economics";
 import type { GeneratedWorldService } from "../../core/generated-world-service";
 import { discover } from "./discovery";
 import { bindReference, resolveOrdinal } from "./reference-bindings";
+import { resolvePayable } from "./canonical-payable";
 
 type IntentEnvelope = {
   decisionId: string;
@@ -743,52 +743,120 @@ async function approveOrder(
   };
 }
 
+/**
+ * «ادفع» — and the one question that must be answered before any surface opens:
+ *
+ *   WHAT EXACT CANONICAL OBLIGATION IS THIS PAYMENT SATISFYING?
+ *
+ * The answer comes from the agreement runtime's own output — an open
+ * settlement commitment this scope owes on an open transaction — and from
+ * nowhere else. Not from the draft, not from the offering projection, not from
+ * the presentation, not from the client payload, not from the model.
+ *
+ *   COMMERCIAL_ORDER_AS_PAYMENT_AUTHORITY = NO
+ *   MODEL_AS_PAYMENT_AUTHORITY = NO
+ *
+ * The pre-agreement payment intent that an approval may have created is
+ * deliberately NOT consulted here. It records that a person approved a
+ * fingerprint; it is not a payable basis, and it carries no transaction. A
+ * payment intent this path prepares is bound to the transaction, and that
+ * binding is what makes it executable at all.
+ */
 async function payTurn(
   db: NodePgDatabase<any>,
   input: { ownerId: string; conversationId: string; envelope: IntentEnvelope },
 ): Promise<ConversationCommerceResult> {
-  const binding = await activeBinding(db, input.ownerId, input.conversationId, "current:payment");
-  if (!binding || binding.targetKind !== "payment_intent") {
-    return clarification("أي نية دفع تقصد؟ كلمة الدفع وحدها لا تمنح تفويضاً ولا توجد نية دفع في سياق هذه المحادثة.");
-  }
-  const [payment] = await db.select().from(paymentIntents).where(and(
-    eq(paymentIntents.id, binding.targetId),
-    eq(paymentIntents.ownerId, input.ownerId),
-  )).limit(1);
-  if (!payment?.orderId) return clarification("نية الدفع الحالية غير مرتبطة بطلب صالح.");
-  const [order] = await db.select().from(commercialOrders).where(eq(commercialOrders.id, payment.orderId)).limit(1);
-  const offeringId = order && string(object(order.terms), "offeringRef");
-  const offering = offeringId ? await currentOffering(db, offeringId, input.ownerId) : null;
-  const approved = object(payment.providerConstraints);
-  if (
-    !order ||
-    !offering ||
-    approved.approvedOrderFingerprint !== order.termsFingerprint ||
-    approved.approvedOfferingFingerprint !== termsFingerprint(publicTerms(offering))
-  ) {
-    if (order && offering && termsFingerprint({ offeringRef: offering.id, offeringVersion: offering.version, ...publicTerms(offering) }) !== order.termsFingerprint) {
-      await updateCommercialTerms(db, {
-        id: order.id,
-        terms: { offeringRef: offering.id, offeringVersion: offering.version, ...publicTerms(offering) },
-        expectedVersion: order.termsVersion,
-      });
-    }
+  const values = input.envelope.intent?.inputs ?? {};
+  // A reference may POINT at which obligation is meant. It never grants the
+  // right to pay it — `resolvePayable` re-checks it against what this scope
+  // actually owes.
+  const transactionRef = string(values, "transactionRef", "transactionId");
+  const resolution = await resolvePayable(db, {
+    scopeId: input.ownerId,
+    transactionRef,
+  });
+
+  if (resolution.status === "NONE") {
+    // The honest refusal, and the one this phase exists to produce. Nothing
+    // about a draft, an approval or a sent proposal makes a payment path.
     return {
       kind: "structured_result",
-      label: "Re-approval required",
-      summary: "تغيرت الشروط بعد الموافقة. رُفض بدء الدفع ويجب مراجعة الشروط الحالية والموافقة عليها من جديد.",
-      data: { orderId: order?.id ?? null, paymentIntentId: payment.id, effects: "none" },
-      status: "reapproval_required",
+      label: "No payable obligation",
+      summary:
+        "لا يوجد التزام مالي قائم لأدفعه. الدفع يقابل التزاماً نشأ عن اتفاق قَبِله الطرف الآخر — والاختيار أو الموافقة على مسودتك أو إرسال طلبك ليس اتفاقاً.",
+      data: {
+        effects: "none",
+        payableObligation: null,
+        reason: "NO_PAYABLE_OBLIGATION",
+      },
+      status: "blocked",
     };
   }
-  const values = input.envelope.intent?.inputs ?? {};
+
+  if (resolution.status === "AMBIGUOUS") {
+    //   AMBIGUOUS_PAYMENT_TARGET_GUESS = 0
+    return {
+      kind: "structured_result",
+      label: "Which obligation",
+      summary: `عليك ${resolution.candidates.length} التزامات مالية قائمة. حدد أيها تقصد قبل أن أهيّئ الدفع.`,
+      data: {
+        effects: "none",
+        candidates: resolution.candidates.map((entry) => ({
+          transactionId: entry.transactionId,
+          amountMinor: entry.amountMinor,
+          currency: entry.currency,
+        })),
+      },
+      status: "awaiting_input",
+    };
+  }
+
+  const payable = resolution.payable;
+  // Every financial field comes from the accepted settlement commitment. The
+  // client named at most WHICH obligation; it named none of these.
+  const payment = await createPaymentIntent(db, {
+    ownerId: input.ownerId,
+    payerRef: input.ownerId,
+    payeeRef: payable.payeeRef,
+    amountMinor: payable.amountMinor,
+    currency: payable.currency,
+    purpose: `settlement:${payable.commitmentId}`,
+    transactionId: payable.transactionId,
+    // Stable per obligation: the same obligation paid twice prepares one
+    // intent, so a retry or a double tap cannot open a second.
+    idempotencyKey: `settlement:${payable.commitmentId}`,
+  });
+  await bindReference(db, {
+    ownerId: input.ownerId,
+    conversationId: input.conversationId,
+    referenceKey: "current:payment",
+    targetKind: "payment_intent",
+    targetId: payment.intent.id,
+  });
+
   const provider = string(values, "provider");
   const adapterEndpoint = string(values, "adapterEndpoint");
   if (!provider || !adapterEndpoint) {
-    return clarification("نية الدفع محددة، لكن يلزم اختيار مزود دفع موثوق وطريقة دفع قبل فتح جلسة checkout.");
+    return {
+      kind: "structured_result",
+      label: "Payment prepared",
+      summary:
+        "هيّأتُ الدفع مقابل التزام قائم ومحدد. لم يحدث دفع، ويلزم مزود دفع موثوق قبل فتح أي واجهة.",
+      data: {
+        paymentIntentId: payment.intent.id,
+        transactionId: payable.transactionId,
+        commitmentId: payable.commitmentId,
+        amountMinor: payable.amountMinor,
+        currency: payable.currency,
+        paymentTruth: "UNCHANGED",
+        effects: "none",
+      },
+      status: "awaiting_input",
+    };
   }
+
   const checkout = await createFinancialCheckout(db, {
-    intentId: payment.id,
+    intentId: payment.intent.id,
     ownerId: input.ownerId,
     provider,
     adapterEndpoint,
@@ -796,8 +864,15 @@ async function payTurn(
   return {
     kind: "structured_result",
     label: "Checkout ready",
-    summary: "أُنشئت جلسة checkout مرتبطة بنية الدفع. فتحها لا يثبت نجاح الدفع.",
-    data: { paymentIntentId: payment.id, sessionId: checkout.session.id, checkoutUrl: checkout.checkoutUrl, paymentTruth: "UNCHANGED" },
+    summary: "أُنشئت جلسة checkout مرتبطة بالتزام قائم. فتحها لا يثبت نجاح الدفع.",
+    data: {
+      paymentIntentId: payment.intent.id,
+      transactionId: payable.transactionId,
+      commitmentId: payable.commitmentId,
+      sessionId: checkout.session.id,
+      checkoutUrl: checkout.checkoutUrl,
+      paymentTruth: "UNCHANGED",
+    },
     status: "completed",
   };
 }
