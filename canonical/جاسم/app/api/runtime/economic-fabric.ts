@@ -60,6 +60,10 @@ const PUBLIC_PROJECTION_KEYS = new Set([
   "publicEvidence",
   "engagementAction",
   "locationSummary",
+  // WHICH of this offering's terms the other party may state values for, and
+  // within what bounds. Published by the offering's owner, so widening it is
+  // the owner's act and never the configuring party's.
+  "configurableTerms",
 ]);
 
 /**

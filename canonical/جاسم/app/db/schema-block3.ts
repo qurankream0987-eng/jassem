@@ -46,6 +46,30 @@ export const commercialOrders = pgTable(
     terms: jsonb("terms").$type<Record<string, unknown>>().notNull().default({}),
     termsVersion: integer("termsVersion").notNull().default(1),
     termsFingerprint: varchar("termsFingerprint", { length: 64 }).notNull(),
+    /**
+     * What THIS party stated, within what the offering permits. It is kept
+     * apart from `terms` on purpose: a party's own configuration and the
+     * counterparty changing the offer are two different movements, and a
+     * runtime that stores them in one field cannot tell them apart.
+     *
+     *   PARTY_CONFIGURATION != COUNTERPARTY_CHANGED_TERMS
+     */
+    partyConfiguration: jsonb("partyConfiguration")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    /** The SOURCE offering's published terms, as they were when selected. */
+    offeringFingerprint: varchar("offeringFingerprint", { length: 64 }),
+    /** What this party stated. Moves when they reconfigure, and only then. */
+    configurationFingerprint: varchar("configurationFingerprint", { length: 64 }),
+    /**
+     * The canonical proposal this draft became. Null until a party authorized
+     * sending it, and it is the DRAFT that points at the truth — never the
+     * other way round.
+     *
+     *   COMMERCIAL_ORDER != AGREEMENT · != COMMITMENT · != CANONICAL_TRANSACTION
+     */
+    proposalId: varchar("proposalId", { length: 64 }),
     status: varchar("status", { length: 24 }).notNull().default("DRAFT"),
     createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updatedAt", { withTimezone: true })

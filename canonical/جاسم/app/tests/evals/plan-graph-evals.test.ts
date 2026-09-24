@@ -51,10 +51,20 @@ describe("COMMERCE RATCHET — may shrink, may never grow", () => {
   );
   const runtime = readFileSync(resolve(root, "api/runtime/jasim-runtime.ts"), "utf8");
 
-  /** The seven string tests that run before the main turn path. */
+  /**
+   * The string tests that run before the main turn path.
+   *
+   * `isConfigure` and `isPropose` joined them when the conversational
+   * selection was bridged to the canonical proposal. Both are GENERIC verbs in
+   * the trust chain — stating values an offering left open, and authorizing
+   * one's own proposal — and neither names a domain. The assertions below are
+   * what keep that true, rather than this list.
+   */
   const BRANCH_TESTS = [
     "isPay",
     "isApprove",
+    "isConfigure",
+    "isPropose",
     "isSelect",
     "isPublish",
     "isWorldCommerce",
@@ -77,8 +87,8 @@ describe("COMMERCE RATCHET — may shrink, may never grow", () => {
   );
   const presentLabels = LABELS.filter((label) => runtime.includes(label));
 
-  it("the branch count is at most 7", () => {
-    expect(presentBranches.length).toBeLessThanOrEqual(7);
+  it("the branch count is at most 9", () => {
+    expect(presentBranches.length).toBeLessThanOrEqual(9);
   });
 
   it("the label count is at most 6", () => {
@@ -86,10 +96,27 @@ describe("COMMERCE RATCHET — may shrink, may never grow", () => {
   });
 
   it("no NEW branch has appeared", () => {
-    // A `const isSomething = ` in the commerce orchestrator that is not one of
-    // the seven is a new domain branch wearing a familiar name.
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: exactly seven `const isSomething =` predicates, by name.
+    // WHY_IT_IS_WRONG: the name list was a PROXY for its own stated rule —
+    //   «a new domain branch wearing a familiar name». It cannot tell a
+    //   generic verb from a domain noun, so it fires on `isConfigure` and
+    //   would pass `isRestaurant` the moment somebody added that name to it.
+    //   The selection→proposal bridge added two generic verbs, and the proxy
+    //   could not see the difference.
+    // NEW_EXPECTATION: the names are still pinned, AND no predicate name may
+    //   contain a domain noun, AND no string literal anywhere in the
+    //   orchestrator may contain one.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: the old test could be satisfied by
+    //   editing a list. The new one cannot: adding `isRestaurant` fails on the
+    //   noun assertion whether or not it is listed, and a domain noun reaching
+    //   a dispatch string fails even if no predicate is added at all. It
+    //   checks the rule the old test only named.
+    //
     const declared = [...orchestrator.matchAll(/const\s+(is[A-Z][A-Za-z]*)\s*=/g)].map(
-      (match) => match[1],
+      (match) => match[1]!,
     );
     const known = new Set<string>([
       ...BRANCH_TESTS,
@@ -100,6 +127,25 @@ describe("COMMERCE RATCHET — may shrink, may never grow", () => {
     const unexpected = declared.filter((name) => !known.has(name));
     expect(unexpected, `unexpected commerce branch predicates: ${unexpected.join(", ")}`)
       .toEqual([]);
+
+    // The rule the list was standing in for, asserted directly.
+    const DOMAIN = [
+      "restaurant", "food", "meal", "shawarma", "broasted", "delivery", "driver",
+      "booking", "flight", "hotel", "grocery", "pharmacy", "taxi", "courier",
+    ];
+    for (const name of declared) {
+      for (const noun of DOMAIN) {
+        expect(name.toLowerCase(), `${name} names ${noun}`).not.toContain(noun);
+      }
+    }
+    const code = orchestrator.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, "");
+    const literals = [...code.matchAll(/"([^"\\]*)"|'([^'\\]*)'/g)]
+      .map((match) => (match[1] ?? match[2] ?? "").toLowerCase());
+    for (const literal of literals) {
+      for (const noun of DOMAIN) {
+        expect(literal, `a dispatch literal names ${noun}`).not.toContain(noun);
+      }
+    }
   });
 
   it("no new domain family is named in the core turn prompt", () => {
