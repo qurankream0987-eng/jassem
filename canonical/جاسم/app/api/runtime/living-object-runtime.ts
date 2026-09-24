@@ -718,6 +718,95 @@ export async function materializeLivingObject(input: {
   return { materialized: true, object: created, created: true };
 }
 
+/**
+ * Materialize a handle for a scope the RUNTIME has already authorized.
+ *
+ * The conversational door (`materializeLivingObject`) resolves an acting scope
+ * from a principal, because a client asked. This one is for the runtime's own
+ * call sites — the moment a durable subject is BORN inside a already-authorized
+ * operation — where re-resolving a scope would ask a question that was already
+ * answered, and answer it from a principal the operation may not even have.
+ *
+ * It is not a bypass: the subject is still asked whether this scope may see it,
+ * the same materialization policy still decides, and the same unique index
+ * still makes it idempotent. What it skips is only the scope RESOLUTION.
+ */
+export async function materializeLivingObjectForScope(input: {
+  scopeId: string;
+  materializedBy: string;
+  subjectKind: LivingObjectSubjectKind;
+  subjectId: string;
+  sideEffect: MaterializationInput["sideEffect"];
+  durability: MaterializationInput["durability"];
+  conversationId?: string | null;
+}): Promise<
+  | { readonly materialized: true; readonly object: LivingObjectRow }
+  | { readonly materialized: false; readonly decline: LivingObjectDecline }
+> {
+  const subjectId = input.subjectId.trim();
+  if (!subjectId) throw new LivingObjectError("A subject is required.", "INVALID");
+  const snapshot = await readSubject(input.subjectKind, subjectId);
+  if (!subjectVisibleTo(snapshot, input.scopeId)) {
+    return { materialized: false, decline: snapshot.exists ? "NOT_AUTHORIZED" : "NO_DURABLE_SUBJECT" };
+  }
+  const decision = materializationDecision(
+    {
+      subjectKind: input.subjectKind,
+      subjectId,
+      sideEffect: input.sideEffect,
+      durability: input.durability,
+    },
+    snapshot,
+  );
+  if (!decision.materialize) return { materialized: false, decline: decision.decline };
+
+  const existing = await findHandle(input.scopeId, input.subjectKind, subjectId);
+  if (existing) {
+    if (existing.followState === "FOLLOWING" && existing.surfaceState === "VISIBLE") {
+      return { materialized: true, object: existing };
+    }
+    const [revived] = await db
+      .update(livingObjects)
+      .set({ followState: "FOLLOWING", surfaceState: "VISIBLE", updatedAt: new Date() })
+      .where(eq(livingObjects.id, existing.id))
+      .returning();
+    return { materialized: true, object: revived! };
+  }
+
+  const [created] = await db
+    .insert(livingObjects)
+    .values({
+      id: handleId(),
+      scopeId: input.scopeId,
+      subjectKind: input.subjectKind,
+      subjectId,
+      followState: "FOLLOWING",
+      surfaceState: "VISIBLE",
+      originConversationId: input.conversationId ?? null,
+      materializedBy: input.materializedBy,
+      reason: decision.reason,
+      lastSeenRevision: snapshot.revision,
+      lastSeenAt: new Date(),
+    })
+    .onConflictDoNothing({
+      target: [livingObjects.scopeId, livingObjects.subjectKind, livingObjects.subjectId],
+    })
+    .returning();
+
+  if (!created) {
+    const raced = await findHandle(input.scopeId, input.subjectKind, subjectId);
+    if (!raced) throw new LivingObjectError("That handle could not be created.", "CONFLICT");
+    return { materialized: true, object: raced };
+  }
+  await appendLivingObjectEvent({
+    type: "LIVING_OBJECT_MATERIALIZED",
+    scopeId: input.scopeId,
+    object: created,
+    message: "A durable subject is now followed.",
+  });
+  return { materialized: true, object: created };
+}
+
 async function findHandle(
   scopeId: string,
   subjectKind: string,

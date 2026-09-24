@@ -944,6 +944,33 @@ export async function commitAgreement(input: {
     // does not, and the caller is told which.
     throw error;
   });
+  // ── TRANSACTION → SOMETHING TO FOLLOW ────────────────────────────────────
+  //
+  // A transaction that is open is, by definition, a thing that keeps going —
+  // so every party to it gets a durable handle on it, here, at the one place
+  // where such a transaction is born. Not because it is an order, a booking or
+  // a job: because it is an OPEN OBLIGATION, which is the only fact the living
+  // object runtime is shown.
+  //
+  //   PAYMENT != FULFILLMENT · PAID != DELIVERED
+  //
+  // The handle carries no status of its own, so it cannot later claim the
+  // transaction finished; it reads that from the transaction every time.
+  //
+  // Failing to make a handle never fails the commitment: two people reached an
+  // agreement, and a follow-up convenience does not get to undo it.
+  const { materializeLivingObjectForScope } = await import("./living-object-runtime");
+  for (const party of new Set(materialized.transaction.parties.map(String))) {
+    await materializeLivingObjectForScope({
+      scopeId: party,
+      materializedBy: input.principalId ?? input.ownerId,
+      subjectKind: "transaction",
+      subjectId: materialized.transaction.id,
+      sideEffect: "INTERNAL_STATE",
+      durability: "ONGOING",
+    }).catch(() => undefined);
+  }
+
   return { ...committed, transaction: materialized.transaction };
 }
 
