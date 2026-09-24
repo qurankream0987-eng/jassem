@@ -179,6 +179,26 @@ async function discoverTurn(
 ): Promise<ConversationCommerceResult> {
   const values = input.envelope.intent?.inputs ?? {};
   const query = string(values, "query", "subject", "semanticType") ?? input.envelope.goal ?? input.content;
+
+  // WHY the search is happening comes from CANONICAL NEED STATE, not from the
+  // transcript and not from the model restating constraints it was told three
+  // turns ago. What the model supplies on this turn still wins where it says
+  // something — but silence now means «use what JASIM already holds» rather
+  // than «there are no constraints».
+  //
+  //   DISCOVERY_USES_CANONICAL_NEED = PASS
+  //   DISCOVERY_RECONSTRUCTS_NEED_FROM_CHAT_HISTORY = NO
+  const stated = Array.isArray(values.hardConstraints)
+    ? (values.hardConstraints as never[])
+    : [];
+  const { hardConstraintsForDiscovery } = await import("../need-continuity");
+  const carried = stated.length > 0
+    ? stated
+    : (await hardConstraintsForDiscovery({
+        conversationId: input.conversationId,
+        scopeId: input.ownerId,
+      })) as unknown as never[];
+
   const found = await discover(db, {
     ownerId: input.ownerId,
     conversationId: input.conversationId,
@@ -186,7 +206,7 @@ async function discoverTurn(
     kind: string(values, "kind") === "need" ? "need" : "offering",
     explicitScope: values.scope,
     availability: { internal: true, web: Array.isArray(values.webResults) },
-    hardConstraints: Array.isArray(values.hardConstraints) ? values.hardConstraints as never[] : [],
+    hardConstraints: carried,
     webResults: Array.isArray(values.webResults) ? values.webResults as never[] : [],
     limit: typeof values.limit === "number" ? values.limit : 20,
   });

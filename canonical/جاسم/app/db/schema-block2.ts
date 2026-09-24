@@ -1111,3 +1111,61 @@ export const livingObjects = pgTable(
 );
 
 export type LivingObjectRow = typeof livingObjects.$inferSelect;
+
+// ---------------------------------------------------------------------------
+// 24. CONVERSATIONAL NEEDS — what somebody currently wants, carried by the
+//     RUNTIME rather than by the model's memory or by the chat transcript.
+//
+//     NEED_CONTINUITY != CHAT_HISTORY_AS_TRUTH · != MODEL_MEMORY
+//     NEED_CONTINUITY != LIVING_OBJECT · != TRANSACTION · != USER_PROFILE_MEMORY
+//     TOPIC_SWITCH != NEED_RESOLVED
+//
+//     The columns are the GoalSpec's own fields, because a conversational need
+//     IS a goal that outlived its turn. No column names a kind of thing.
+//
+//       DOMAIN_NEED_TYPES_ADDED = 0
+// ---------------------------------------------------------------------------
+
+/** ACTIVE · BACKGROUND · RESOLVED · ABANDONED. Turning away is not finishing. */
+export type ConversationNeedState = "ACTIVE" | "BACKGROUND" | "RESOLVED" | "ABANDONED";
+
+export const conversationNeeds = pgTable(
+  "conversation_needs",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    conversationId: varchar("conversationId", { length: 64 }).notNull(),
+    /** The ACTING scope, resolved server-side. A model never sets this. */
+    scopeId: varchar("scopeId", { length: 64 }).notNull(),
+    createdBy: varchar("createdBy", { length: 100 }).notNull(),
+    outcome: text("outcome").notNull(),
+    constraints: jsonb("constraints").$type<unknown[]>().notNull().default([]),
+    preferences: jsonb("preferences").$type<string[]>().notNull().default([]),
+    assumptions: jsonb("assumptions").$type<string[]>().notNull().default([]),
+    unknowns: jsonb("unknowns").$type<string[]>().notNull().default([]),
+    state: varchar("state", { length: 16 })
+      .notNull()
+      .$type<ConversationNeedState>()
+      .default("ACTIVE"),
+    /** Compare-and-set. Two devices cannot silently overwrite one another. */
+    revision: integer("revision").notNull().default(1),
+    lastActivatedAt: timestamp("lastActivatedAt", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("conversation_needs_scope_idx").on(
+      table.conversationId,
+      table.scopeId,
+      table.state,
+    ),
+    index("conversation_needs_current_idx").on(
+      table.conversationId,
+      table.scopeId,
+      table.lastActivatedAt,
+    ),
+  ],
+);
+
+export type ConversationNeedRow = typeof conversationNeeds.$inferSelect;

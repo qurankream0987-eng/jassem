@@ -5709,6 +5709,16 @@ const MonitoringRequestSchema = z
  *   LLM != AUTHORITY
  *   MODEL_INVENTED_SUBJECTS = 0
  */
+/**
+ * A DELTA on what the person wants. Never the whole of it.
+ *
+ * The model reads the utterance and says what CHANGED. It does not restate the
+ * prior goal, and if it tried, the patch schema has nowhere to put it:
+ *
+ *   MODEL_MUST_RESTATE_FULL_PRIOR_GOAL = NO · MODEL != NEED_AUTHORITY
+ */
+const NeedRequestSchema = z.record(z.string(), z.unknown());
+
 const LivingObjectRequestSchema = z
   .object({
     intent: z.enum(["LIST", "READ", "HIDE", "RESOLVE"]),
@@ -5967,6 +5977,7 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       world: WorldRequestSchema.optional(),
       monitoring: MonitoringRequestSchema.optional(),
       livingObject: LivingObjectRequestSchema.optional(),
+      need: NeedRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -6688,6 +6699,49 @@ export async function routeRuntimeConversationTurn(input: {
   // a guess, a validated plan is a decision. A turn carrying no plan behaves
   // exactly as it did before, which is why every inherited commerce path is
   // untouched.
+  // ── WHAT THE PERSON WANTS, CARRIED BY THE RUNTIME ────────────────────────
+  //
+  //   NEED_CONTINUITY != CHAT_HISTORY_AS_TRUTH · != MODEL_MEMORY
+  //   MODEL != NEED_AUTHORITY
+  //
+  // Applied BEFORE anything that acts, because the need is WHY the turn is
+  // happening and discovery reads it from canonical state rather than
+  // re-deriving it from the transcript. The model said only what changed; what
+  // was already true came out of the database.
+  const needRequest = "need" in envelope ? envelope.need : undefined;
+  let needOutcome: import("./need-continuity").NeedOutcome | null = null;
+  let needRefusal: { message: string; cause: string } | null = null;
+  if (needRequest) {
+    const { applyNeedTurn, parseNeedPatch, NeedError } = await import("./need-continuity");
+    try {
+      // A turn whose scope did not resolve falls through to the scope
+      // branches below untouched: a need is never recorded against a scope
+      // nobody established.
+      const needScope =
+        scopeResolution.status === "RESOLVED" ? scopeResolution.scope : null;
+      if (needScope) {
+        needOutcome = await applyNeedTurn({
+          conversationId: input.conversationId,
+          // Server-resolved. A model cannot say whose need this is.
+          scopeId: needScope.scopeId,
+          principalId: needScope.principalId,
+          patch: parseNeedPatch(needRequest),
+        });
+      }
+    } catch (error) {
+      if (error instanceof NeedError) {
+        needRefusal = {
+          message:
+            error.code === "AMBIGUOUS"
+              ? "لم يتضح أيّ الأمور تقصد. سمِّ لي واحداً منها."
+              : error.message,
+          cause: `NEED_${error.code}`,
+        };
+      } else {
+        throw error;
+      }
+    }
+  }
   const turnCarriesPlan = Boolean(planOutcome && planOutcome.plan.nodes.length > 0);
   const commerceResponse = turnCarriesPlan
     ? null
@@ -6777,6 +6831,40 @@ export async function routeRuntimeConversationTurn(input: {
       },
     };
   };
+
+  // ── WHAT JASIM NOW HOLDS ─────────────────────────────────────────────────
+  //
+  // Placed here, after the commerce path had its chance: a turn that both
+  // refined the need AND asked for something has already been answered by the
+  // thing it asked for. What is left is a turn that only said what somebody
+  // wants, and it is answered from the ROW that was just written — never from
+  // the sentence that proposed it.
+  if (needRefusal) {
+    return respondRouted({
+      message: needRefusal.message,
+      state: "NEEDS_INPUT",
+      cause: needRefusal.cause,
+    });
+  }
+  if (needOutcome) {
+    const { projectNeed } = await import("./need-continuity");
+    const projected = projectNeed(needOutcome.need, needOutcome.evaluation);
+    const open = needOutcome.evaluation.goal.unknowns;
+    return respondRouted({
+      message:
+        open.length > 0
+          ? `فهمت. ما زال ينقصني: ${open.join("، ")}.`
+          : `فهمت — ${needOutcome.need.outcome}${
+              projected.constraints.length > 0
+                ? ` بـ${projected.constraints.length} شرطاً.`
+                : ""
+            }`,
+      state: open.length > 0 ? "NEEDS_INPUT" : "UNDERSTOOD",
+      cause: `NEED_${needOutcome.action}`,
+      extra: { need: projected },
+    });
+  }
+
 
   const respondDataset = async (result: {
     dataset: CanonicalDataset;
