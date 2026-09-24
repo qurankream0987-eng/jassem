@@ -1,8 +1,22 @@
 import { useCallback, useEffect, useState } from "react";
+import { useRealtime, type RealtimeChange } from "./use-realtime";
 import { trpc } from "@/providers/trpc";
 import type { BubbleSchema, Conversation, Message } from "@contracts/jasim";
 import { userFacingRuntimeError } from "@/lib/runtime-error-copy";
 import { MESSAGE_ROLES } from "@contracts/constants";
+import type { RealtimeTopic } from "@/lib/realtime-client";
+
+/**
+ * The whole acting scope, once.
+ *
+ * Frozen at module level rather than rebuilt per render: a new array every
+ * render would reopen the socket every render. The SERVER decides which scope
+ * that is, from the authenticated principal — this says «everything I am
+ * allowed to hear», never whose.
+ */
+const REALTIME_SCOPE_TOPICS: readonly RealtimeTopic[] = Object.freeze([
+  { stream: "SCOPE" } as const,
+]);
 
 export interface ChatAttachment {
   id: string;
@@ -29,6 +43,13 @@ export interface ActiveRun {
 }
 
 export interface UseJasimChatReturn {
+  /**
+   * What to tell a person when the connection is struggling, or null.
+   *
+   * Null is the ordinary case and says nothing: being connected needs no
+   * announcement, and «مباشر» is never claimed from transport state.
+   */
+  connectionNotice: string | null;
   messages: Message[];
   isLoading: boolean;
   isStreaming: boolean;
@@ -154,6 +175,58 @@ export function useJasimChat(options: UseJasimChatOptions = {}): UseJasimChatRet
   const createTurnMutation = trpc.runtime.turnsCreate.useMutation();
 
   const conversations = (listQuery.data?.conversations ?? []).map(normalizeConversation);
+
+  /**
+   * Authorized runtime updates, without a refresh.
+   *
+   *   EVENT -> IDENTIFY CHANGED OBJECT -> RE-READ CANONICAL PROJECTION
+   *
+   * The socket says WHICH canonical object changed. Everything shown is then
+   * re-read through the same authorized query that drew it in the first place
+   * — the frontend never reconstructs runtime truth out of an event body, and
+   * a surface stays exactly as trustworthy as the server said it was.
+   *
+   *   TRANSPORT_CONNECTED != DATA_CURRENT
+   *
+   * `realtime.state` is deliberately NOT surfaced as a «مباشر» badge. It
+   * produces one sentence, and only when something is actually wrong.
+   */
+  const applyRealtimeChanges = useCallback(
+    (changes: readonly RealtimeChange[]) => {
+      const pending: Array<Promise<unknown>> = [];
+      let conversationTouched = false;
+      for (const change of changes) {
+        if (change.kind === "world") {
+          pending.push(utils.runtime.worldRead.invalidate({ worldId: change.id }));
+        } else if (change.kind === "monitor") {
+          pending.push(utils.runtime.monitorRead.invalidate({ monitorId: change.id }));
+          pending.push(utils.runtime.monitorList.invalidate());
+        } else if (change.kind === "conversation" || change.kind === "reference") {
+          conversationTouched = true;
+        }
+      }
+      if (conversationTouched && activeConversationId) {
+        pending.push(
+          utils.runtime.conversationsGet.invalidate({ conversationId: activeConversationId }),
+        );
+      }
+      void Promise.all(pending);
+    },
+    [activeConversationId, utils],
+  );
+
+  const realtime = useRealtime({
+    topics: REALTIME_SCOPE_TOPICS,
+    onChange: applyRealtimeChanges,
+    // A cursor the server cannot honour means re-read, never guess.
+    onResync: () => {
+      void utils.runtime.conversationsList.invalidate();
+      void utils.runtime.monitorList.invalidate();
+      if (activeConversationId) {
+        void utils.runtime.conversationsGet.invalidate({ conversationId: activeConversationId });
+      }
+    },
+  });
 
   useEffect(() => {
     if (initialConversationId) setActiveConversationId(initialConversationId);
@@ -390,6 +463,11 @@ export function useJasimChat(options: UseJasimChatOptions = {}): UseJasimChatRet
   ]);
 
   return {
+    /*
+     * A sentence for a person when the connection is struggling, and null the
+     * rest of the time. Not a badge, not a cursor, not an event type.
+     */
+    connectionNotice: realtime.notice,
     /*
      * Canonical messages, plus the transient failure notice when there is one.
      * Merged here rather than stored together, so a refetch can replace the

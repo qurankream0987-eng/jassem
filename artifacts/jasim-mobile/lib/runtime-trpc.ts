@@ -347,3 +347,43 @@ export function transitionMonitor(
 ): Promise<{ projection: MobileMonitor }> {
   return call("runtime.monitorTransition", "POST", { monitorId, action });
 }
+
+// ── Realtime catch-up ────────────────────────────────────────────────────────
+//
+//   REALTIME TRANSPORT != TRUTH
+//
+// The SAME procedure the web uses. It is the reconnect path, the resync path
+// and the cold-reopen path at once: an app that was killed and reopened is
+// correct after one call, without ever having held a socket.
+
+export type RealtimeCatchUp =
+  | {
+      status: "OK";
+      events: Array<{
+        cursor: number;
+        eventId: string;
+        type: string;
+        occurredAt: string;
+        scopeId: string;
+        subject?: { kind: string; id: string };
+        revision?: string;
+        signal?: Record<string, string>;
+      }>;
+      cursor: number;
+      more: boolean;
+    }
+  | { status: "RESYNC_REQUIRED"; reason: string; cursor: number };
+
+export function catchUpRealtime(input: {
+  topics: ReadonlyArray<Record<string, unknown>>;
+  cursor: number;
+  limit?: number;
+  organizationId?: string;
+}): Promise<RealtimeCatchUp> {
+  return call("runtime.realtimeCatchUp", "GET", input);
+}
+
+/** Where the ledger is now, for a surface that has just read a projection. */
+export function realtimeHead(): Promise<{ cursor: number }> {
+  return call("runtime.realtimeHead", "GET");
+}

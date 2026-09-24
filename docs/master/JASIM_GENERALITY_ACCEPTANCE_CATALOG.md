@@ -245,7 +245,6 @@ Each of these closes many scenarios at once. That is what makes it general.
 - `EXTERNAL_DISCOVERY_PROVIDER`
 - `LIVING_OBJECT_RUNTIME`
 - `LOCATION_OBSERVATION`
-- `REALTIME_RUNTIME`
 - `RESOURCE_SCOPED_PERMISSION_GRANT`
 - `SCOPE_BRANDING_SURFACE`
 - `SPONSORED_DISCOVERY_RUNTIME`
@@ -407,12 +406,12 @@ Each of these closes many scenarios at once. That is what makes it general.
 
 | id | goal | route | REPR | ROUT | PLAN | EXEC | OBSE | VERI | PRES | PERS | blocker |
 |---|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|
-| `realtime.order_status` | أين وصل طلبي؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ○ | ● | ● | ● | ● | REALTIME_RUNTIME |
+| `realtime.order_status` | أين وصل طلبي؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ○ | ● | ● | ● | ● | LIVING_OBJECT_RUNTIME |
 | `realtime.delivery_tracker` | أرني السائق على الخريطة | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ○ | P | P | ● | ● | LOCATION_OBSERVATION |
-| `realtime.negotiation_session` | أين وصل التفاوض؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ○ | ● | ● | ● | ● | REALTIME_RUNTIME |
-| `realtime.application` | أين وصل طلب التوظيف؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ○ | ● | ● | ● | ● | REALTIME_RUNTIME |
-| `realtime.booking` | أين وصل الحجز؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ○ | ● | ● | ● | ● | REALTIME_RUNTIME |
-| `realtime.price_monitor` | أرني مراقبة السعر | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ○ | ● | ● | ● | ● | REALTIME_RUNTIME |
+| `realtime.negotiation_session` | أين وصل التفاوض؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ○ | ● | ● | ● | ● | LIVING_OBJECT_RUNTIME |
+| `realtime.application` | أين وصل طلب التوظيف؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ○ | ● | ● | ● | ● | LIVING_OBJECT_RUNTIME |
+| `realtime.booking` | أين وصل الحجز؟ | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ○ | ● | ● | ● | ● | LIVING_OBJECT_RUNTIME |
+| `realtime.price_monitor` | أرني مراقبة السعر | PERSISTENT_LIVING_OBJECT | ● | ● | ● | ○ | ● | ● | ● | ● | LIVING_OBJECT_RUNTIME |
 
 ### WORLDS · 6
 

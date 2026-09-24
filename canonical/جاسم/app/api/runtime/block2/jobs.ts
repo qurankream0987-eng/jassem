@@ -92,6 +92,7 @@ export function makeContinuationDispatcher(deps: {
 export type SweepResult = {
   temporal: { scanned: number; fired: number; rescheduled: number; completed: number; expired: number };
   monitors: { evaluated: number; triggered: number; replayed: number };
+  realtime: { connections: number; delivered: number; resyncRequired: number };
   reservationsExpired: number;
   assignmentOffersExpired: number;
   trackSessionsExpired: number;
@@ -122,6 +123,16 @@ export async function runBlock2Sweep(
   const { sweepDueMonitors } = await import("../monitoring-runtime");
   const monitors = await sweepDueMonitors({ now });
 
+  // Realtime delivery and heartbeat are steps in the SAME duty cycle. A socket
+  // that stopped answering is closed here, and the ledger is carried to every
+  // open subscription here — no timer of realtime's own, and a restart costs a
+  // reconnect rather than a lost event.
+  //
+  //   SECOND_SCHEDULERS_ADDED = 0
+  const { deliverRealtime, getWebSocketInstance } = await import("../../core/websocket");
+  getWebSocketInstance()?.sweepHeartbeats();
+  const realtime = await deliverRealtime({ now });
+
   // resumeAt is part of the canonical Run record. Discovery only schedules
   // explicitly timed WAITING runs; input/approval waits remain parked.
   const dueRuns = await db
@@ -147,6 +158,7 @@ export async function runBlock2Sweep(
   return {
     temporal,
     monitors,
+    realtime,
     reservationsExpired,
     assignmentOffersExpired,
     trackSessionsExpired,

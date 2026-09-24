@@ -44,6 +44,14 @@ import {
   readMonitor,
   transitionMonitor,
 } from "../runtime/monitoring-runtime";
+import {
+  RealtimeError,
+  RealtimeTopicSchema,
+  authorizeSubscription,
+  catchUp,
+  head as realtimeHead,
+  realtimeMetrics,
+} from "../runtime/realtime-runtime";
 import { resolveActingScope } from "../runtime/actor-scope";
 import {
   actOnRuntimeTask,
@@ -185,6 +193,18 @@ async function requireScope(
 // ── Error mapping ─────────────────────────────────────────────────────────────
 
 function handleRuntimeError(error: unknown): never {
+  if (error instanceof RealtimeError) {
+    throw new TRPCError({
+      code:
+        error.code === "FORBIDDEN"
+          ? "FORBIDDEN"
+          : error.code === "OVERLOADED"
+            ? "TOO_MANY_REQUESTS"
+            : "BAD_REQUEST",
+      message: error.message,
+      cause: error,
+    });
+  }
   if (error instanceof MonitorError) {
     throw new TRPCError({
       code:
@@ -1578,6 +1598,50 @@ export const runtimeRouter = router({
         handleRuntimeError(error);
       }
     }),
+
+  // ── Realtime ─────────────────────────────────────────────────────────────
+  //
+  //   REALTIME TRANSPORT != TRUTH
+  //   TRANSPORT_CONNECTED != DATA_CURRENT
+  //
+  // The catch-up read is the resume path, the reconnect path, the poll path
+  // and the mobile cold-start path — ONE procedure, so a client that never
+  // opens a socket is still correct, only later. There is deliberately no
+  // procedure that PUBLISHES: a client creates no event.
+
+  /** Where the ledger is now, for a client that has just read a projection. */
+  realtimeHead: authedQuery.query(async () => ({ cursor: await realtimeHead() })),
+
+  realtimeCatchUp: authedQuery
+    .input(
+      z.object({
+        topics: z.array(RealtimeTopicSchema).min(1).max(32),
+        cursor: z.number().int().min(0),
+        limit: z.number().int().min(1).max(200).optional(),
+        organizationId: z.string().trim().min(1).max(64).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const subscription = await authorizeSubscription({
+          principalId: String(ctx.user!.id),
+          request: {
+            topics: input.topics,
+            ...(input.organizationId ? { organizationId: input.organizationId } : {}),
+          },
+        });
+        return catchUp({
+          subscription,
+          cursor: input.cursor,
+          ...(input.limit !== undefined ? { limit: input.limit } : {}),
+        });
+      } catch (error) {
+        handleRuntimeError(error);
+      }
+    }),
+
+  /** Counters and one latency. No message, no payload, no identity. */
+  realtimeMetrics: authedQuery.query(async () => realtimeMetrics()),
 
   /** «خلاص لا تغيّر كلمة السر». Nothing happened, and the row says so. */
   productActionCancel: authedQuery

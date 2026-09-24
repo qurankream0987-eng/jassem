@@ -815,6 +815,114 @@ FALSE_TRIGGERS      = 0
 FALSE_NOTIFICATIONS = 0
 ```
 
+## 4.13 REALTIME TRANSPORT
+
+```
+REALTIME TRANSPORT  != TRUTH
+TRANSPORT_CONNECTED != DATA_CURRENT
+```
+
+Canonical state is truth. A durable event says truth CHANGED. Realtime carries
+an authorized notification of that change and creates nothing.
+
+```
+CANONICAL STATE CHANGE
+  -> DURABLE EVENT
+    -> AUTHORIZED SUBSCRIPTION
+      -> TRANSPORT
+        -> CLIENT CURSOR
+          -> RECONCILIATION
+            -> CANONICAL PROJECTION UPDATE
+```
+
+A socket that dies erases nothing. A server that restarts costs a reconnect. A
+client that was asleep catches up. None of those is a loss of state, because
+none of them was holding any.
+
+### Connected is not current
+
+A connection open right now says nothing about whether a reading is fresh.
+Four things stay separate and are never collapsed:
+
+```
+transport status · event recency · observation freshness · verification state
+```
+
+A socket may be CONNECTED while the temperature it is showing is STALE. The
+truthful surface says connected transport, stale observation. It never says
+«مباشر» because a socket is open.
+
+### One subscription contract
+
+A subscriber says WHAT it wants to hear about — a scope, a canonical entity, a
+conversation. It may not say whose events those are, what permission it holds,
+what membership it has, or that it is authorized. The server derives all of it
+from the authenticated actor, and a guessed id is refused rather than reported
+as missing.
+
+```
+DOMAIN_REALTIME_CHANNELS_ADDED = 0
+SECOND_SOCKET_SERVERS_ADDED    = 0
+SECOND_EVENT_LEDGERS_ADDED     = 0
+```
+
+`WorldRealtime`, `MonitorRealtime`, `OrderRealtime`, `NegotiationRealtime`,
+`MapRealtime` and `MobileRealtime` are the names this section exists to
+prevent.
+
+### An event is a signal, not a state
+
+The envelope carries a position, an identity, a type, an instant, a reference
+and — where they exist — a revision and closed-vocabulary signals such as a
+verdict or a freshness. It carries no observation payload, no negotiation
+reserve, no policy body, no credential and no row. Everything not explicitly
+allowed is dropped, so a new event type leaks nothing it never declared.
+
+### The client re-reads; it does not reconstruct
+
+```
+EVENT -> IDENTIFY CHANGED OBJECT -> FETCH AUTHORIZED PROJECTION
+```
+
+A frontend that rebuilt business truth out of a frame would be trusting the
+transport with the one job the transport does not have. This matters most for
+what comes later: negotiation, transactions, location and private business
+policy must never be assembled from a notification.
+
+### A cursor, and what to do when it cannot be honoured
+
+A subscriber resumes from a cursor, and nothing is lost merely because
+transport disconnected. When a cursor cannot be honoured — invalid, ahead of
+the ledger, behind what is retained, or a subscriber too far behind to be fed
+event by event — the answer is typed:
+
+```
+RESYNC_REQUIRED
+```
+
+The client re-reads the canonical projection and resumes from a cursor that
+means something. Silently skipping the missing range is the one failure a
+cursor exists to prevent, and a final canonical projection is worth more than
+the pretence that every missed event was applied.
+
+### Ordering is per ledger, and said exactly
+
+Ordering is total within the canonical event ledger, by its position. Nothing
+claims ordering across unrelated ledgers, because none exists. A serial
+position is assigned before commit, so a cursor never advances past an event
+young enough that an older sibling might still be committing.
+
+### Background is not a lie
+
+A suspended app's socket dies with it. The runtime does not pretend otherwise:
+on resume it reconnects and catches up from its cursor, and a cold reopen
+re-reads the canonical projection. A correct app that was asleep beats a
+connected app that was lying.
+
+```
+FALSE_LIVE_CLAIMS = 0
+```
+
 ## 5. Business is a scope, not an app
 
 A Business may own data, Needs, Offerings, Resources, Capacity, Policies,

@@ -9,8 +9,61 @@ import type { WebSocketEvent } from "./notifications/types";
 import { authenticateRequest } from "../kimi/auth";
 import { getRuntimeBubble, getRuntimeRun } from "../runtime/jasim-runtime";
 
-// Store connections per user
-const clients = new Map<string, WebSocket>();
+/**
+ * Connections per user — a SET, not one socket.
+ *
+ * It was a `Map<string, WebSocket>`, so a second tab silently replaced the
+ * first and the first stopped receiving anything. Two tabs, a phone and a
+ * laptop are ordinary; none of them owns the user's connection.
+ *
+ * This registry is transport infrastructure and NEVER canonical state. A
+ * server restart empties it and erases nothing: what happened is in the
+ * ledger, and a client reconnects and resumes from its cursor.
+ */
+const clients = new Map<string, Set<WebSocket>>();
+
+/** What one connection is listening to, and where it has got to. */
+type RealtimeAttachment = {
+  subscription: import("../runtime/realtime-runtime").AuthorizedSubscription;
+  cursor: number;
+  queued: number;
+  /** Set when the socket must resync before it is fed anything else. */
+  stalled: boolean;
+};
+
+const attachments = new WeakMap<WebSocket, RealtimeAttachment>();
+const liveSockets = new Set<WebSocket>();
+/** Sockets that answered the last heartbeat. A silent one is closed. */
+const alive = new WeakSet<WebSocket>();
+
+function addClient(userId: string, ws: WebSocket): void {
+  const existing = clients.get(userId);
+  if (existing) existing.add(ws);
+  else clients.set(userId, new Set([ws]));
+  liveSockets.add(ws);
+}
+
+function removeClient(userId: string, ws: WebSocket): void {
+  const existing = clients.get(userId);
+  if (existing) {
+    existing.delete(ws);
+    if (existing.size === 0) clients.delete(userId);
+  }
+  liveSockets.delete(ws);
+}
+
+/** Every open connection listening to realtime, for the ledger tailer. */
+export function realtimeAttachments(): ReadonlyArray<{
+  socket: WebSocket;
+  attachment: RealtimeAttachment;
+}> {
+  const open: Array<{ socket: WebSocket; attachment: RealtimeAttachment }> = [];
+  for (const socket of liveSockets) {
+    const attachment = attachments.get(socket);
+    if (attachment && socket.readyState === WebSocket.OPEN) open.push({ socket, attachment });
+  }
+  return open;
+}
 
 export interface WebSocketPrincipal {
   userId: string;
@@ -98,7 +151,9 @@ export class JasimWebSocketServer {
         ws.close(1008, "Unauthorized");
         return;
       }
-      clients.set(principal.userId, ws);
+      addClient(principal.userId, ws);
+      alive.add(ws);
+      ws.on("pong", () => alive.add(ws));
       ws.send(JSON.stringify({ type: "connected" }));
 
       ws.on("message", (data: Buffer) => {
@@ -110,6 +165,10 @@ export class JasimWebSocketServer {
             this.handleReadReceipt(principal, message);
           } else if (message.type === "subscribe") {
             void this.handleSubscription(ws, principal, message);
+          } else if (message.type === "realtime.subscribe") {
+            void this.handleRealtimeSubscribe(ws, principal, message);
+          } else if (message.type === "realtime.ack") {
+            handleRealtimeAck(ws, message);
           } else {
             ws.send(JSON.stringify({ type: "error", code: "UNSUPPORTED_SOCKET_ACTION" }));
           }
@@ -119,7 +178,8 @@ export class JasimWebSocketServer {
       });
 
       ws.on("close", () => {
-        if (clients.get(principal.userId) === ws) clients.delete(principal.userId);
+        removeClient(principal.userId, ws);
+        attachments.delete(ws);
       });
 
       ws.on("error", () => {
@@ -128,11 +188,13 @@ export class JasimWebSocketServer {
     });
   }
 
-  /** Emit event to a specific user */
+  /** Emit event to every connection this user has open. */
   async emit(userId: string, event: WebSocketEvent): Promise<void> {
-    const ws = clients.get(userId);
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify(event));
+    const sockets = clients.get(userId);
+    if (!sockets) return;
+    const frame = JSON.stringify(event);
+    for (const ws of sockets) {
+      if (ws.readyState === WebSocket.OPEN) ws.send(frame);
     }
   }
 
@@ -144,28 +206,63 @@ export class JasimWebSocketServer {
     // projection. It is intentionally unavailable until that primitive exists.
   }
 
-  /** Broadcast to all connected users */
+  /**
+   * Broadcast to every connected user.
+   *
+   * Deliberately unimplemented, for the same reason `broadcastToMarket` is: a
+   * frame that reaches everybody has been authorized for nobody. Realtime
+   * delivery goes through an AUTHORIZED subscription and the ledger tailer,
+   * where scope is checked before anything is sent.
+   */
   async broadcast(event: WebSocketEvent): Promise<void> {
-    for (const ws of clients.values()) {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify(event));
-      }
-    }
+    void event;
   }
 
   /** Check if user is online */
   isOnline(userId: string): boolean {
-    const ws = clients.get(userId);
-    return ws !== undefined && ws.readyState === WebSocket.OPEN;
+    const sockets = clients.get(userId);
+    if (!sockets) return false;
+    for (const ws of sockets) {
+      if (ws.readyState === WebSocket.OPEN) return true;
+    }
+    return false;
   }
 
-  /** Get connected user count */
+  /** Get connected socket count. */
   getConnectionCount(): number {
     let count = 0;
-    for (const ws of clients.values()) {
-      if (ws.readyState === WebSocket.OPEN) count++;
+    for (const sockets of clients.values()) {
+      for (const ws of sockets) {
+        if (ws.readyState === WebSocket.OPEN) count++;
+      }
     }
     return count;
+  }
+
+  /**
+   * Close connections that stopped answering.
+   *
+   *   HEARTBEAT PROVES TRANSPORT LIVENESS, AND NOTHING ELSE
+   *
+   * A socket whose peer vanished without a FIN stays OPEN forever otherwise,
+   * and a connection that is dead but registered is worse than one that is
+   * gone: the client reconnects from its cursor, and a phantom never does.
+   */
+  sweepHeartbeats(): { pinged: number; closed: number } {
+    let pinged = 0;
+    let closed = 0;
+    for (const ws of [...liveSockets]) {
+      if (ws.readyState !== WebSocket.OPEN) continue;
+      if (!alive.has(ws)) {
+        closed += 1;
+        ws.terminate();
+        continue;
+      }
+      alive.delete(ws);
+      ws.ping();
+      pinged += 1;
+    }
+    return { pinged, closed };
   }
 
   /** Handle read receipts */
@@ -177,6 +274,52 @@ export class JasimWebSocketServer {
         type: "read_confirmed",
         data: { notificationId: String(notificationId) },
       });
+    }
+  }
+
+  /**
+   * The canonical realtime subscription.
+   *
+   *   AUTHORIZATION BEFORE SUBSCRIPTION
+   *
+   * The request says what to hear about. It cannot say whose events those are,
+   * what permission it holds, or that it is allowed — the server derives all
+   * of that from the handshake principal, and a guessed id is refused rather
+   * than reported as missing.
+   */
+  private async handleRealtimeSubscribe(
+    ws: WebSocket,
+    principal: WebSocketPrincipal,
+    message: Record<string, unknown>,
+  ): Promise<void> {
+    const realtime = await import("../runtime/realtime-runtime");
+    try {
+      const subscription = await realtime.authorizeSubscription({
+        principalId: principal.userId,
+        request: message.subscription,
+      });
+      const requested = (message.subscription as { cursor?: unknown } | undefined)?.cursor;
+      // A subscriber with no cursor starts at the HEAD. Replaying the ledger
+      // at a client that has just fetched a projection would be a second
+      // telling of facts it is already showing.
+      const cursor =
+        typeof requested === "number" && Number.isInteger(requested) && requested >= 0
+          ? requested
+          : await realtime.head();
+      attachments.set(ws, { subscription, cursor, queued: 0, stalled: false });
+      realtime.recordMetric("subscriptions");
+      ws.send(JSON.stringify({ type: "realtime.subscribed", cursor }));
+    } catch (error) {
+      realtime.recordMetric("authorizationRejects");
+      ws.send(
+        JSON.stringify({
+          type: "realtime.error",
+          code: error instanceof realtime.RealtimeError ? error.code : "INVALID",
+          // The message is the runtime's own sentence, which never names an
+          // id the caller was not already holding.
+          message: error instanceof Error ? error.message : "Subscription refused.",
+        }),
+      );
     }
   }
 
@@ -206,6 +349,22 @@ export class JasimWebSocketServer {
   }
 }
 
+/**
+ * The client saying it applied up to a cursor.
+ *
+ * It may only move FORWARD, and never past what the server has sent. A client
+ * that could acknowledge the future could skip the range in between.
+ */
+function handleRealtimeAck(ws: WebSocket, message: Record<string, unknown>): void {
+  const attachment = attachments.get(ws);
+  if (!attachment) return;
+  const cursor = message.cursor;
+  if (typeof cursor !== "number" || !Number.isInteger(cursor)) return;
+  if (cursor < 0 || cursor > attachment.cursor) return;
+  attachment.queued = Math.max(0, attachment.queued - 1);
+  if (attachment.queued === 0) attachment.stalled = false;
+}
+
 // Singleton instance for shared access
 let wsInstance: JasimWebSocketServer | null = null;
 
@@ -226,4 +385,49 @@ export async function emitToUser(userId: string, event: WebSocketEvent): Promise
   if (wsInstance) {
     await wsInstance.emit(userId, event);
   }
+}
+
+/**
+ * Carry the ledger to every open subscription.
+ *
+ * The socket layer's only job here is to be a sink: it holds no cursor
+ * history, no event copy and no authorization decision of its own. All three
+ * live in `realtime-runtime.ts` and in the durable ledger, which is why a
+ * restart of this process costs a reconnect and nothing else.
+ */
+export async function deliverRealtime(options?: { now?: Date }): Promise<{
+  connections: number;
+  delivered: number;
+  resyncRequired: number;
+}> {
+  const open = realtimeAttachments();
+  if (open.length === 0) return { connections: 0, delivered: 0, resyncRequired: 0 };
+  const { tailRealtime } = await import("../runtime/realtime-runtime");
+  return tailRealtime(
+    open.map(({ socket, attachment }) => ({
+      socketId: socket,
+      scopeId: attachment.subscription.scope.scopeId,
+      cursor: attachment.cursor,
+      queued: attachment.queued,
+      stalled: attachment.stalled,
+      subscription: attachment.subscription,
+      deliver: (batch, cursor) => {
+        attachment.cursor = cursor;
+        if (batch.length === 0) return;
+        attachment.queued += 1;
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({ type: "realtime.events", events: batch, cursor }));
+        }
+      },
+      requireResync: (cursor, reason) => {
+        attachment.stalled = true;
+        if (socket.readyState === WebSocket.OPEN) {
+          // Not a subset, and not silence. The client re-reads the canonical
+          // projection and comes back with a cursor that means something.
+          socket.send(JSON.stringify({ type: "realtime.resync", cursor, reason }));
+        }
+      },
+    })),
+    options,
+  );
 }

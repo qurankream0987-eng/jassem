@@ -881,6 +881,74 @@ describe("a standing condition is one engine, not one watcher per subject", () =
   });
 });
 
+// ── Realtime ─────────────────────────────────────────────────────────────────
+
+describe("realtime is transport, and transport is not truth", () => {
+  const realtime = SCENARIOS.filter(
+    (scenario) => scenario.family === "REALTIME_LIVING_OBJECTS",
+  );
+
+  it("blames no realtime runtime of its own", () => {
+    expect(GENERAL_GAPS as readonly string[]).not.toContain("REALTIME_RUNTIME");
+    for (const scenario of realtime) {
+      expect(scenario.currentBlocker, scenario.id).not.toBeNull();
+      expect(GENERAL_GAPS, scenario.id).toContain(scenario.currentBlocker!);
+    }
+  });
+
+  it("closing it greened nothing, and the catalog says so", () => {
+    // The whole point of this entry. A transport existing is not a surface
+    // existing, and a gate that moved because a socket opened would be the
+    // false success every phase before this one refused.
+    for (const scenario of realtime) {
+      expect(scenario.gates.EXECUTABLE, scenario.id).not.toBe("PASS");
+    }
+    const tracked = realtime.filter(
+      (scenario) => scenario.currentBlocker === "LIVING_OBJECT_RUNTIME",
+    );
+    expect(tracked.length, "scenarios now waiting on the living object").toBeGreaterThan(0);
+    for (const scenario of tracked) {
+      expect(scenario.truthfulRuntimeState, scenario.id).toContain("LIVING OBJECT");
+    }
+  });
+
+  it("a map still refuses to invent a location", () => {
+    const tracker = realtime.find((scenario) => scenario.id === "realtime.delivery_tracker")!;
+    expect(tracker.currentBlocker).toBe("LOCATION_OBSERVATION");
+    expect(tracker.gates.OBSERVABLE).toBe("BLOCKED_BY_PROVIDER");
+  });
+
+  it("the runtime declares no channel, socket server or ledger of its own", () => {
+    //   DOMAIN_REALTIME_CHANNELS_ADDED = 0 · SECOND_EVENT_LEDGERS_ADDED = 0
+    const source = readFileSync(resolve(process.cwd(), "api/runtime/realtime-runtime.ts"), "utf8");
+    expect(source).not.toMatch(/new WebSocketServer\(/);
+    expect(source).not.toMatch(/pgTable\(/);
+    const declared = [...source.matchAll(/export (?:type|function|const|class|async function) (\w+)/g)]
+      .map((match) => match[1]!);
+    for (const name of declared) {
+      for (const word of ["World", "Monitor", "Order", "Map", "Mobile", "Negotiation", "Channel"]) {
+        expect(name, `${name} names ${word}`).not.toContain(word);
+      }
+    }
+  });
+
+  it("the governing law records that a socket is not a fact", () => {
+    const law = readFileSync(LAW, "utf8");
+    for (const clause of [
+      "REALTIME TRANSPORT",
+      "REALTIME TRANSPORT  != TRUTH",
+      "TRANSPORT_CONNECTED != DATA_CURRENT",
+      "RESYNC_REQUIRED",
+      "DOMAIN_REALTIME_CHANNELS_ADDED = 0",
+      "SECOND_SOCKET_SERVERS_ADDED    = 0",
+      "WorldRealtime",
+      "MobileRealtime",
+    ]) {
+      expect(law, clause).toContain(clause);
+    }
+  });
+});
+
 // ── The scoreboard, pinned ───────────────────────────────────────────────────
 
 describe("no scenario changes status silently", () => {
@@ -914,7 +982,7 @@ describe("no scenario changes status silently", () => {
       blockedByProvider: 41,
       blockedByEnvironment: 2,
       notYetImplemented: 20,
-      generalGaps: 12,
+      generalGaps: 11,
     });
   });
 

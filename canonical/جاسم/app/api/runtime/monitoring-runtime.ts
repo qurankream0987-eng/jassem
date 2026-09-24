@@ -993,6 +993,39 @@ export async function evaluateMonitor(input: {
     notificationIntentId = await createMatchNotification(monitor, result);
   }
 
+  // A durable signal that canonical monitor state changed.
+  //
+  //   CANONICAL STATE CHANGE -> DURABLE EVENT -> ... -> PROJECTION UPDATE
+  //
+  // Appended to the ONE ledger every runtime already writes to, so a realtime
+  // subscriber has a single cursor rather than one per subsystem. It carries
+  // the verdict, the freshness and the transition — all closed vocabularies —
+  // and never the reading they were derived from.
+  //
+  // Emitted when something a surface would SHOW differently changed. A repeat
+  // of an unchanged verdict is not a change, and an event per poll would be
+  // the notification storm moved one layer down.
+  const changed =
+    result !== ((monitor.lastResult as MonitorResult | null) ?? null) ||
+    freshness !== ((monitor.lastFreshness as Freshness | null) ?? null) ||
+    records;
+  if (changed) {
+    await db.insert(events).values({
+      type: "MONITOR_EVALUATED",
+      source: "runtime",
+      ownerId: monitor.scopeId,
+      correlationId: monitor.id,
+      message: `A standing condition was evaluated: ${result}.`,
+      payload: {
+        monitorId: monitor.id,
+        result,
+        freshness,
+        transition,
+        state: nextState,
+      },
+    });
+  }
+
   const [evaluation] = await db
     .insert(monitorEvaluations)
     .values({
@@ -1359,6 +1392,24 @@ export async function recordObservationAndEvaluate(input: {
     ...(input.observedAt ? { observedAt: input.observedAt } : {}),
     ...(input.freshnessTtlMs !== undefined ? { freshnessTtlMs: input.freshnessTtlMs } : {}),
     ...(input.sourceKind ? { sourceKind: input.sourceKind } : {}),
+  });
+  // The observation itself is a canonical change, whether or not anything was
+  // watching it. It carries the subject and the FRESHNESS and nothing else —
+  // the reading is private, and a subscriber that needs it reads it through
+  // the authorized path like everybody else.
+  //
+  //   TRANSPORT_CONNECTED != DATA_CURRENT
+  await db.insert(events).values({
+    type: "OBSERVATION_RECORDED",
+    source: "runtime",
+    ownerId: input.ownerId,
+    correlationId: observation.subjectId,
+    message: "A canonical observation was recorded.",
+    payload: {
+      subjectKind: observation.subjectKind,
+      observationType: observation.observationType,
+      freshness: observationFreshness(observation, input.now ?? new Date()),
+    },
   });
   const outcomes = await evaluateMonitorsForObservation({
     observation,

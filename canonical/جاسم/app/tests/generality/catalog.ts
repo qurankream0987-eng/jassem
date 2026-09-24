@@ -124,7 +124,12 @@ export const GENERAL_GAPS = [
   // agreement becomes one transaction with obligations both ways, verified by
   // the same completion policy every effect uses. What reaches OUTSIDE JASIM
   // is a provider gap, which is a different thing and says so.
-  "REALTIME_RUNTIME",
+  // REALTIME_RUNTIME was here and is closed: one subscription contract over
+  // one durable ledger, authorized server-side, resumable from a cursor and
+  // proven over real sockets. Closing it greened NOTHING in this catalog, and
+  // that is the honest shape of it — every scenario that named it also needs
+  // the living-object surface below, which is a different missing thing and
+  // now says so under its own name.
   // MONITORING_ENGINE was here and is closed: a turn creates a durable
   // standing condition, it is evaluated by the duty cycle that already
   // existed, and the difference between «it is true» and «it just became
@@ -1549,9 +1554,9 @@ const REALTIME_SCENARIOS: readonly Scenario[] = Object.freeze(
     currentBlocker:
       id === "delivery_tracker"
         ? ("LOCATION_OBSERVATION" as const)
-        : ("REALTIME_RUNTIME" as const),
+        : ("LIVING_OBJECT_RUNTIME" as const),
     truthfulRuntimeState:
-      "Canonical observations and durable events with a resume cursor exist. No client subscribes, so the surface polls and never claims «مباشر». A MAP must never invent a location.",
+      "A client now subscribes: an authorized socket carries durable change notifications and a cursor recovers what a disconnect missed. What is still missing is the LIVING OBJECT itself — a durable tracked thing «أين وصل طلبي؟» can be about — and the transport was never what that needed. It still never claims «مباشر» from being connected, and a MAP must never invent a location.",
     domainBranchesRequired: 0 as const,
   })),
 );
