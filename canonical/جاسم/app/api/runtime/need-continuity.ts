@@ -46,6 +46,7 @@ import {
   type GoalSpec,
 } from "./goal-spec";
 import { sanitizeModelStructuredOutput } from "./model-output-trust";
+import { isKnownCurrency, parseMoney } from "./block3/money";
 
 export class NeedError extends Error {
   readonly code: "INVALID" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "AMBIGUOUS";
@@ -206,7 +207,14 @@ export function applyNeedPatch(current: GoalSpec, patch: NeedPatch): GoalSpec {
     .filter((question) => !resolved.has(question))
     .concat(patch.addUnknowns ?? []);
 
-  return {
+  // THROUGH THE CANONICAL SCHEMA, not merely assembled.
+  //
+  // The patch schema is a delta's shape; `GoalSpecSchema` is what a goal must
+  // BE — including the rules a delta cannot express, such as «a bare number is
+  // not a requirement: at most 2 of what?». Validating here means an
+  // unsatisfiable constraint is refused at the moment somebody proposes it,
+  // rather than stored and found unreadable on the next turn.
+  return GoalSpecSchema.parse({
     version: 1,
     // Only a NEW need states an outcome. A refinement cannot rewrite what the
     // conversation is about while calling itself a refinement.
@@ -215,7 +223,7 @@ export function applyNeedPatch(current: GoalSpec, patch: NeedPatch): GoalSpec {
     preferences: [...new Set([...current.preferences, ...(patch.addPreferences ?? [])])],
     assumptions: [...new Set([...current.assumptions, ...(patch.addAssumptions ?? [])])],
     unknowns: [...new Set(unknowns)],
-  };
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -528,7 +536,173 @@ export function projectNeed(row: ConversationNeedRow, evaluation?: GoalEvaluatio
 }
 
 /**
- * The current need as DISCOVERY consumes it.
+ * A goal's vocabulary is not discovery's vocabulary.
+ *
+ * A `GoalConstraint` says «COST, AT_MOST, 3, KWD» — a DIMENSION bounded in the
+ * unit somebody spoke in. A discovery hard constraint says «the stored field
+ * `priceMinor` is at most this many minor units, in this currency». They are
+ * two languages about one wish, and handing one to the other untranslated is
+ * how a constraint gets understood and then silently ignored.
+ *
+ *   UNDERSTOOD != TRANSLATABLE
+ *   TRANSLATABLE != CONVERTIBLE_BY_GUESSING
+ *   DISPLAY_VALUE != CANONICAL_VALUE · FLOAT != MONEY
+ *
+ * THE TRANSLATION IS A PROJECTION, NEVER A REWRITE. The need goes on saying
+ * «COST <= 3 KWD» in the words the person used; what discovery receives is
+ * derived from it for this one search.
+ *
+ *   NEED_ORIGINAL_CONSTRAINT_PRESERVED · DISCOVERY_FILTER_IS_DERIVED
+ *
+ * WHAT CANNOT BE TRANSLATED FAITHFULLY IS NOT APPLIED — and is returned, so
+ * that «not applied» is a fact somebody can read rather than a silence.
+ *
+ *   SILENT_GUESSED_FILTER = 0
+ */
+
+/** Why a constraint the person stated did not become a filter. */
+export const UNAPPLIED_REASONS = [
+  /** MINIMIZE / MAXIMIZE state a direction. A direction is not a bound. */
+  "DIRECTION_NOT_A_BOUND",
+  /** «أقل من ٣» with nothing saying three of what. */
+  "NO_UNIT",
+  /** A unit this runtime holds no conversion metadata for. */
+  "UNKNOWN_UNIT",
+  /** More precision than the currency has. Rounding it would be inventing. */
+  "PRECISION_UNREPRESENTABLE",
+  /** A dimension nothing in the fabric stores a comparable value for. */
+  "DIMENSION_NOT_STORED",
+] as const;
+export type UnappliedReason = (typeof UNAPPLIED_REASONS)[number];
+
+export type ConstraintTranslation = {
+  /** What discovery will actually filter on. Derived, never the need itself. */
+  readonly applied: readonly Record<string, unknown>[];
+  /** What the person said that this search could not honestly act on. */
+  readonly unapplied: readonly {
+    readonly dimension: string;
+    readonly unit: string | null;
+    readonly reason: UnappliedReason;
+  }[];
+};
+
+/**
+ * Normalize the hard bounds of a need into discovery's own terms.
+ *
+ * Money goes through the canonical money module — the same exact-integer
+ * arithmetic the payment path uses, with the same currency scales and the same
+ * refusal to round. No multiplication by a magic ten happens here, and no
+ * floating-point value ever touches a money value.
+ *
+ *   KWD 3 decimals · JPY 0 · default 2 — from currency metadata, not a branch.
+ *
+ * Currency is carried INTO the filter, so a bound stated in one currency can
+ * never exclude or admit something priced in another merely because both are
+ * integers:
+ *
+ *   MINOR_AMOUNT_WITHOUT_CURRENCY_COMPARISON = 0
+ *   FX_CONVERSION_ADDED = 0 — no rate is invented, ever.
+ */
+export function translateConstraints(
+  constraints: readonly GoalConstraint[],
+): ConstraintTranslation {
+  const applied: Record<string, unknown>[] = [];
+  const unapplied: { dimension: string; unit: string | null; reason: UnappliedReason }[] = [];
+
+  for (const constraint of constraints) {
+    const unit = constraint.unit?.trim() ?? null;
+
+    // A direction is a ranking preference. Turning «الأرخص» into a number
+    // would be inventing a bound nobody stated.
+    //
+    //   PREFERENCE_INVENTED_AS_HARD_BOUND = 0
+    if (constraint.operator === "MINIMIZE" || constraint.operator === "MAXIMIZE") {
+      unapplied.push({ dimension: constraint.dimension, unit, reason: "DIRECTION_NOT_A_BOUND" });
+      continue;
+    }
+    if (constraint.operator !== "AT_MOST") {
+      unapplied.push({ dimension: constraint.dimension, unit, reason: "DIMENSION_NOT_STORED" });
+      continue;
+    }
+    if (!unit) {
+      // «أقل من ٣» of what? A bare number is not a requirement, and guessing
+      // the currency is exactly the guess this phase exists to refuse.
+      //
+      //   MISSING_CURRENCY_GUESSED = 0
+      unapplied.push({ dimension: constraint.dimension, unit: null, reason: "NO_UNIT" });
+      continue;
+    }
+
+    if (constraint.dimension === "COST") {
+      // Already canonical: exact minor units, as the fabric stores them. Left
+      // exactly as it was, so nothing that worked before changes.
+      if (unit.toLowerCase() === "minor") {
+        const exact = exactInteger(constraint.value);
+        if (exact === null) {
+          unapplied.push({ dimension: "COST", unit, reason: "PRECISION_UNREPRESENTABLE" });
+          continue;
+        }
+        applied.push({ field: "price", maxMinor: exact });
+        continue;
+      }
+      if (!isKnownCurrency(unit)) {
+        unapplied.push({ dimension: "COST", unit, reason: "UNKNOWN_UNIT" });
+        continue;
+      }
+      try {
+        // The canonical parser. It refuses more precision than the currency
+        // has rather than rounding it away.
+        //
+        //   UNAUTHORIZED_ROUNDING = 0 · FLOAT_MONEY_CONVERSION = 0
+        const money = parseMoney(decimalTextOf(constraint.value), unit);
+        applied.push({ field: "price", maxMinor: money.minor, currency: money.currency });
+      } catch {
+        unapplied.push({ dimension: "COST", unit, reason: "PRECISION_UNREPRESENTABLE" });
+      }
+      continue;
+    }
+
+    // Every other dimension: the fabric stores ordinary numeric attributes,
+    // and a bound is comparable only in the unit it is already stored in.
+    // Converting hours to days, or kilometres to metres, needs conversion
+    // metadata this runtime does not have — so it is named, not guessed.
+    if (typeof constraint.value !== "number") {
+      unapplied.push({ dimension: constraint.dimension, unit, reason: "DIMENSION_NOT_STORED" });
+      continue;
+    }
+    applied.push({
+      field: constraint.dimension.toLowerCase(),
+      operator: "max",
+      value: constraint.value,
+    });
+  }
+
+  return { applied, unapplied };
+}
+
+/** An exact integer string, or null. Never a rounded one. */
+function exactInteger(value: unknown): string | null {
+  if (typeof value === "string") return /^\d+$/.test(value.trim()) ? value.trim() : null;
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0) return null;
+  return String(value);
+}
+
+/**
+ * The person's amount as an exact decimal string.
+ *
+ * A string is taken verbatim — «2.750» keeps the precision they typed. A
+ * number is rendered by the shortest representation that round-trips, which is
+ * exact for any decimal a person could have written, and no arithmetic is done
+ * on it here.
+ */
+function decimalTextOf(value: unknown): string {
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return "";
+}
+
+/**
+ * The current need's bounds, in discovery's terms.
  *
  * Discovery reads canonical state rather than re-deriving constraints from the
  * transcript, which is the whole point:
@@ -538,52 +712,8 @@ export function projectNeed(row: ConversationNeedRow, evaluation?: GoalEvaluatio
 export async function hardConstraintsForDiscovery(input: {
   conversationId: string;
   scopeId: string;
-}): Promise<readonly Record<string, unknown>[]> {
+}): Promise<ConstraintTranslation> {
   const row = await currentNeed(input);
-  if (!row) return [];
-  return translateForDiscovery(evaluateGoalSpec(specOf(row)).hardConstraints);
-}
-
-/**
- * A goal's vocabulary is not discovery's vocabulary.
- *
- * A `GoalConstraint` says «COST, AT_MOST, 3, KWD» — a DIMENSION with a unit
- * somebody spoke in. A discovery hard constraint says «the stored field
- * `priceMinor` is at most this many minor units». They are different languages
- * about the same wish, and handing one to the other untranslated is how every
- * candidate silently fails to match.
- *
- * ONLY FAITHFUL TRANSLATIONS ARE PASSED. A bound stated in major units cannot
- * be turned into minor units without knowing a currency's exponent, and
- * guessing one would quietly exclude things the person never excluded. Such a
- * bound is therefore NOT applied as a hard filter — and because discovery
- * stores the constraints it did apply, what was applied stays visible rather
- * than being asserted.
- *
- * Constraints a bound cannot be read from at all — a direction like MINIMIZE,
- * or a dimension the fabric stores nothing for — are preferences for ranking,
- * never exclusions.
- */
-export function translateForDiscovery(
-  constraints: readonly GoalConstraint[],
-): readonly Record<string, unknown>[] {
-  const translated: Record<string, unknown>[] = [];
-  for (const constraint of constraints) {
-    if (constraint.operator !== "AT_MOST" || typeof constraint.value !== "number") continue;
-    if (constraint.dimension === "COST") {
-      // Exact minor units only. Anything else is not faithfully translatable.
-      if (constraint.unit?.toLowerCase() !== "minor") continue;
-      translated.push({ field: "price", maxMinor: String(constraint.value) });
-      continue;
-    }
-    // A dimension the fabric stores as an ordinary numeric attribute.
-    if (constraint.unit) {
-      translated.push({
-        field: constraint.dimension.toLowerCase(),
-        operator: "max",
-        value: constraint.value,
-      });
-    }
-  }
-  return translated;
+  if (!row) return { applied: [], unapplied: [] };
+  return translateConstraints(evaluateGoalSpec(specOf(row)).hardConstraints);
 }

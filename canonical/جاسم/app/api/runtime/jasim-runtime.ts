@@ -6737,6 +6737,13 @@ export async function routeRuntimeConversationTurn(input: {
               : error.message,
           cause: `NEED_${error.code}`,
         };
+      } else if (error instanceof z.ZodError) {
+        // A constraint the canonical goal schema refuses — «أقل من ٣» of what?
+        // Refused where it was proposed, so nothing unreadable is ever stored.
+        needRefusal = {
+          message: "لم يتضح مقياس هذا الشرط. حدد لي الوحدة أو العملة.",
+          cause: "NEED_INVALID",
+        };
       } else {
         throw error;
       }

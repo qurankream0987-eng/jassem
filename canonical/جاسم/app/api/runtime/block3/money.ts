@@ -24,6 +24,37 @@ const CURRENCY_SCALES: Record<string, number> = {
 };
 const DEFAULT_SCALE = 2;
 
+/**
+ * Codes this runtime will treat as MONEY.
+ *
+ * A unit string alone cannot tell a currency from anything else: «DAY», «KM»
+ * and «KWD» are all three uppercase letters. So a code counts as a currency
+ * only when it is registered here, and an unregistered one is not money —
+ * which fails SAFE, because an unrecognized bound goes unapplied instead of
+ * being mis-applied at the wrong scale.
+ *
+ * This is ISO 4217 metadata, not a currency feature: nothing anywhere branches
+ * on a particular code, and adding one changes no behaviour but its scale.
+ */
+export const KNOWN_CURRENCIES: ReadonlySet<string> = new Set([
+  // 3-decimal
+  "KWD", "BHD", "OMR", "TND", "LYD", "IQD", "JOD",
+  // 0-decimal
+  "JPY", "KRW", "VND", "CLP", "XOF", "XAF", "ISK", "PYG", "RWF", "UGX", "VUV",
+  // 2-decimal
+  "AED", "ARS", "AUD", "BDT", "BGN", "BRL", "CAD", "CHF", "CNY", "COP", "CZK",
+  "DKK", "DZD", "EGP", "ETB", "EUR", "GBP", "GHS", "HKD", "HRK", "HUF", "IDR",
+  "ILS", "INR", "IRR", "KES", "KZT", "LBP", "LKR", "MAD", "MUR", "MXN", "MYR",
+  "NGN", "NOK", "NZD", "PHP", "PKR", "PLN", "QAR", "RON", "RSD", "RUB", "SAR",
+  "SDG", "SEK", "SGD", "SYP", "THB", "TRY", "TWD", "TZS", "UAH", "USD", "UYU",
+  "UZS", "YER", "ZAR",
+]);
+
+/** Whether a unit string names money at all. Never a guess. */
+export function isKnownCurrency(unit: string): boolean {
+  return KNOWN_CURRENCIES.has(unit.trim().toUpperCase());
+}
+
 export const CURRENCY_CODE = /^[A-Z0-9]{3,8}$/;
 
 export function normalizeCurrency(currency: string): string {

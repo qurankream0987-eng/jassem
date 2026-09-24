@@ -192,12 +192,19 @@ async function discoverTurn(
     ? (values.hardConstraints as never[])
     : [];
   const { currentNeed, hardConstraintsForDiscovery } = await import("../need-continuity");
-  const carried = stated.length > 0
-    ? stated
-    : (await hardConstraintsForDiscovery({
-        conversationId: input.conversationId,
-        scopeId: input.ownerId,
-      })) as never[];
+  // The need's own bounds, NORMALIZED into discovery's terms. «أقل من ٣ دنانير»
+  // becomes «priceMinor <= 3000, currency KWD» — derived for this search, while
+  // the need goes on saying what the person said.
+  const translation = await hardConstraintsForDiscovery({
+    conversationId: input.conversationId,
+    scopeId: input.ownerId,
+  });
+  const carried = stated.length > 0 ? stated : (translation.applied as never[]);
+  // What the person stated that this search could NOT honestly act on. Carried
+  // into the answer so that «not applied» is something they can read.
+  //
+  //   SILENT_GUESSED_FILTER = 0
+  const unapplied = stated.length > 0 ? [] : translation.unapplied;
 
   // The need AT THE REVISION IT HAS NOW. A later refinement must not be able to
   // claim evidence gathered for what it used to say.
@@ -258,13 +265,24 @@ async function discoverTurn(
   return {
     kind: "structured_result",
     label: "Discovery results",
-    summary: found.candidates.length
-      ? `وجد جاسم ${found.candidates.length} نتيجة. الأسعار الخارجية ملاحظات غير موثوقة وليست شروط دفع.`
-      : "لم يجد جاسم نتائج مطابقة ضمن المصادر المتاحة.",
+    summary: `${
+      found.candidates.length
+        ? `وجد جاسم ${found.candidates.length} نتيجة. الأسعار الخارجية ملاحظات غير موثوقة وليست شروط دفع.`
+        : "لم يجد جاسم نتائج مطابقة ضمن المصادر المتاحة."
+    }${
+      unapplied.length > 0
+        ? ` لم أستطع تطبيق ${unapplied.length} من شروطك في هذا البحث، فلم أستبعد بها شيئاً.`
+        : ""
+    }`,
     data: {
       resultSetId: found.resultSet.id,
       sources: found.resultSet.sources,
       candidates: found.candidates.map(safeCandidate),
+      // WHAT WAS ACTUALLY FILTERED ON, derived from the need, and what was
+      // not. Both are part of the answer: a bound that could not be honoured
+      // is a fact about this search, not a silence.
+      appliedConstraints: found.resultSet.hardConstraints,
+      unappliedConstraints: unapplied,
     },
     status: "completed",
   };
