@@ -565,6 +565,30 @@ async function manageableBinding(input: {
   return { row, definition };
 }
 
+/**
+ * The capability a handshake is LABELLED with.
+ *
+ * `authenticate` and `discover` are handshakes, not acts: the adapter is asked
+ * who we are and what this account can do, and neither is an invocation of a
+ * capability. The context still carries one, so it is chosen the safest way
+ * available — a non-mutating capability the definition supports, and `READ` as
+ * a label when the definition supports none.
+ *
+ * That fallback exists because a PAYMENT provider's whole manifest may be PAY
+ * and REFUND, and requiring a non-mutating capability to verify one meant such
+ * a provider could never be verified at all — so it could never become a
+ * payment route, which would have made the payment phase impossible rather
+ * than merely awkward.
+ *
+ * Nothing about this label grants anything: `invoke` is never reached from a
+ * handshake, and the gates below read the GRANT, never this.
+ *
+ *   CONNECTION_TEST_CAUSES_BUSINESS_MUTATION = 0
+ */
+function handshakeCapability(definition: ProviderDefinition): ProviderCapability {
+  return definition.supports.find((capability) => !capabilityMutates(capability)) ?? "READ";
+}
+
 function endpointOf(row: BindingRow, definition: ProviderDefinition): string {
   if (definition.endpoint.mode === "FIXED") return definition.endpoint.baseUrl;
   if (!row.endpointUrl) {
@@ -912,18 +936,7 @@ export async function authenticateBinding(input: {
   if (row.lifecycle !== "AUTHORIZED" && row.lifecycle !== "AUTHENTICATED") {
     throw new ProviderBindingError("There is nothing to authenticate yet.", "STATE");
   }
-  // A test uses the safest capability the provider has, and never a mutating
-  // one. Writing something to find out whether writing works is not a test.
-  //
-  //   CONNECTION_TEST_CAUSES_BUSINESS_MUTATION = 0
-  const probe = definition.supports.find((capability) => !capabilityMutates(capability));
-  if (!probe) {
-    throw new ProviderBindingError(
-      "This provider offers no safe way to test a connection.",
-      "STATE",
-    );
-  }
-  const context = await contextFor(row, definition, probe);
+  const context = await contextFor(row, definition, handshakeCapability(definition));
   const outcome = await definition.adapter.authenticate(context);
   if (!outcome.ok) {
     await db
@@ -1028,11 +1041,7 @@ export async function verifyBinding(input: {
     return { status: "FAILED", detail: "This is not the account that was expected." };
   }
 
-  const probe = definition.supports.find((capability) => !capabilityMutates(capability));
-  if (!probe) {
-    throw new ProviderBindingError("This provider offers no safe way to verify.", "STATE");
-  }
-  const context = await contextFor(row, definition, probe);
+  const context = await contextFor(row, definition, handshakeCapability(definition));
   let discovered: readonly ProviderCapability[];
   try {
     discovered = await definition.adapter.discover(context);
@@ -1369,6 +1378,108 @@ export async function readThroughBinding(input: {
       parameters: input.parameters ?? {},
     });
   } catch (error) {
+    return {
+      status: "PROVIDER_UNAVAILABLE",
+      detail: error instanceof Error ? error.message : "The provider could not be reached.",
+    };
+  }
+  if (result.status === "UNAVAILABLE") {
+    return { status: "PROVIDER_UNAVAILABLE", detail: result.detail };
+  }
+  if (result.status === "ERROR") {
+    return { status: "PROVIDER_ERROR", detail: result.detail };
+  }
+  return { status: "OK", value: result.value, observedAt: result.observedAt ?? now };
+}
+
+/**
+ * ACT THROUGH A BINDING — the mutation door beside the read door.
+ *
+ * `readThroughBinding` derives its own authority, because a FACT has a
+ * canonical owner and the subject says who it is. An ACT does not work that
+ * way: what authorizes paying is a canonical settlement obligation, which is
+ * the payment runtime's knowledge and not this module's. A general binding
+ * runtime that read payment tables would be the payment-shaped hole in it that
+ * this whole design exists to avoid.
+ *
+ *   PAYMENT_SPECIAL_BINDING_RUNTIME = 0
+ *
+ * So this door checks everything it CAN check structurally, and says plainly
+ * what it cannot:
+ *
+ *   VERIFIED only            UNVERIFIED_PAY_BINDING_USED = 0
+ *   granted only             UNGRANTED_PAY_PROVIDER_CALL = 0
+ *   not revoked or suspended REVOKED_PAY_BINDING_USED = 0
+ *   the named scope's own    CROSS_SCOPE_PAY_PROVIDER = 0
+ *   MUTATING capability only — a read has its own door and must use it
+ *
+ * What it cannot check is that the caller holds canonical authority to perform
+ * this act at all. That check belongs to the runtime that owns the act, and
+ * the contract test asserts this door has exactly ONE caller so the claim
+ * stays true as the repository grows.
+ */
+export async function invokeThroughBinding(input: {
+  bindingId: string;
+  /** The scope the calling runtime derived canonically. Checked, not believed. */
+  onBehalfOfScopeId: string;
+  capability: ProviderCapability;
+  parameters?: Readonly<Record<string, unknown>>;
+  now?: Date;
+}): Promise<ProviderCallOutcome> {
+  const now = input.now ?? new Date();
+  // The read door refuses a mutating capability. This one refuses a reading
+  // one, so neither can be used to do the other's job by mistake.
+  if (!capabilityMutates(input.capability)) {
+    return {
+      status: "REFUSED",
+      refusal: "CAPABILITY_NOT_GRANTED",
+      detail: "Reading has its own door.",
+    };
+  }
+  const [row] = await db
+    .select()
+    .from(scopeProviderBindings)
+    .where(eq(scopeProviderBindings.id, input.bindingId))
+    .limit(1);
+  if (!row || !row.lifecycle || row.scopeId !== input.onBehalfOfScopeId) {
+    return { status: "REFUSED", refusal: "NO_SUCH_BINDING", detail: "No such connection." };
+  }
+  if (row.lifecycle !== "VERIFIED") {
+    return {
+      status: "REFUSED",
+      refusal: "BINDING_NOT_USABLE",
+      detail: `This connection is ${row.lifecycle.toLowerCase()}.`,
+    };
+  }
+  if (!row.grantedCapabilities.includes(input.capability)) {
+    return {
+      status: "REFUSED",
+      refusal: "CAPABILITY_NOT_GRANTED",
+      detail: `This connection was not granted ${input.capability}.`,
+    };
+  }
+  const definition = definitionOf(row.definitionId);
+  if (!definition) {
+    return {
+      status: "REFUSED",
+      refusal: "BINDING_NOT_USABLE",
+      detail: "That provider is no longer registered.",
+    };
+  }
+
+  let result: ProviderResult;
+  try {
+    const context = await contextFor(row, definition, input.capability);
+    result = await definition.adapter.invoke(context, {
+      capability: input.capability,
+      parameters: input.parameters ?? {},
+    });
+  } catch (error) {
+    // A THROWN adapter on a mutating call is the dangerous case: the request
+    // may have landed. It is reported as unreachable, never as failed, and the
+    // caller must reconcile rather than retry.
+    //
+    //   AMBIGUOUS_NETWORK_FAILURE_BLIND_RECHARGE = 0
     return {
       status: "PROVIDER_UNAVAILABLE",
       detail: error instanceof Error ? error.message : "The provider could not be reached.",

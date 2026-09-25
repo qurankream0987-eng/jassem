@@ -23,7 +23,7 @@ import {
 } from "./party-configuration";
 import { createCommercialOrder, termsFingerprint, updateCommercialTerms } from "../block3/commercial-orders";
 import { createPaymentIntent } from "../block3/payment-intents";
-import { createFinancialCheckout } from "../block3/checkout";
+import { paymentExecutionRoute } from "../payment-route";
 import { applyApprovedCommercialChange } from "../block3/commercial-changesets";
 import { createWorldPlan } from "../block3/generated-business-economics";
 import type { GeneratedWorldService } from "../../core/generated-world-service";
@@ -898,14 +898,36 @@ async function payTurn(
     targetId: payment.intent.id,
   });
 
-  const provider = string(values, "provider");
-  const adapterEndpoint = string(values, "adapterEndpoint");
-  if (!provider || !adapterEndpoint) {
+  // ── WHOSE RAIL, AND WHO DECIDED ─────────────────────────────────────────
+  //
+  // This read used to be `string(values, "provider")` and
+  // `string(values, "adapterEndpoint")` — the MODEL's envelope. The URL it
+  // produced was origin-checked, so it could not point anywhere, and it was
+  // still the model choosing which payment provider carried somebody's money.
+  //
+  //   MODEL != PAYMENT ROUTE AUTHORITY
+  //   PAYMENT_EXECUTION_BYPASSES_GENERAL_PROVIDER_BINDING = 0
+  //
+  // The route is now derived from the canonical settlement: the two sides of
+  // the payable, each offering only its OWN verified, PAY-granted bindings.
+  // Nothing a caller says reaches it.
+  const routed = await paymentExecutionRoute({
+    payable: { payeeRef: payable.payeeRef },
+    payerScopeId: input.ownerId,
+  });
+
+  if (routed.status !== "RESOLVED") {
+    // No route is not a failed payment and not a fake success. The obligation
+    // stands, the intent exists, and nothing was charged.
+    //
+    //   NO_PROVIDER_FAKE_PAYMENT_SUCCESS = 0
     return {
       kind: "structured_result",
       label: "Payment prepared",
       summary:
-        "هيّأتُ الدفع مقابل التزام قائم ومحدد. لم يحدث دفع، ويلزم مزود دفع موثوق قبل فتح أي واجهة.",
+        routed.status === "AMBIGUOUS_ROUTE"
+          ? "هيّأتُ الدفع مقابل التزام قائم. أكثر من مسار دفع موثوق ممكن، ولن أختار نيابة عنك."
+          : "هيّأتُ الدفع مقابل التزام قائم ومحدد. لم يحدث دفع: لا يوجد مسار دفع موثوق ومتحقق منه بعد.",
       data: {
         paymentIntentId: payment.intent.id,
         transactionId: payable.transactionId,
@@ -913,31 +935,38 @@ async function payTurn(
         amountMinor: payable.amountMinor,
         currency: payable.currency,
         paymentTruth: "UNCHANGED",
+        paymentRoute: routed.status,
         effects: "none",
       },
       status: "awaiting_input",
     };
   }
 
-  const checkout = await createFinancialCheckout(db, {
-    intentId: payment.intent.id,
-    ownerId: input.ownerId,
-    provider,
-    adapterEndpoint,
-  });
+  // A route exists. That is still not a payment: the intent is prepared and
+  // pinned to nothing until an execution actually claims it.
+  //
+  //   PAYMENT_INTENT != PAYMENT_EXECUTION
+  //   PAYABLE_OBLIGATION != SILENT_CHARGE_AUTHORITY
   return {
     kind: "structured_result",
-    label: "Checkout ready",
-    summary: "أُنشئت جلسة checkout مرتبطة بالتزام قائم. فتحها لا يثبت نجاح الدفع.",
+    label: "Payment route ready",
+    summary:
+      "هيّأتُ الدفع، وهناك مسار دفع موثوق ومتحقق منه. لم يُخصم شيء بعد — التنفيذ يحتاج تفويضك عبر المسار الموثوق.",
     data: {
       paymentIntentId: payment.intent.id,
       transactionId: payable.transactionId,
       commitmentId: payable.commitmentId,
-      sessionId: checkout.session.id,
-      checkoutUrl: checkout.checkoutUrl,
+      amountMinor: payable.amountMinor,
+      currency: payable.currency,
+      // The definition and the side. Never the binding's credential, never an
+      // endpoint, and never anything the model could reuse as a route.
+      paymentRoute: "RESOLVED",
+      routeProvider: routed.route.definitionId,
+      routeSide: routed.route.side,
       paymentTruth: "UNCHANGED",
+      effects: "none",
     },
-    status: "completed",
+    status: "awaiting_input",
   };
 }
 

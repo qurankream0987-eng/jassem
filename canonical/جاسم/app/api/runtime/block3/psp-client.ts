@@ -23,8 +23,13 @@ export type PspPaymentView = {
 export type PspPayoutView = { id: string; status: string; amountMinor: string; currency: string; destinationRef: string };
 
 export class PspRejectedError extends Error {
-  constructor(message: string, readonly statusCode: number) {
+  // Written out rather than declared as a constructor parameter property:
+  // `erasableSyntaxOnly` forbids those, and this file had never been reached
+  // by the strictly-checked project until the payment route imported it.
+  readonly statusCode: number;
+  constructor(message: string, statusCode: number) {
     super(message);
+    this.statusCode = statusCode;
   }
 }
 
