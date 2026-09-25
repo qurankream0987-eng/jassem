@@ -187,6 +187,59 @@ describe("the payment route contract", () => {
     expect((METHOD.match(/export async function resumePaymentAfterChallenge/g) ?? []).length).toBe(1);
   });
 
+  it("the event path can read a provider and can never spend at one", () => {
+    //   EVENT_PATH_PAY_CALLS = 0 · CAPTURE = 0 · REFUND = 0 · WEBHOOK != PAY
+    const EVENT = strip(read("api/runtime/payment-event.ts"));
+    // Not one of the doors that moves money is even imported here.
+    expect(EVENT).not.toMatch(/executePaymentEffect|refundPaymentEffect|pspClientForRoute/);
+    expect(EVENT).not.toMatch(/\.authorize\(|\.capture\(|\.refund\(/);
+    // What it does reach: the existing verifier and the existing appliers,
+    // each of which reads the provider and writes nothing else.
+    expect(EVENT).toMatch(/verifyPaymentClaim\(/);
+    expect(EVENT).toMatch(/applyProviderSettlement|applyProviderCapture/);
+  });
+
+  it("an event is authenticated, deduplicated and correlated before a payment is touched", () => {
+    //   UNAUTHENTICATED_EVENT_CAN_CHANGE_PAYMENT = 0
+    //   EVENT_SUCCESS_BYPASSES_VERIFICATION = 0
+    const EVENT = strip(read("api/runtime/payment-event.ts"));
+    const ingest = EVENT.slice(EVENT.indexOf("export async function ingestPaymentEvent"));
+    // The authenticated boundary runs first, and anything but ACCEPTED returns
+    // before the payment is even loaded.
+    const authIndex = ingest.indexOf("ingestAuthenticatedExternalEvent");
+    const loadIndex = ingest.indexOf("from(paymentIntents)");
+    const applyIndex = ingest.indexOf("await apply(");
+    expect(authIndex).toBeGreaterThan(-1);
+    expect(authIndex).toBeLessThan(loadIndex);
+    expect(ingest).toMatch(/ingested\.outcome !== "ACCEPTED"/);
+    // And the verifier runs before anything is applied.
+    expect(ingest.indexOf("verifyPaymentClaim")).toBeLessThan(applyIndex);
+    expect(ingest).toMatch(/!verdict\.verified/);
+  });
+
+  it("an event finds its payment by reference, never by resemblance", () => {
+    //   AMBIGUOUS_EVENT_PAYMENT_MATCH = 0
+    //   OUT_OF_ORDER_EVENT_DOWNGRADES_TERMINAL_STATE = 0
+    const EVENT = strip(read("api/runtime/payment-event.ts"));
+    expect(EVENT).toMatch(/eq\(paymentIntents\.id, input\.reference\)/);
+    // No search by money, by owner, by recency or by «the only open one».
+    expect(EVENT).not.toMatch(/orderBy|amountMinor\)|ownerId\)|createdAt/);
+    expect(EVENT).toMatch(/TERMINAL\.has\(intent\.status\)/);
+  });
+
+  it("the event path names no provider and no kind of business", () => {
+    //   PROVIDER_NAME_EVENT_BRANCHES = 0 · DOMAIN_EVENT_HANDLERS_ADDED = 0
+    const EVENT = strip(read("api/runtime/payment-event.ts"));
+    for (const named of [
+      "stripe", "adyen", "paypal", "visa", "mastercard", "bank",
+      "restaurant", "car", "hotel", "booking", "food",
+    ]) {
+      expect(EVENT.toLowerCase(), named).not.toMatch(new RegExp(`\\b${named}s?\\b`));
+    }
+    expect(EVENT).not.toMatch(/switch\s*\(/);
+    expect((EVENT.match(/export async function ingestPaymentEvent/g) ?? []).length).toBe(1);
+  });
+
   it("no payment runtime names a kind of business", () => {
     //   DOMAIN_PAYMENT_HANDLERS_ADDED = 0 · DOMAIN_NOUN_BRANCHES = 0
     for (const noun of [

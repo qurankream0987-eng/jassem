@@ -279,6 +279,68 @@ BROWSER_RETURN_REQUIRED_FOR_PAYMENT_TRUTH = NO
 RETURN_AFTER_WEBHOOK_DUPLICATES_EFFECT = 0
 ```
 
+### A signature authenticates who spoke, never what they said
+
+The other half of the asynchronous case: a payer who closes the browser, a bank
+transfer that lands an hour later, a delayed capture. The return path needs
+somebody to return. This one does not.
+
+Every part existed; none were joined. `ingestAuthenticatedExternalEvent`
+authenticates an HMAC over the exact raw bytes against a catalog-bound secret,
+refuses a stale timestamp, refuses a financial callback whose *signed body* does
+not itself carry its event type, reference, amount and currency, refuses one
+whose money disagrees with the mandate, refuses one correlating to no known
+payment, derives ownership from the intent rather than the caller, and derives
+the replay key from the signed body so a caller cannot mint a fresh one for the
+same bytes. `external_webhook_events` deduplicates on a unique index, durable
+across processes. `verifyPaymentClaim` weighs a claim against the authoritative
+readback.
+
+And nothing in production called the last one, or moved a payment because an
+event arrived.
+
+**The bridge adds the join and nothing else.** No table — the ledger that
+deduplicates was already the right ledger. No verifier — the one that weighs a
+claim against a readback was already the right verifier. No state machine — the
+transitions that apply truth were already the right transitions.
+
+The order is the guarantee: authenticate, deduplicate and correlate *before* the
+payment is loaded; verify *before* anything is applied. A contract test asserts
+those indices rather than trusting the reading.
+
+```
+UNAUTHENTICATED_EVENT_CAN_CHANGE_PAYMENT = 0
+EVENT_SUCCESS_BYPASSES_VERIFICATION = 0
+DUPLICATE_EVENT_CAN_DUPLICATE_EFFECT = 0 · CROSS_PROCESS_EVENT_REPLAY = 0
+ASYNC_PAYMENT_CAN_SETTLE_WITHOUT_BROWSER_RETURN = PASS
+```
+
+**An event may read a provider and may never spend at one.** Neither
+`executePaymentEffect`, nor `refundPaymentEffect`, nor `authorize`, `capture` or
+`refund` is imported into the event path at all. The only provider call it can
+cause is a readback.
+
+```
+EVENT_PATH_PAY_CALLS = 0 · CAPTURE = 0 · REFUND = 0
+REVOKED_BINDING_NEW_MUTATION_FROM_EVENT = 0
+```
+
+**A later event describing an older moment is a fact about the past**, and the
+past does not overwrite a settlement that already happened. A webhook and a
+browser return reach the same end, once, in either order.
+
+```
+OUT_OF_ORDER_EVENT_DOWNGRADES_TERMINAL_STATE = 0
+WEBHOOK_AND_RETURN_DUPLICATE_EFFECT = 0
+```
+
+One finding on the way: `verifyPaymentClaim` weighs *status and money*, while
+`applyProviderCapture` additionally weighs *identity* — whether the readback is
+bound to this payment — and refuses by throwing. Correct, and a webhook route
+that threw would return 500 to a provider who did nothing wrong. The bridge
+catches it and reports the same fact the throw carried; nothing is written
+before the refusal, so the payment is untouched either way.
+
 ### The handshake label grants nothing
 
 The payment phase let a PAY-only provider authenticate by labelling its
