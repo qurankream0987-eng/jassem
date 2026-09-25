@@ -146,6 +146,47 @@ describe("the payment route contract", () => {
     expect(CODE).not.toMatch(/console\./);
   });
 
+  it("the continuation reads canonical state and nothing a browser carried", () => {
+    //   RETURN_QUERY_PAYMENT_STATUS_USED = 0 · RETURN_QUERY_AMOUNT_USED = 0
+    //   RETURN_QUERY_CURRENCY_USED = 0 · RETURN_QUERY_PAYEE_USED = 0
+    //   RETURN_QUERY_PROVIDER_USED = 0
+    const METHOD = strip(read("api/runtime/payment-method.ts"));
+    const resume = METHOD.slice(METHOD.indexOf("export async function resumePaymentAfterChallenge"));
+    // Its whole input, and there is no verdict in it.
+    expect(resume).toMatch(/challengeId: string;[\s\S]{0,120}state: string;[\s\S]{0,120}payerScopeId: string;/);
+    for (const smuggled of ["success", "amount", "currency", "payee", "query", "searchParams"]) {
+      expect(resume, smuggled).not.toMatch(new RegExp(`input\\.${smuggled}`));
+    }
+    // The money and the parties come from the intent, and the provider
+    // reference is never passed in — the durable one is the only one read.
+    expect(resume).toMatch(/payeeRef: intent\.payeeRef/);
+    expect(resume).toMatch(/payerScopeId: intent\.ownerId/);
+    expect(resume).not.toMatch(/providerReference:/);
+  });
+
+  it("a return may read the provider and may never pay it again", () => {
+    //   CHALLENGE_RETURN_SECOND_PAY_CALL = 0
+    //   RECONCILIATION_RETRY != PAYMENT_RETRY
+    const METHOD = strip(read("api/runtime/payment-method.ts"));
+    const resume = METHOD.slice(METHOD.indexOf("export async function resumePaymentAfterChallenge"));
+    expect(resume).toMatch(/reconcilePaymentEffect\(/);
+    // Not one of the doors that moves money is reachable from here.
+    expect(resume).not.toMatch(/executePaymentEffect|refundPaymentEffect|authorize\(|capture\(/);
+    expect(resume).not.toMatch(/createPaymentIntent/);
+    // And the rail is checked against the one the payment was executed on.
+    expect(resume).toMatch(/routed\.route\.definitionId !== intent\.providerRef/);
+  });
+
+  it("there is one continuation, and it names no provider", () => {
+    //   DOMAIN_PAYMENT_RETURN_HANDLERS_ADDED = 0 · PROVIDER_NAME_RETURN_BRANCHES = 0
+    const METHOD = strip(read("api/runtime/payment-method.ts"));
+    for (const named of ["stripe", "adyen", "paypal", "threeds", "3ds", "applepay", "googlepay"]) {
+      expect(METHOD.toLowerCase(), named).not.toContain(named);
+    }
+    expect(METHOD).not.toMatch(/switch\s*\(/);
+    expect((METHOD.match(/export async function resumePaymentAfterChallenge/g) ?? []).length).toBe(1);
+  });
+
   it("no payment runtime names a kind of business", () => {
     //   DOMAIN_PAYMENT_HANDLERS_ADDED = 0 · DOMAIN_NOUN_BRANCHES = 0
     for (const noun of [

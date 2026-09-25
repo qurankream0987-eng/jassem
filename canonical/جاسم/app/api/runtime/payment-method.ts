@@ -362,3 +362,138 @@ export async function completePaymentChallenge(input: {
     paymentIntentId: session.paymentIntentId,
   };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Coming back, and what that is allowed to cause
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ChallengeContinuation = {
+  /** What the browser did. Still the only thing a browser establishes. */
+  readonly userLeg: "RETURNED";
+  readonly paymentIntentId: string;
+  /**
+   * What the PROVIDER's own state turned out to be, through the readback the
+   * payment runtime already trusts. `NO_ROUTE` and `PROVIDER_CHANGED` are
+   * refusals to look, not findings about the money.
+   */
+  readonly outcome:
+    | "RESOLVED_CAPTURED"
+    | "RESOLVED_FAILED"
+    | "STILL_INCONCLUSIVE"
+    | "DISCREPANCY"
+    | "NO_ROUTE"
+    | "PROVIDER_CHANGED";
+  /** The canonical status afterwards. Set by the payment runtime, not here. */
+  readonly paymentStatus: string;
+};
+
+/**
+ * THE PAYER CAME BACK. RECONCILE.
+ *
+ * ─── WHAT THIS FUNCTION CANNOT BE TOLD ──────────────────────────────────────
+ *
+ * Look at what it takes: a challenge id, its single-use state, and who is
+ * returning. There is no parameter for a status, an amount, a currency, a
+ * payee, a provider or a payment id — so a return carrying `success=true`,
+ * `status=paid` or `amount=1` has nowhere to put any of it.
+ *
+ *   RETURN_QUERY_PAYMENT_STATUS_USED = 0 · RETURN_QUERY_AMOUNT_USED = 0
+ *   RETURN_QUERY_CURRENCY_USED = 0 · RETURN_QUERY_PAYEE_USED = 0
+ *   RETURN_QUERY_PROVIDER_USED = 0
+ *   CLIENT_CAN_SWAP_PAYMENT_INTENT_AFTER_CHALLENGE = 0
+ *   CLIENT_CAN_SWAP_PROVIDER_REFERENCE_AFTER_CHALLENGE = 0
+ *
+ * That is not a check. It is an absence, which is the only kind of guarantee a
+ * browser cannot argue with.
+ *
+ * ─── AND WHAT IT DOES INSTEAD ───────────────────────────────────────────────
+ *
+ * Everything from canonical state. The consumed challenge names its payment;
+ * the payment names its payer, its payee and — pinned on first execution — its
+ * provider and its provider reference. The route is rebuilt from those, and
+ * refused if it now resolves to a different provider than the one the payment
+ * was executed on.
+ *
+ * Then `reconcilePaymentEffect` does the rest, exactly as it already did:
+ * readback only, money re-matched, binding re-checked, discrepancy left
+ * visible. This function moves no payment state of its own.
+ *
+ *   BROWSER_RETURN != PAYMENT_PROOF · RECONCILIATION_RETRY != PAYMENT_RETRY
+ *   CHALLENGE_RETURN_SECOND_PAY_CALL = 0
+ *
+ * ─── AND WHY IT IS ONLY A CONVENIENCE ───────────────────────────────────────
+ *
+ * A payer who completes the provider's page and then closes the browser has
+ * still paid. An authenticated provider event, or a later reconciliation,
+ * establishes that without anybody returning anywhere.
+ *
+ *   BROWSER_RETURN_REQUIRED_FOR_PAYMENT_TRUTH = NO
+ */
+export async function resumePaymentAfterChallenge(input: {
+  challengeId: string;
+  state: string;
+  payerScopeId: string;
+  now?: Date;
+}): Promise<ChallengeContinuation> {
+  // Single-use, payer-bound, state-bound, expiry-checked. A second identical
+  // return finds the session consumed and never reaches the provider.
+  //
+  //   CHALLENGE_REPLAY_TRIGGERS_SECOND_RECONCILIATION = 0
+  const returned = await completePaymentChallenge({
+    challengeId: input.challengeId,
+    state: input.state,
+    payerScopeId: input.payerScopeId,
+    ...(input.now ? { now: input.now } : {}),
+  });
+
+  const [{ getPaymentIntent }, { reconcilePaymentEffect }, { paymentExecutionRoute }] =
+    await Promise.all([
+      import("./block3/payment-intents"),
+      import("./block3/payment-execution"),
+      import("./payment-route"),
+    ]);
+
+  const intent = await getPaymentIntent(db as never, returned.paymentIntentId);
+  if (!intent) throw new Error("No such payment.");
+
+  // Rebuilt from the payment, not from the return. The payer and the payee are
+  // the intent's own, so no caller chooses whose rail is consulted.
+  const routed = await paymentExecutionRoute({
+    payable: { payeeRef: intent.payeeRef },
+    payerScopeId: intent.ownerId,
+  });
+  if (routed.status !== "RESOLVED") {
+    return {
+      userLeg: "RETURNED",
+      paymentIntentId: intent.id,
+      outcome: "NO_ROUTE",
+      paymentStatus: intent.status,
+    };
+  }
+  // The payment was executed on a pinned provider. If the route now resolves
+  // somewhere else — a binding revoked, a preference changed — that is a
+  // refusal to look, not a verdict. Reading one provider's state to settle a
+  // payment made at another is how a settlement gets attributed to the wrong
+  // rail.
+  if (routed.route.definitionId !== intent.providerRef) {
+    return {
+      userLeg: "RETURNED",
+      paymentIntentId: intent.id,
+      outcome: "PROVIDER_CHANGED",
+      paymentStatus: intent.status,
+    };
+  }
+
+  // No `providerReference` is passed: the durable one on the intent is the
+  // only one reconciliation will read, and handing it a second one is how a
+  // caller would point a readback at somebody else's payment.
+  const reconciled = await reconcilePaymentEffect(db as never, routed.deps, {
+    intentId: intent.id,
+  });
+  return {
+    userLeg: "RETURNED",
+    paymentIntentId: intent.id,
+    outcome: reconciled.outcome,
+    paymentStatus: reconciled.intent.status,
+  };
+}

@@ -228,6 +228,57 @@ endpoint is now shared rather than duplicated — deliberately the host rule onl
 since a provider's challenge page legitimately carries a session in its query
 where a base endpoint never does.
 
+### Coming back only causes a look
+
+The last link. `completePaymentChallenge` returned a payment intent id and
+stopped; `reconcilePaymentEffect` had no production caller at all. The
+continuation joins them and adds nothing else.
+
+**What it cannot be told is the guarantee.** Its whole input is a challenge id,
+that challenge's single-use state, and who is returning. There is no parameter
+for a status, an amount, a currency, a payee, a provider or a payment id — so a
+return carrying `success=true` or `amount=1` has nowhere to put any of it. That
+is not a check; it is an absence, which is the only kind a browser cannot argue
+with. A test passes all of them anyway and the provider's `FAILED` still wins.
+
+```
+RETURN_QUERY_PAYMENT_STATUS_USED = 0 · RETURN_QUERY_AMOUNT_USED = 0
+CLIENT_SUCCESS_RETURN_SETTLES = 0 · CLIENT_FAILURE_RETURN_FORCES_FAILURE = 0
+CLIENT_CAN_SWAP_PAYMENT_INTENT_AFTER_CHALLENGE = 0
+CLIENT_CAN_SWAP_PROVIDER_REFERENCE_AFTER_CHALLENGE = 0
+```
+
+Everything else comes from canonical state: the consumed challenge names its
+payment, and the payment names its payer, its payee and — pinned on first
+execution — its provider and provider reference. No `providerReference` is
+passed to reconciliation, because the durable one is the only one it will read.
+
+**A rail that moved is a refusal to look, not a verdict.** If the route now
+resolves to a different provider than the payment was executed on — a binding
+revoked, a preference changed — the continuation stops. Reading one provider's
+state to settle a payment made at another is how a settlement gets attributed to
+the wrong rail.
+
+**A return may read. It may never pay again.** Only `reconcilePaymentEffect` is
+reachable from here; `executePaymentEffect`, `authorize` and `capture` are not.
+
+```
+CHALLENGE_RETURN_SECOND_PAY_CALL = 0
+CHALLENGE_RETURN_CREATES_NEW_PAYMENT_INTENT = 0
+RECONCILIATION_RETRY != PAYMENT_RETRY
+```
+
+**And the return is a convenience, not a requirement.** A payer who completes
+the provider's page and closes the browser has still paid; the server reconciles
+through the same door with nobody returning anywhere. Where a provider event won
+first, a later return finds nothing to reconcile: no downgrade, no second
+financial effect, no stale overwrite.
+
+```
+BROWSER_RETURN_REQUIRED_FOR_PAYMENT_TRUTH = NO
+RETURN_AFTER_WEBHOOK_DUPLICATES_EFFECT = 0
+```
+
 ### The handshake label grants nothing
 
 The payment phase let a PAY-only provider authenticate by labelling its
