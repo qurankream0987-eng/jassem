@@ -277,6 +277,20 @@ export type ProviderDefinition = {
   readonly authMethod: ProviderAuthMethod;
   /** Everything this KIND of system can do. Not what any binding may do. */
   readonly supports: readonly ProviderCapability[];
+  /**
+   * The PROPERTIES this kind of system can establish a fact about.
+   *
+   * Adapter contract metadata, exactly where the fact semantics belong — not a
+   * branch, and not a widening of the capability vocabulary. A system that
+   * knows how many units are on a shelf does not thereby know whether its
+   * owner would accept a lower price, and this is where that is said.
+   *
+   *   PROVIDER_USED_FOR_UNSUPPORTED_FACT = 0
+   *
+   * Absent means NONE. A definition that never says what it observes answers
+   * no questions, which is the fail-closed direction.
+   */
+  readonly observes?: readonly string[];
   readonly endpoint: EndpointPolicy;
   readonly adapter: ProviderAdapter;
   /**
@@ -1240,6 +1254,148 @@ export async function callProvider(input: {
   return { status: "OK", value: result.value, observedAt: result.observedAt ?? now };
 }
 
+/**
+ * READ A SCOPE'S OWN SYSTEM, ABOUT ITS OWN SUBJECT.
+ *
+ * `callProvider` authorizes by a PRINCIPAL's standing in the binding's scope,
+ * which is right for somebody using their own connection — and useless for the
+ * question this exists to answer. A buyer asking whether a seller's thing is
+ * still available has no standing in the seller's scope and never will; the
+ * system that knows the answer is the seller's.
+ *
+ * So the basis is different here, and narrower. There is no principal. The
+ * caller must already have established, canonically, that this binding's scope
+ * is the authority for the fact — and it passes that scope in, where it is
+ * checked against the binding rather than trusted.
+ *
+ * What it can NEVER do is act:
+ *
+ *   SOURCE_RESOLUTION_MUTATING_PROVIDER_CALLS = 0
+ *
+ * A mutating capability is refused structurally, so no path through here can
+ * book, schedule, message, pay or refund anything. Reading is not acting, and
+ * this function cannot be talked into the second by any caller.
+ *
+ * Every other gate is the one `callProvider` uses: VERIFIED only, granted only.
+ *
+ *   UNVERIFIED_BINDING_USED_AS_SOURCE = 0 · REVOKED_BINDING_USED_AS_SOURCE = 0
+ *   UNGRANTED_PROVIDER_CAPABILITY_CALL = 0
+ */
+export async function readThroughBinding(input: {
+  bindingId: string;
+  /** The scope the caller proved is authoritative. Checked, not believed. */
+  authoritativeScopeId: string;
+  capability: ProviderCapability;
+  parameters?: Readonly<Record<string, unknown>>;
+  now?: Date;
+}): Promise<ProviderCallOutcome> {
+  const now = input.now ?? new Date();
+  if (capabilityMutates(input.capability)) {
+    // Not a refusal a caller can argue with, and not a policy: establishing a
+    // fact by changing the world is a different act with a different runtime.
+    return {
+      status: "REFUSED",
+      refusal: "NOT_AUTHORIZED_TO_ACT",
+      detail: "A fact is not established by changing something.",
+    };
+  }
+
+  const [row] = await db
+    .select()
+    .from(scopeProviderBindings)
+    .where(eq(scopeProviderBindings.id, input.bindingId))
+    .limit(1);
+  // A binding of another scope is refused exactly as a missing one is.
+  //
+  //   CROSS_SCOPE_PROVIDER_SOURCE = 0
+  if (!row || !row.lifecycle || row.scopeId !== input.authoritativeScopeId) {
+    return { status: "REFUSED", refusal: "NO_SUCH_BINDING", detail: "No such connection." };
+  }
+  if (row.lifecycle !== "VERIFIED") {
+    return {
+      status: "REFUSED",
+      refusal: "BINDING_NOT_USABLE",
+      detail: `This connection is ${row.lifecycle.toLowerCase()}.`,
+    };
+  }
+  if (!row.grantedCapabilities.includes(input.capability)) {
+    return {
+      status: "REFUSED",
+      refusal: "CAPABILITY_NOT_GRANTED",
+      detail: `This connection was not granted ${input.capability}.`,
+    };
+  }
+  const definition = definitionOf(row.definitionId);
+  if (!definition) {
+    return {
+      status: "REFUSED",
+      refusal: "BINDING_NOT_USABLE",
+      detail: "That provider is no longer registered.",
+    };
+  }
+
+  let result: ProviderResult;
+  try {
+    const context = await contextFor(row, definition, input.capability);
+    result = await definition.adapter.invoke(context, {
+      capability: input.capability,
+      parameters: input.parameters ?? {},
+    });
+  } catch (error) {
+    return {
+      status: "PROVIDER_UNAVAILABLE",
+      detail: error instanceof Error ? error.message : "The provider could not be reached.",
+    };
+  }
+  if (result.status === "UNAVAILABLE") {
+    return { status: "PROVIDER_UNAVAILABLE", detail: result.detail };
+  }
+  if (result.status === "ERROR") {
+    return { status: "PROVIDER_ERROR", detail: result.detail };
+  }
+  return { status: "OK", value: result.value, observedAt: result.observedAt ?? now };
+}
+
+/**
+ * Every VERIFIED binding of a scope that was granted this capability.
+ *
+ * ALL of them, deliberately. `usableBindingFor` below answers «is there one»
+ * and takes the first row, which is the right shape for a yes/no and the wrong
+ * shape for choosing — a first row is a database ordering, not a reason.
+ *
+ *   MULTIPLE_PROVIDER_LATEST_WINS = 0
+ */
+export async function verifiedBindingsFor(input: {
+  scopeId: string;
+  capability: ProviderCapability;
+  /** When given, only definitions that say they establish this property. */
+  property?: string;
+}): Promise<readonly { bindingId: string; definitionId: string; verifiedAt: Date | null }[]> {
+  const rows = await db
+    .select()
+    .from(scopeProviderBindings)
+    .where(
+      and(
+        eq(scopeProviderBindings.scopeId, input.scopeId),
+        eq(scopeProviderBindings.lifecycle, "VERIFIED"),
+      ),
+    );
+  return rows
+    .filter((row) => row.grantedCapabilities.includes(input.capability))
+    .filter((row) => {
+      if (!input.property) return true;
+      const definition = definitionOf(row.definitionId);
+      // Absent means none. A definition that never says what it observes
+      // answers no questions.
+      return (definition?.observes ?? []).includes(input.property);
+    })
+    .map((row) => ({
+      bindingId: row.id,
+      definitionId: row.definitionId ?? row.providerId,
+      verifiedAt: row.verifiedAt,
+    }));
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 5 · WHAT A PROVIDER SAID IS EVIDENCE, AND EVIDENCE IS NOT A VERDICT
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1278,6 +1434,32 @@ export async function recordProviderEvidence(input: {
   value: unknown;
   observedAt: Date;
   freshnessTtlMs?: number;
+  /**
+   * WHAT THE READING COVERS.
+   *
+   * The freshness runtime sets evidence aside before it judges it, by exactly
+   * these three: a reading of another configuration, another quantity or
+   * another revision of the subject is not weak evidence, it is not evidence.
+   * So a provider reading that does not carry them can never cover a question
+   * that names them.
+   *
+   *   PROVIDER_EVIDENCE_CROSSES_SUBJECT_REVISION = 0
+   */
+  configuration?: Readonly<Record<string, string | number>>;
+  quantity?: number;
+  subjectRevision?: string | number;
+  /**
+   * WHOSE EVIDENCE THIS BECOMES.
+   *
+   * Evidence is read back by the scope that needed it, so it is written for
+   * that scope — the same rule the human path already follows, which records
+   * an answer under the scope that asked rather than the scope that answered.
+   * Defaults to the binding's own scope, which is the reading a scope makes
+   * about itself.
+   *
+   *   CROSS_SCOPE_EVIDENCE_SOURCE = 0 — it is written for ONE scope, never both.
+   */
+  forScopeId?: string;
 }): Promise<{ observationId: string }> {
   const [row] = await db
     .select()
@@ -1288,7 +1470,7 @@ export async function recordProviderEvidence(input: {
     throw new ProviderBindingError("Only a verified connection is evidence.", "STATE");
   }
   const observation = await recordObservation(db, {
-    ownerId: row.scopeId,
+    ownerId: input.forScopeId ?? row.scopeId,
     subjectKind: input.subjectKind,
     subjectId: input.subjectId,
     observationType: input.property,
@@ -1299,8 +1481,15 @@ export async function recordProviderEvidence(input: {
       bindingId: row.id,
       definitionId: row.definitionId,
       accountRef: row.accountRef,
+      ...(input.subjectRevision === undefined
+        ? {}
+        : { subjectRevision: String(input.subjectRevision) }),
     },
-    payload: { value: input.value },
+    payload: {
+      value: input.value,
+      ...(input.configuration ? { configuration: input.configuration } : {}),
+      ...(input.quantity === undefined ? {} : { quantity: input.quantity }),
+    },
     ...(input.freshnessTtlMs === undefined ? {} : { freshnessTtlMs: input.freshnessTtlMs }),
   });
   return { observationId: observation.id };
