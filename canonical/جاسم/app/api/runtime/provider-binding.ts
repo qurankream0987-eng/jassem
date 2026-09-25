@@ -74,6 +74,7 @@ import { db } from "../queries/connection";
 import { events } from "@db/schema";
 import { providerCredentials, scopeProviderBindings } from "@db/schema-block2";
 import { authorizeScopeAction } from "./actor-scope";
+import { subjectAuthority } from "./subject-authority";
 import { assertResolvedPublicEndpoint } from "./block2/mcp-client";
 import {
   providerCredentialVault,
@@ -1263,10 +1264,17 @@ export async function callProvider(input: {
  * still available has no standing in the seller's scope and never will; the
  * system that knows the answer is the seller's.
  *
- * So the basis is different here, and narrower. There is no principal. The
- * caller must already have established, canonically, that this binding's scope
- * is the authority for the fact — and it passes that scope in, where it is
- * checked against the binding rather than trusted.
+ * So the basis is different here, and narrower. There is no principal, and
+ * there is no scope the caller gets to name either: it passes in the FACT, and
+ * this function derives the authoritative scopes from canonical state itself.
+ *
+ *   CALLER_CANNOT_ASSERT_SOURCE_AUTHORITY
+ *
+ * An earlier cut took an `authoritativeScopeId` and checked it against the
+ * binding, which was safe through the one resolver that called it and was
+ * still a caller-trust boundary on an exported function — a second caller
+ * could have named a scope nothing made authoritative. Deriving it here costs
+ * one read and removes the trust entirely.
  *
  * What it can NEVER do is act:
  *
@@ -1283,8 +1291,14 @@ export async function callProvider(input: {
  */
 export async function readThroughBinding(input: {
   bindingId: string;
-  /** The scope the caller proved is authoritative. Checked, not believed. */
-  authoritativeScopeId: string;
+  /**
+   * The fact this read is to establish.
+   *
+   * Authority is derived from it here, by the same canonical derivation the
+   * human path uses to decide who may be asked. The caller states the
+   * question, never the answer to «whose system may speak for it».
+   */
+  fact: { subjectKind: string; subjectId: string; property?: string };
   capability: ProviderCapability;
   parameters?: Readonly<Record<string, unknown>>;
   now?: Date;
@@ -1305,10 +1319,23 @@ export async function readThroughBinding(input: {
     .from(scopeProviderBindings)
     .where(eq(scopeProviderBindings.id, input.bindingId))
     .limit(1);
-  // A binding of another scope is refused exactly as a missing one is.
+  if (!row || !row.lifecycle) {
+    return { status: "REFUSED", refusal: "NO_SUCH_BINDING", detail: "No such connection." };
+  }
+  // WHOSE SYSTEM MAY SPEAK FOR THIS FACT — read from the subject, now.
+  //
+  // A binding belonging to a scope the subject does not make authoritative is
+  // refused exactly as a missing one is, whoever asked and whatever they
+  // believed. This is also what keeps one scope's connection from answering
+  // another scope's question.
   //
   //   CROSS_SCOPE_PROVIDER_SOURCE = 0
-  if (!row || !row.lifecycle || row.scopeId !== input.authoritativeScopeId) {
+  const authority = await subjectAuthority({
+    subjectKind: input.fact.subjectKind,
+    subjectId: input.fact.subjectId,
+    ...(input.fact.property ? { property: input.fact.property } : {}),
+  });
+  if (!authority || !authority.scopeIds.includes(row.scopeId)) {
     return { status: "REFUSED", refusal: "NO_SUCH_BINDING", detail: "No such connection." };
   }
   if (row.lifecycle !== "VERIFIED") {

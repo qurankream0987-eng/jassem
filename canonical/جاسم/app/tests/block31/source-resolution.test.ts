@@ -402,11 +402,37 @@ describe("choosing the source for a fact", () => {
     expect(await count("verification_requests")).toBe(0);
   });
 
-  it("the scope's own policy settles which of its systems to prefer", async () => {
-    //   SOURCE_POLICY_RUNTIME_REUSED — the ordinary scope policy store.
+  it("the scope that OWNS the systems settles which of them to prefer", async () => {
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: the buyer writes `preferredProviders` into the BUYER's
+    //   own policy, and that choice selects which of the SELLER's two systems
+    //   JASIM reads. The test passed, and its title said «the scope's own
+    //   policy», which was true of neither scope in it.
+    // WHY_IT_IS_WRONG: it is an authority inversion. A buyer may decide what
+    //   strength of evidence they require; they may not decide which of
+    //   somebody else's machines speaks for that somebody else's fact. The
+    //   test did not merely permit that — it PROVED it, and locked it in.
+    // NEW_EXPECTATION: the preference is written into the SELLER's policy,
+    //   because the systems are the seller's. The buyer's contrary preference
+    //   is set too, and changes nothing.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: the old one asserted only that
+    //   SOME policy was read. This asserts WHOSE, and asserts that the other
+    //   scope's opinion on file is ignored — which the old expectation could
+    //   never have failed on, because it was the inversion.
+    //
+    //   REQUESTER_POLICY != SOURCE_OWNER_POLICY
+    //
     const subject = await anOffering();
-    await connect(sellerScope, "sr.observer", ["READ"]);
-    const second = await connect(sellerScope, "sr.second", ["READ"]);
+    const first = await connect(sellerScope, "sr.observer", ["READ"]);
+    await connect(sellerScope, "sr.second", ["READ"]);
+    await scopes.setScopePolicy({
+      principalId: sellerScope, scopeId: sellerScope,
+      policyKey: resolver.SOURCE_POLICY_KEY,
+      value: { preferredProviders: ["sr.observer"] },
+    });
+    // The buyer wants the other one. It is not theirs to want.
     await scopes.setScopePolicy({
       principalId: buyerScope, scopeId: buyerScope,
       policyKey: resolver.SOURCE_POLICY_KEY,
@@ -415,7 +441,7 @@ describe("choosing the source for a fact", () => {
     const resolved = await ask(subject);
     expect(resolved.outcome).toBe("SUFFICIENT_AFTER_PROVIDER");
     expect(reads).toHaveLength(1);
-    expect(reads[0]!.bindingId).toBe(second);
+    expect(reads[0]!.bindingId).toBe(first);
   });
 
   it("a scope may reserve a purpose for a person even where a machine could answer", async () => {
@@ -518,17 +544,42 @@ describe("choosing the source for a fact", () => {
     //   SOURCE_RESOLUTION_MUTATING_PROVIDER_CALLS = 0 · PAYMENT_EXECUTION_ADDED = 0
     expect([...resolver.FACT_CAPABILITIES]).toEqual(["READ", "OBSERVE"]);
     expect(resolver.FACT_CAPABILITIES.every((one) => !binding.capabilityMutates(one))).toBe(true);
-    // And the read door itself refuses one, whatever a caller passes.
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: `readThroughBinding` takes `authoritativeScopeId`, and
+    //   this test names the seller's scope to reach the door.
+    // WHY_IT_IS_WRONG: not the assertion — the SIGNATURE it asserted through.
+    //   Naming the authoritative scope made it a caller-trust boundary on an
+    //   exported function: safe through the one resolver that called it, and
+    //   open to a second caller naming a scope nothing made authoritative.
+    // NEW_EXPECTATION: the call passes the FACT, and the function derives the
+    //   authoritative scopes itself. The refusal asserted here is unchanged.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: it now proves the same refusal
+    //   through a door that cannot be told who is authoritative, and the case
+    //   below proves a caller naming a real binding of a scope the subject
+    //   does not make authoritative is refused too.
+    //
     const subject = await anOffering();
     const bindingId = await connect(sellerScope, "sr.observer", ["READ"]);
+    const fact = { subjectKind: "offering", subjectId: subject, property: "availability" };
     for (const capability of ["CREATE", "BOOK", "SCHEDULE", "PAY", "REFUND", "DELETE"] as const) {
       const outcome = await binding.readThroughBinding({
-        bindingId, authoritativeScopeId: sellerScope, capability, now: at(10 * MINUTE),
+        bindingId, fact, capability, now: at(10 * MINUTE),
       });
       expect(outcome.status, capability).toBe("REFUSED");
     }
+    // And a caller cannot assert authority it does not have: the buyer's own
+    // real, verified binding is refused for the seller's subject.
+    //
+    //   CALLER_CANNOT_ASSERT_SOURCE_AUTHORITY
+    const buyers = await connect(buyerScope, "sr.observer", ["READ"]);
+    const wrong = await binding.readThroughBinding({
+      bindingId: buyers, fact, capability: "READ", now: at(10 * MINUTE),
+    });
+    expect(wrong.status).toBe("REFUSED");
+    expect(wrong.status === "REFUSED" && wrong.refusal).toBe("NO_SUCH_BINDING");
     expect(reads).toHaveLength(0);
-    expect(subject).toBeTruthy();
   });
 
   // ── K · GENERALITY ───────────────────────────────────────────────────────

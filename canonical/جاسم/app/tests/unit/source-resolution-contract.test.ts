@@ -106,24 +106,80 @@ describe("the source resolution contract", () => {
     //
     // `requestingScopeId` reaches exactly three places: reading evidence,
     // reading this scope's own policy, and asking a person on its behalf. It
-    // never reaches the binding lookup, which takes its scopes from the
-    // authority derivation alone.
-    const candidates = CODE.slice(CODE.indexOf("async function candidatesFor"));
-    expect(candidates).not.toMatch(/requestingScopeId/);
-    expect(candidates).toMatch(/scopeIds/);
+    // never reaches the binding lookup or the ranking, both of which take
+    // their scopes from the authority derivation alone.
+    const selection = CODE.slice(CODE.indexOf("async function eligibleWithin"));
+    expect(selection).not.toMatch(/requestingScopeId/);
+    expect(selection).toMatch(/scopeIds/);
+  });
+
+  it("the asker's policy is read for what they require, never for whose system", () => {
+    //   REQUESTER_SELECTS_FOREIGN_PROVIDER = 0
+    //   REQUESTER_POLICY != SOURCE_OWNER_POLICY
+    //
+    // Exactly one read of the requester's policy, and the only field taken
+    // from it is the one that makes JASIM more conservative.
+    const requester = CODE.slice(
+      CODE.indexOf("const requesterPolicy"),
+      CODE.indexOf("const authority = await subjectAuthority"),
+    );
+    expect(requester).toMatch(/sourcePolicyFor\(input\.requestingScopeId\)/);
+    expect(requester).toMatch(/requesterPolicy\.humanRequiredFor/);
+    expect(requester).not.toMatch(/preferredProviders/);
+    // And `preferredProviders` is read from the scope being ranked, nowhere
+    // else in the module.
+    // The CALLS, not the declaration: the asker's, and each ranked scope's.
+    const reads = [...CODE.matchAll(/await sourcePolicyFor\(([^)]*)\)/g)].map((match) => match[1]);
+    expect(reads).toEqual(["input.requestingScopeId", "scopeId"]);
+    // The only place a preference is DEREFERENCED is the owning scope's copy.
+    // The requester's is never read, and there is no other variable holding
+    // one to read it from.
+    expect(CODE).toMatch(/owner\.preferredProviders/);
+    expect(CODE).not.toMatch(/requesterPolicy\.preferredProviders/);
+    const dereferences = (CODE.match(/\w+\.preferredProviders/g) ?? []).filter(
+      (entry) => entry !== "value.preferredProviders",
+    );
+    expect(dereferences).toEqual(["owner.preferredProviders"]);
+  });
+
+  it("a scope that never ranked its own two systems is not ranked for it", () => {
+    //   MULTI_AUTHORITY_ARBITRARY_WINNER = 0
+    const choose = CODE.slice(CODE.indexOf("async function chooseSource"));
+    // Within a scope: a preference, or an ambiguity. Never an ordering.
+    expect(choose).toMatch(/ambiguousWithin = true/);
+    expect(choose).not.toMatch(/sort\(|verifiedAt|pop\(|shift\(/);
+    // Across scopes: nothing breaks the tie at all.
+    expect(choose).toMatch(/perScope\.length === 1/);
+    expect(choose).toMatch(/return "AMBIGUOUS"/);
   });
 
   it("a tie is reported, never broken by an ordering", () => {
     //   MULTIPLE_PROVIDER_LATEST_WINS = 0
-    const choose = CODE.slice(CODE.indexOf("function chooseCandidate"));
+    const choose = CODE.slice(CODE.indexOf("async function chooseSource"));
     expect(choose).toMatch(/AMBIGUOUS/);
     // No ordering is consulted: no sort, and no reaching for a verification
     // time — the newest verification is not the better system.
     expect(choose).not.toMatch(/sort\(|verifiedAt|slice\(|pop\(|shift\(/);
-    // The one index it takes is the ONLY candidate, and the line above it says
-    // so. Anything else with more than one goes to the ambiguity.
-    expect(choose).toMatch(/candidates\.length === 1\) return candidates\[0\]!/);
-    expect((choose.match(/candidates\[0\]/g) ?? []).length).toBe(1);
+    // The indexes it does take are each guarded by a length of one.
+    expect(choose).toMatch(/eligible\.length === 1\)/);
+    expect(choose).toMatch(/perScope\.length === 1\) return perScope\[0\]!/);
+  });
+
+  it("the read door cannot be told who is authoritative", () => {
+    //   CALLER_CANNOT_ASSERT_SOURCE_AUTHORITY
+    //
+    // It takes the FACT and derives the authoritative scopes itself, so no
+    // caller — this module included — can name one.
+    const door = BINDING_CODE.slice(
+      BINDING_CODE.indexOf("export async function readThroughBinding"),
+      BINDING_CODE.indexOf("export async function verifiedBindingsFor"),
+    );
+    expect(door).not.toMatch(/authoritativeScopeId/);
+    expect(door).toMatch(/subjectAuthority\(\{/);
+    expect(door).toMatch(/authority\.scopeIds\.includes\(row\.scopeId\)/);
+    // And the resolver passes a fact, never a scope.
+    expect(CODE).toMatch(/readThroughBinding\(\{[\s\S]*?fact:/);
+    expect(CODE).not.toMatch(/authoritativeScopeId/);
   });
 
   it("policy may make JASIM ask a person, and may not make evidence sufficient", () => {

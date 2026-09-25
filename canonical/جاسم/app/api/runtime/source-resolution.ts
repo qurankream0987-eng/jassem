@@ -146,22 +146,41 @@ export type SourceResolution = {
 export const SOURCE_POLICY_KEY = "source.resolution";
 
 /**
- * What a scope may say about how its facts are established.
+ * What a scope may say, in ONE policy key read from TWO different scopes.
  *
- * Deliberately small, and deliberately only able to make JASIM ask a PERSON
- * where it would otherwise have read a machine. A scope can reserve a purpose
- * for human confirmation however good the machine evidence would be — because
- * «a person looked at it» is sometimes the point — and a scope can name which
- * of its own systems to prefer when two could answer.
+ * ─── THE TWO FIELDS ARE NOT THE SAME KIND OF THING ──────────────────────────
  *
- * What it cannot do is the reverse: no declaration here makes evidence
- * sufficient, widens a capability, or skips a person who is the only source.
- * Sufficiency stays the freshness runtime's, entirely.
+ *   WHO WANTS TO KNOW != WHO OWNS THE SOURCE
+ *   REQUESTER_POLICY  != SOURCE_OWNER_POLICY
+ *
+ * `humanRequiredFor` is a REQUESTER's trust requirement. «Whatever a machine
+ * says, I want a person to confirm this before I commit» is a statement about
+ * what evidence that scope is willing to rely on, and it is theirs to make.
+ * It is read from the scope that ASKED.
+ *
+ * `preferredProviders` is a SOURCE OWNER's statement about its own systems.
+ * «When something reads our stock, read the second one» is a fact about whose
+ * machines those are, and it belongs to whoever owns them. It is read from
+ * each AUTHORITATIVE scope, and the asker's copy of it is never consulted for
+ * somebody else's systems.
+ *
+ *   REQUESTER_SELECTS_FOREIGN_PROVIDER = 0
+ *
+ * When a scope asks about its own subject the two coincide, and nothing
+ * special happens — it is the authoritative scope, so its ranking applies
+ * because it owns the systems, not because it asked.
+ *
+ * ─── AND NEITHER MAY WIDEN ANYTHING ─────────────────────────────────────────
+ *
+ * No declaration here makes evidence sufficient, revives an unverified
+ * binding, grants a capability, extends what a system observes, or names who
+ * the human authority is. A preference RANKS what is already eligible.
+ * Sufficiency stays the freshness runtime's and authority stays the subject's.
  */
 export type SourcePolicy = {
-  /** Purposes that a person must confirm, machine evidence notwithstanding. */
+  /** REQUESTER: purposes a person must confirm, machine evidence or not. */
   readonly humanRequiredFor: readonly string[];
-  /** Definition ids to prefer, in order, when several could answer. */
+  /** SOURCE OWNER: which of ITS OWN systems to prefer, in order. */
   readonly preferredProviders: readonly string[];
 };
 
@@ -268,11 +287,18 @@ async function resolve(input: {
     return { outcome: "SUFFICIENT_EXISTING", decision, steps };
   }
 
-  // ── 2 · DOES THIS SCOPE RESERVE THIS FOR A PERSON? ──────────────────────
-  const policy = await sourcePolicyFor(input.requestingScopeId);
-  const humanOnly = policy.humanRequiredFor.includes(input.purpose);
+  // ── 2 · DOES THE ASKER RESERVE THIS FOR A PERSON? ───────────────────────
+  //
+  // The requester's own policy, and the ONLY field of it this resolution
+  // reads. What they may decide is how much confidence they need; which of
+  // somebody else's machines answers is not theirs to decide.
+  const requesterPolicy = await sourcePolicyFor(input.requestingScopeId);
+  const humanOnly = requesterPolicy.humanRequiredFor.includes(input.purpose);
   if (humanOnly) {
-    steps.push({ step: "POLICY", detail: `${input.purpose} is reserved for a person here.` });
+    steps.push({
+      step: "POLICY",
+      detail: `The asking scope reserves ${input.purpose} for a person.`,
+    });
   }
 
   // ── 3 · WHOSE SYSTEM WOULD KNOW? ────────────────────────────────────────
@@ -288,22 +314,29 @@ async function resolve(input: {
 
   // ── 4 · READ IT, IF ONE OF THEIR SYSTEMS OBSERVES THIS ──────────────────
   if (!humanOnly && authority) {
-    const candidates = await candidatesFor(authority.scopeIds, input.fact.property);
-    steps.push({ step: "PROVIDER_CANDIDATES", bindingIds: candidates.map((one) => one.bindingId) });
-
-    const chosen = chooseCandidate(candidates, policy);
+    const chosen = await chooseSource(authority.scopeIds, input.fact.property, steps);
     if (chosen === "AMBIGUOUS") {
-      // Two systems could answer and nothing canonical says which. Reading one
-      // arbitrarily would make the answer depend on a row ordering.
+      // Either one authoritative scope has two systems it never ranked, or two
+      // authoritative scopes each have one and nothing says which side owns
+      // this truth. Reading one anyway would make the answer depend on a row
+      // ordering — or worse, on what the asker wanted.
       //
       //   MULTIPLE_PROVIDER_LATEST_WINS = 0
+      //   MULTI_AUTHORITY_ARBITRARY_WINNER = 0
+      //   REQUESTER_POLICY_SELECTS_AUTHORITY_SIDE = 0
       return { outcome: "AMBIGUOUS_SOURCE", decision, steps };
     }
 
     if (chosen) {
       const outcome = await readThroughBinding({
         bindingId: chosen.bindingId,
-        authoritativeScopeId: chosen.scopeId,
+        // The fact, not a scope. The read derives authority for itself, so
+        // this module cannot assert one even by mistake.
+        fact: {
+          subjectKind: input.fact.subjectKind,
+          subjectId: input.fact.subjectId,
+          property: input.fact.property,
+        },
         capability: chosen.capability,
         parameters: {
           subjectKind: input.fact.subjectKind,
@@ -413,8 +446,15 @@ type Candidate = {
 };
 
 /**
- * Every verified binding, of every authoritative scope, that says it observes
- * this property and was granted a capability that can establish a fact.
+ * One authoritative scope's own eligible systems.
+ *
+ * Eligible means: this scope's, VERIFIED, granted a capability that can
+ * establish a fact, and declared to observe this property. A preference ranks
+ * what this returns; it can never add to it.
+ *
+ *   POLICY_REVIVES_UNVERIFIED_BINDING = 0
+ *   POLICY_GRANTS_MISSING_CAPABILITY = 0
+ *   POLICY_EXPANDS_OBSERVED_PROPERTIES = 0
  *
  * Nothing here knows what the property MEANS. It is matched as a string
  * against what each definition declares it observes, which is why an
@@ -422,47 +462,67 @@ type Candidate = {
  *
  *   DOMAIN_SOURCE_HANDLERS_ADDED = 0
  */
-async function candidatesFor(
-  scopeIds: readonly string[],
-  property: string,
-): Promise<readonly Candidate[]> {
+async function eligibleWithin(scopeId: string, property: string): Promise<readonly Candidate[]> {
   const found: Candidate[] = [];
-  for (const scopeId of scopeIds) {
-    for (const capability of FACT_CAPABILITIES) {
-      const bindings = await verifiedBindingsFor({ scopeId, capability, property });
-      for (const one of bindings) {
-        if (found.some((existing) => existing.bindingId === one.bindingId)) continue;
-        found.push({
-          scopeId,
-          bindingId: one.bindingId,
-          definitionId: one.definitionId,
-          capability,
-        });
-      }
+  for (const capability of FACT_CAPABILITIES) {
+    const bindings = await verifiedBindingsFor({ scopeId, capability, property });
+    for (const one of bindings) {
+      if (found.some((existing) => existing.bindingId === one.bindingId)) continue;
+      found.push({ scopeId, bindingId: one.bindingId, definitionId: one.definitionId, capability });
     }
   }
   return found;
 }
 
 /**
- * Which one, or none, or an honest admission that there is no reason to prefer
- * either.
+ * WHICH SYSTEM, AND WHOSE SAY IT IS.
  *
- * A scope that has two systems able to answer the same question can say which
- * it trusts, in its own policy. Absent that, this returns AMBIGUOUS rather
- * than picking — because every tiebreak available here is arbitrary. The
- * newest verification is not the better system, the first row is a database
- * ordering, and alphabetical is nothing at all.
+ * Two rounds, and the order of them is the whole correction.
+ *
+ * FIRST, within each authoritative scope, using THAT SCOPE'S OWN policy. A
+ * business with two systems able to answer the same question is the only party
+ * who can say which it trusts, and it says so in its own policy row. The scope
+ * that asked has no vote here even when it has an opinion on file.
+ *
+ * SECOND, across scopes, using nothing at all. If two authoritative scopes each
+ * end up with a system, the question is no longer «which machine» but «which
+ * side owns this truth», and that is a canonical question the property either
+ * answered already or did not. Breaking it here — by order, by recency, or by
+ * what the asker preferred — would be inventing an authority.
+ *
+ * An internally unranked scope is ambiguous too. A business that never chose
+ * between its own two systems has not chosen, and guessing on its behalf is
+ * the same mistake in miniature.
  */
-function chooseCandidate(
-  candidates: readonly Candidate[],
-  policy: SourcePolicy,
-): Candidate | "AMBIGUOUS" | null {
-  if (candidates.length === 0) return null;
-  if (candidates.length === 1) return candidates[0]!;
-  for (const preferred of policy.preferredProviders) {
-    const match = candidates.find((one) => one.definitionId === preferred);
-    if (match) return match;
+async function chooseSource(
+  scopeIds: readonly string[],
+  property: string,
+  steps: SourceStep[],
+): Promise<Candidate | "AMBIGUOUS" | null> {
+  const perScope: Candidate[] = [];
+  const seen: string[] = [];
+  let ambiguousWithin = false;
+
+  for (const scopeId of scopeIds) {
+    const eligible = await eligibleWithin(scopeId, property);
+    seen.push(...eligible.map((one) => one.bindingId));
+    if (eligible.length === 0) continue;
+    if (eligible.length === 1) {
+      perScope.push(eligible[0]!);
+      continue;
+    }
+    // Its systems, its ranking. Read from the scope that OWNS them.
+    const owner = await sourcePolicyFor(scopeId);
+    const preferred = owner.preferredProviders
+      .map((definitionId) => eligible.find((one) => one.definitionId === definitionId))
+      .find((match): match is Candidate => match !== undefined);
+    if (preferred) perScope.push(preferred);
+    else ambiguousWithin = true;
   }
+
+  steps.push({ step: "PROVIDER_CANDIDATES", bindingIds: seen });
+  if (ambiguousWithin) return "AMBIGUOUS";
+  if (perScope.length === 0) return null;
+  if (perScope.length === 1) return perScope[0]!;
   return "AMBIGUOUS";
 }

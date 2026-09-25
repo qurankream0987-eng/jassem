@@ -118,14 +118,70 @@ nothing at all. The scope settles it in its own policy, or it stays ambiguous.
 MULTIPLE_PROVIDER_LATEST_WINS = 0
 ```
 
-## Policy can only make JASIM ask a person
+## Three authorities, never collapsed
 
-`source.resolution`, in the ordinary scope policy store, carries two fields:
-`humanRequiredFor` (purposes a person must confirm, machine evidence
-notwithstanding — "somebody looked at it" is sometimes the point) and
-`preferredProviders`. Both narrow. No declaration here makes evidence
-sufficient, widens a capability, or skips a person who is the only source.
-Sufficiency stays the freshness runtime's, entirely.
+```
+REQUESTER        chooses the confidence they require
+AUTHORITATIVE    chooses among ITS OWN sources
+CANONICAL STATE  chooses who is authoritative at all
+```
+
+The first cut collapsed the first two. `source.resolution` was read once, from
+the requesting scope, and both its fields were used — so a buyer writing
+`preferredProviders` into their own policy decided which of the *seller's*
+systems JASIM read. A test proved it and locked it in.
+
+The key is still one key, read from two scopes for two different fields.
+
+**`humanRequiredFor` is the requester's.** "Whatever a machine says, I want a
+person to confirm this before I commit" is a statement about what evidence that
+scope is willing to rely on, and it is theirs to make. Read from the scope that
+asked.
+
+**`preferredProviders` is the source owner's.** "When something reads our stock,
+read the second one" is a fact about whose machines those are. Read from each
+authoritative scope, and the asker's copy is never consulted for somebody
+else's systems. When a scope asks about its own subject the two coincide, and
+nothing special happens — its ranking applies because it owns the systems, not
+because it asked.
+
+Ranking runs in two rounds, and the order is the correction. **Within** each
+authoritative scope, using that scope's own policy. **Across** scopes, using
+nothing at all: if two authoritative scopes each end up with a system, the
+question is no longer "which machine" but "which side owns this truth", and
+that is canonical — the property either answered it or did not. A scope that
+never ranked its own two systems is ambiguous too; guessing on its behalf is
+the same mistake in miniature.
+
+Neither field widens anything. A preference ranks what is *already* eligible —
+this scope's, verified, granted the capability, declared to observe the
+property. It revives no revoked binding, grants no capability, extends no
+manifest, and names no human authority.
+
+```
+REQUESTER_SELECTS_FOREIGN_PROVIDER = 0
+REQUESTER_POLICY_SELECTS_AUTHORITY_SIDE = 0
+MULTI_AUTHORITY_ARBITRARY_WINNER = 0
+POLICY_REVIVES_UNVERIFIED_BINDING = 0
+POLICY_GRANTS_MISSING_CAPABILITY = 0
+POLICY_EXPANDS_OBSERVED_PROPERTIES = 0
+```
+
+## The read door cannot be told who is authoritative
+
+`readThroughBinding` first took an `authoritativeScopeId` and checked it against
+the binding. That was safe through the one resolver that called it and was still
+a caller-trust boundary on an exported function — a second caller could have
+named a scope nothing made authoritative. It now takes the **fact** and derives
+the authoritative scopes itself, by the same canonical derivation the human path
+uses. One extra read, and the trust is gone.
+
+```
+CALLER_CANNOT_ASSERT_SOURCE_AUTHORITY
+```
+
+A test hands it the buyer's own real, verified binding for the seller's subject,
+and it is refused exactly as a missing one is.
 
 ## A provider failing says nothing about the world
 
