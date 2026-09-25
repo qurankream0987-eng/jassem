@@ -82,11 +82,26 @@ describe("a product action opens a door and carries no secret", () => {
     //   line. Now the collection boundary of the credential surface is pinned
     //   in the place that inventories the registry.
     //
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED (again, and for the same
+    //    reason it exists) ────────────────────────────────────────────────
+    //
+    // OLD_EXPECTATION: seven actions.
+    // WHY_IT_IS_WRONG: it is not wrong. It is the inventory lock, and it
+    //   flagged the eighth exactly as it flagged the seventh.
+    // NEW_EXPECTATION: eight, with `payment.method.add` named and its
+    //   collection boundary pinned below.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: the new action is the one place a
+    //   payment instrument is produced, so the assertions below pin what it
+    //   may NOT collect — no field for a card number, a CVV, a PIN or a
+    //   password — rather than only that a name appeared.
+    //
     const ids = actions.listProductActions().map((action) => action.id).sort();
     expect(ids).toEqual([
       "account.close",
       "account.create",
       "credential.rotate",
+      "payment.method.add",
       "provider.connect",
       "session.establish",
       "session.revoke",
@@ -128,6 +143,17 @@ describe("a product action opens a door and carries no secret", () => {
     const presented = actions.presentationFor(connect);
     expect(JSON.stringify(presented)).not.toContain("value");
     expect(presented.fields.every((field) => !("value" in field))).toBe(true);
+
+    // The surface a payment instrument is produced on. Every field that could
+    // carry bearer material is SENSITIVE, and there is no field at all for the
+    // things JASIM must never receive.
+    const addMethod = actions.getProductAction("payment.method.add")!;
+    expect(actions.sensitiveFieldsOf(addMethod)).toEqual(["providerToken"]);
+    for (const forbidden of ["pan", "cardNumber", "cvv", "cvc", "pin", "password", "expiry"]) {
+      expect(addMethod.fields.map((field) => field.key), forbidden).not.toContain(forbidden);
+    }
+    expect(addMethod.reauthentication).toBe(true);
+    expect(addMethod.idempotency).toBe("SINGLE_USE");
   });
 
   it("the presentation contract carries labels and kinds, never a value", () => {

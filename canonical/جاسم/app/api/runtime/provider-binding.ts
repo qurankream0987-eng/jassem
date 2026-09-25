@@ -292,6 +292,20 @@ export type ProviderDefinition = {
    * no questions, which is the fail-closed direction.
    */
   readonly observes?: readonly string[];
+  /**
+   * Whether paying through this kind of system needs the PAYER's instrument.
+   *
+   * Adapter contract metadata, beside `observes`, and for the same reason: a
+   * pre-funded balance, an organization settlement account, an invoice rail
+   * and a provider-held mandate all pay without anybody producing a card.
+   *
+   *   PAY_PROVIDER != ALWAYS_REQUIRES_CARD
+   *
+   * Absent means NONE, so a definition that never asks for one never triggers
+   * a payment surface. The model cannot declare this for a provider, and no
+   * caller can override it.
+   */
+  readonly paymentMethod?: "NONE" | "REQUIRED";
   readonly endpoint: EndpointPolicy;
   readonly adapter: ProviderAdapter;
   /**
@@ -388,6 +402,17 @@ function definitionOf(id: string | null | undefined): ProviderDefinition | undef
   return id ? activeDefinitions.get(id) : undefined;
 }
 
+/** What a registered definition declares. Read-only, and never a grant. */
+export function definitionFacts(
+  id: string,
+): { readonly paymentMethod: "NONE" | "REQUIRED"; readonly supports: readonly ProviderCapability[] } | null {
+  const definition = definitionOf(id);
+  if (!definition) return null;
+  // Absent means NONE: a provider that never asked for an instrument never
+  // causes one to be asked for.
+  return { paymentMethod: definition.paymentMethod ?? "NONE", supports: definition.supports };
+}
+
 /**
  * The synchronous half of the network boundary.
  *
@@ -398,6 +423,24 @@ function definitionOf(id: string | null | undefined): ProviderDefinition | undef
  *
  *   UNTRUSTED_ENDPOINT_CAN_ACCESS_INTERNAL_NETWORK = 0
  */
+/**
+ * The HOST half of the boundary, on its own.
+ *
+ * Shared with anywhere else a person is about to be sent to a provider — a
+ * payment challenge among them. It is deliberately only the host rule: a
+ * provider's own challenge page legitimately carries a session in its query,
+ * where a BASE endpoint never does, so the query and fragment refusals stay
+ * with the endpoint check that needs them.
+ */
+export function assertNotLocal(url: URL): void {
+  const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  const localName = host === "localhost" || host === "localhost." || host.endsWith(".localhost");
+  const localLiteral = host === "::1" || host === "0.0.0.0" || /^127\./.test(host);
+  if (localName || localLiteral) {
+    throw new ProviderBindingError("That address must not be local.", "INVALID");
+  }
+}
+
 function assertPublicHttpsUrl(raw: string): URL {
   let url: URL;
   try {
@@ -422,12 +465,7 @@ function assertPublicHttpsUrl(raw: string): URL {
   // address, carrier-grade NAT, and any NAME that resolves into one, with the
   // resolution pinned against rebinding) is the shared guard's, verified by
   // test against it rather than reimplemented here.
-  const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, "");
-  const localName = host === "localhost" || host === "localhost." || host.endsWith(".localhost");
-  const localLiteral = host === "::1" || host === "0.0.0.0" || /^127\./.test(host);
-  if (localName || localLiteral) {
-    throw new ProviderBindingError("A provider endpoint must not be local.", "INVALID");
-  }
+  assertNotLocal(url);
   // A BASE address, and nothing else. A query string or a fragment on a
   // provider endpoint has no legitimate use and is exactly where a credential
   // would sit if one ever reached a URL — so neither is accepted, rather than

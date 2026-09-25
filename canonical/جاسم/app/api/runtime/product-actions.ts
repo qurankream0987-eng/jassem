@@ -1055,3 +1055,107 @@ registerProductAction({
     }
   },
 });
+
+/**
+ * «أضف طريقة دفع» — where a payment instrument is produced, and it is not here.
+ *
+ * ─── WHAT THIS SURFACE DOES NOT COLLECT ─────────────────────────────────────
+ *
+ * A card number. A CVV. A PIN. A bank password. There is no field for any of
+ * them, and adding one would be the mistake this action exists to make
+ * impossible: JASIM must never receive card data into ordinary application
+ * state, so the tokenization happens at the PROVIDER and JASIM is handed the
+ * result.
+ *
+ *   CARD_NUMBER_IN_MODEL_CONTEXT = 0 · CVV_IN_MODEL_CONTEXT = 0
+ *   RAW_PAYMENT_CREDENTIAL_IN_DB = 0
+ *
+ * So the one sensitive field is the provider's own opaque token, typed into a
+ * trusted surface by the provider's component rather than by a person reading
+ * a card aloud. `createPaymentMethodReference` refuses anything card-shaped
+ * or Luhn-valid before it will store it, so even this field cannot become a
+ * back door for a PAN.
+ *
+ * ─── ONE-TIME IS NOT SAVED ──────────────────────────────────────────────────
+ *
+ *   ONE_TIME_METHOD != REUSABLE_METHOD
+ *   PAYMENT_AUTHORIZATION != FUTURE_CHARGE_AUTHORIZATION
+ *
+ * Authorising one payment is not authorising every later one, so keeping an
+ * instrument is a separate answer the person gives here rather than something
+ * inferred from having paid once. The default is NOT to keep it.
+ */
+registerProductAction({
+  id: "payment.method.add",
+  version: 1,
+  title: "إضافة طريقة دفع",
+  consequence:
+    "تُدخل بيانات الدفع في سطح آمن لدى المزوّد، ولا تمر عبر المحادثة ولا عبر النموذج. إضافة الطريقة ليست دفعاً.",
+  authentication: "AUTHENTICATED",
+  reauthentication: true,
+  risk: "HIGH",
+  fields: [
+    { key: "provider", label: "المزوّد", kind: "TEXT", required: true },
+    {
+      key: "methodType",
+      label: "النوع",
+      kind: "CHOICE",
+      required: true,
+      // A closed set, so a surface cannot invent an instrument kind.
+      options: ["card", "bank_account", "wallet"],
+    },
+    {
+      key: "keepForLater",
+      label: "احفظها للمرات القادمة",
+      kind: "BOOLEAN",
+      required: false,
+    },
+    // The provider's own token. Sensitive because it is bearer-shaped, and
+    // still not a credential: the runtime refuses card data outright.
+    { key: "providerToken", label: "رمز المزوّد", kind: "SENSITIVE", required: true },
+  ],
+  confirmation: "EXPLICIT",
+  availability: "AVAILABLE",
+  ttlSeconds: 600,
+  idempotency: "SINGLE_USE",
+  execute: async ({ actor, values }) => {
+    if (!actor) return { outcome: "DENIED", detail: "Nobody is signed in." };
+    const [{ createPaymentMethodReference, PaymentMethodError }, { definitionFacts }, { db }] =
+      await Promise.all([
+        import("./block3/payment-methods"),
+        import("./provider-binding"),
+        import("../queries/connection"),
+      ]);
+    const provider = String(values.provider ?? "").trim();
+    // A provider nobody registered is not a provider, so no instrument can be
+    // minted against a name the caller invented.
+    if (!definitionFacts(provider)) {
+      return { outcome: "DENIED", detail: "That provider is not registered." };
+    }
+    try {
+      const method = await createPaymentMethodReference(db as never, {
+        ownerId: String(actor.id),
+        provider,
+        methodType: String(values.methodType ?? "card"),
+        tokenRef: String(values.providerToken ?? ""),
+        // Kept apart, and said out loud, because it is a different permission.
+        scope: { reusable: values.keepForLater === true },
+        provenance: { source: "TRUSTED_SURFACE" },
+      });
+      return {
+        outcome: "EXECUTED",
+        // The reference and nothing else. Never the token it stands for.
+        record: {
+          methodRef: method.id,
+          reusable: values.keepForLater === true,
+        },
+        detail: "A payment method reference was stored. Nothing has been paid.",
+      };
+    } catch (error) {
+      if (error instanceof PaymentMethodError) {
+        return { outcome: "DENIED", detail: error.message };
+      }
+      throw error;
+    }
+  },
+});

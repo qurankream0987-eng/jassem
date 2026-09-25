@@ -266,7 +266,25 @@ function asPaymentView(value: unknown): PspPaymentView {
  *   AMBIGUOUS_NETWORK_FAILURE_BLIND_RECHARGE = 0
  *   PROVIDER_FAILURE != PAYMENT_SUCCESS
  */
-export function pspClientForRoute(route: PaymentRoute): PspClient {
+export function pspClientForRoute(
+  route: PaymentRoute,
+  options: {
+    /**
+     * The payer's instrument, already resolved against what they actually
+     * hold for THIS provider. Opaque, provider-bound, and never a credential.
+     *
+     * It is bound HERE rather than passed through the execution runtime,
+     * which keeps that runtime exactly as it was: it still sends canonical
+     * money and a canonical reference, and this client adds the instrument
+     * the route established before execution began.
+     *
+     *   RAW_PAYMENT_CREDENTIAL != PAYMENT_METHOD_REFERENCE
+     */
+    readonly paymentMethodToken?: string;
+    /** Called when the provider says the payer must do something. */
+    readonly onRequiresAction?: (view: PspPaymentView) => Promise<void> | void;
+  } = {},
+): PspClient {
   async function operate(
     operation: PaymentOperation,
     capability: ProviderCapability,
@@ -293,7 +311,17 @@ export function pspClientForRoute(route: PaymentRoute): PspClient {
     if (operation === "READBACK" && (outcome.value === null || outcome.value === undefined)) {
       return null;
     }
-    return asPaymentView(outcome.value);
+    const view = asPaymentView(outcome.value);
+    // The provider needs the payer to do something. That is not a failure and
+    // not a success: the view is returned unchanged, so the execution runtime
+    // does what it already does correctly with a non-captured view — leaves
+    // the payment unsettled — and the challenge is opened alongside.
+    //
+    //   CHALLENGE_CREATED != PAYMENT_SUCCESS
+    if (view.status === "REQUIRES_ACTION" && options.onRequiresAction) {
+      await options.onRequiresAction(view);
+    }
+    return view;
   }
 
   return {
@@ -309,6 +337,13 @@ export function pspClientForRoute(route: PaymentRoute): PspClient {
         currency: request.currency,
         reference: request.reference,
         idempotencyKey: request.idempotencyKey,
+        // Absent for a provider that funds itself, which is most of the
+        // reason this is a parameter rather than a requirement.
+        //
+        //   PAY_PROVIDER != ALWAYS_REQUIRES_CARD
+        ...(options.paymentMethodToken
+          ? { paymentMethodToken: options.paymentMethodToken }
+          : {}),
       }))!,
     capture: async (paymentId) =>
       (await operate("CAPTURE", PAYMENT_CAPABILITY, { paymentId }))!,
@@ -333,6 +368,9 @@ export async function paymentExecutionRoute(input: {
   payable: Pick<PayableObligation, "payeeRef">;
   payerScopeId: string;
   capability?: ProviderCapability;
+  /** Resolved by the method runtime before execution, or absent. */
+  paymentMethodToken?: string;
+  onRequiresAction?: (view: PspPaymentView) => Promise<void> | void;
 }): Promise<
   | { readonly status: "RESOLVED"; readonly route: PaymentRoute; readonly deps: { psp: PspClient; providerRef: string } }
   | { readonly status: "NO_ROUTE"; readonly detail: string }
@@ -343,6 +381,12 @@ export async function paymentExecutionRoute(input: {
   return {
     status: "RESOLVED",
     route: resolved.route,
-    deps: { psp: pspClientForRoute(resolved.route), providerRef: resolved.route.definitionId },
+    deps: {
+      psp: pspClientForRoute(resolved.route, {
+        ...(input.paymentMethodToken ? { paymentMethodToken: input.paymentMethodToken } : {}),
+        ...(input.onRequiresAction ? { onRequiresAction: input.onRequiresAction } : {}),
+      }),
+      providerRef: resolved.route.definitionId,
+    },
   };
 }

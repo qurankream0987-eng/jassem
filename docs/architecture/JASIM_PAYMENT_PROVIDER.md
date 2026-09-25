@@ -131,6 +131,114 @@ and every gate reads the *grant*. The law it protects —
 `CONNECTION_TEST_CAUSES_BUSINESS_MUTATION = 0` — still holds, because a
 handshake still calls no capability at all.
 
+## The payer's instrument, and the provider asking for more
+
+A review of the first cut named a gap. **Tracing it found my own report was
+wrong on two counts**, and the correction matters more than the gap did.
+
+`payment_method_references` exists, and so does a producer:
+`createPaymentMethodReference`, which refuses card-shaped data and anything
+Luhn-valid before it will store a token. So does a consumer —
+`resolvePaymentMethodReference`, plus the delegation mandate, which already
+filters an execution by which instrument it names. `paymentMethodRef` *does*
+reach execution.
+
+Two things were genuinely absent:
+
+- the reference never reached the **provider** — `PspClient.authorize` had no
+  parameter for one, so an instrument could be chosen and then ignored;
+- nothing could express `REQUIRES_ACTION` — zero occurrences in the runtime, so
+  a provider needing the payer to approve something had no way to say so.
+
+### Not every provider wants a card
+
+```
+PAY_PROVIDER != ALWAYS_REQUIRES_CARD
+```
+
+A pre-funded balance, an organization settlement account, an invoice rail and a
+provider-held mandate all pay without anybody producing an instrument. So the
+requirement is adapter contract metadata — `ProviderDefinition.paymentMethod` —
+beside `observes`, and **absent means NONE**. A model saying "this needs a card"
+establishes nothing.
+
+### The one distinction this rests on
+
+```
+PROVIDER_BINDING_CREDENTIAL != CUSTOMER_PAYMENT_METHOD
+```
+
+The binding's credential authenticates JASIM to the provider; the payer's method
+names the instrument the money comes from. The payment phase before this one
+only ever needed the first, because its fixture provider funded itself — a fact
+about that fixture, and never a payment method.
+
+### Four filters on an instrument
+
+Owned by the payer, issued by **this** provider, still ACTIVE, not expired.
+A token minted by one provider is meaningless to another and dangerous to
+forward, so provider identity is matched exactly. Naming an instrument the payer
+does not hold gives the same answer as holding none.
+
+```
+CROSS_SCOPE_PAYMENT_METHOD_USE = 0 · CROSS_PROVIDER_PAYMENT_METHOD_USE = 0
+MODEL_CAN_INJECT_PAYMENT_METHOD_REF = NO
+```
+
+Keeping an instrument is a separate answer from paying with it once, and the
+default is not to keep it:
+
+```
+ONE_TIME_METHOD != REUSABLE_METHOD
+PAYMENT_AUTHORIZATION != FUTURE_CHARGE_AUTHORIZATION
+```
+
+### A challenge is an external action session
+
+3-D Secure, a bank approval, a wallet confirmation, a device prompt and a
+redirect authorization are all one thing, and none of them is a runtime. An
+adapter normalises whatever its provider calls it into `REQUIRES_ACTION`, and
+the challenge is an `external_action_session` — which already carried a payment
+intent id, a single-use state, a validated origin and an expiry.
+
+```
+NEW_PARALLEL_TRUSTED_SURFACE_RUNTIME = 0
+No ThreeDSRuntime. No WalletChallengeRuntime.
+```
+
+Coming back proves only that somebody came back. The return moves no payment
+state, reads no query parameter as a verdict, and believes nothing a client body
+says; it consumes the session and hands the payment to the readback the payment
+runtime already trusts.
+
+```
+RETURN_URL_PAYMENT_SUCCESS_AUTHORITY = 0
+CLIENT_CHALLENGE_SUCCESS_SETTLES = 0
+SURFACE_CLOSED != PAYMENT_CANCELLED
+```
+
+An expired challenge authorises nothing **and fails nothing** — only the
+provider says a payment failed.
+
+### One more shared boundary
+
+A challenge URL is a place a *person* is sent, so sending them somewhere local
+is worse than sending them nowhere. The host rule that guards a provider
+endpoint is now shared rather than duplicated — deliberately the host rule only,
+since a provider's challenge page legitimately carries a session in its query
+where a base endpoint never does.
+
+### The handshake label grants nothing
+
+The payment phase let a PAY-only provider authenticate by labelling its
+handshake context `READ`. A regression now proves the label is a label: such a
+binding is granted `PAY` and nothing else, its read list is empty, and the read
+door refuses it.
+
+```
+HANDSHAKE_LABEL_GRANTS_READ = 0
+```
+
 ## What a payment still is not
 
 A settled payment fulfils no transaction and resolves no need — asserted by

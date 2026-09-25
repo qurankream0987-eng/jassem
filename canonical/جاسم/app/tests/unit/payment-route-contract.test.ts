@@ -119,8 +119,30 @@ describe("the payment route contract", () => {
   });
 
   it("nothing here holds a secret or an endpoint", () => {
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: the word «token» appears nowhere in the route module.
+    // WHY_IT_IS_WRONG: the word, not the thing. The module now carries a
+    //   `paymentMethodToken` — an OPAQUE, provider-bound reference, which the
+    //   permanent law distinguishes from credential material precisely so
+    //   that it CAN travel:
+    //
+    //     RAW_PAYMENT_CREDENTIAL != PAYMENT_METHOD_REFERENCE
+    //
+    //   A test that cannot tell those apart forbids the reference along with
+    //   the secret, which would have made the instrument unreachable.
+    // NEW_EXPECTATION: no credential, no key, no vault, no endpoint — and the
+    //   only token-shaped thing is the opaque reference, named exactly.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: the old one matched a substring.
+    //   This enumerates every token-shaped identifier in the module and
+    //   requires it to be the one permitted reference, so a real secret
+    //   appearing under any other name now fails where it did not before.
+    //
     //   PAYMENT_SPECIAL_SECRET_STORE = 0 · PAYMENT_SECRET_IN_EVENT_LOG = 0
-    expect(CODE).not.toMatch(/credential|apiKey|token|vault|endpoint/i);
+    expect(CODE).not.toMatch(/credential|apiKey|vault|endpoint/i);
+    const tokenish = [...new Set(CODE.match(/\w*[Tt]oken\w*/g) ?? [])];
+    expect(tokenish).toEqual(["paymentMethodToken"]);
     expect(CODE).not.toMatch(/console\./);
   });
 
