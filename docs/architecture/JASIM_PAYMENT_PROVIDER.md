@@ -341,6 +341,86 @@ that threw would return 500 to a provider who did nothing wrong. The bridge
 catches it and reports the same fact the throw carried; nothing is written
 before the refusal, so the payment is untouched either way.
 
+### An address a provider can post to
+
+`ingestPaymentEvent` was a function nothing called from the outside. This is
+transport, and only transport: the authenticated boundary, the replay ledger,
+the correlation, the readback and the verifier are all reached through it
+unchanged. What this adds is a door and a decision about which HTTP number to
+answer with.
+
+**Mounted before the catch-all.** `app.all("/api/*")` returns 404, so a route
+added after it is a route a provider never reaches. A test reads `boot.ts` and
+compares the two positions rather than trusting the reading.
+
+**The raw bytes are the load-bearing part.** `c.req.text()` returns the body
+unchanged; nothing parses and re-serialises before verification, and nothing
+normalises whitespace, key order, number formatting or escaping. A body that is
+semantically identical but byte-different is a different body — asserted with
+both a whitespace variant and a key-order variant, each carrying the original's
+signature, each refused.
+
+A parse *does* happen, to read routing fields out of bytes the boundary then
+independently re-checks against the signature and the mandate. Parsing to route
+is not parsing to verify.
+
+**The provider in the path is a selector, not a claim.** A caller correctly
+signing for one provider's secret and posting to another's route is refused.
+
+```
+ROUTE_PROVIDER_NAME != AUTHORITY
+```
+
+**Nothing unsigned contributes anything.** The owner is never sent — the
+boundary derives it from the correlated payment. The connector is derived from
+the route. The event type, reference, money and timestamp come from the *signed*
+body. A test posts a query string full of `ownerId`, `connectorId`, `provider`,
+`reference`, `amountMinor` and `webhookSecret`, plus matching headers, and every
+one of them is ignored: the ledger row carries the route-derived connector and
+the canonical event carries the payment's owner.
+
+**Its own size cap.** 64 KB, route-scoped. The signed schema is a handful of
+short strings; the application's general 50 MB exists for prompts and uploads
+and has no business being a webhook's budget. The global limit is untouched.
+
+**A refusal about evidence is not a server error.** A provider whose authentic
+event did not prove settlement has done nothing wrong, and a 500 would tell it
+to retry forever. So `UNVERIFIED` answers 202 — accepted as received,
+deliberately neither 200 nor 500 — while `DUPLICATE`, `STALE` and `NO_EFFECT`
+answer 200 so the provider stops resending, and only genuine internal failure
+would be a 5xx.
+
+```
+EXPECTED_REFUSAL_RETURNS_500 = 0 · HTTP_2XX != PAYMENT_SETTLED
+```
+
+The response carries the outcome name and no payment status: a caller who can
+sign already knows what they sent, and telling them what JASIM now believes
+would make the response a state oracle for whoever holds the secret.
+
+**Two boundary corrections came out of the trace**, both small and both generic.
+
+The authenticated boundary required `ownerId` from its caller. It checked it
+against the intent, so it was never authority — but a public ingress has no
+legitimate way to know whose payment an event concerns, and a parameter that
+must be supplied and can only be wrong is a parameter that should not exist.
+It is now optional: supplied → checked, absent → derived from the correlated
+payment. A non-financial event still needs one, having no payment to derive from.
+
+And the freshness window was checked against a timestamp that was **not signed**.
+An old validly-signed body handed a fresh unsigned timestamp passed a check it
+never earned — defence-in-depth only, since the durable ledger is what actually
+stops a repeat of those bytes, but weaker than the code claimed. The signed body
+is now authoritative wherever it carries a timestamp, a caller-supplied one may
+not contradict it, and the HTTP route reads *only* the signed one, so at the door
+there is no unsigned timestamp to swap.
+
+```
+FRESH_TIMESTAMP != AUTHENTICATED_TIMESTAMP
+UNSIGNED_TIMESTAMP_CAN_REFRESH_OLD_SIGNED_BODY = 0
+HTTP_CALLER_CAN_CHOOSE_OWNER = 0
+```
+
 ### The handshake label grants nothing
 
 The payment phase let a PAY-only provider authenticate by labelling its

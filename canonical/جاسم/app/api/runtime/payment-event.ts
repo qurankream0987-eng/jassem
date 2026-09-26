@@ -124,7 +124,13 @@ export async function ingestPaymentEvent(
     rawBody: string;
     signature?: string;
     timestamp?: number;
-    ownerId: string;
+    /**
+     * Absent for a financial callback: the boundary derives it from the
+     * correlated PaymentIntent, so an HTTP ingress never names an owner.
+     *
+     *   HTTP_CALLER_CAN_CHOOSE_OWNER = 0
+     */
+    ownerId?: string;
     now?: Date;
   },
 ): Promise<PaymentEventResult> {
@@ -143,7 +149,7 @@ export async function ingestPaymentEvent(
     rawBody: input.rawBody,
     ...(input.signature ? { signature: input.signature } : {}),
     ...(input.timestamp === undefined ? {} : { timestamp: input.timestamp }),
-    ownerId: input.ownerId,
+    ...(input.ownerId === undefined ? {} : { ownerId: input.ownerId }),
     ...(input.now ? { now: input.now } : {}),
   });
   if (ingested.outcome !== "ACCEPTED") {

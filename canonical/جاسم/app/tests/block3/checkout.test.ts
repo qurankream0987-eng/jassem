@@ -116,13 +116,44 @@ describe("financial checkout sessions (§48–§51)", () => {
     // authenticated ingestion boundary (§10–§13).
     const callback = psp.sentCallbacks.find((c) => c.rawBody.includes("payment.captured"));
     expect(callback).toBeDefined();
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: the caller supplies `timestamp: Date.now()` alongside a
+    //   signed body that ALSO carries a timestamp, and the callback is
+    //   ACCEPTED.
+    // WHY_IT_IS_WRONG: the two never agreed. The controlled PSP signs
+    //   `timestamp: Date.now()` into the body, and this line called
+    //   `Date.now()` again milliseconds later — so the freshness window was
+    //   being satisfied by an UNSIGNED value that contradicted the signed one,
+    //   and nothing noticed. That is the gap: an old validly-signed body handed
+    //   a fresh unsigned timestamp would have passed a check it never earned.
+    //
+    //     FRESH_TIMESTAMP != AUTHENTICATED_TIMESTAMP
+    //
+    // NEW_EXPECTATION: no unsigned timestamp is supplied at all. The signed
+    //   body's own timestamp is authoritative for freshness, and a
+    //   caller-supplied one that contradicts it is now refused.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: the callback must now be fresh
+    //   according to bytes the provider signed, rather than according to a
+    //   number its deliverer chose. The assertion below is unchanged, and it
+    //   now means what it always claimed to.
+    //
     const ingestion = await ingestAuthenticatedExternalEvent(db, dispatcher, {
       provider: "psp-controlled", connectorId: "conn-1",
       eventKey: `cb-${intent.id}`, eventType: "payment.captured", reference: intent.id,
       rawBody: callback!.rawBody, signature: callback!.signature,
-      timestamp: Date.now(), ownerId: "owner-1",
+      ownerId: "owner-1",
     });
     expect(ingestion.outcome).toBe("ACCEPTED");
+    // And the contradiction that used to pass silently is now refused.
+    const contradicted = await ingestAuthenticatedExternalEvent(db, dispatcher, {
+      provider: "psp-controlled", connectorId: "conn-1",
+      eventKey: `cb-contra-${intent.id}`, eventType: "payment.captured", reference: intent.id,
+      rawBody: callback!.rawBody, signature: callback!.signature,
+      timestamp: Date.now() + 1_000, ownerId: "owner-1",
+    });
+    expect(contradicted.outcome).toBe("REJECTED");
 
     // Evidence is verified against the authoritative readback — not trusted.
     const verdict = await verifyPaymentClaim(db, { psp: createHttpPspClient(psp.url), providerRef: "psp-controlled" }, {

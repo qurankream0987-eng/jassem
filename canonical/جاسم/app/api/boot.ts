@@ -21,6 +21,7 @@ import { readGeneratedImageArtifact } from "./runtime/phase11-artifacts";
 import { checkRuntimeReadiness } from "./core/runtime-readiness";
 import { initWebSocket } from "./core/websocket";
 import { configureExternalActionProvidersFromConfig } from "./runtime/external-action-session";
+import { createPaymentWebhookRoutes } from "./http/payment-webhook";
 
 // ── Block 1: Server-owned External Action provider trust ────────────────────
 // JASIM_EXTERNAL_PROVIDERS is a JSON map:
@@ -230,6 +231,29 @@ app.get("/api/runtime/generated-image/:runId/:artifactId", async (c) => {
     return c.json({ error: "Image not found." }, 404);
   }
 });
+
+// ── Provider payment callbacks ─────────────────────────────────────────────
+//
+// Machine-to-machine, and mounted BEFORE the catch-all below so a provider's
+// POST is answered rather than 404'd. Its authority is the catalog-bound
+// signature over the exact bytes it sent — not a session, not a bearer token,
+// and never the provider name in the path.
+//
+//   WEBHOOK_REQUIRES_BROWSER_SESSION = NO
+//   DEV_LOGIN_CAN_AUTHORIZE_WEBHOOK = NO — this route reads no cookie and no
+//   Authorization header, so the development login has nothing to grant it.
+//
+// The dispatcher is the Block 2 continuation dispatcher the ingestion path
+// already uses for every other external event.
+app.route(
+  "/api/webhooks/payment",
+  createPaymentWebhookRoutes({
+    async dispatch(input) {
+      const { getBlock2Worker } = await import("./runtime/block2/worker");
+      return getBlock2Worker().dispatcher.dispatch(input);
+    },
+  }),
+);
 
 app.all("/api/*", (c) => c.json({ error: "Not Found" }, 404));
 

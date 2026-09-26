@@ -70,7 +70,22 @@ export async function ingestAuthenticatedExternalEvent(
     signature?: string;
     /** Provider-declared event timestamp (ms epoch) for freshness. */
     timestamp?: number;
-    ownerId: string;
+    /**
+     * OPTIONAL, and for a `payment.*` callback it should be absent.
+     *
+     * A public HTTP ingress has no legitimate way to know whose payment an
+     * event concerns, and a caller that could name an owner would be naming
+     * authority. So for a financial callback the owner is DERIVED from the
+     * correlated PaymentIntent below; when a caller does supply one it is
+     * checked against the intent rather than believed.
+     *
+     *   CALLER_OWNER_ID != CANONICAL_OWNER_AUTHORITY
+     *   HTTP_CALLER_CAN_CHOOSE_OWNER = 0
+     *
+     * A NON-financial event has no intent to derive from, so it still requires
+     * one from its trusted server-side caller.
+     */
+    ownerId?: string;
     runId?: string | null;
     nodeId?: string | null;
     observedVersion?: number;
@@ -101,15 +116,15 @@ export async function ingestAuthenticatedExternalEvent(
     return { outcome: "REJECTED", reason: "Invalid or missing signature" };
   }
 
-  // 3) Freshness: reject stale/replayed-window callbacks.
-  if (input.timestamp !== undefined) {
-    if (!Number.isFinite(input.timestamp)) {
-      return { outcome: "REJECTED", reason: "Malformed timestamp" };
-    }
-    if (Math.abs(now.getTime() - input.timestamp) > WEBHOOK_MAX_AGE_MS) {
-      return { outcome: "REJECTED", reason: "Stale callback timestamp" };
-    }
-  }
+  // 3) Freshness is checked below, AFTER the body is parsed — because a
+  //    timestamp that is not itself signed is not evidence of anything:
+  //
+  //      FRESH_TIMESTAMP != AUTHENTICATED_TIMESTAMP
+  //
+  //    An old validly-signed body handed a fresh unsigned timestamp would
+  //    otherwise pass a freshness check it never earned. The durable replay
+  //    ledger is what actually stops a repeat of those bytes; this makes the
+  //    freshness claim mean what it says.
 
   // 4) Only after authentication: parse the body (never verify reserialized).
   let payload: Record<string, unknown>;
@@ -121,6 +136,28 @@ export async function ingestAuthenticatedExternalEvent(
     payload = parsed as Record<string, unknown>;
   } catch {
     return { outcome: "REJECTED", reason: "Malformed JSON body" };
+  }
+
+  // 4b) Freshness, from the SIGNED body wherever it carries a timestamp.
+  //
+  //     A signed timestamp is authoritative and a caller-supplied one may not
+  //     contradict it. Where the signed body carries none, the caller's is
+  //     accepted for the window check exactly as before — and remains what it
+  //     always was: a hint, behind the ledger.
+  //
+  //   UNSIGNED_TIMESTAMP_CAN_REFRESH_OLD_SIGNED_BODY = 0
+  const signedTimestamp = typeof payload.timestamp === "number" ? payload.timestamp : undefined;
+  if (signedTimestamp !== undefined && input.timestamp !== undefined && signedTimestamp !== input.timestamp) {
+    return { outcome: "REJECTED", reason: "Callback timestamp disagrees with the signed payload" };
+  }
+  const freshnessAt = signedTimestamp ?? input.timestamp;
+  if (freshnessAt !== undefined) {
+    if (!Number.isFinite(freshnessAt)) {
+      return { outcome: "REJECTED", reason: "Malformed timestamp" };
+    }
+    if (Math.abs(now.getTime() - freshnessAt) > WEBHOOK_MAX_AGE_MS) {
+      return { outcome: "REJECTED", reason: "Stale callback timestamp" };
+    }
   }
 
   // 5) Bind unsigned routing metadata to the SIGNED payload: a valid HMAC
@@ -163,7 +200,8 @@ export async function ingestAuthenticatedExternalEvent(
     .limit(1);
   let ownerId = input.ownerId;
   if (intent) {
-    if (intent.ownerId !== input.ownerId) {
+    // Supplied → checked. Absent → derived. Either way the intent decides.
+    if (input.ownerId !== undefined && intent.ownerId !== input.ownerId) {
       return { outcome: "REJECTED", reason: "Callback owner disagrees with the payment intent owner" };
     }
     if (typeof payload.amountMinor === "string" && payload.amountMinor !== intent.amountMinor) {
@@ -175,6 +213,10 @@ export async function ingestAuthenticatedExternalEvent(
     ownerId = intent.ownerId;
   } else if (input.eventType.startsWith("payment.")) {
     return { outcome: "REJECTED", reason: "Financial callback does not correlate to a known payment intent" };
+  } else if (ownerId === undefined) {
+    // No intent to derive from, and nobody said whose this is. A canonical
+    // event needs an owner, and guessing one would wake an arbitrary scope.
+    return { outcome: "REJECTED", reason: "A non-financial callback requires its owner" };
   }
 
   // 7) Replay identity is derived from the SIGNED body: the caller can never
