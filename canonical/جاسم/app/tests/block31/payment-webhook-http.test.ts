@@ -16,7 +16,7 @@ import { createHmac, randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { sql } from "drizzle-orm";
-import { capabilityProviderCatalog, users } from "@db/schema";
+import { users } from "@db/schema";
 import { getTestDb, resetBlock31, type TestDbHandle } from "./helpers/pg";
 import type { ContinuationDispatcher } from "../../api/runtime/block2/temporal";
 
@@ -94,6 +94,9 @@ describe("the payment webhook over HTTP", () => {
       authMethod: "API_KEY" as const,
       endpoint: { mode: "FIXED" as const, baseUrl: "https://example.com/psp" },
       testOnly: true, adapter, supports: ["PAY", "REFUND"] as const,
+      // This KIND of system signs its callbacks. Declared once, on the
+      // definition, and never branched on by name anywhere.
+      webhook: "SIGNED_HMAC" as const,
     };
     registry.register({ ...base, id: "wh.rail", displayName: "قناة" });
     registry.register({ ...base, id: "wh.unfamiliar", displayName: "نظام غير مألوف" });
@@ -126,22 +129,37 @@ describe("the payment webhook over HTTP", () => {
       made.push(String(row!.id));
     }
     [payerScope, payeeScope] = made as [string, string];
-    for (const id of ["wh.rail", "wh.unfamiliar"]) {
-      await handle.db.insert(capabilityProviderCatalog).values({
-        id, kind: "PSP", implementationId: "controlled-v1",
-        ioMetadata: { webhookSecret: SECRET }, provenance: { source: "boot" },
-      });
-    }
   });
 
   afterAll(() => vi.useRealTimers());
 
   // ── fixtures ─────────────────────────────────────────────────────────────
 
-  async function connect(definitionId: string) {
+  /**
+   * Connect, and provision this ACCOUNT'S callback verification material.
+   *
+   * ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────────
+   *
+   * OLD_EXPECTATION: the secret comes from a `capability_provider_catalog` row,
+   *   written by this fixture as plaintext jsonb.
+   * WHY_IT_IS_WRONG: that table persists DISCOVERED candidates at trust class
+   *   UNTRUSTED_CANDIDATE, nothing in production ever wrote it, and a catalog
+   *   row has no ACCOUNT — one string would have authenticated callbacks naming
+   *   every scope's payments.
+   * NEW_EXPECTATION: the material is provisioned through the trusted binding
+   *   lifecycle, sealed in the credential vault, and resolved server-side from
+   *   the binding the payment was executed on. Nothing is injected anywhere.
+   * WHY_THE_NEW_EXPECTATION_IS_STRICTER: the secret is now account-scoped and
+   *   encrypted, and this fixture exercises the one production path rather than
+   *   a table production never wrote.
+   */
+  async function connect(
+    definitionId: string,
+    opts: { secret?: string; capabilities?: string[] } = {},
+  ) {
     const opened = await binding.beginProviderSetup({
       principalId: payeeScope, scopeId: payeeScope, definitionId,
-      requestedCapabilities: ["PAY"], now: T0,
+      requestedCapabilities: opts.capabilities ?? ["PAY"], now: T0,
     });
     await binding.completeProviderSetup({
       bindingId: opened.bindingId, principalId: payeeScope, material: { apiKey: "k" }, now: at(MINUTE),
@@ -151,6 +169,10 @@ describe("the payment webhook over HTTP", () => {
     });
     await binding.verifyBinding({
       bindingId: opened.bindingId, principalId: payeeScope, now: at(3 * MINUTE),
+    });
+    await binding.configureWebhookVerification({
+      bindingId: opened.bindingId, principalId: payeeScope,
+      secret: opts.secret ?? SECRET, now: at(4 * MINUTE),
     });
     calls.length = 0;
     return opened.bindingId;
@@ -305,15 +327,26 @@ describe("the payment webhook over HTTP", () => {
     //   ROUTE_PROVIDER_NAME_GRANTS_AUTHORITY = NO
     await connect("wh.rail");
     const intent = await payAsync();
-    // A catalog entry whose secret differs from every other.
-    await handle.db.insert(capabilityProviderCatalog).values({
-      id: "wh.other", kind: "PSP", implementationId: "controlled-v1",
-      ioMetadata: { webhookSecret: "another-provider-entirely" }, provenance: { source: "boot" },
+    // A SECOND real connection, with its own account and its own material.
+    // Connected after the payment so it cannot change which rail carried it,
+    // and granted only REFUND so it is not a second PAY route.
+    await connect("wh.unfamiliar", {
+      secret: "another-provider-entirely",
+      capabilities: ["REFUND"],
     });
     const raw = bodyFor(intent.id);
-    // Signed for wh.other, posted to wh.rail.
+    // Signed with the OTHER connection's secret, posted to wh.rail's route.
+    //
+    //   CROSS_PROVIDER_SECRET_AUTHENTICATES = 0
     const response = await post("wh.rail", raw, { signature: sign(raw, "another-provider-entirely") });
     expect(response.status).toBe(400);
+    expect(await statusOf(intent.id)).toBe("INCONCLUSIVE");
+    // And posted to its OWN route it authenticates nothing either, because that
+    // is not the account this payment was executed at.
+    const wrongRail = await post("wh.unfamiliar", raw, {
+      signature: sign(raw, "another-provider-entirely"),
+    });
+    expect(wrongRail.status).toBe(400);
     expect(await statusOf(intent.id)).toBe("INCONCLUSIVE");
   });
 

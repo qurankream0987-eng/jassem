@@ -20,6 +20,7 @@ import { createHttpPspClient } from "../../api/runtime/block3/psp-client";
 import { ingestAuthenticatedExternalEvent } from "../../api/runtime/block3/webhook-auth";
 import type { ContinuationDispatcher } from "../../api/runtime/block2/temporal";
 import { getTestDb, resetBlock3 } from "./helpers/pg";
+import { installFixtureWebhookVerification } from "./helpers/webhook-verification-fixture";
 import { startControlledPsp, type ControlledPsp } from "./helpers/controlled-psp-server";
 
 let psp: ControlledPsp;
@@ -39,11 +40,10 @@ beforeEach(async () => {
   await resetBlock3((await getTestDb()).db);
   psp.payments.clear();
   psp.sentCallbacks.length = 0;
-  const { db } = await getTestDb();
-  await db.insert(capabilityProviderCatalog).values({
-    id: "psp-controlled", kind: "PSP", implementationId: "controlled-psp-v1",
-    ioMetadata: { webhookSecret: psp.webhookSecret }, provenance: { source: "boot" },
-  });
+  // Verification material is no longer a plaintext field on a discovery row.
+  // This suite states it through the trusted resolver seam; the production
+  // provisioning path is proved in tests/block31/provider-webhook-secret.test.ts.
+  installFixtureWebhookVerification({ "psp-controlled": psp.webhookSecret });
 });
 
 async function makeIntent(key: string) {
@@ -109,7 +109,14 @@ describe("financial checkout sessions (§48–§51)", () => {
       intentId: intent.id, ownerId: "owner-1", provider: "psp-controlled", adapterEndpoint: psp.url,
     });
     // Execute through the trusted chain over real HTTP.
-    const executed = await executePaymentEffect(db, { psp: createHttpPspClient(psp.url), providerRef: "psp-controlled" }, { intentId: intent.id });
+    // The ACCOUNT, beside the provider kind. The callback below is about the
+    // account that executed this payment, and that is now how its verification
+    // material is found — so the execution has to say which account it was.
+    const executed = await executePaymentEffect(
+      db,
+      { psp: createHttpPspClient(psp.url), providerRef: "psp-controlled", bindingRef: "pb-controlled" },
+      { intentId: intent.id },
+    );
     expect(executed.outcome).toBe("CAPTURED");
 
     // The PSP emitted a signed capture callback; deliver it through the

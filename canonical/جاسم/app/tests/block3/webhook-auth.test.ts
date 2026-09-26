@@ -5,7 +5,7 @@
  */
 import { createHmac } from "node:crypto";
 import { beforeEach, describe, expect, it } from "vitest";
-import { capabilityProviderCatalog, externalWebhookEvents, events } from "@db/schema";
+import { externalWebhookEvents, events } from "@db/schema";
 import { eq } from "drizzle-orm";
 import {
   ingestAuthenticatedExternalEvent,
@@ -13,6 +13,10 @@ import {
 } from "../../api/runtime/block3/webhook-auth";
 import type { ContinuationDispatcher } from "../../api/runtime/block2/temporal";
 import { getTestDb, resetBlock3 } from "./helpers/pg";
+import {
+  clearFixtureWebhookVerification,
+  installFixtureWebhookVerification,
+} from "./helpers/webhook-verification-fixture";
 
 const SECRET = "whsec_controlled_test";
 const PROVIDER = "psp-controlled";
@@ -30,15 +34,27 @@ function sign(rawBody: string, secret: string = SECRET): string {
   return createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
 }
 
-async function seedProvider(ioMetadata: Record<string, unknown> = { webhookSecret: SECRET }) {
-  const { db } = await getTestDb();
-  await db.insert(capabilityProviderCatalog).values({
-    id: PROVIDER,
-    kind: "PSP",
-    implementationId: "controlled-psp-v1",
-    ioMetadata,
-    provenance: { source: "boot" },
-  });
+//
+// ── AN INHERITED EXPECTATION THAT CHANGED ────────────────────────────────────
+//
+// OLD_EXPECTATION: a provider "has" a webhook secret when a row exists in
+//   `capability_provider_catalog` with `ioMetadata.webhookSecret` set.
+// WHY_IT_IS_WRONG: that table persists DISCOVERED candidates at trust class
+//   UNTRUSTED_CANDIDATE, and `ioMetadata` is ordinary jsonb — so the secret was
+//   plaintext in a discovery row, and one string would have authenticated
+//   callbacks naming EVERY scope's payments. Nothing in production ever wrote
+//   it, so the mounted webhook route could authenticate nothing at all.
+// NEW_EXPECTATION: material is resolved server-side from the provider BINDING
+//   whose account the callback is about. This suite states it through the
+//   trusted resolver seam, because its subject is the boundary and not the
+//   provisioning; the production path is proved end to end, with nothing
+//   injected, in `tests/block31/provider-webhook-secret.test.ts`.
+// WHY_THE_NEW_EXPECTATION_IS_STRICTER: a secret now belongs to one account
+//   rather than to a provider's name, and the catalog read that could never have
+//   worked in production is gone rather than documented.
+//
+async function seedProvider(secrets: Readonly<Record<string, string>> = { [PROVIDER]: SECRET }) {
+  installFixtureWebhookVerification(secrets);
 }
 
 function callbackInput(rawBody: string, patch: Record<string, unknown> = {}) {
@@ -55,7 +71,10 @@ function callbackInput(rawBody: string, patch: Record<string, unknown> = {}) {
 }
 
 describe("authenticated webhook ingestion (§95 matrix)", () => {
-  beforeEach(async () => resetBlock3((await getTestDb()).db));
+  beforeEach(async () => {
+    clearFixtureWebhookVerification();
+    await resetBlock3((await getTestDb()).db);
+  });
 
   it("rejects a missing signature", async () => {
     await seedProvider();
@@ -80,13 +99,18 @@ describe("authenticated webhook ingestion (§95 matrix)", () => {
     ).toBe("REJECTED");
   });
 
-  it("rejects unknown providers and providers without a catalog-bound secret", async () => {
+  it("rejects unknown providers and providers with no verification material", async () => {
     const { db } = await getTestDb();
     const body = JSON.stringify({ status: "captured" });
+    // One provider is provisioned. A callback posted to a DIFFERENT provider's
+    // name resolves nothing, so holding this secret buys nothing there.
+    //
+    //   CROSS_PROVIDER_SECRET_AUTHENTICATES = 0
+    await seedProvider();
     expect(
       (await ingestAuthenticatedExternalEvent(db, recordingDispatcher([]), callbackInput(body, { provider: "psp-unknown", signature: sign(body) }))).outcome,
     ).toBe("REJECTED");
-    await seedProvider({}); // no webhookSecret
+    await seedProvider({}); // nothing provisioned at all
     expect(
       (await ingestAuthenticatedExternalEvent(db, recordingDispatcher([]), callbackInput(body, { signature: sign(body) }))).outcome,
     ).toBe("REJECTED");

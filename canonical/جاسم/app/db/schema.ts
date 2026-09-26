@@ -1456,8 +1456,21 @@ export const capabilityProviderCatalog = pgTable(
         endpoint?: string;
         /** Trusted boot-time configuration; never populated from discovery. */
         receiptSecret?: string;
-        /** Trusted boot-time webhook authentication secret; never from discovery. */
-        webhookSecret?: string;
+        //
+        // `webhookSecret` USED TO BE DECLARED HERE, AND IS GONE ON PURPOSE.
+        //
+        // This table persists discovered candidates at trust class
+        // UNTRUSTED_CANDIDATE, and this column is ordinary jsonb. A string that
+        // authenticates money callbacks cannot live in either. Nothing in
+        // production ever wrote it, and webhook verification material now lives
+        // sealed in the provider credential vault, bound to the BINDING whose
+        // account the callback is about:
+        //
+        //   api/runtime/webhook-verification.ts
+        //   docs/architecture/JASIM_WEBHOOK_VERIFICATION.md
+        //
+        //   WEBHOOK_SECRET != PUBLIC PROVIDER METADATA
+        //   WEBHOOK_SECRET_PLAINTEXT_CANONICAL_STORAGE = 0
       }>()
       .notNull()
       .default({}),

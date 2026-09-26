@@ -1057,6 +1057,80 @@ registerProductAction({
 });
 
 /**
+ * «أكمل إعداد إشعارات المزود» — the material that checks a callback's signature.
+ *
+ * ─── WHY THIS IS ITS OWN SURFACE ────────────────────────────────────────────
+ *
+ * A provider issues a webhook signing secret when an endpoint is registered at
+ * the provider — usually after the connection already exists, often on a
+ * different day and by a different person than the one who pasted the API key.
+ * So this is a trusted continuation of the SAME binding: same row, same scope,
+ * the same `manage_providers` standing re-read at submission time.
+ *
+ * ─── AND WHAT CANNOT REACH IT ───────────────────────────────────────────────
+ *
+ * The conversation. A model may say that a provider still owes this step,
+ * because `webhookVerification: "REQUIRED_NOT_CONFIGURED"` is a STATUS on the
+ * binding projection. It cannot carry the value: the field is SENSITIVE, which
+ * means the presentation contract never carries a value, nothing prefills it,
+ * and a string the model read somewhere cannot arrive here except by a person
+ * typing it into the trusted surface.
+ *
+ *   MODEL_CAN_PROVISION_WEBHOOK_SECRET = NO
+ *   MODEL_CAN_SEE_WEBHOOK_SECRET = NO
+ *   CHAT_CAN_TRANSPORT_WEBHOOK_SECRET = NO
+ *
+ * The completion says `configured` and a rotation number. Not the secret, not
+ * its reference, not a prefix and not a fingerprint — a fingerprint is a
+ * guessing oracle.
+ *
+ *   WEBHOOK_SECRET_RETURNED_AFTER_STORAGE = 0
+ */
+registerProductAction({
+  id: "provider.webhook.configure",
+  version: 1,
+  title: "إعداد التحقق من إشعارات المزود",
+  consequence:
+    "يُخزَّن سر التحقق مُشفَّرًا ولا يمر عبر المحادثة. هذا لا يجعل الربط مُتحقّقًا ولا يعني نجاح أي دفعة.",
+  authentication: "AUTHENTICATED",
+  reauthentication: true,
+  risk: "HIGH",
+  fields: [
+    { key: "bindingId", label: "الربط", kind: "TEXT", required: true },
+    { key: "webhookSecret", label: "سر التحقق", kind: "SENSITIVE", required: true },
+  ],
+  confirmation: "EXPLICIT",
+  availability: "AVAILABLE",
+  ttlSeconds: 600,
+  idempotency: "SINGLE_USE",
+  execute: async ({ actor, values }) => {
+    if (!actor) return { outcome: "DENIED", detail: "Nobody is signed in." };
+    // Imported here for the same reason `provider.connect` does it: the binding
+    // runtime reads this module's registry.
+    const { configureWebhookVerification, ProviderBindingError } = await import("./provider-binding");
+    const secret = typeof values.webhookSecret === "string" ? values.webhookSecret : "";
+    try {
+      const done = await configureWebhookVerification({
+        bindingId: String(values.bindingId ?? ""),
+        principalId: String(actor.id),
+        secret,
+      });
+      return {
+        outcome: "EXECUTED",
+        record: { configured: done.configured, version: done.version },
+        detail:
+          "Callback verification is configured. The connection is not verified by this, and no payment is settled by it.",
+      };
+    } catch (error) {
+      if (error instanceof ProviderBindingError) {
+        return { outcome: "DENIED", detail: error.message };
+      }
+      throw error;
+    }
+  },
+});
+
+/**
  * «أضف طريقة دفع» — where a payment instrument is produced, and it is not here.
  *
  * ─── WHAT THIS SURFACE DOES NOT COLLECT ─────────────────────────────────────

@@ -372,7 +372,7 @@ export async function paymentExecutionRoute(input: {
   paymentMethodToken?: string;
   onRequiresAction?: (view: PspPaymentView) => Promise<void> | void;
 }): Promise<
-  | { readonly status: "RESOLVED"; readonly route: PaymentRoute; readonly deps: { psp: PspClient; providerRef: string } }
+  | { readonly status: "RESOLVED"; readonly route: PaymentRoute; readonly deps: { psp: PspClient; providerRef: string; bindingRef: string } }
   | { readonly status: "NO_ROUTE"; readonly detail: string }
   | { readonly status: "AMBIGUOUS_ROUTE"; readonly routes: readonly PaymentRoute[] }
 > {
@@ -387,6 +387,11 @@ export async function paymentExecutionRoute(input: {
         ...(input.onRequiresAction ? { onRequiresAction: input.onRequiresAction } : {}),
       }),
       providerRef: resolved.route.definitionId,
+      // The ACCOUNT this settlement runs through, carried beside the kind so the
+      // payment records which binding executed it — and so a callback about it
+      // resolves that account's verification material without re-resolving a
+      // route through policy that may have changed since.
+      bindingRef: resolved.route.bindingId,
     },
   };
 }

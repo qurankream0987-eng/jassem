@@ -143,6 +143,19 @@ export const paymentIntents = pgTable(
     // Immutable provider/catalog binding: once set, truth may be applied only
     // by the client of THIS provider — cross-provider readback never counts.
     providerRef: varchar("providerRef", { length: 96 }),
+    /**
+     * WHICH ACCOUNT executed it, beside which KIND of system did.
+     *
+     *   PROVIDER_DEFINITION != PROVIDER_BINDING
+     *   PROVIDER_TYPE != PROVIDER_ACCOUNT
+     *
+     * Two scopes may legitimately hold their own accounts at the same provider
+     * definition, and a callback about this payment is signed by the account
+     * that executed it. Bound once by the same execution ceremony that binds
+     * `providerRef`; NULL on a payment executed before this column existed,
+     * and that is read as "unknown", never as "any".
+     */
+    providerBindingRef: varchar("providerBindingRef", { length: 64 }),
     expiresAt: timestamp("expiresAt", { withTimezone: true }),
     version: integer("version").notNull().default(1),
     createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),

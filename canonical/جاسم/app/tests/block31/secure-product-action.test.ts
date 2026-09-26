@@ -96,6 +96,23 @@ describe("a product action opens a door and carries no secret", () => {
     //   may NOT collect — no field for a card number, a CVV, a PIN or a
     //   password — rather than only that a name appeared.
     //
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED (the ninth) ──────────────────
+    //
+    // OLD_EXPECTATION: eight actions.
+    // WHY_IT_IS_WRONG: it is not wrong. The inventory lock flagged the ninth
+    //   exactly as it flagged the eighth and the seventh, which is the only
+    //   reason it is written this way.
+    // NEW_EXPECTATION: nine, with `provider.webhook.configure` named and its
+    //   collection boundary pinned below — the material that authenticates a
+    //   provider's callbacks now enters here and nowhere else, having
+    //   previously entered nowhere at all in production.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: the assertions below pin that the
+    //   secret field is SENSITIVE, that the surface re-authenticates, and that
+    //   `bindingId` is the ONLY non-sensitive field on it. Before this phase
+    //   webhook material was read from ordinary plaintext jsonb that no
+    //   product action guarded, so there was no collection boundary to pin.
+    //
     const ids = actions.listProductActions().map((action) => action.id).sort();
     expect(ids).toEqual([
       "account.close",
@@ -103,10 +120,22 @@ describe("a product action opens a door and carries no secret", () => {
       "credential.rotate",
       "payment.method.add",
       "provider.connect",
+      "provider.webhook.configure",
       "session.establish",
       "session.revoke",
       "settings.update",
     ]);
+    // The surface the CALLBACK VERIFICATION material is typed into. One
+    // sensitive field, one identifier, and nothing else — a second collected
+    // field here would be a second place a secret could arrive.
+    const webhook = actions.getProductAction("provider.webhook.configure")!;
+    expect(webhook.reauthentication).toBe(true);
+    expect(webhook.idempotency).toBe("SINGLE_USE");
+    expect(webhook.risk).toBe("HIGH");
+    expect(
+      webhook.fields.filter((field) => field.kind !== "SENSITIVE").map((field) => field.key),
+    ).toEqual(["bindingId"]);
+    expect(webhook.fields.find((field) => field.key === "webhookSecret")?.kind).toBe("SENSITIVE");
     for (const action of actions.listProductActions()) {
       for (const word of ["Agent", "Restaurant", "Factory", "Notification", "Privacy"]) {
         expect(action.id, action.id).not.toContain(word);

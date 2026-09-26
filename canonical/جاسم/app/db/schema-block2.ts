@@ -640,6 +640,18 @@ export const scopeProviderBindings = pgTable(
     credentialRef: varchar("credentialRef", { length: 64 }),
     /** Exactly one version is current, so a rotation is never ambiguous. */
     credentialVersion: integer("credentialVersion").notNull().default(0),
+    /**
+     * A REFERENCE to the material that authenticates this account's CALLBACKS.
+     *
+     * Beside `credentialRef` and never merged into it: one proves who JASIM is
+     * when it calls out, the other proves the provider is who called in.
+     *
+     *   WEBHOOK_SECRET != PROVIDER_CREDENTIAL
+     *   WEBHOOK_SECRET != PUBLIC PROVIDER METADATA
+     */
+    webhookCredentialRef: varchar("webhookCredentialRef", { length: 64 }),
+    /** Exactly one version is current, so a rotation is never ambiguous. */
+    webhookCredentialVersion: integer("webhookCredentialVersion").notNull().default(0),
     /** Non-sensitive identity of the far side, as the provider reported it. */
     accountRef: varchar("accountRef", { length: 191 }),
     accountLabel: varchar("accountLabel", { length: 191 }),
@@ -681,6 +693,17 @@ export const providerCredentials = pgTable(
     id: varchar("id", { length: 64 }).primaryKey(),
     scopeId: varchar("scopeId", { length: 100 }).notNull(),
     bindingId: varchar("bindingId", { length: 64 }).notNull(),
+    /**
+     * WHICH KIND of material this envelope holds.
+     *
+     *   PROVIDER_AUTH — what JASIM spends to call the provider.
+     *   WEBHOOK_VERIFICATION — what JASIM checks a callback's signature with.
+     *
+     * One store, two kinds. They are issued at different provider surfaces and
+     * rotate on different days, so one may never be retired by rotating the
+     * other — which is also why the unique index below counts the kind.
+     */
+    kind: varchar("kind", { length: 32 }).notNull().default("PROVIDER_AUTH"),
     version: integer("version").notNull(),
     ciphertext: text("ciphertext").notNull(),
     iv: varchar("iv", { length: 64 }).notNull(),
@@ -689,7 +712,11 @@ export const providerCredentials = pgTable(
     retiredAt: timestamp("retiredAt", { withTimezone: true }),
   },
   (table) => [
-    uniqueIndex("provider_credentials_binding_version_idx").on(table.bindingId, table.version),
+    uniqueIndex("provider_credentials_binding_kind_version_idx").on(
+      table.bindingId,
+      table.kind,
+      table.version,
+    ),
   ],
 );
 

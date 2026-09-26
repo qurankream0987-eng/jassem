@@ -25,6 +25,10 @@ import { ingestAuthenticatedExternalEvent } from "../../api/runtime/block3/webho
 import { configureExternalActionProvider, resetExternalActionProviders } from "../../api/runtime/external-action-session";
 import type { ContinuationDispatcher } from "../../api/runtime/block2/temporal";
 import { getTestDb, resetBlock3 } from "./helpers/pg";
+import {
+  bindIntentToProviderAccount,
+  installFixtureWebhookVerification,
+} from "./helpers/webhook-verification-fixture";
 import { startControlledPsp, type ControlledPsp } from "./helpers/controlled-psp-server";
 
 let psp: ControlledPsp;
@@ -48,10 +52,7 @@ beforeEach(async () => {
   psp.sentCallbacks.length = 0;
   psp.setFailureMode("none");
   const { db } = await getTestDb();
-  await db.insert(capabilityProviderCatalog).values({
-    id: "psp-controlled", kind: "PSP", implementationId: "controlled-psp-v1",
-    ioMetadata: { webhookSecret: psp.webhookSecret }, provenance: { source: "boot" },
-  });
+  installFixtureWebhookVerification({ "psp-controlled": psp.webhookSecret });
 });
 
 async function payIntent(key: string, amountMinor: string, payee = "seller-1") {
@@ -257,6 +258,13 @@ describe("unseen economic goals — truthful compositions only", () => {
   it("goal 16: forged webhook (no signature) creates zero effects", async () => {
     const { db } = await getTestDb();
     const intent = await payIntent("g16", "1000");
+    // State the account this payment was executed at, so the refusal below is
+    // the one this test is about — an unsigned callback — rather than the
+    // earlier refusal of a callback about a payment that reached no account.
+    await bindIntentToProviderAccount(db, intent.id, {
+      providerRef: "psp-controlled",
+      bindingRef: "pb-controlled",
+    });
     const rawBody = JSON.stringify({ eventType: "payment.captured", reference: intent.id, amountMinor: "1000", currency: "KWD" });
     const result = await ingestAuthenticatedExternalEvent(db, dispatcher, {
       provider: "psp-controlled", connectorId: "c", eventKey: "g16-ev", eventType: "payment.captured",

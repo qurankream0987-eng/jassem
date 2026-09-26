@@ -188,10 +188,28 @@ describe("the provider binding contract", () => {
     expect(VAULT_CODE).toContain("aes-256-gcm");
     expect(VAULT_CODE).toContain("setAAD");
     expect(VAULT_CODE).toContain("setAuthTag");
-    // The envelope is bound to the scope, the binding AND the version, so a
-    // sealed value cannot be replayed into another binding or an older
-    // rotation.
-    expect(VAULT_CODE).toMatch(/scopeId\}:\$\{context\.bindingId\}:\$\{context\.version\}/);
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: the AAD is scope, binding and version.
+    // WHY_IT_IS_WRONG: it is not wrong — it is the assertion that pins what the
+    //   envelope is bound to, and it is what flagged this change. It had become
+    //   incomplete: one binding now holds two KINDS of material, an outbound
+    //   credential and inbound webhook verification material.
+    // NEW_EXPECTATION: scope, binding, KIND and version.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: without the kind in the AAD, somebody
+    //   holding the database could move a credential reference into
+    //   `webhookCredentialRef` and have an outbound API key accepted as the
+    //   material that authenticates inbound callbacks. The kind is now
+    //   authenticated rather than merely stored beside the envelope.
+    //
+    //   ENVELOPE_OPENED_AS_THE_WRONG_KIND = 0
+    //
+    // A sealed value still cannot be replayed into another binding or an older
+    // rotation, and now not into another purpose either.
+    expect(VAULT_CODE).toMatch(
+      /scopeId\}:\$\{context\.bindingId\}:\$\{kind\}:\$\{context\.version\}/,
+    );
     // No weaker mode, and no key that is not derived.
     expect(VAULT_CODE).not.toMatch(/aes-\d+-(cbc|ecb|ctr)/);
     // And nothing logs.

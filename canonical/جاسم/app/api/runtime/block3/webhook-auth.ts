@@ -12,9 +12,13 @@
  * Fail-closed: unknown provider, missing secret, invalid signature, stale
  * timestamp, malformed body — all reject with zero canonical effects.
  *
- * The provider secret is bound from the capability provider CATALOG
- * (ioMetadata.webhookSecret, provisioning-time truth) — never from
- * discovery, never from the callback itself.
+ * The verification material is resolved SERVER-SIDE from the provider BINDING
+ * whose account the callback is about — sealed in the credential vault, never
+ * from discovery metadata, never from the callback itself, and never from
+ * anything the caller sent. See `api/runtime/webhook-verification.ts`.
+ *
+ *   CLIENT_CAN_OVERRIDE_WEBHOOK_SECRET = 0
+ *   BODY_SECRET_USED = 0 · QUERY_SECRET_USED = 0
  *
  * VALID_SIGNATURE ≠ VERIFIED: a valid signature authenticates the evidence
  * source only. What the evidence proves is decided later by the Verifier.
@@ -22,12 +26,13 @@
 
 import { createHmac, createHash, timingSafeEqual } from "node:crypto";
 import { eq } from "drizzle-orm";
-import { capabilityProviderCatalog, paymentIntents } from "@db/schema";
+import { paymentIntents } from "@db/schema";
 import type { Block2Db, ContinuationDispatcher } from "../block2/temporal";
 import {
   ingestExternalEvent,
   type ExternalIngestResult,
 } from "../block2/events";
+import { webhookVerificationResolver } from "../webhook-verification";
 
 /** Maximum accepted callback age (replay/staleness window). */
 export const WEBHOOK_MAX_AGE_MS = 5 * 60 * 1000;
@@ -94,29 +99,73 @@ export async function ingestAuthenticatedExternalEvent(
 ): Promise<AuthenticatedIngestResult> {
   const now = input.now ?? new Date();
 
-  // 1) Provider binding + catalog-bound secret (provisioning truth only).
-  const [provider] = await db
+  // 1) WHOSE callback is this — before anything it says is believed.
+  //
+  // The route names a provider DEFINITION, which two different companies may
+  // each hold their own account at. So the ACCOUNT is derived from the payment
+  // the callback correlates to, and the material that authenticates it belongs
+  // to that account's binding.
+  //
+  // Correlating on the unsigned reference is SELECTION, not belief: picking the
+  // wrong account simply produces material the signature does not check out
+  // against, and every field read here is re-checked against the SIGNED body
+  // further down. Nothing has been trusted by the time the HMAC is verified.
+  //
+  //   ROUTE_PROVIDER_NAME != SECRET AUTHORITY
+  //   PROVIDER_DEFINITION != PROVIDER_BINDING
+  const [intent] = await db
     .select()
-    .from(capabilityProviderCatalog)
-    .where(eq(capabilityProviderCatalog.id, input.provider))
+    .from(paymentIntents)
+    .where(eq(paymentIntents.id, input.reference))
     .limit(1);
-  if (!provider) {
-    return { outcome: "REJECTED", reason: "Unknown provider" };
+  const routedAsFinancial = input.eventType.startsWith("payment.");
+  if (routedAsFinancial && !intent) {
+    return { outcome: "REJECTED", reason: "Financial callback does not correlate to a known payment intent" };
   }
-  const secret =
-    provider.ioMetadata && typeof (provider.ioMetadata as Record<string, unknown>).webhookSecret === "string"
-      ? ((provider.ioMetadata as Record<string, unknown>).webhookSecret as string)
-      : null;
-  if (!secret) {
-    return { outcome: "REJECTED", reason: "Provider has no catalog-bound webhook secret" };
+  if (intent?.providerRef && intent.providerRef !== input.provider) {
+    // Posted to one provider's route about a payment made at another. Refused
+    // here rather than surviving to a readback that would attribute one
+    // provider's settlement to a different rail.
+    //
+    //   CROSS_PROVIDER_SECRET_AUTHENTICATES = 0
+    return { outcome: "REJECTED", reason: "That payment was not executed on this provider" };
+  }
+  if (intent && !intent.providerBindingRef) {
+    // Either nothing was ever executed for this payment, or it was executed
+    // before an account was recorded. An account nobody can name has no
+    // callbacks that could be about it.
+    return { outcome: "REJECTED", reason: "That payment has no executing provider account" };
+  }
+  if (!intent && input.ownerId === undefined) {
+    // A non-financial callback has no payment to derive an account from, so it
+    // still arrives only from trusted server-side code that already knows whose
+    // it is. A public ingress supplies no owner and reaches none of this.
+    return { outcome: "REJECTED", reason: "A non-financial callback requires its owner" };
   }
 
-  // 2) Authenticate: HMAC over the exact raw bytes.
-  if (!verifyRawBodyHmacSha256(input.rawBody, input.signature, secret)) {
+  // 2) The material, resolved from canonical state. No parameter of this
+  //    function is a secret, a reference, a vault or a database.
+  const material = await webhookVerificationResolver()({
+    definitionId: input.provider,
+    bindingId: intent?.providerBindingRef ?? null,
+    // Only when there is no account to be exact about, so a missing binding can
+    // never quietly widen into "any binding in the scope".
+    scopeId: intent?.providerBindingRef ? null : (input.ownerId ?? null),
+  });
+  if (!material) {
+    // Not connected, revoked, never configured, or unreadable — one refusal for
+    // all of them, because telling them apart is an oracle.
+    //
+    //   MISSING_SECRET_AUTHENTICATES = 0
+    return { outcome: "REJECTED", reason: "No webhook verification material for this provider" };
+  }
+
+  // 3) Authenticate: HMAC over the exact raw bytes.
+  if (!verifyRawBodyHmacSha256(input.rawBody, input.signature, material.secret)) {
     return { outcome: "REJECTED", reason: "Invalid or missing signature" };
   }
 
-  // 3) Freshness is checked below, AFTER the body is parsed — because a
+  // 4) Freshness is checked below, AFTER the body is parsed — because a
   //    timestamp that is not itself signed is not evidence of anything:
   //
   //      FRESH_TIMESTAMP != AUTHENTICATED_TIMESTAMP
@@ -126,7 +175,7 @@ export async function ingestAuthenticatedExternalEvent(
   //    ledger is what actually stops a repeat of those bytes; this makes the
   //    freshness claim mean what it says.
 
-  // 4) Only after authentication: parse the body (never verify reserialized).
+  // 5) Only after authentication: parse the body (never verify reserialized).
   let payload: Record<string, unknown>;
   try {
     const parsed: unknown = JSON.parse(input.rawBody);
@@ -138,7 +187,7 @@ export async function ingestAuthenticatedExternalEvent(
     return { outcome: "REJECTED", reason: "Malformed JSON body" };
   }
 
-  // 4b) Freshness, from the SIGNED body wherever it carries a timestamp.
+  // 5b) Freshness, from the SIGNED body wherever it carries a timestamp.
   //
   //     A signed timestamp is authoritative and a caller-supplied one may not
   //     contradict it. Where the signed body carries none, the caller's is
@@ -160,7 +209,7 @@ export async function ingestAuthenticatedExternalEvent(
     }
   }
 
-  // 5) Bind unsigned routing metadata to the SIGNED payload: a valid HMAC
+  // 6) Bind unsigned routing metadata to the SIGNED payload: a valid HMAC
   //    over body A can never be routed as event/owner B.
   if (typeof payload.eventType === "string" && payload.eventType !== input.eventType) {
     return { outcome: "REJECTED", reason: "eventType metadata disagrees with the signed payload" };
@@ -169,7 +218,7 @@ export async function ingestAuthenticatedExternalEvent(
     return { outcome: "REJECTED", reason: "reference metadata disagrees with the signed payload" };
   }
 
-  // 5b) Financial callbacks have a STRICT signed schema: the signed body
+  // 6b) Financial callbacks have a STRICT signed schema: the signed body
   //     itself must carry the event type, the payment reference, and the
   //     amount/currency. Absent signed fields can never be backfilled by
   //     unsigned caller metadata.
@@ -188,16 +237,11 @@ export async function ingestAuthenticatedExternalEvent(
     }
   }
 
-  // 6) Payment correlation + derived ownership: when the reference is a
+  // 7) Payment correlation + derived ownership: when the reference is a
   //    known payment intent, the event's owner is the INTENT's owner
   //    (derived — never caller-supplied) and its money must match the
-  //    mandate exactly. Financial callbacks that correlate to NO known
-  //    intent fail closed — they can never wake arbitrary owners.
-  const [intent] = await db
-    .select()
-    .from(paymentIntents)
-    .where(eq(paymentIntents.id, input.reference))
-    .limit(1);
+  //    mandate exactly. The intent itself was loaded in step 1, because the
+  //    account whose material authenticates the callback is derived from it.
   let ownerId = input.ownerId;
   if (intent) {
     // Supplied → checked. Absent → derived. Either way the intent decides.
@@ -211,15 +255,22 @@ export async function ingestAuthenticatedExternalEvent(
       return { outcome: "REJECTED", reason: "Callback currency disagrees with the payment mandate" };
     }
     ownerId = intent.ownerId;
-  } else if (input.eventType.startsWith("payment.")) {
-    return { outcome: "REJECTED", reason: "Financial callback does not correlate to a known payment intent" };
-  } else if (ownerId === undefined) {
-    // No intent to derive from, and nobody said whose this is. A canonical
-    // event needs an owner, and guessing one would wake an arbitrary scope.
+  }
+  // There is no `else` left to write: step 1 already refused a financial
+  // callback that correlates to nothing, and a non-financial one that named no
+  // owner. Both refusals happen BEFORE any material is resolved, which is
+  // strictly earlier than they used to.
+  //
+  //   UNCORRELATED_FINANCIAL_CALLBACK_AUTHENTICATES = 0
+  //   OWNERLESS_CALLBACK_AUTHENTICATES = 0
+  if (ownerId === undefined) {
+    // Unreachable, and kept as a hard floor rather than an assertion: a
+    // canonical event with no owner would wake an arbitrary scope, and that is
+    // too expensive a thing to leave to a proof about control flow.
     return { outcome: "REJECTED", reason: "A non-financial callback requires its owner" };
   }
 
-  // 7) Replay identity is derived from the SIGNED body: the caller can never
+  // 8) Replay identity is derived from the SIGNED body: the caller can never
   //    mint a fresh dedupe key for the same authenticated callback bytes.
   const signedEventKey =
     typeof payload.id === "string"
@@ -228,7 +279,7 @@ export async function ingestAuthenticatedExternalEvent(
         ? `eid:${payload.eventId}`
         : `body:${createHash("sha256").update(input.rawBody, "utf8").digest("hex")}`;
 
-  // 8) Authenticated + correlated → canonical ingestion (dedupe = replay
+  // 9) Authenticated + correlated → canonical ingestion (dedupe = replay
   //    protection, staleness check, canonical event emission).
   return ingestExternalEvent(db, dispatcher, {
     provider: input.provider,

@@ -306,6 +306,25 @@ export type ProviderDefinition = {
    * caller can override it.
    */
   readonly paymentMethod?: "NONE" | "REQUIRED";
+  /**
+   * How this KIND of system authenticates the callbacks it sends.
+   *
+   * Adapter contract metadata, beside `observes` and `paymentMethod`, for the
+   * same reason: it is a fact about the system, not a branch on its name. A
+   * provider that never calls back declares nothing and is never asked for
+   * verification material — most systems JASIM reads from are in that group,
+   * and forcing a webhook step on them would be inventing a requirement.
+   *
+   *   SIGNED_HMAC — callbacks carry an HMAC-SHA256 over the exact raw body.
+   *   NONE / absent — this system does not call back at all.
+   *
+   * Absent means NONE, which is the fail-closed direction here too: a provider
+   * that never declared how it signs has no verification material to resolve,
+   * so nothing it sends can authenticate.
+   *
+   *   PROVIDER_WITHOUT_WEBHOOK_REQUIREMENT_FORCED_INTO_ONE = 0
+   */
+  readonly webhook?: "NONE" | "SIGNED_HMAC";
   readonly endpoint: EndpointPolicy;
   readonly adapter: ProviderAdapter;
   /**
@@ -643,6 +662,7 @@ async function credentialFor(row: BindingRow): Promise<Readonly<Record<string, s
   const context: CredentialContext = {
     scopeId: row.scopeId,
     bindingId: row.id,
+    kind: "PROVIDER_AUTH",
     version: row.credentialVersion,
   };
   return providerCredentialVault().open(row.credentialRef, context);
@@ -672,6 +692,18 @@ export type SetupOpening = {
   readonly lifecycle: BindingLifecycle;
   /** What the trusted surface must collect. Field kinds, never values. */
   readonly collects: readonly { readonly key: string; readonly sensitive: boolean }[];
+  /**
+   * Whether this provider's CALLBACKS will need verification material.
+   *
+   * Said here so a surface — and a model reading a projection — knows a second
+   * trusted step is owed. It is a requirement, never material: the secret is
+   * issued by the provider when its endpoint is registered there, which is
+   * usually after this connection exists, and it enters JASIM only through
+   * `configureWebhookVerification`.
+   *
+   *   MODEL_CAN_SEE_WEBHOOK_SECRET = NO
+   */
+  readonly webhookVerification: "NONE" | "SIGNED_HMAC";
   readonly expiresAt: Date;
 };
 
@@ -825,6 +857,8 @@ export async function beginProviderSetup(input: {
       ...(declaresEndpoint ? [{ key: "endpoint", sensitive: false }] : []),
       ...AUTH_MATERIAL[definition.authMethod].map((key) => ({ key, sensitive: true })),
     ],
+    // Deliberately NOT collected here. See `configureWebhookVerification`.
+    webhookVerification: definition.webhook ?? "NONE",
     expiresAt,
   };
 }
@@ -907,11 +941,16 @@ export async function completeProviderSetup(input: {
   }
 
   const version = row.credentialVersion + 1;
-  // Rotation retires everything older first, so two credentials are never
-  // ambiguous authority for one binding.
-  await providerCredentialVault().retire(row.id);
+  // Rotation retires everything older OF THIS KIND first, so two credentials
+  // are never ambiguous authority for one binding — and so re-attaching an API
+  // key does not silently destroy the material that authenticates this
+  // account's callbacks, which would fail every callback closed for a reason
+  // nobody could see.
+  //
+  //   PROVIDER_AUTH_ROTATION_RETIRES_WEBHOOK_MATERIAL = 0
+  await providerCredentialVault().retire(row.id, "PROVIDER_AUTH");
   const reference = await providerCredentialVault().seal(
-    { scopeId: row.scopeId, bindingId: row.id, version },
+    { scopeId: row.scopeId, bindingId: row.id, kind: "PROVIDER_AUTH", version },
     required.length === 0 ? { trustedInternal: "1" } : material,
   );
 
@@ -942,6 +981,116 @@ export async function completeProviderSetup(input: {
     lifecycle: "AUTHORIZED",
     endpointHost: endpointUrl ? new URL(endpointUrl).host : null,
   };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 1b · VERIFICATION MATERIAL — how this account's callbacks will be checked
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Attach the material that authenticates THIS ACCOUNT'S callbacks.
+ *
+ * ─── WHY THIS IS A SECOND STEP AND NOT A SECOND LIFECYCLE ──────────────────
+ *
+ * A provider issues a webhook signing secret when an endpoint is registered at
+ * the provider — which is normally after the connection exists, sometimes days
+ * after, and by a different person than the one who pasted the API key. So this
+ * is a trusted CONTINUATION of the same binding setup: same row, same scope,
+ * same `manage_providers` standing, re-read now rather than remembered.
+ *
+ * Collecting it inside `completeProviderSetup` would have forced every
+ * connection to wait for a secret that does not exist yet, and a connection
+ * that cannot be made is not a safer connection.
+ *
+ * ─── AND WHY IT IS NOT AN ORDINARY FIELD ───────────────────────────────────
+ *
+ * It arrives only from the trusted product-action surface that collects it as
+ * SENSITIVE — never from a conversation, a tool result, a model argument, a
+ * request body or a query string. The model may say that a provider still needs
+ * this step, because that is a STATUS. It may not carry the value.
+ *
+ *   MODEL_CAN_PROVISION_WEBHOOK_SECRET = NO
+ *   MODEL_CAN_SEE_WEBHOOK_SECRET = NO
+ *   CHAT_CAN_TRANSPORT_WEBHOOK_SECRET = NO
+ *   WEBHOOK_SECRET_PLAINTEXT_CANONICAL_STORAGE = 0
+ *
+ * Nothing about this makes the provider verified, and nothing about it makes a
+ * payment succeed. It decides one thing: which material a callback about this
+ * account is checked against.
+ *
+ *   SECRET_PROVISIONED != PROVIDER_VERIFIED
+ *   SECRET_PROVISIONED != PAYMENT_SUCCESS
+ */
+export async function configureWebhookVerification(input: {
+  bindingId: string;
+  principalId: string;
+  /** Collected on the trusted surface. Sealed here and never returned. */
+  secret: string;
+  now?: Date;
+}): Promise<{ configured: true; version: number }> {
+  const now = input.now ?? new Date();
+  const { row, definition } = await manageableBinding({
+    bindingId: input.bindingId,
+    principalId: input.principalId,
+    now,
+  });
+  // A provider that never said it signs callbacks has no callbacks to check.
+  // Refused rather than stored, because storing material nothing will ever
+  // consume is how a secret ends up somewhere nobody is watching.
+  //
+  //   PROVIDER_WITHOUT_WEBHOOK_REQUIREMENT_FORCED_INTO_ONE = 0
+  if ((definition.webhook ?? "NONE") !== "SIGNED_HMAC") {
+    throw new ProviderBindingError(
+      "This provider does not send callbacks that need verifying.",
+      "INVALID",
+    );
+  }
+  if (row.lifecycle === "SETUP_PENDING") {
+    throw new ProviderBindingError("This connection is not set up yet.", "STATE");
+  }
+  if (row.lifecycle === "REVOKED") {
+    throw new ProviderBindingError("This connection was disconnected.", "STATE");
+  }
+  // Non-empty, and nothing beyond that: JASIM did not choose this secret and is
+  // in no position to judge the provider's format. What it will not accept is
+  // an absence dressed as a value.
+  const secret = input.secret.trim();
+  if (secret.length === 0) {
+    throw new ProviderBindingError("«secret» is missing.", "INVALID");
+  }
+
+  const version = row.webhookCredentialVersion + 1;
+  // Retire-then-replace, exactly as the outbound credential rotates — and
+  // scoped to THIS KIND, so the API key keeps working across a webhook
+  // rotation. Old material stops authenticating the moment it is retired;
+  // there is no overlap window, and none is invented here.
+  //
+  //   RETIRED_WEBHOOK_MATERIAL_AUTHENTICATES_NEW_CALLBACK = 0
+  await providerCredentialVault().retire(row.id, "WEBHOOK_VERIFICATION");
+  const reference = await providerCredentialVault().seal(
+    { scopeId: row.scopeId, bindingId: row.id, kind: "WEBHOOK_VERIFICATION", version },
+    { secret },
+  );
+  await db
+    .update(scopeProviderBindings)
+    .set({ webhookCredentialRef: reference, webhookCredentialVersion: version })
+    .where(eq(scopeProviderBindings.id, row.id));
+  await audit({
+    type: "PROVIDER_WEBHOOK_VERIFICATION_CONFIGURED",
+    scopeId: row.scopeId,
+    bindingId: row.id,
+    definitionId: definition.id,
+    lifecycle: row.lifecycle ?? "AUTHORIZED",
+    // The fact, and the rotation number. No material, and no field for any.
+    //
+    //   WEBHOOK_SECRET_IN_EVENT = 0 · WEBHOOK_SECRET_LOGGED = 0
+    message: `Callback verification was configured for ${definition.displayName} (version ${version}).`,
+  });
+  // `configured: true`. Never the secret, never its reference, never a prefix
+  // or a fingerprint of it — a fingerprint is a guessing oracle.
+  //
+  //   WEBHOOK_SECRET_RETURNED_AFTER_STORAGE = 0
+  return { configured: true, version };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1705,6 +1854,12 @@ export async function revokeBinding(input: {
       revokedAt: now,
       grantedCapabilities: [],
       credentialRef: null,
+      // The callback door closes with the connection. Historical evidence that
+      // was already ingested stays exactly as it is — revocation does not erase
+      // facts — but nothing NEW authenticates against a retired account.
+      //
+      //   REVOKED_BINDING_AUTHENTICATES_NEW_CALLBACK = 0
+      webhookCredentialRef: null,
       suspendedReason: null,
     })
     .where(eq(scopeProviderBindings.id, row.id));
@@ -1742,6 +1897,18 @@ export type BindingProjection = {
   readonly accountLabel: string | null;
   readonly lastVerifiedAt: Date | null;
   readonly suspendedReason: string | null;
+  /**
+   * Whether this connection can authenticate the provider's callbacks yet.
+   *
+   * A STATUS, assembled from whether a reference exists — never the reference,
+   * and never what it points at.
+   *
+   *   WEBHOOK_SECRET_RETURNED_IN_BINDING_READ = 0
+   */
+  readonly webhookVerification:
+    | "NOT_REQUIRED"
+    | "REQUIRED_NOT_CONFIGURED"
+    | "CONFIGURED";
 };
 
 function project(row: BindingRow, definition: ProviderDefinition | undefined): BindingProjection {
@@ -1753,6 +1920,12 @@ function project(row: BindingRow, definition: ProviderDefinition | undefined): B
     accountLabel: row.accountLabel,
     lastVerifiedAt: row.verifiedAt,
     suspendedReason: row.suspendedReason,
+    webhookVerification:
+      (definition?.webhook ?? "NONE") !== "SIGNED_HMAC"
+        ? "NOT_REQUIRED"
+        : row.webhookCredentialRef
+          ? "CONFIGURED"
+          : "REQUIRED_NOT_CONFIGURED",
   };
 }
 

@@ -24,6 +24,7 @@
  *
  *   A sealed value cannot be replayed into another binding.
  *   A sealed value cannot be replayed into an older rotation.
+ *   A sealed value cannot be opened as a different KIND of material.
  *
  * ─── WHAT THIS BACKEND HONESTLY IS ──────────────────────────────────────────
  *
@@ -41,10 +42,27 @@ import { and, eq } from "drizzle-orm";
 import { db } from "../queries/connection";
 import { providerCredentials } from "@db/schema-block2";
 
+/**
+ * WHICH KIND of material an envelope holds.
+ *
+ * One binding holds both: what JASIM spends to call the provider, and what
+ * JASIM checks an inbound callback's signature with. They are issued at
+ * different provider surfaces — an API-key page and a webhook-endpoint
+ * registration — and rotate on different days. So they are two envelopes in
+ * ONE store, never one envelope with two meanings and never a second store.
+ *
+ *   SECOND_SECRET_STORE = FORBIDDEN
+ *   WEBHOOK_SECRET != PROVIDER_CREDENTIAL
+ */
+export const CREDENTIAL_KINDS = ["PROVIDER_AUTH", "WEBHOOK_VERIFICATION"] as const;
+export type CredentialKind = (typeof CREDENTIAL_KINDS)[number];
+
 /** What a credential is sealed FOR. Every field is authenticated, not stored. */
 export type CredentialContext = {
   readonly scopeId: string;
   readonly bindingId: string;
+  /** Absent means PROVIDER_AUTH, which is what every envelope was before. */
+  readonly kind?: CredentialKind;
   readonly version: number;
 };
 
@@ -59,7 +77,15 @@ export type CredentialContext = {
 export interface ProviderCredentialVault {
   seal(context: CredentialContext, material: Readonly<Record<string, string>>): Promise<string>;
   open(reference: string, context: CredentialContext): Promise<Readonly<Record<string, string>>>;
-  retire(bindingId: string): Promise<void>;
+  /**
+   * Retire material. A KIND retires only its own kind, because rotating an API
+   * key must not silently destroy the material that authenticates callbacks —
+   * a binding whose verification material vanished would fail every callback
+   * closed, and nobody would know why.
+   *
+   * No kind means ALL of it, which is what revocation means.
+   */
+  retire(bindingId: string, kind?: CredentialKind): Promise<void>;
 }
 
 export class ProviderCredentialError extends Error {
@@ -71,8 +97,18 @@ export class ProviderCredentialError extends Error {
   }
 }
 
+/**
+ * The kind is AUTHENTICATED, not merely stored beside the envelope.
+ *
+ * Otherwise somebody holding the database could move a credential reference
+ * into `webhookCredentialRef` and have an outbound API key accepted as the
+ * material that authenticates inbound callbacks.
+ *
+ *   ENVELOPE_OPENED_AS_THE_WRONG_KIND = 0
+ */
 function aad(reference: string, context: CredentialContext): string {
-  return `jasim-provider-credential:${reference}:${context.scopeId}:${context.bindingId}:${context.version}`;
+  const kind: CredentialKind = context.kind ?? "PROVIDER_AUTH";
+  return `jasim-provider-credential:${reference}:${context.scopeId}:${context.bindingId}:${kind}:${context.version}`;
 }
 
 /** Every value must be a string. A credential is material, never a structure. */
@@ -118,6 +154,7 @@ export class EncryptedProviderCredentialVault implements ProviderCredentialVault
       id: reference,
       scopeId: context.scopeId,
       bindingId: context.bindingId,
+      kind: context.kind ?? "PROVIDER_AUTH",
       version: context.version,
       ciphertext: ciphertext.toString("base64"),
       iv: iv.toString("base64"),
@@ -138,6 +175,7 @@ export class EncryptedProviderCredentialVault implements ProviderCredentialVault
           eq(providerCredentials.id, reference),
           eq(providerCredentials.scopeId, context.scopeId),
           eq(providerCredentials.bindingId, context.bindingId),
+          eq(providerCredentials.kind, context.kind ?? "PROVIDER_AUTH"),
           eq(providerCredentials.version, context.version),
         ),
       )
@@ -168,11 +206,15 @@ export class EncryptedProviderCredentialVault implements ProviderCredentialVault
   }
 
   /** Revocation and rotation both end here. Nothing left behind can be opened. */
-  async retire(bindingId: string): Promise<void> {
+  async retire(bindingId: string, kind?: CredentialKind): Promise<void> {
     await db
       .update(providerCredentials)
       .set({ retiredAt: new Date() })
-      .where(eq(providerCredentials.bindingId, bindingId));
+      .where(
+        kind
+          ? and(eq(providerCredentials.bindingId, bindingId), eq(providerCredentials.kind, kind))
+          : eq(providerCredentials.bindingId, bindingId),
+      );
   }
 }
 

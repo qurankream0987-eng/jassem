@@ -53,7 +53,21 @@ export class PaymentExecutionError extends Error {
   }
 }
 
-export type PaymentExecutionDeps = { psp: PspClient; providerRef?: string };
+export type PaymentExecutionDeps = {
+  psp: PspClient;
+  providerRef?: string;
+  /**
+   * WHICH ACCOUNT, beside which KIND of system.
+   *
+   *   PROVIDER_DEFINITION != PROVIDER_BINDING
+   *
+   * Two scopes may each hold their own account at the same provider definition,
+   * and a callback about this payment is signed by the account that executed it.
+   * Bound by the same ceremony that binds `providerRef`, so the pair is written
+   * in one statement and can never disagree.
+   */
+  bindingRef?: string;
+};
 
 function moneyMatches(intent: PaymentIntentRecord, view: PspPaymentView): boolean {
   return view.amountMinor === intent.amountMinor && view.currency === intent.currency;
@@ -98,6 +112,13 @@ function providerBindingViolation(
   }
   if (deps.providerRef !== intent.providerRef) {
     return `Provider identity mismatch: intent is bound to ${intent.providerRef}, not ${deps.providerRef}`;
+  }
+  // Same provider KIND, different ACCOUNT. A readback against another account
+  // reads another account's payments, so this is a mismatch for exactly the
+  // reason the line above is. Only checked once an account was recorded: a
+  // payment bound before this existed is UNKNOWN, and unknown is not "any".
+  if (deps.bindingRef && intent.providerBindingRef && deps.bindingRef !== intent.providerBindingRef) {
+    return `Provider account mismatch: intent is bound to ${intent.providerBindingRef}, not ${deps.bindingRef}`;
   }
   return null;
 }
@@ -278,7 +299,13 @@ export async function executePaymentEffect(
   if (!intent.providerRef) {
     await db
       .update(paymentIntents)
-      .set({ providerRef: deps.providerRef!, updatedAt: new Date() })
+      .set({
+        providerRef: deps.providerRef!,
+        // The account, in the same statement as the kind. There is no window in
+        // which a payment is bound to a provider but to no account of it.
+        ...(deps.bindingRef ? { providerBindingRef: deps.bindingRef } : {}),
+        updatedAt: new Date(),
+      })
       .where(eq(paymentIntents.id, intent.id));
   }
 

@@ -7,7 +7,7 @@
  */
 import { createHmac } from "node:crypto";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { capabilityProviderCatalog, economicLedgerEntries } from "@db/schema";
+import { economicLedgerEntries } from "@db/schema";
 import { eq } from "drizzle-orm";
 import { createDelegationGrant, revokeDelegationGrant } from "../../api/runtime/block2/delegation";
 import { provisionMandateBudget } from "../../api/runtime/block3/financial-mandate";
@@ -18,6 +18,10 @@ import { confirmSubscriptionPayment, createPlan, subscribe } from "../../api/run
 import { ingestAuthenticatedExternalEvent } from "../../api/runtime/block3/webhook-auth";
 import type { ContinuationDispatcher } from "../../api/runtime/block2/temporal";
 import { getTestDb, resetBlock3 } from "./helpers/pg";
+import {
+  bindIntentToProviderAccount,
+  installFixtureWebhookVerification,
+} from "./helpers/webhook-verification-fixture";
 import { startControlledPsp, type ControlledPsp } from "./helpers/controlled-psp-server";
 
 let psp: ControlledPsp;
@@ -43,11 +47,7 @@ beforeEach(async () => {
   psp.payments.clear();
   psp.sentCallbacks.length = 0;
   psp.setFailureMode("none");
-  const { db } = await getTestDb();
-  await db.insert(capabilityProviderCatalog).values({
-    id: "psp-controlled", kind: "PSP", implementationId: "controlled-psp-v1",
-    ioMetadata: { webhookSecret: psp.webhookSecret }, provenance: { source: "boot" },
-  });
+  installFixtureWebhookVerification({ "psp-controlled": psp.webhookSecret });
 });
 
 describe("review hardening proofs", () => {
@@ -111,6 +111,14 @@ describe("review hardening proofs", () => {
     const { intent } = await createPaymentIntent(db, {
       ownerId: "owner-1", payerRef: "buyer-1", payeeRef: "seller-1",
       amountMinor: "1000", currency: "KWD", purpose: "p", idempotencyKey: "h-wh",
+    });
+    // The account this payment was executed at. Without it the callbacks below
+    // are refused for a reason this test is not about: a callback concerning a
+    // payment that reached no provider account cannot be evidence about it, and
+    // is now refused before any signature is checked.
+    await bindIntentToProviderAccount(db, intent.id, {
+      providerRef: "psp-controlled",
+      bindingRef: "pb-controlled",
     });
     const sign = (body: string) => createHmac("sha256", psp.webhookSecret).update(body, "utf8").digest("hex");
 
@@ -182,6 +190,14 @@ describe("review hardening proofs", () => {
       ownerId: "owner-1", payerRef: "buyer-1", payeeRef: "seller-1",
       amountMinor: "1000", currency: "KWD", purpose: "p", idempotencyKey: "h-replay",
     });
+    // The account this payment was executed at. Without it the callbacks below
+    // are refused for a reason this test is not about: a callback concerning a
+    // payment that reached no provider account cannot be evidence about it, and
+    // is now refused before any signature is checked.
+    await bindIntentToProviderAccount(db, intent.id, {
+      providerRef: "psp-controlled",
+      bindingRef: "pb-controlled",
+    });
     const body = JSON.stringify({ eventType: "payment.captured", reference: intent.id, amountMinor: "1000", currency: "KWD" });
     const signature = createHmac("sha256", psp.webhookSecret).update(body, "utf8").digest("hex");
     const outcomes: string[] = [];
@@ -210,6 +226,14 @@ describe("review hardening proofs", () => {
     const { intent } = await createPaymentIntent(db, {
       ownerId: "owner-1", payerRef: "buyer-1", payeeRef: "seller-1",
       amountMinor: "1000", currency: "KWD", purpose: "p", idempotencyKey: "h-schema",
+    });
+    // The account this payment was executed at. Without it the callbacks below
+    // are refused for a reason this test is not about: a callback concerning a
+    // payment that reached no provider account cannot be evidence about it, and
+    // is now refused before any signature is checked.
+    await bindIntentToProviderAccount(db, intent.id, {
+      providerRef: "psp-controlled",
+      bindingRef: "pb-controlled",
     });
     const sign = (body: string) => createHmac("sha256", psp.webhookSecret).update(body, "utf8").digest("hex");
     // Signed body WITHOUT a reference; unsigned caller metadata points at a real intent.

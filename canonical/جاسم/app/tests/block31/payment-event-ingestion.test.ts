@@ -12,7 +12,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createHmac, randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
-import { capabilityProviderCatalog, users } from "@db/schema";
+import { users } from "@db/schema";
 import { getTestDb, resetBlock31, type TestDbHandle } from "./helpers/pg";
 import type { ContinuationDispatcher } from "../../api/runtime/block2/temporal";
 
@@ -108,6 +108,9 @@ describe("a provider event reaching a payment", () => {
       authMethod: "API_KEY" as const,
       endpoint: { mode: "FIXED" as const, baseUrl: "https://example.com/psp" },
       testOnly: true, adapter, supports: ["PAY", "REFUND"] as const,
+      // This KIND of system signs its callbacks. Declared once, on the
+      // definition, and never branched on by name anywhere.
+      webhook: "SIGNED_HMAC" as const,
     };
     // Two, and the runtime never reads which is which.
     registry.register({ ...base, id: "ev.rail", displayName: "قناة" });
@@ -141,21 +144,35 @@ describe("a provider event reaching a payment", () => {
       made.push(String(row!.id));
     }
     [payerScope, payeeScope] = made as [string, string];
-    // The catalog row is the ONLY place the secret comes from.
-    for (const id of ["ev.rail", "ev.unfamiliar"]) {
-      await handle.db.insert(capabilityProviderCatalog).values({
-        id, kind: "PSP", implementationId: "controlled-v1",
-        ioMetadata: { webhookSecret: SECRET }, provenance: { source: "boot" },
-      });
-    }
   });
 
   // ── fixtures ─────────────────────────────────────────────────────────────
 
-  async function connect(definitionId: string) {
+  /**
+   * Connect, and provision this ACCOUNT'S callback verification material.
+   *
+   * ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────────
+   *
+   * OLD_EXPECTATION: the secret comes from a `capability_provider_catalog` row,
+   *   written by this fixture as plaintext jsonb.
+   * WHY_IT_IS_WRONG: that table persists DISCOVERED candidates at trust class
+   *   UNTRUSTED_CANDIDATE, nothing in production ever wrote it, and a catalog
+   *   row has no ACCOUNT — one string would have authenticated callbacks naming
+   *   every scope's payments.
+   * NEW_EXPECTATION: the material is provisioned through the trusted binding
+   *   lifecycle, sealed in the credential vault, and resolved server-side from
+   *   the binding the payment was executed on. Nothing is injected anywhere.
+   * WHY_THE_NEW_EXPECTATION_IS_STRICTER: the secret is now account-scoped and
+   *   encrypted, and this fixture exercises the one production path rather than
+   *   a table production never wrote.
+   */
+  async function connect(
+    definitionId: string,
+    opts: { secret?: string; capabilities?: string[] } = {},
+  ) {
     const opened = await binding.beginProviderSetup({
       principalId: payeeScope, scopeId: payeeScope, definitionId,
-      requestedCapabilities: ["PAY"], now: T0,
+      requestedCapabilities: opts.capabilities ?? ["PAY"], now: T0,
     });
     await binding.completeProviderSetup({
       bindingId: opened.bindingId, principalId: payeeScope, material: { apiKey: "k" }, now: at(MINUTE),
@@ -165,6 +182,10 @@ describe("a provider event reaching a payment", () => {
     });
     await binding.verifyBinding({
       bindingId: opened.bindingId, principalId: payeeScope, now: at(3 * MINUTE),
+    });
+    await binding.configureWebhookVerification({
+      bindingId: opened.bindingId, principalId: payeeScope,
+      secret: opts.secret ?? SECRET, now: at(4 * MINUTE),
     });
     calls.length = 0;
     return opened.bindingId;
@@ -437,9 +458,32 @@ describe("a provider event reaching a payment", () => {
     const intent = await payAsync();
     await binding.revokeBinding({ bindingId, principalId: payeeScope, now: at(9 * MINUTE) });
     const result = await deliver(intent.id, body(intent.id));
-    expect(result.outcome).toBe("NO_EFFECT");
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: NO_EFFECT — the callback AUTHENTICATED and then found no
+    //   usable route, so it was recorded in the replay ledger and changed
+    //   nothing.
+    // WHY_IT_IS_WRONG: it authenticated because the secret lived on a catalog
+    //   row that revocation never touched. Disconnecting an account left its
+    //   callback door open indefinitely, so a retired credential still spoke.
+    // NEW_EXPECTATION: REJECTED. The verification material belongs to the
+    //   binding, revocation retires it, and nothing authenticates after that.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: the refusal moved EARLIER — before
+    //   the ledger, before the route, before any reading of the payment. And it
+    //   is the same law the vault already held for the outbound credential,
+    //   which revocation always retired.
+    //
+    //   REVOKED_BINDING_AUTHENTICATES_NEW_CALLBACK = 0
+    //   REVOKED_BINDING_NEW_MUTATION_FROM_EVENT = 0
+    //
+    // What revocation still does NOT do is erase what was already ingested: the
+    // ledger row and the canonical event from before it stand, and the assertion
+    // below is about NEW authority only.
+    expect(result.outcome).toBe("REJECTED");
     expect(calls).toHaveLength(0);
     expect(await statusOf(intent.id)).toBe("INCONCLUSIVE");
+    expect(await count("external_webhook_events")).toBe(0);
   });
 
   it("a settled payment fulfils no transaction and resolves no need", async () => {
