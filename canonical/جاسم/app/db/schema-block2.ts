@@ -431,7 +431,28 @@ export const remoteExecutions = pgTable(
     runId: uuid("runId").notNull(),
     nodeId: uuid("nodeId").notNull(),
     providerId: varchar("providerId", { length: 128 }).notNull(),
+    /**
+     * The SELECTION, not the account.
+     *
+     * `resolveProvider` mints a fresh id for every resolution it makes, so this
+     * records WHICH DECISION chose this provider for this node. It references
+     * no durable row and identifies no account, and must never be read as one.
+     *
+     *   SELECTION_RECORD != PROVIDER_ACCOUNT
+     */
     bindingId: varchar("bindingId", { length: 128 }),
+    /**
+     * WHICH ACCOUNT executed it — the scope's provider binding.
+     *
+     *   PROVIDER_CANDIDATE != PROVIDER_ACCOUNT
+     *   REMOTE_EXECUTION != LATEST_BINDING
+     *
+     * Pinned when the execution is created, so nothing that changes afterwards
+     * can redirect receipt verification to other material. NULL means UNKNOWN,
+     * never "any": a receipt for an execution with no recorded account is
+     * INCONCLUSIVE rather than verified.
+     */
+    providerBindingRef: varchar("providerBindingRef", { length: 64 }),
     protocolKind: varchar("protocolKind", { length: 16 }).notNull().$type<"MCP" | "A2A">(),
     /** Provider-side task/reference id once the provider returns one. */
     remoteReference: varchar("remoteReference", { length: 255 }),
@@ -652,6 +673,20 @@ export const scopeProviderBindings = pgTable(
     webhookCredentialRef: varchar("webhookCredentialRef", { length: 64 }),
     /** Exactly one version is current, so a rotation is never ambiguous. */
     webhookCredentialVersion: integer("webhookCredentialVersion").notNull().default(0),
+    /**
+     * A REFERENCE to the material that authenticates this account's RECEIPTS.
+     *
+     * A third purpose beside the outbound credential and the callback secret:
+     * one proves who JASIM is when it calls out, one proves the provider is who
+     * called in, and this one authenticates a digest of a completed remote
+     * result. Nothing in this repository says a provider issues one value for
+     * more than one of them.
+     *
+     *   RECEIPT_SECRET != WEBHOOK_SECRET != PROVIDER_CREDENTIAL
+     */
+    receiptCredentialRef: varchar("receiptCredentialRef", { length: 64 }),
+    /** Exactly one version is current, so a rotation is never ambiguous. */
+    receiptCredentialVersion: integer("receiptCredentialVersion").notNull().default(0),
     /** Non-sensitive identity of the far side, as the provider reported it. */
     accountRef: varchar("accountRef", { length: 191 }),
     accountLabel: varchar("accountLabel", { length: 191 }),

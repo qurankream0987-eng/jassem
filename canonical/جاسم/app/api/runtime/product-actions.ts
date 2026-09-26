@@ -1131,6 +1131,79 @@ registerProductAction({
 });
 
 /**
+ * «أكمل إعداد إيصالات المزود» — what authenticates a completed remote result.
+ *
+ * ─── WHY THIS IS NOT THE CALLBACK SURFACE ───────────────────────────────────
+ *
+ * A callback secret authenticates the exact raw bytes a provider POSTed to
+ * JASIM. A receipt secret authenticates a DIGEST of a result JASIM already
+ * holds, returned inline or polled from a remote task. They are issued at
+ * different provider surfaces, and nothing in this repository says a provider
+ * issues one value for both — so they are collected separately, sealed
+ * separately, and rotated separately.
+ *
+ *   RECEIPT_SECRET != WEBHOOK_SECRET
+ *   RECEIPT_ROTATION_RETIRES_WEBHOOK_SECRET = 0
+ *
+ * ─── AND WHAT CANNOT REACH IT ───────────────────────────────────────────────
+ *
+ * The conversation. A model may say that a connection still owes this step,
+ * because `receiptVerification: "REQUIRED_NOT_CONFIGURED"` is a STATUS on the
+ * binding projection. It cannot carry the value: the field is SENSITIVE, the
+ * presentation contract carries no value at all, and nothing prefills it.
+ *
+ *   MODEL_CAN_PROVISION_RECEIPT_SECRET = NO
+ *   MODEL_CAN_SEE_RECEIPT_SECRET = NO
+ *   CHAT_CAN_TRANSPORT_RECEIPT_SECRET = NO
+ *
+ * Configuring it proves nothing about the provider and nothing about any
+ * result: it decides only which material a receipt is weighed against.
+ *
+ *   VALID_RECEIPT_SIGNATURE != BUSINESS_TRUTH
+ */
+registerProductAction({
+  id: "provider.receipt.configure",
+  version: 1,
+  title: "إعداد التحقق من إيصالات المزود",
+  consequence:
+    "يُخزَّن سر التحقق مُشفَّرًا ولا يمر عبر المحادثة. توقيع الإيصال يثبت مصدره فقط، ولا يثبت أن العمل تم.",
+  authentication: "AUTHENTICATED",
+  reauthentication: true,
+  risk: "HIGH",
+  fields: [
+    { key: "bindingId", label: "الربط", kind: "TEXT", required: true },
+    { key: "receiptSecret", label: "سر الإيصال", kind: "SENSITIVE", required: true },
+  ],
+  confirmation: "EXPLICIT",
+  availability: "AVAILABLE",
+  ttlSeconds: 600,
+  idempotency: "SINGLE_USE",
+  execute: async ({ actor, values }) => {
+    if (!actor) return { outcome: "DENIED", detail: "Nobody is signed in." };
+    const { configureReceiptVerification, ProviderBindingError } = await import("./provider-binding");
+    const secret = typeof values.receiptSecret === "string" ? values.receiptSecret : "";
+    try {
+      const done = await configureReceiptVerification({
+        bindingId: String(values.bindingId ?? ""),
+        principalId: String(actor.id),
+        secret,
+      });
+      return {
+        outcome: "EXECUTED",
+        record: { configured: done.configured, version: done.version },
+        detail:
+          "Receipt verification is configured. A signed receipt proves who issued it, and never that the work was done.",
+      };
+    } catch (error) {
+      if (error instanceof ProviderBindingError) {
+        return { outcome: "DENIED", detail: error.message };
+      }
+      throw error;
+    }
+  },
+});
+
+/**
  * «أضف طريقة دفع» — where a payment instrument is produced, and it is not here.
  *
  * ─── WHAT THIS SURFACE DOES NOT COLLECT ─────────────────────────────────────

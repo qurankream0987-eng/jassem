@@ -198,12 +198,14 @@ import {
   type LivingObjectSubjectKind,
 } from "./living-object-runtime";
 import {
+  accountBindingFor,
   beginProviderSetup,
   bindingCapabilities,
   projectBindings,
   revokeBinding,
   ProviderBindingError,
 } from "./provider-binding";
+import { receiptSecretFor } from "./receipt-verification";
 import {
   projectStructuredResult,
   routePresentation,
@@ -4003,8 +4005,31 @@ export async function executeRuntimeDagNode(input: {
       | null
       | undefined;
     let providerReceiptSecret: string | undefined;
+    let providerAccountRef: string | null = null;
     if (providerBinding.kind === "MCP" || providerBinding.kind === "A2A") {
-      providerReceiptSecret = provider.receiptSecret;
+      // WHICH ACCOUNT is about to run this, pinned before the effect exists.
+      //
+      // The scope holds at most one binding per provider, so this is exact
+      // rather than chosen, and it is read ONCE — the execution below records
+      // it, and receipt verification reads it from there rather than asking
+      // this question again later against state that may have moved.
+      //
+      //   PROVIDER_CANDIDATE != PROVIDER_ACCOUNT
+      //   MUTABLE_POLICY_CHANGES_RECEIPT_SECRET_SOURCE = 0
+      providerAccountRef = await accountBindingFor({
+        scopeId: input.ownerId,
+        definitionId: providerBinding.providerId,
+      });
+      // And the material that authenticates that account's receipts. Resolved
+      // from canonical state; there is no field on any provider, candidate or
+      // request that could carry one.
+      //
+      //   PROVIDER_RECEIPT_SECRET != PUBLIC DISCOVERY METADATA
+      //   NULL_BINDING_REMOTE_RECEIPT_VERIFIED = 0
+      providerReceiptSecret = await receiptSecretFor({
+        providerId: providerBinding.providerId,
+        bindingId: providerAccountRef,
+      });
       if (attemptFingerprint === "unknown") {
         throw new RuntimeActionError("Remote execution requires a fingerprint-bound proposal.");
       }
@@ -4066,7 +4091,10 @@ export async function executeRuntimeDagNode(input: {
         runId: input.runId,
         nodeId: running.id,
         providerId: providerBinding.providerId,
+        // The SELECTION record, which identifies the decision and no account.
         bindingId: providerBinding.id,
+        // The ACCOUNT, which is the one this effect is attributable to.
+        providerBindingRef: providerAccountRef,
         protocolKind: providerBinding.kind,
         requestDigest: attemptFingerprint,
         idempotencyKey,
@@ -4443,11 +4471,27 @@ export async function completeRemoteRuntimeDagNode(input: {
   output: Record<string, unknown>;
   now?: Date;
   database?: Block2Db;
-  providerReceiptSecret?: string;
+  //
+  // `providerReceiptSecret` USED TO BE A PARAMETER HERE, AND IS GONE ON
+  // PURPOSE. Its caller — the polling loop — read it from a discovery row and
+  // handed it in, so the material a receipt was checked against was whatever
+  // the caller supplied. It is now resolved below, from the account the
+  // execution itself recorded.
+  //
+  //   CLIENT_CAN_OVERRIDE_RECEIPT_SECRET = 0
 }): Promise<RuntimeDagNodeResponse> {
   const database = input.database ?? db;
   const execution = await getRemoteExecution(database, input.remoteExecutionId);
   if (!execution) throw new RemoteExecutionError("Remote execution not found", "NOT_FOUND");
+  // The account this execution ran through, pinned when it was created. An
+  // execution that recorded none cannot have its receipt verified, and that is
+  // INCONCLUSIVE rather than verified — never a search for a plausible secret.
+  //
+  //   NULL_BINDING_REMOTE_RECEIPT_VERIFIED = 0 · UNKNOWN_BINDING != ANY_BINDING
+  const providerReceiptSecret = await receiptSecretFor({
+    providerId: execution.providerId,
+    bindingId: execution.providerBindingRef,
+  });
   if (execution.ownerId !== input.ownerId) {
     throw new RemoteExecutionError("Remote execution belongs to another owner", "FORBIDDEN");
   }
@@ -4469,7 +4513,7 @@ export async function completeRemoteRuntimeDagNode(input: {
     verifyProviderReceipt({
       resultDigest,
       receiptSignature,
-      receiptSecret: input.providerReceiptSecret,
+      receiptSecret: providerReceiptSecret,
     });
   const [node] = await database
     .select()
@@ -4549,7 +4593,7 @@ export async function completeRemoteRuntimeDagNode(input: {
       receiptValid && resultDigest && receiptSignature
         ? { resultDigest, receiptSignature }
         : null,
-    providerReceiptSecret: input.providerReceiptSecret,
+    providerReceiptSecret,
   });
   await database
     .update(jasimRuntimeExecutionAttempts)

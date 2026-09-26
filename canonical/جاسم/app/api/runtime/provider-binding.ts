@@ -69,7 +69,7 @@
  */
 
 import { randomUUID } from "node:crypto";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNotNull, ne } from "drizzle-orm";
 import { db } from "../queries/connection";
 import { events } from "@db/schema";
 import { providerCredentials, scopeProviderBindings } from "@db/schema-block2";
@@ -325,6 +325,25 @@ export type ProviderDefinition = {
    *   PROVIDER_WITHOUT_WEBHOOK_REQUIREMENT_FORCED_INTO_ONE = 0
    */
   readonly webhook?: "NONE" | "SIGNED_HMAC";
+  /**
+   * How this KIND of system proves that a completed remote result is its own.
+   *
+   * Beside `webhook` and for the same reason — a fact about the system, not a
+   * branch on its name — and separate from it because they are different
+   * proofs. A webhook signature covers the exact raw bytes of an inbound
+   * callback; a receipt signature covers a DIGEST of a result JASIM already
+   * holds. Nothing here says a provider issues one value for both, so nothing
+   * here lets one stand in for the other.
+   *
+   *   RECEIPT != VERIFICATION · RECEIPT_SECRET != WEBHOOK_SECRET
+   *
+   * Absent means NONE, which is fail-closed: a system that never said how it
+   * signs a receipt has no material to resolve, so no receipt it sends can be
+   * independently verified.
+   *
+   *   PROVIDER_WITHOUT_RECEIPT_REQUIREMENT_FORCED_INTO_ONE = 0
+   */
+  readonly receipt?: "NONE" | "SIGNED_HMAC";
   readonly endpoint: EndpointPolicy;
   readonly adapter: ProviderAdapter;
   /**
@@ -704,6 +723,8 @@ export type SetupOpening = {
    *   MODEL_CAN_SEE_WEBHOOK_SECRET = NO
    */
   readonly webhookVerification: "NONE" | "SIGNED_HMAC";
+  /** Whether this provider's RESULT RECEIPTS will need verification material. */
+  readonly receiptVerification: "NONE" | "SIGNED_HMAC";
   readonly expiresAt: Date;
 };
 
@@ -859,6 +880,8 @@ export async function beginProviderSetup(input: {
     ],
     // Deliberately NOT collected here. See `configureWebhookVerification`.
     webhookVerification: definition.webhook ?? "NONE",
+    // Nor here. See `configureReceiptVerification`.
+    receiptVerification: definition.receipt ?? "NONE",
     expiresAt,
   };
 }
@@ -984,19 +1007,66 @@ export async function completeProviderSetup(input: {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 1b · VERIFICATION MATERIAL — how this account's callbacks will be checked
+// 1b · VERIFICATION MATERIAL — how this account's evidence will be checked
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Attach the material that authenticates THIS ACCOUNT'S callbacks.
+ * The PURPOSES a binding holds verification material for.
  *
- * ─── WHY THIS IS A SECOND STEP AND NOT A SECOND LIFECYCLE ──────────────────
+ * ─── WHY THIS IS A TABLE AND NOT TWO FUNCTIONS ──────────────────────────────
  *
- * A provider issues a webhook signing secret when an endpoint is registered at
- * the provider — which is normally after the connection exists, sometimes days
- * after, and by a different person than the one who pasted the API key. So this
- * is a trusted CONTINUATION of the same binding setup: same row, same scope,
- * same `manage_providers` standing, re-read now rather than remembered.
+ * A callback secret and a receipt secret are different material for different
+ * proofs, and this file says so by keeping them different KINDS with their own
+ * references, versions and rotations. What is NOT different is the ceremony:
+ * re-read the actor's standing over this binding, refuse a provider that never
+ * said it signs this kind of evidence, retire the old envelope of THIS kind,
+ * seal the next one, record the fact without the material.
+ *
+ * Writing that ceremony twice would mean two places for a standing check to
+ * rot. So the ceremony is written once and the purposes are data.
+ *
+ *   PER_PURPOSE_SECRET_RUNTIMES = 0
+ */
+const VERIFICATION_PURPOSES = Object.freeze({
+  WEBHOOK: Object.freeze({
+    kind: "WEBHOOK_VERIFICATION" as const,
+    declared: (definition: ProviderDefinition) => definition.webhook ?? "NONE",
+    version: (row: BindingRow) => row.webhookCredentialVersion,
+    write: (reference: string, version: number) => ({
+      webhookCredentialRef: reference,
+      webhookCredentialVersion: version,
+    }),
+    auditType: "PROVIDER_WEBHOOK_VERIFICATION_CONFIGURED",
+    absent: "This provider does not send callbacks that need verifying.",
+    noun: "Callback verification",
+  }),
+  RECEIPT: Object.freeze({
+    kind: "RECEIPT_VERIFICATION" as const,
+    declared: (definition: ProviderDefinition) => definition.receipt ?? "NONE",
+    version: (row: BindingRow) => row.receiptCredentialVersion,
+    write: (reference: string, version: number) => ({
+      receiptCredentialRef: reference,
+      receiptCredentialVersion: version,
+    }),
+    auditType: "PROVIDER_RECEIPT_VERIFICATION_CONFIGURED",
+    absent: "This provider does not issue signed receipts.",
+    noun: "Receipt verification",
+  }),
+});
+
+type VerificationPurpose = keyof typeof VERIFICATION_PURPOSES;
+
+/**
+ * Attach material that authenticates THIS ACCOUNT'S evidence, of one purpose.
+ *
+ * ─── WHY THIS IS A SEPARATE STEP AND NOT A SEPARATE LIFECYCLE ──────────────
+ *
+ * A provider issues this kind of secret at its own surface — a webhook endpoint
+ * registration, a remote execution agreement — which is normally after the
+ * connection exists, sometimes days after, and often to a different person than
+ * the one who pasted the API key. So this is a trusted CONTINUATION of the same
+ * binding setup: same row, same scope, same `manage_providers` standing, re-read
+ * now rather than remembered.
  *
  * Collecting it inside `completeProviderSetup` would have forced every
  * connection to wait for a secret that does not exist yet, and a connection
@@ -1009,41 +1079,44 @@ export async function completeProviderSetup(input: {
  * request body or a query string. The model may say that a provider still needs
  * this step, because that is a STATUS. It may not carry the value.
  *
- *   MODEL_CAN_PROVISION_WEBHOOK_SECRET = NO
- *   MODEL_CAN_SEE_WEBHOOK_SECRET = NO
- *   CHAT_CAN_TRANSPORT_WEBHOOK_SECRET = NO
+ *   MODEL_CAN_PROVISION_WEBHOOK_SECRET = NO · MODEL_CAN_SEE_IT = NO
+ *   MODEL_CAN_PROVISION_RECEIPT_SECRET = NO · MODEL_CAN_SEE_IT = NO
+ *   CHAT_CAN_TRANSPORT_WEBHOOK_SECRET = NO · CHAT_CAN_TRANSPORT_RECEIPT_SECRET = NO
  *   WEBHOOK_SECRET_PLAINTEXT_CANONICAL_STORAGE = 0
+ *   RECEIPT_SECRET_PLAINTEXT_CANONICAL_STORAGE = 0
  *
  * Nothing about this makes the provider verified, and nothing about it makes a
- * payment succeed. It decides one thing: which material a callback about this
- * account is checked against.
+ * payment succeed or a remote result true.
  *
  *   SECRET_PROVISIONED != PROVIDER_VERIFIED
  *   SECRET_PROVISIONED != PAYMENT_SUCCESS
+ *   VALID_RECEIPT_SIGNATURE != BUSINESS_TRUTH
  */
-export async function configureWebhookVerification(input: {
-  bindingId: string;
-  principalId: string;
-  /** Collected on the trusted surface. Sealed here and never returned. */
-  secret: string;
-  now?: Date;
-}): Promise<{ configured: true; version: number }> {
+async function configureVerificationMaterial(
+  purpose: VerificationPurpose,
+  input: {
+    bindingId: string;
+    principalId: string;
+    /** Collected on the trusted surface. Sealed here and never returned. */
+    secret: string;
+    now?: Date;
+  },
+): Promise<{ configured: true; version: number }> {
+  const spec = VERIFICATION_PURPOSES[purpose];
   const now = input.now ?? new Date();
   const { row, definition } = await manageableBinding({
     bindingId: input.bindingId,
     principalId: input.principalId,
     now,
   });
-  // A provider that never said it signs callbacks has no callbacks to check.
-  // Refused rather than stored, because storing material nothing will ever
-  // consume is how a secret ends up somewhere nobody is watching.
+  // A provider that never said it signs this kind of evidence has none to
+  // check. Refused rather than stored, because storing material nothing will
+  // ever consume is how a secret ends up somewhere nobody is watching.
   //
   //   PROVIDER_WITHOUT_WEBHOOK_REQUIREMENT_FORCED_INTO_ONE = 0
-  if ((definition.webhook ?? "NONE") !== "SIGNED_HMAC") {
-    throw new ProviderBindingError(
-      "This provider does not send callbacks that need verifying.",
-      "INVALID",
-    );
+  //   PROVIDER_WITHOUT_RECEIPT_REQUIREMENT_FORCED_INTO_ONE = 0
+  if (spec.declared(definition) !== "SIGNED_HMAC") {
+    throw new ProviderBindingError(spec.absent, "INVALID");
   }
   if (row.lifecycle === "SETUP_PENDING") {
     throw new ProviderBindingError("This connection is not set up yet.", "STATE");
@@ -1059,24 +1132,27 @@ export async function configureWebhookVerification(input: {
     throw new ProviderBindingError("«secret» is missing.", "INVALID");
   }
 
-  const version = row.webhookCredentialVersion + 1;
+  const version = spec.version(row) + 1;
   // Retire-then-replace, exactly as the outbound credential rotates — and
-  // scoped to THIS KIND, so the API key keeps working across a webhook
-  // rotation. Old material stops authenticating the moment it is retired;
+  // scoped to THIS KIND, so rotating one purpose never silently retires
+  // another. Old material stops authenticating the moment it is retired;
   // there is no overlap window, and none is invented here.
   //
   //   RETIRED_WEBHOOK_MATERIAL_AUTHENTICATES_NEW_CALLBACK = 0
-  await providerCredentialVault().retire(row.id, "WEBHOOK_VERIFICATION");
+  //   RETIRED_RECEIPT_MATERIAL_AUTHENTICATES_NEW_RECEIPT = 0
+  //   RECEIPT_ROTATION_RETIRES_WEBHOOK_SECRET = 0
+  //   WEBHOOK_ROTATION_RETIRES_RECEIPT_SECRET = 0
+  await providerCredentialVault().retire(row.id, spec.kind);
   const reference = await providerCredentialVault().seal(
-    { scopeId: row.scopeId, bindingId: row.id, kind: "WEBHOOK_VERIFICATION", version },
+    { scopeId: row.scopeId, bindingId: row.id, kind: spec.kind, version },
     { secret },
   );
   await db
     .update(scopeProviderBindings)
-    .set({ webhookCredentialRef: reference, webhookCredentialVersion: version })
+    .set(spec.write(reference, version))
     .where(eq(scopeProviderBindings.id, row.id));
   await audit({
-    type: "PROVIDER_WEBHOOK_VERIFICATION_CONFIGURED",
+    type: spec.auditType,
     scopeId: row.scopeId,
     bindingId: row.id,
     definitionId: definition.id,
@@ -1084,13 +1160,44 @@ export async function configureWebhookVerification(input: {
     // The fact, and the rotation number. No material, and no field for any.
     //
     //   WEBHOOK_SECRET_IN_EVENT = 0 · WEBHOOK_SECRET_LOGGED = 0
-    message: `Callback verification was configured for ${definition.displayName} (version ${version}).`,
+    //   RECEIPT_SECRET_IN_EVENT = 0 · RECEIPT_SECRET_LOGGED = 0
+    message: `${spec.noun} was configured for ${definition.displayName} (version ${version}).`,
   });
   // `configured: true`. Never the secret, never its reference, never a prefix
   // or a fingerprint of it — a fingerprint is a guessing oracle.
   //
   //   WEBHOOK_SECRET_RETURNED_AFTER_STORAGE = 0
+  //   RECEIPT_SECRET_RETURNED_AFTER_STORAGE = 0
   return { configured: true, version };
+}
+
+/** The material that authenticates this account's inbound CALLBACKS. */
+export async function configureWebhookVerification(input: {
+  bindingId: string;
+  principalId: string;
+  secret: string;
+  now?: Date;
+}): Promise<{ configured: true; version: number }> {
+  return configureVerificationMaterial("WEBHOOK", input);
+}
+
+/**
+ * The material that authenticates this account's RESULT RECEIPTS.
+ *
+ * A different secret for a different proof: a callback signature covers the
+ * exact raw bytes a provider POSTed, and a receipt signature covers a DIGEST of
+ * a result JASIM already holds. Nothing in this repository says a provider
+ * issues one value for both, so nothing here lets one stand in for the other.
+ *
+ *   RECEIPT_SECRET != WEBHOOK_SECRET
+ */
+export async function configureReceiptVerification(input: {
+  bindingId: string;
+  principalId: string;
+  secret: string;
+  now?: Date;
+}): Promise<{ configured: true; version: number }> {
+  return configureVerificationMaterial("RECEIPT", input);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1859,7 +1966,9 @@ export async function revokeBinding(input: {
       // facts — but nothing NEW authenticates against a retired account.
       //
       //   REVOKED_BINDING_AUTHENTICATES_NEW_CALLBACK = 0
+      //   REVOKED_BINDING_AUTHENTICATES_NEW_RECEIPT = 0
       webhookCredentialRef: null,
+      receiptCredentialRef: null,
       suspendedReason: null,
     })
     .where(eq(scopeProviderBindings.id, row.id));
@@ -1909,6 +2018,16 @@ export type BindingProjection = {
     | "NOT_REQUIRED"
     | "REQUIRED_NOT_CONFIGURED"
     | "CONFIGURED";
+  /**
+   * Whether this connection can verify the provider's RESULT RECEIPTS yet.
+   * A status, assembled the same way and carrying no more than the other one.
+   *
+   *   RECEIPT_SECRET_RETURNED_IN_BINDING_READ = 0
+   */
+  readonly receiptVerification:
+    | "NOT_REQUIRED"
+    | "REQUIRED_NOT_CONFIGURED"
+    | "CONFIGURED";
 };
 
 function project(row: BindingRow, definition: ProviderDefinition | undefined): BindingProjection {
@@ -1924,6 +2043,12 @@ function project(row: BindingRow, definition: ProviderDefinition | undefined): B
       (definition?.webhook ?? "NONE") !== "SIGNED_HMAC"
         ? "NOT_REQUIRED"
         : row.webhookCredentialRef
+          ? "CONFIGURED"
+          : "REQUIRED_NOT_CONFIGURED",
+    receiptVerification:
+      (definition?.receipt ?? "NONE") !== "SIGNED_HMAC"
+        ? "NOT_REQUIRED"
+        : row.receiptCredentialRef
           ? "CONFIGURED"
           : "REQUIRED_NOT_CONFIGURED",
   };
@@ -2007,6 +2132,41 @@ export async function usableBindingFor(input: {
   const row = rows.find((candidate) => candidate.grantedCapabilities.includes(input.capability));
   if (!row) return null;
   return { bindingId: row.id, definitionId: row.definitionId ?? row.providerId };
+}
+
+/**
+ * The scope's ACCOUNT at one provider, if it holds one.
+ *
+ * Exact rather than chosen: `scope_provider_bindings` is unique on
+ * (scope, class, provider), so a scope holds at most one binding per provider
+ * and there is no «latest», «first» or «any» to pick between. A revoked one is
+ * not an account any more, and a legacy environment-named row (NULL lifecycle)
+ * never was one.
+ *
+ * Used at the moment an effect is created, to PIN which account carried it.
+ * Never used afterwards to recover one: re-deriving an account later would let
+ * something that changed in between decide what a past effect's evidence is
+ * checked against.
+ *
+ *   SAME_PROVIDER != SAME_ACCOUNT · UNKNOWN_BINDING != ANY_BINDING
+ */
+export async function accountBindingFor(input: {
+  scopeId: string;
+  definitionId: string;
+}): Promise<string | null> {
+  const [row] = await db
+    .select({ id: scopeProviderBindings.id })
+    .from(scopeProviderBindings)
+    .where(
+      and(
+        eq(scopeProviderBindings.scopeId, input.scopeId),
+        eq(scopeProviderBindings.definitionId, input.definitionId),
+        isNotNull(scopeProviderBindings.lifecycle),
+        ne(scopeProviderBindings.lifecycle, "REVOKED"),
+      ),
+    )
+    .limit(1);
+  return row?.id ?? null;
 }
 
 /** Audit-only. Never projected, and never returned to a caller with a credential. */

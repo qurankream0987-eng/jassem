@@ -40,10 +40,21 @@ describe("the webhook verification contract", () => {
     const ioMetadata = SCHEMA.slice(SCHEMA.indexOf('ioMetadata: jsonb("ioMetadata")'));
     const declared = strip(ioMetadata.slice(0, ioMetadata.indexOf(".notNull()")));
     expect(declared).not.toMatch(/webhookSecret/);
-    // `receiptSecret` is a DIFFERENT mechanism with its own readers, and this
-    // phase did not touch it. Asserted so its survival is a recorded fact
-    // rather than an oversight.
-    expect(declared).toMatch(/receiptSecret/);
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: `receiptSecret` is still declared on that jsonb type.
+    // WHY_IT_IS_WRONG: it was not wrong then — it recorded, deliberately, that
+    //   one plaintext secret survived the webhook phase, so its survival was a
+    //   stated fact rather than an oversight. It is what named the next gap.
+    // NEW_EXPECTATION: neither secret is declared there. Receipt verification
+    //   material is now sealed in the same vault, under its own kind, bound to
+    //   the account the remote execution recorded.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: the discovery row can no longer
+    //   carry ANY verification material, so writing one would not typecheck
+    //   rather than merely being discouraged by a comment.
+    //
+    expect(declared).not.toMatch(/receiptSecret/);
   });
 
   it("there is one store, and this file adds no cipher and no table", () => {
@@ -61,14 +72,41 @@ describe("the webhook verification contract", () => {
   });
 
   it("the material is one KIND beside the credential, not a merge of the two", () => {
-    expect([...CREDENTIAL_KINDS]).toEqual(["PROVIDER_AUTH", "WEBHOOK_VERIFICATION"]);
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: exactly two kinds, and the webhook rotation names its
+    //   own kind literally at the retire call.
+    // WHY_IT_IS_WRONG: it is not wrong — it is the lock that says a kind cannot
+    //   appear unnoticed, and it flagged the third. Receipt verification is a
+    //   third purpose: it authenticates a digest of a completed remote result,
+    //   not the raw bytes of an inbound callback.
+    // NEW_EXPECTATION: three kinds, and the retire call names the PURPOSE's
+    //   kind — because the ceremony is now written once and the purposes are
+    //   data, rather than copied per purpose.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: the per-kind retire is now asserted
+    //   through the purpose table, which is the thing that would have to be
+    //   wrong for one rotation to retire another — and both purposes are
+    //   checked, instead of one being a copy nobody pinned.
+    //
+    expect([...CREDENTIAL_KINDS]).toEqual([
+      "PROVIDER_AUTH",
+      "WEBHOOK_VERIFICATION",
+      "RECEIPT_VERIFICATION",
+    ]);
     // The kind is authenticated by the envelope, not merely stored beside it.
     expect(VAULT).toMatch(/function aad\([\s\S]*?\$\{kind\}/);
     // Retiring one kind retires that kind. Revocation passes none, so it takes
     // everything — and rotation of the outbound credential names its own.
     expect(VAULT).toMatch(/retire\(bindingId: string, kind\?: CredentialKind\)/);
     expect(BINDING).toMatch(/retire\(row\.id, "PROVIDER_AUTH"\)/);
-    expect(BINDING).toMatch(/retire\(row\.id, "WEBHOOK_VERIFICATION"\)/);
+    expect(BINDING).toMatch(/retire\(row\.id, spec\.kind\)/);
+    // Each purpose names its own kind, its own reference and its own version,
+    // so no rotation can reach another purpose's material.
+    expect(BINDING).toMatch(/kind: "WEBHOOK_VERIFICATION" as const/);
+    expect(BINDING).toMatch(/kind: "RECEIPT_VERIFICATION" as const/);
+    expect(BINDING).toMatch(/webhookCredentialRef: reference/);
+    expect(BINDING).toMatch(/receiptCredentialRef: reference/);
     // Revocation, and only revocation, retires the lot.
     const revoke = BINDING.slice(BINDING.indexOf("export async function revokeBinding"));
     expect(revoke).toMatch(/retire\(row\.id\)/);
@@ -118,7 +156,11 @@ describe("the webhook verification contract", () => {
     // The declaration of how a system signs is definition metadata, with two
     // values and no room for a third meaning.
     expect(BINDING).toMatch(/readonly webhook\?: "NONE" \| "SIGNED_HMAC";/);
-    expect(BINDING).toMatch(/\(definition\.webhook \?\? "NONE"\) !== "SIGNED_HMAC"/);
+    // How a system signs is read from the DEFINITION, through the purpose
+    // table, and a provider that declared nothing is refused rather than
+    // defaulted into one.
+    expect(BINDING).toMatch(/definition\.webhook \?\? "NONE"/);
+    expect(BINDING).toMatch(/spec\.declared\(definition\) !== "SIGNED_HMAC"/);
   });
 
   it("a payment records the ACCOUNT it was executed at, not only the kind", () => {
@@ -137,12 +179,14 @@ describe("the webhook verification contract", () => {
 
   it("the secret never leaves through a return value, an audit row or a projection", () => {
     //   WEBHOOK_SECRET_RETURNED_AFTER_STORAGE = 0 · WEBHOOK_SECRET_IN_EVENT = 0
+    // The ceremony, written once. Both purposes return through it.
     const configure = BINDING.slice(
-      BINDING.indexOf("export async function configureWebhookVerification"),
+      BINDING.indexOf("async function configureVerificationMaterial"),
       BINDING.indexOf("export async function authenticateBinding"),
     );
     expect(configure).toMatch(/Promise<\{ configured: true; version: number \}>/);
     expect(configure).toMatch(/return \{ configured: true, version \};/);
+    expect(configure).toMatch(/return configureVerificationMaterial\("WEBHOOK", input\);/);
     // The audit row carries a message and a version. Nothing interpolates the
     // material, and the audit helper has no field that could hold it.
     expect(configure).not.toMatch(/detail:/);

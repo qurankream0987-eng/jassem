@@ -101,11 +101,21 @@ export type CapabilityProvider = {
   semanticKeys?: string[];
   /** HTTP transport endpoint retained from normalized remote metadata. */
   endpoint?: string;
-  /**
-   * Provisioned only by trusted boot-time catalog binding. Discovery metadata
-   * must never be allowed to supply or replace this shared receipt key.
-   */
-  receiptSecret?: string;
+  //
+  // `receiptSecret` USED TO BE DECLARED HERE, AND IS GONE ON PURPOSE.
+  //
+  // Nothing ever assigned it. A candidate normalized from MCP tool metadata or
+  // an A2A agent card is UNTRUSTED_CANDIDATE by construction, and a candidate
+  // is not an account — so there was no honest writer for it and there was
+  // never going to be one. Receipt verification material now belongs to the
+  // scope's provider BINDING and is resolved from the remote execution that
+  // recorded which account it ran through:
+  //
+  //   api/runtime/receipt-verification.ts
+  //
+  //   PROVIDER_CANDIDATE != PROVIDER_ACCOUNT
+  //   PROVIDER_RECEIPT_SECRET != PUBLIC DISCOVERY METADATA
+  //
   provenance: { source: ProviderProvenanceSource; reference?: string };
   freshness?: ProviderFreshness;
   /** Execution binding — NATIVE providers only. */

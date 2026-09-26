@@ -45,16 +45,27 @@ import { providerCredentials } from "@db/schema-block2";
 /**
  * WHICH KIND of material an envelope holds.
  *
- * One binding holds both: what JASIM spends to call the provider, and what
- * JASIM checks an inbound callback's signature with. They are issued at
- * different provider surfaces — an API-key page and a webhook-endpoint
- * registration — and rotate on different days. So they are two envelopes in
- * ONE store, never one envelope with two meanings and never a second store.
+ * One binding holds three: what JASIM spends to CALL the provider, what JASIM
+ * checks an inbound CALLBACK's signature with, and what JASIM authenticates a
+ * completed remote RESULT's receipt with. They are issued at different provider
+ * surfaces — an API-key page, a webhook-endpoint registration, a remote
+ * execution agreement — and rotate on different days. So they are three
+ * envelopes in ONE store, never one envelope with three meanings and never a
+ * second store.
  *
  *   SECOND_SECRET_STORE = FORBIDDEN
  *   WEBHOOK_SECRET != PROVIDER_CREDENTIAL
+ *   RECEIPT_SECRET != WEBHOOK_SECRET
+ *
+ * They are separate because nothing in this repository says a provider issues
+ * one value for two of them, and merging on the grounds that all three are
+ * bytes called «secret» would make a rotation of one silently retire another.
  */
-export const CREDENTIAL_KINDS = ["PROVIDER_AUTH", "WEBHOOK_VERIFICATION"] as const;
+export const CREDENTIAL_KINDS = [
+  "PROVIDER_AUTH",
+  "WEBHOOK_VERIFICATION",
+  "RECEIPT_VERIFICATION",
+] as const;
 export type CredentialKind = (typeof CREDENTIAL_KINDS)[number];
 
 /** What a credential is sealed FOR. Every field is authenticated, not stored. */

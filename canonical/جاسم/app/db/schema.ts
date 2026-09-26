@@ -1454,23 +1454,27 @@ export const capabilityProviderCatalog = pgTable(
         inputSpec?: unknown[];
         outputSpec?: unknown[];
         endpoint?: string;
-        /** Trusted boot-time configuration; never populated from discovery. */
-        receiptSecret?: string;
         //
-        // `webhookSecret` USED TO BE DECLARED HERE, AND IS GONE ON PURPOSE.
+        // `receiptSecret` AND `webhookSecret` USED TO BE DECLARED HERE, AND ARE
+        // BOTH GONE ON PURPOSE.
         //
         // This table persists discovered candidates at trust class
         // UNTRUSTED_CANDIDATE, and this column is ordinary jsonb. A string that
-        // authenticates money callbacks cannot live in either. Nothing in
-        // production ever wrote it, and webhook verification material now lives
-        // sealed in the provider credential vault, bound to the BINDING whose
-        // account the callback is about:
+        // authenticates money callbacks cannot live in either, and neither can
+        // one that authenticates a completed remote result. Nothing in
+        // production ever wrote either of them; both now live sealed in the
+        // provider credential vault, bound to the BINDING whose account the
+        // evidence is about:
         //
         //   api/runtime/webhook-verification.ts
+        //   api/runtime/receipt-verification.ts
         //   docs/architecture/JASIM_WEBHOOK_VERIFICATION.md
+        //   docs/architecture/JASIM_RECEIPT_VERIFICATION.md
         //
         //   WEBHOOK_SECRET != PUBLIC PROVIDER METADATA
+        //   PROVIDER_RECEIPT_SECRET != PUBLIC DISCOVERY METADATA
         //   WEBHOOK_SECRET_PLAINTEXT_CANONICAL_STORAGE = 0
+        //   RECEIPT_SECRET_PLAINTEXT_CANONICAL_STORAGE = 0
       }>()
       .notNull()
       .default({}),

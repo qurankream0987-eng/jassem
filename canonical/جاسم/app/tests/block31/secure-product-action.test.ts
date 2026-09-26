@@ -113,6 +113,22 @@ describe("a product action opens a door and carries no secret", () => {
     //   webhook material was read from ordinary plaintext jsonb that no
     //   product action guarded, so there was no collection boundary to pin.
     //
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED (the tenth) ──────────────────
+    //
+    // OLD_EXPECTATION: nine actions.
+    // WHY_IT_IS_WRONG: it is not wrong. The inventory lock flagged the tenth
+    //   exactly as it flagged the ninth, which is the only reason it exists.
+    // NEW_EXPECTATION: ten, with `provider.receipt.configure` named and its
+    //   collection boundary pinned below — the material that authenticates a
+    //   completed REMOTE RESULT now enters here and nowhere else, having
+    //   previously been read as plaintext from a discovery row that production
+    //   never wrote.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: a second secret surface could
+    //   otherwise have appeared with a non-sensitive field, no
+    //   re-authentication, or a silent prefill. The assertions below pin all
+    //   three, in the place that inventories the registry.
+    //
     const ids = actions.listProductActions().map((action) => action.id).sort();
     expect(ids).toEqual([
       "account.close",
@@ -120,11 +136,23 @@ describe("a product action opens a door and carries no secret", () => {
       "credential.rotate",
       "payment.method.add",
       "provider.connect",
+      "provider.receipt.configure",
       "provider.webhook.configure",
       "session.establish",
       "session.revoke",
       "settings.update",
     ]);
+    // The surface the RECEIPT verification material is typed into. Same shape
+    // as the callback one, and deliberately a different action: one secret per
+    // purpose, so a person cannot supply one believing it covers the other.
+    const receipt = actions.getProductAction("provider.receipt.configure")!;
+    expect(receipt.reauthentication).toBe(true);
+    expect(receipt.idempotency).toBe("SINGLE_USE");
+    expect(receipt.risk).toBe("HIGH");
+    expect(
+      receipt.fields.filter((field) => field.kind !== "SENSITIVE").map((field) => field.key),
+    ).toEqual(["bindingId"]);
+    expect(receipt.fields.find((field) => field.key === "receiptSecret")?.kind).toBe("SENSITIVE");
     // The surface the CALLBACK VERIFICATION material is typed into. One
     // sensitive field, one identifier, and nothing else — a second collected
     // field here would be a second place a secret could arrive.

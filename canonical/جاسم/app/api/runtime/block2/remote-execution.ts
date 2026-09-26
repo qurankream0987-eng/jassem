@@ -127,7 +127,14 @@ export type CreateRemoteExecutionInput = {
   runId: string;
   nodeId: string;
   providerId: string;
+  /** The SELECTION record from `resolveProvider`. Identifies no account. */
   bindingId?: string;
+  /**
+   * The ACCOUNT this execution runs through, pinned by its creator.
+   *
+   *   PROVIDER_CANDIDATE != PROVIDER_ACCOUNT · UNKNOWN_BINDING != ANY_BINDING
+   */
+  providerBindingRef?: string | null;
   protocolKind: "MCP" | "A2A";
   requestDigest: string;
   idempotencyKey: string;
@@ -150,6 +157,7 @@ export async function createRemoteExecution(
       nodeId: input.nodeId,
       providerId: input.providerId,
       bindingId: input.bindingId ?? null,
+      providerBindingRef: input.providerBindingRef ?? null,
       protocolKind: input.protocolKind,
       requestDigest: input.requestDigest,
       idempotencyKey: input.idempotencyKey,

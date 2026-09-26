@@ -27,10 +27,25 @@ function defaultClientFactory(endpoint: string): RemoteTaskClient {
   return createMcpClient({ baseUrl: endpoint });
 }
 
+/**
+ * WHERE the remote system is.
+ *
+ * `receiptSecret` used to come back from here too, read as plaintext out of a
+ * discovery row and handed to the completion path, which checked a receipt
+ * against whatever its caller supplied. It is gone: the material now belongs to
+ * the ACCOUNT the execution recorded, and the completion path resolves it.
+ *
+ *   PROVIDER_RECEIPT_SECRET != PUBLIC DISCOVERY METADATA
+ *   CLIENT_CAN_OVERRIDE_RECEIPT_SECRET = 0
+ *
+ * The ENDPOINT still comes from the catalog, and that is a separate question
+ * this phase deliberately did not widen into — see
+ * `docs/architecture/JASIM_RECEIPT_VERIFICATION.md`.
+ */
 async function providerConfiguration(
   db: Block2Db,
   providerId: string,
-): Promise<{ endpoint: string; receiptSecret?: string }> {
+): Promise<{ endpoint: string }> {
   const [provider] = await db
     .select()
     .from(capabilityProviderCatalog)
@@ -46,12 +61,7 @@ async function providerConfiguration(
   if (!endpoint) {
     throw new RemoteExecutionError("Remote provider endpoint is unavailable", "INVALID");
   }
-  return {
-    endpoint,
-    ...(typeof provider.ioMetadata.receiptSecret === "string"
-      ? { receiptSecret: provider.ioMetadata.receiptSecret }
-      : {}),
-  };
+  return { endpoint };
 }
 
 function taskObservation(raw: unknown): {
@@ -164,7 +174,6 @@ export async function pollRemoteExecution(
     ownerId: execution.ownerId,
     remoteExecutionId: execution.id,
     output,
-    providerReceiptSecret: provider.receiptSecret,
   });
 }
 
