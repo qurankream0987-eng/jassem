@@ -385,6 +385,85 @@ which this phase does not do. The transport's real-socket behaviour is proved
 directly against the adapter; the selection and authority path is proved through
 the real registry, the real `resolveProvider` and the real gate.
 
+### A protocol claim needs an authority
+
+```
+PROVIDER_IS_NOT_ITS_OWN_PROTOCOL_AUTHORITY
+REMOTE_DECLARED_VERSION_SATISFIES_ITSELF = 0
+SERVER_INFO_VERSION_IS_PROTOCOL_VERSION = 0
+REQUESTED_VERSION_IS_PROVIDER_EVIDENCE = 0
+NEGOTIATED_VERSION_BECOMES_SHARED_CANDIDATE_CONFIGURATION = 0
+FAIL_CLOSED > FALSE_COMPATIBILITY
+```
+
+`resolveProvider` has always had a protocol filter, and its comment always said
+what it was for: *unsupported/ambiguous versions fail safe*. It reads a policy
+field, `supportedProtocols`, which is a statement about **what this process can
+speak** — and `executeRuntimeDagNode` built that statement **by reducing over the
+candidates**:
+
+```ts
+const supportedProtocols = providers.list().reduce((all, provider) => {
+  if (provider.protocol && provider.protocolVersion) {
+    all[provider.protocol] = [...new Set([...(all[provider.protocol] ?? []), provider.protocolVersion])];
+  }
+  return all;
+}, {});
+```
+
+A candidate declaring `protocol: "mcp", protocolVersion: "1999-01-01"` put
+`1999-01-01` into the list of supported versions and was then checked against it.
+Every candidate proved its own compatibility. The filter was not weak; it was
+being handed the answer by the thing it was interrogating.
+
+The fix is to ask the only honest authority. *Which versions can be spoken here?*
+is a fact about this process's transport, so the transport says so:
+`MCP_PROTOCOL_VERSIONS`, exported (frozen) from `block2/mcp-client.ts`, is the
+same single constant `initialize` sends and the same one it refuses any deviation
+from. A connection that exists at all negotiated that and nothing else.
+
+**Nothing was added to configuration.** A deployment-declared version could only
+restate the constant the client already enforces, or contradict it and produce a
+candidate this process cannot call; and a `protocol` declared without a version
+is *excluded*, so an optional field would be a way to make a working candidate
+disappear. So a bridged candidate declares **neither field**, and the filter
+passes it for the honest reason: no claim was made. This is DESIGN 5 — *no shared
+protocol/version claim* — plus closing the self-satisfying filter.
+
+#### What a handshake may say about a version, which is nothing
+
+A handshake is one binding, one credential, one address — the same subject
+problem as availability and as a tool surface, and the narrowest provable subject
+of an observed version is **the connection**. It is also information-free here:
+only one version can ever succeed, so a successful `initialize` tells JASIM what
+it already knew.
+
+This is structural rather than a convention an adapter is trusted to keep.
+`AuthenticationOutcome` carries an account reference and a display label and has
+no version channel; `CapabilityProviderRegistry.observe` takes a health state, a
+time and a lease and cannot change a protocol, a capability, a definition or an
+address. So there is nowhere for a negotiated version to be written, and a
+restart therefore widens nothing.
+
+#### Three versions that are not each other
+
+| field | what it is | what it may never become |
+| --- | --- | --- |
+| `protocolVersion` sent in `initialize` | what JASIM asks for | evidence of what the server speaks |
+| `protocolVersion` in the result | what the server *selected* | anything, unless it equals the one constant — otherwise `PROTOCOL` |
+| `serverInfo.version` (e.g. `9.4.2`) | the product's software version | a protocol version; it is read as a display label and nothing else |
+
+A server that answers a *different* version than the one it was offered fails the
+handshake, and so does one that omits the field: silence is not agreement. And
+because the filter now asks the process, `9.4.2` in a `protocolVersion` field is
+`INCOMPATIBLE` rather than self-satisfying.
+
+Discovery keeps recording what it was told — `normalizeMcpToolMetadata` copies a
+catalogue's declared `protocolVersion` onto the candidate, which is the honest
+thing to do with a self-description. Two gates hold it: the candidate is
+`UNTRUSTED_CANDIDATE`, and the version it declared is not one this process
+speaks. Trust it by hand and it is still `INCOMPATIBLE`.
+
 ## A2A is deferred, deliberately
 
 One complete protocol integration beats two simulations. A2A needs its bounded
@@ -402,3 +481,4 @@ nothing here has to change for it.
 | `tests/block31/remote-candidate-bridge.test.ts` | no configuration means no candidate and a definition alone is not a provider; a bridged candidate is unselectable until a real handshake, and its lease expires; a failed handshake clears the lease; the DAG's tool equals the adapter's tool; a renamed remote tool changes no verb and no capability; a discovered candidate with identical strings cannot become the bridge; every malformed trusted mapping is a boot failure including a duplicate identity; being selected authorizes nothing (no binding, unverified, wrong scope, ungranted verb, revoked); a candidate carries no address and no credential; the I/O and protocol filters still refuse what they always refused |
 | `tests/block31/remote-capability-grant.test.ts` | the exact-verb gate in front of all of it, unchanged |
 | `tests/block31/remote-execution-authority.test.ts` | the endpoint, credential and pinned-account laws, unchanged |
+| `tests/block31/remote-protocol-version-authority.test.ts` | the exported version list is exactly what `initialize` sends and accepts, and is frozen; the version JASIM sends is not evidence (a differing or absent selection is `PROTOCOL`, over a real socket); `serverInfo.version` is a label and `9.4.2` is never a protocol version; a handshake has no channel to report one (`AuthenticationOutcome` and `observe` both checked structurally); the ten-case truth table (no claim, version without protocol, the spoken version, no version, older, future, empty, product version, an unspoken protocol, a case mismatch); no supported-protocol statement refuses every claim and passes only the one that made none; a candidate's own declaration no longer satisfies the filter that checks it, and the old candidate-derived list is shown selecting it; the DAG builds the list from the transport with no reduce, no candidate field and no environment key; configured candidates declare neither field and a real handshake changes neither; no configuration key can declare one; a discovered declaration stays untrusted and unsupported; A's handshake at a shared address makes B compatible with nothing and a per-binding address promotes nothing; no requirement-side protocol exists and resolving writes nothing; compatibility still needs the scope's own binding and the exact verb; a rebuild restores no negotiated version; the authority names no domain and no provider |

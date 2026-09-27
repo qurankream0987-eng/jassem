@@ -53,7 +53,7 @@ import {
   type CapabilityRegistry,
 } from "./capability-registry";
 import { resolveProvider } from "./capability-provider";
-import { createMcpClient } from "./block2/mcp-client";
+import { createMcpClient, MCP_PROTOCOL, MCP_PROTOCOL_VERSIONS } from "./block2/mcp-client";
 import {
   attachRemoteReference,
   buildA2AProjection,
@@ -3980,12 +3980,25 @@ export async function executeRuntimeDagNode(input: {
     }
     const registry = input.capabilityRegistry ?? getRuntimeCapabilityRegistry();
     const providers = registry.providers();
-    const supportedProtocols = providers.list().reduce<Record<string, string[]>>((all, provider) => {
-      if (provider.protocol && provider.protocolVersion) {
-        all[provider.protocol] = [...new Set([...(all[provider.protocol] ?? []), provider.protocolVersion])];
-      }
-      return all;
-    }, {});
+    // ── WHAT THIS PROCESS CAN SPEAK, FROM THIS PROCESS ────────────────────
+    //
+    // This map used to be built by REDUCING OVER THE CANDIDATES — so a provider
+    // declaring `protocol: "mcp", protocolVersion: "1999-01-01"` put that
+    // version into the list of «supported» versions and then passed the filter
+    // that was supposed to check it against JASIM. The filter was self-
+    // satisfying: every candidate proved its own compatibility.
+    //
+    //   PROVIDER_IS_NOT_ITS_OWN_PROTOCOL_AUTHORITY
+    //   REMOTE_DECLARED_VERSION_SATISFIES_ITSELF = 0
+    //
+    // «Which versions can JASIM speak?» is a fact about JASIM's own transport,
+    // and the transport is what says so. A provider claiming a version this
+    // process does not implement is now excluded, which is the direction the
+    // filter's own comment always described: «unsupported/ambiguous versions
+    // fail safe».
+    const supportedProtocols: Record<string, string[]> = {
+      [MCP_PROTOCOL]: [...MCP_PROTOCOL_VERSIONS],
+    };
     const providerResolution = resolveProvider({
       capabilityId,
       registry: providers,

@@ -63,6 +63,27 @@ export type McpToolCallResult = {
 
 const PROTOCOL_VERSION = "2025-06-18";
 
+/**
+ * WHAT THIS PROCESS'S TRANSPORT ACTUALLY SPEAKS.
+ *
+ * ─── WHY THIS IS EXPORTED ───────────────────────────────────────────────────
+ *
+ * «Which protocol versions can JASIM speak?» is a question about JASIM, and the
+ * only honest authority on it is the code that does the speaking. It is not a
+ * question a provider may answer about itself.
+ *
+ *   PROVIDER_IS_NOT_ITS_OWN_PROTOCOL_AUTHORITY
+ *
+ * `initialize` sends exactly this and REFUSES any other selection, so a
+ * connection that exists at all negotiated this and nothing else. The exported
+ * list is that same fact, available to the selection filter so it can stop
+ * asking the candidates.
+ */
+export const MCP_PROTOCOL_VERSIONS: readonly string[] = Object.freeze([PROTOCOL_VERSION]);
+
+/** The protocol key a normalized MCP candidate declares. Lower case, as built. */
+export const MCP_PROTOCOL = "mcp";
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
