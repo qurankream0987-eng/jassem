@@ -1,6 +1,9 @@
-import { eq } from "drizzle-orm";
-import { capabilityProviderCatalog } from "@db/schema";
 import { completeRemoteRuntimeDagNode } from "../jasim-runtime";
+import {
+  authorizedConnection,
+  httpAuthorizationFor,
+  type RequiredGrant,
+} from "../provider-binding";
 import { canonicalResultDigest } from "../execution-verifier";
 import { createMcpClient } from "./mcp-client";
 import {
@@ -15,7 +18,10 @@ export type RemoteTaskClient = {
   cancelTask(taskId: string): Promise<{ confirmed: boolean }>;
 };
 
-export type RemoteClientFactory = (endpoint: string) => RemoteTaskClient;
+export type RemoteClientFactory = (
+  endpoint: string,
+  headers: Readonly<Record<string, string>>,
+) => RemoteTaskClient;
 
 type PollDependencies = {
   clientFactory?: RemoteClientFactory;
@@ -23,45 +29,72 @@ type PollDependencies = {
   ownerId?: string;
 };
 
-function defaultClientFactory(endpoint: string): RemoteTaskClient {
-  return createMcpClient({ baseUrl: endpoint });
+function defaultClientFactory(
+  endpoint: string,
+  headers: Readonly<Record<string, string>>,
+): RemoteTaskClient {
+  return createMcpClient({ baseUrl: endpoint, headers: { ...headers } });
 }
 
 /**
- * WHERE the remote system is.
+ * THE CONNECTION THAT CREATED THIS EXECUTION, AND NO OTHER.
  *
- * `receiptSecret` used to come back from here too, read as plaintext out of a
- * discovery row and handed to the completion path, which checked a receipt
- * against whatever its caller supplied. It is gone: the material now belongs to
- * the ACCOUNT the execution recorded, and the completion path resolves it.
+ * ─── WHAT THIS REPLACES ─────────────────────────────────────────────────────
  *
- *   PROVIDER_RECEIPT_SECRET != PUBLIC DISCOVERY METADATA
- *   CLIENT_CAN_OVERRIDE_RECEIPT_SECRET = 0
+ * Polling and cancellation used to look the destination up like this:
  *
- * The ENDPOINT still comes from the catalog, and that is a separate question
- * this phase deliberately did not widen into — see
- * `docs/architecture/JASIM_RECEIPT_VERIFICATION.md`.
+ *   execution.providerId → capability_provider_catalog → ioMetadata.endpoint
+ *
+ * — a DISCOVERED row, re-read at call time, mutable by whatever discovered it.
+ * So a catalog row edited between the invocation and the poll redirected the
+ * follow-up to wherever the new value pointed, and a cancellation — a mutating
+ * external action — went to the same place. No account, no credential, no
+ * grant, and an address whose only check was that it was public HTTPS.
+ *
+ *   DISCOVERED_ENDPOINT != AUTHORIZED_DESTINATION
+ *   DISCOVERY_MUTATION_REDIRECTS_RUNNING_EXECUTION = 0
+ *
+ * ─── AND WHAT IT DOES INSTEAD ───────────────────────────────────────────────
+ *
+ * Reads the account the execution PINNED when it was created. Nothing is
+ * reselected: not the latest binding, not a preferred provider, not the current
+ * policy, not the first account that matches.
+ *
+ *   POLL_RESELECTS_PROVIDER_BINDING = 0 · CANCEL_RESELECTS_PROVIDER_BINDING = 0
+ *   PAST_SELECTION != CURRENT_EXECUTION_AUTHORITY
+ *
+ * An execution that pinned nothing fails closed. There is no catalog fallback,
+ * because a fallback is exactly the thing being removed.
+ *
+ *   NULL_PROVIDER_BINDING_POLL_ALLOWED = 0 · UNKNOWN_BINDING != ANY_BINDING
+ *
+ * ─── AUTHORITY IS RE-CHECKED, NOT REMEMBERED ────────────────────────────────
+ *
+ * WHICH account ran the request is a settled historical fact. Whether that
+ * connection may still be called is a question about NOW, and this asks it
+ * again every time: a connection that is no longer VERIFIED is refused for a
+ * readback and for a cancellation alike, which is the rule the general
+ * provider doors already apply. A cancellation additionally needs a MUTATING
+ * grant, because it is a new instruction to the other side and not a reading of
+ * what already happened.
  */
-async function providerConfiguration(
-  db: Block2Db,
-  providerId: string,
-): Promise<{ endpoint: string }> {
-  const [provider] = await db
-    .select()
-    .from(capabilityProviderCatalog)
-    .where(eq(capabilityProviderCatalog.id, providerId))
-    .limit(1);
-  if (!provider || (provider.kind !== "MCP" && provider.kind !== "A2A")) {
-    throw new RemoteExecutionError("Remote provider catalog entry not found", "NOT_FOUND");
+async function pinnedConnection(
+  execution: { ownerId: string; providerBindingRef: string | null; providerDefinitionId: string | null },
+  requires: RequiredGrant,
+): Promise<{ endpoint: string; headers: Readonly<Record<string, string>> }> {
+  const outcome = await authorizedConnection({
+    bindingId: execution.providerBindingRef,
+    onBehalfOfScopeId: execution.ownerId,
+    definitionId: execution.providerDefinitionId,
+    requires,
+  });
+  if (outcome.status !== "AUTHORIZED") {
+    throw new RemoteExecutionError(outcome.detail, "FORBIDDEN");
   }
-  const endpoint =
-    typeof provider.ioMetadata.endpoint === "string"
-      ? provider.ioMetadata.endpoint
-      : provider.provenance.reference;
-  if (!endpoint) {
-    throw new RemoteExecutionError("Remote provider endpoint is unavailable", "INVALID");
-  }
-  return { endpoint };
+  return {
+    endpoint: outcome.connection.endpoint,
+    headers: httpAuthorizationFor(outcome.connection),
+  };
 }
 
 function taskObservation(raw: unknown): {
@@ -135,8 +168,9 @@ export async function pollRemoteExecution(
     throw new RemoteExecutionError("Remote execution is not pollable", "INVALID_STATE");
   }
 
-  const provider = await providerConfiguration(db, execution.providerId);
-  const client = (deps.clientFactory ?? defaultClientFactory)(provider.endpoint);
+  // A readback of work this account already did. Reading, not changing.
+  const connection = await pinnedConnection(execution, "READING");
+  const client = (deps.clientFactory ?? defaultClientFactory)(connection.endpoint, connection.headers);
   const observation = taskObservation(await client.getTask(execution.remoteReference));
   if (!observation.completed && !observation.failed) return null;
   if (observation.failed) {
@@ -194,14 +228,20 @@ export async function requestRemoteCancellation(
     throw new RemoteExecutionError("Remote execution is not cancellable", "INVALID_STATE");
   }
 
+  // A NEW instruction to the other side, so it needs a mutating grant and the
+  // connection's authority is re-checked now rather than remembered — and it is
+  // checked BEFORE the state moves, so a refusal leaves canonical state exactly
+  // as it was rather than parking the execution at CANCEL_REQUESTED forever.
+  //
+  //   REFUSED_CANCEL_MOVES_CANONICAL_STATE = 0
+  const connection = await pinnedConnection(execution, "MUTATING");
   const requested = await transitionRemoteExecution(db, {
     id: execution.id,
     ownerId: input.ownerId,
     to: "CANCEL_REQUESTED",
     expectedVersion: execution.version,
   });
-  const provider = await providerConfiguration(db, execution.providerId);
-  const client = (input.clientFactory ?? defaultClientFactory)(provider.endpoint);
+  const client = (input.clientFactory ?? defaultClientFactory)(connection.endpoint, connection.headers);
   const cancellation = await client.cancelTask(execution.remoteReference);
   if (!cancellation.confirmed) return requested;
   return transitionRemoteExecution(db, {

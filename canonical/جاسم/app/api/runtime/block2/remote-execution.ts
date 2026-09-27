@@ -135,6 +135,12 @@ export type CreateRemoteExecutionInput = {
    *   PROVIDER_CANDIDATE != PROVIDER_ACCOUNT · UNKNOWN_BINDING != ANY_BINDING
    */
   providerBindingRef?: string | null;
+  /**
+   * The trusted PROVIDER DEFINITION this execution was authorized as.
+   *
+   *   DISCOVERY_ID_IMPLICITLY_EQUALS_DEFINITION_ID = 0
+   */
+  providerDefinitionId?: string | null;
   protocolKind: "MCP" | "A2A";
   requestDigest: string;
   idempotencyKey: string;
@@ -158,6 +164,7 @@ export async function createRemoteExecution(
       providerId: input.providerId,
       bindingId: input.bindingId ?? null,
       providerBindingRef: input.providerBindingRef ?? null,
+      providerDefinitionId: input.providerDefinitionId ?? null,
       protocolKind: input.protocolKind,
       requestDigest: input.requestDigest,
       idempotencyKey: input.idempotencyKey,

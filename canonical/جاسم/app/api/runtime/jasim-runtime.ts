@@ -52,11 +52,8 @@ import {
   type AssignedCapabilityBinding,
   type CapabilityRegistry,
 } from "./capability-registry";
-import {
-  resolveProvider,
-  type CapabilityProvider,
-} from "./capability-provider";
-import { assertTrustedRemoteEndpoint, createMcpClient } from "./block2/mcp-client";
+import { resolveProvider } from "./capability-provider";
+import { createMcpClient } from "./block2/mcp-client";
 import {
   attachRemoteReference,
   buildA2AProjection,
@@ -199,6 +196,8 @@ import {
 } from "./living-object-runtime";
 import {
   accountBindingFor,
+  authorizedConnection,
+  httpAuthorizationFor,
   beginProviderSetup,
   bindingCapabilities,
   projectBindings,
@@ -3779,19 +3778,20 @@ export function classifyCapabilityExecutionFailure(error: unknown): {
   return { code: "PERMANENT", summary };
 }
 
-type RemoteProviderDescriptor = Pick<
-  CapabilityProvider,
-  "id" | "kind" | "implementationId" | "endpoint" | "provenance"
->;
-
-function remoteProviderEndpoint(provider: RemoteProviderDescriptor): string {
-  const endpoint = provider.endpoint ?? provider.provenance.reference;
-  if (!endpoint) {
-    throw new RuntimeActionError(`Remote provider "${provider.id}" has no HTTP endpoint.`);
-  }
-  assertTrustedRemoteEndpoint(endpoint);
-  return endpoint;
-}
+//
+// `remoteProviderEndpoint` USED TO LIVE HERE, AND IS GONE ON PURPOSE.
+//
+// It read `provider.endpoint ?? provider.provenance.reference` — a DISCOVERED
+// candidate's own account of where it lives — and passed it through
+// `assertTrustedRemoteEndpoint`, which proves HTTPS and a public address and
+// proves nothing about whether anybody authorized that destination. A remote
+// call's address now comes from the canonical binding, beside the credential,
+// from one read of one row.
+//
+//   DISCOVERED_ENDPOINT != AUTHORIZED_DESTINATION
+//   SSRF_SAFE != AUTHORIZED_DESTINATION
+//   DISCOVERY_ENDPOINT_USED_FOR_EXECUTION_AUTHORITY = 0
+//
 
 function normalizeRemoteContent(
   capabilityId: string,
@@ -4006,20 +4006,67 @@ export async function executeRuntimeDagNode(input: {
       | undefined;
     let providerReceiptSecret: string | undefined;
     let providerAccountRef: string | null = null;
+    let providerDefinitionId: string | null = null;
+    let remoteConnection: Awaited<ReturnType<typeof authorizedConnection>> extends infer O
+      ? O extends { status: "AUTHORIZED"; connection: infer C }
+        ? C | null
+        : never
+      : never = null;
     if (providerBinding.kind === "MCP" || providerBinding.kind === "A2A") {
-      // WHICH ACCOUNT is about to run this, pinned before the effect exists.
+      // ── SELECTION IS NOT AUTHORITY ────────────────────────────────────
       //
+      // `resolveProvider` found a candidate. That is a statement about what
+      // exists and what fits, and none about whether anybody authorized JASIM
+      // to speak to it or with what.
+      //
+      //   DISCOVERED_PROVIDER != AUTHORIZED_CONNECTION
+      //   FOUND_PROVIDER != MAY_EXECUTE_PROVIDER
+      //   REMOTE_SELECTION != CONNECTION_AUTHORITY
+      //
+      // A candidate is identified per tool; a canonical account is an account
+      // at a trusted DEFINITION. Two namespaces, bridged only where trusted
+      // configuration says so — never by passing one as the other.
+      //
+      //   DISCOVERY_ID_IMPLICITLY_EQUALS_DEFINITION_ID = 0
+      providerDefinitionId = provider.definitionId ?? null;
+      if (!providerDefinitionId) {
+        throw new RuntimeActionError(
+          "That system was discovered but is not a connected provider here.",
+        );
+      }
+      // WHICH ACCOUNT is about to run this, pinned before the effect exists.
       // The scope holds at most one binding per provider, so this is exact
       // rather than chosen, and it is read ONCE — the execution below records
-      // it, and receipt verification reads it from there rather than asking
-      // this question again later against state that may have moved.
+      // it, and polling, cancellation and receipt verification all read it from
+      // there rather than asking again against state that may have moved.
       //
-      //   PROVIDER_CANDIDATE != PROVIDER_ACCOUNT
-      //   MUTABLE_POLICY_CHANGES_RECEIPT_SECRET_SOURCE = 0
+      //   PROVIDER_CANDIDATE != PROVIDER_BINDING
+      //   PAST_SELECTION != CURRENT_EXECUTION_AUTHORITY
       providerAccountRef = await accountBindingFor({
         scopeId: input.ownerId,
-        definitionId: providerBinding.providerId,
+        definitionId: providerDefinitionId,
       });
+      // THE DESTINATION AND THE CREDENTIAL, from one read of one row.
+      //
+      // Not the candidate's URL, which is discovery metadata and mutable by
+      // whoever discovered it; and not nothing, which is what a remote call
+      // used to present.
+      //
+      //   DISCOVERY_ENDPOINT_USED_FOR_EXECUTION_AUTHORITY = 0
+      //   TRUSTED_CREDENTIAL + UNTRUSTED_DESTINATION = INVALID CONNECTION
+      const connection = await authorizedConnection({
+        bindingId: providerAccountRef,
+        onBehalfOfScopeId: input.ownerId,
+        definitionId: providerDefinitionId,
+        // The effect contract already knows whether this changes the world.
+        // A read needs a reading grant; anything else needs a mutating one.
+        requires:
+          registry.effectContract(capabilityId).effectKind === "NONE" ? "READING" : "MUTATING",
+      });
+      if (connection.status !== "AUTHORIZED") {
+        throw new RuntimeActionError(connection.detail);
+      }
+      remoteConnection = connection.connection;
       // And the material that authenticates that account's receipts. Resolved
       // from canonical state; there is no field on any provider, candidate or
       // request that could carry one.
@@ -4027,7 +4074,7 @@ export async function executeRuntimeDagNode(input: {
       //   PROVIDER_RECEIPT_SECRET != PUBLIC DISCOVERY METADATA
       //   NULL_BINDING_REMOTE_RECEIPT_VERIFIED = 0
       providerReceiptSecret = await receiptSecretFor({
-        providerId: providerBinding.providerId,
+        providerId: providerDefinitionId,
         bindingId: providerAccountRef,
       });
       if (attemptFingerprint === "unknown") {
@@ -4095,12 +4142,18 @@ export async function executeRuntimeDagNode(input: {
         bindingId: providerBinding.id,
         // The ACCOUNT, which is the one this effect is attributable to.
         providerBindingRef: providerAccountRef,
+        // And the trusted definition it was authorized as, beside the candidate
+        // that was selected. Two namespaces, both recorded.
+        providerDefinitionId,
         protocolKind: providerBinding.kind,
         requestDigest: attemptFingerprint,
         idempotencyKey,
         delegationGrantId,
       });
-      const client = createMcpClient({ baseUrl: remoteProviderEndpoint(provider) });
+      const client = createMcpClient({
+        baseUrl: remoteConnection!.endpoint,
+        headers: { ...httpAuthorizationFor(remoteConnection!) },
+      });
       let remoteResult;
       try {
         remoteResult = await client.callTool(providerBinding.implementationId, remoteArguments);

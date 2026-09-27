@@ -101,6 +101,33 @@ export type CapabilityProvider = {
   semanticKeys?: string[];
   /** HTTP transport endpoint retained from normalized remote metadata. */
   endpoint?: string;
+  /**
+   * The trusted PROVIDER DEFINITION this candidate is an instance of.
+   *
+   * ─── THE BRIDGE BETWEEN TWO NAMESPACES ────────────────────────────────────
+   *
+   * A candidate is identified per TOOL (`mcp:<server>:<tool>`) or per SKILL
+   * (`a2a:<agent>:<skill>`), by whatever the remote system called itself. A
+   * canonical binding names a PROVIDER DEFINITION registered in server code.
+   * Those are unrelated namespaces, and nothing may make them look equivalent
+   * by copying one into the other.
+   *
+   *   DISCOVERY_ID_IMPLICITLY_EQUALS_DEFINITION_ID = 0
+   *
+   * So the bridge is stated, by trusted configuration, exactly once — and
+   * DISCOVERY MAY NOT STATE IT. `register` refuses this field on a candidate
+   * whose provenance is a discovery source, so a normalized tool listing or
+   * agent card can never nominate itself as an instance of a trusted provider.
+   *
+   *   DISCOVERY FINDS · BINDING AUTHORIZES · RUNTIME EXECUTES · VERIFIER JUDGES
+   *
+   * Absent means this candidate has no canonical connection, and a candidate
+   * with no canonical connection may be found, described and selected — and
+   * never executed.
+   *
+   *   FOUND_PROVIDER != MAY_EXECUTE_PROVIDER
+   */
+  definitionId?: string;
   //
   // `receiptSecret` USED TO BE DECLARED HERE, AND IS GONE ON PURPOSE.
   //
@@ -177,12 +204,27 @@ export type ProviderSelectionPolicy = {
   allowedJurisdictions?: string[];
 };
 
+/** Provenances that mean «a remote system described itself to us». */
+const DISCOVERY_SOURCES: ReadonlySet<ProviderProvenanceSource> =
+  new Set<ProviderProvenanceSource>(["MCP_CATALOG", "A2A_AGENT_CARD"]);
+
 export class CapabilityProviderRegistry {
   private readonly providers = new Map<string, CapabilityProvider>();
 
   register(provider: CapabilityProvider): void {
     if (this.providers.has(provider.id)) {
       throw new Error(`Provider "${provider.id}" is already registered.`);
+    }
+    // Discovery output may not nominate itself as an instance of a trusted
+    // provider definition. A deployment that wants to say «this remote system
+    // is our connected provider X» says it in server code, which is what a
+    // MANUAL_CONFIG provenance means.
+    //
+    //   DISCOVERED_PROVIDER != AUTHORIZED_CONNECTION
+    if (provider.definitionId && DISCOVERY_SOURCES.has(provider.provenance.source)) {
+      throw new Error(
+        `Provider "${provider.id}" was discovered, so it cannot name a trusted provider definition.`,
+      );
     }
     if (provider.kind === "NATIVE" && !provider.nativeHandler) {
       throw new Error(`NATIVE provider "${provider.id}" requires an execution binding.`);

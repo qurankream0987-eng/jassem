@@ -1,0 +1,35 @@
+-- JASIM — A DISCOVERED CANDIDATE IS NOT AN AUTHORIZED CONNECTION
+--
+--   DISCOVERED_PROVIDER != AUTHORIZED_CONNECTION
+--   DISCOVERED_ENDPOINT != AUTHORIZED_DESTINATION
+--   SSRF_SAFE != AUTHORIZED_DESTINATION
+--   PROVIDER_CANDIDATE != PROVIDER_BINDING
+--   REMOTE_SELECTION != CONNECTION_AUTHORITY
+--
+-- Remote MCP/A2A execution took its destination from a DISCOVERED candidate —
+-- `provider.endpoint ?? provider.provenance.reference` on the way out, and the
+-- catalog row re-read at poll and cancel time on the way back. The only check
+-- was `assertTrustedRemoteEndpoint`, which proves HTTPS and a public address
+-- and proves NOTHING about whether anybody authorized that destination. No
+-- binding, no account, no credential, no granted capability.
+--
+-- Two ID NAMESPACES made this invisible. A discovered candidate is identified
+-- per TOOL — `mcp:<server>:<tool>`, `a2a:<agent>:<skill>` — while a canonical
+-- binding names a trusted PROVIDER DEFINITION registered in server code. They
+-- are unrelated, and the receipt phase bridged them by passing one where the
+-- other was expected, which could only ever match by coincidence.
+--
+--   DISCOVERY_ID_IMPLICITLY_EQUALS_DEFINITION_ID = 0
+--
+-- So the bridge is now explicit and recorded: a remote execution stores the
+-- trusted DEFINITION it was authorized as, beside the candidate that was
+-- selected and the account that carried it.
+
+ALTER TABLE "remote_executions"
+  -- The trusted PROVIDER DEFINITION this execution was authorized as.
+  --
+  -- `providerId` stays what it was: the discovered candidate that was selected.
+  -- This is the canonical identity the account is an account AT, and the two
+  -- are cross-checked when the pinned account's material is opened. NULL means
+  -- the execution was never bridged to a definition, which is not "any".
+  ADD COLUMN IF NOT EXISTS "providerDefinitionId" varchar(120);

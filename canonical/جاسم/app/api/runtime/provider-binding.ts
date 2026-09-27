@@ -2135,6 +2135,210 @@ export async function usableBindingFor(input: {
 }
 
 /**
+ * WHAT MAY ACTUALLY BE CALLED, AND WHERE, AND WITH WHAT.
+ *
+ * ─── WHY THIS EXISTS ────────────────────────────────────────────────────────
+ *
+ * `invokeThroughBinding` and `readThroughBinding` hand an adapter a context and
+ * let it make the call. A remote MCP/A2A transport is not an adapter — it is a
+ * protocol client the runtime builds itself — and it was building that client
+ * from a DISCOVERED candidate's URL with no account, no credential and no
+ * grant behind it. `assertTrustedRemoteEndpoint` proved the address was HTTPS
+ * and public, which is a statement about the network and not about authority.
+ *
+ *   SSRF_SAFE != AUTHORIZED_DESTINATION
+ *   DISCOVERED_ENDPOINT != AUTHORIZED_DESTINATION
+ *
+ * So this is the same gate those two doors already apply, exposed for a caller
+ * that will do its own transport. It is not a second binding runtime: it reads
+ * the same row, applies the same lifecycle and grant rules, and opens the
+ * credential through the same vault.
+ *
+ * ─── AND WHY THE TWO COME BACK TOGETHER ─────────────────────────────────────
+ *
+ * The destination and the credential are produced by ONE read of ONE row.
+ * There is no way for a caller to obtain one here and the other elsewhere,
+ * because nothing here returns one without the other.
+ *
+ *   TRUSTED_CREDENTIAL + UNTRUSTED_DESTINATION = INVALID CONNECTION
+ *   AUTHORIZED_DESTINATION + WRONG_CREDENTIAL = INVALID CONNECTION
+ *   CREDENTIAL_BINDING_DIFFERS_FROM_ENDPOINT_BINDING = 0
+ */
+export type AuthorizedConnection = {
+  readonly bindingId: string;
+  readonly definitionId: string;
+  readonly scopeId: string;
+  /** The canonical address. Registry code for a FIXED provider; the trusted
+   *  setup's own checked address otherwise. Never a discovered one. */
+  readonly endpoint: string;
+  /** Opened for ONE call. Never stored, never projected, never logged. */
+  readonly credential: Readonly<Record<string, string>>;
+  readonly authMethod: ProviderAuthMethod;
+};
+
+export type ConnectionRefusal =
+  /** No account was pinned, or the row is not this scope's, or not a binding. */
+  | "NO_SUCH_BINDING"
+  /** It exists and is not usable: pending, authorized, suspended, revoked. */
+  | "BINDING_NOT_USABLE"
+  /** The account is not an account at the provider the caller named. */
+  | "PROVIDER_MISMATCH"
+  /** Nobody granted this connection the side of the call being made. */
+  | "CAPABILITY_NOT_GRANTED"
+  /** Registered no longer, or has no address, or has no credential. */
+  | "CONNECTION_INCOMPLETE";
+
+export type ConnectionOutcome =
+  | { readonly status: "AUTHORIZED"; readonly connection: AuthorizedConnection }
+  | { readonly status: "REFUSED"; readonly refusal: ConnectionRefusal; readonly detail: string };
+
+/**
+ * WHICH SIDE of the vocabulary a call is on.
+ *
+ * A remote tool invocation carries a semantic capability id, and this
+ * repository has no mapping from one of those to a provider capability VERB —
+ * inventing one would be inventing authority. What it does have is the
+ * effect contract, which already says whether a call changes the world, and
+ * the grant list, which already says whether this connection was allowed to.
+ * So the requirement is the honest one both sides can state: a read needs a
+ * reading grant, and anything that changes something needs a mutating one.
+ *
+ *   PROVIDER_SUPPORTS_CAPABILITY != BINDING_GRANTED_CAPABILITY
+ *   UNGRANTED_CAPABILITY_CAN_EXECUTE = 0
+ */
+export type RequiredGrant = "READING" | "MUTATING";
+
+export async function authorizedConnection(input: {
+  /** The ACCOUNT, pinned by the caller. NULL is refused, never searched for. */
+  bindingId: string | null;
+  /** The scope the calling runtime derived canonically. Checked, not believed. */
+  onBehalfOfScopeId: string;
+  /** The definition the caller believes this is. Checked, never believed. */
+  definitionId?: string | null;
+  requires: RequiredGrant;
+}): Promise<ConnectionOutcome> {
+  // UNKNOWN_BINDING != ANY_BINDING. There is no lookup here that could find a
+  // «reasonable» account, and there is no fallback that could invent one.
+  if (!input.bindingId) {
+    return { status: "REFUSED", refusal: "NO_SUCH_BINDING", detail: "No such connection." };
+  }
+  const [row] = await db
+    .select()
+    .from(scopeProviderBindings)
+    .where(eq(scopeProviderBindings.id, input.bindingId))
+    .limit(1);
+  if (!row || !row.lifecycle || row.scopeId !== input.onBehalfOfScopeId) {
+    // One refusal for a guessed id, a legacy row and somebody else's account,
+    // because a refusal that told them apart would be an existence oracle.
+    return { status: "REFUSED", refusal: "NO_SUCH_BINDING", detail: "No such connection." };
+  }
+  if (input.definitionId && row.definitionId !== input.definitionId) {
+    return {
+      status: "REFUSED",
+      refusal: "PROVIDER_MISMATCH",
+      detail: "That connection is not an account at this provider.",
+    };
+  }
+  // CONNECTED != VERIFIED. Nothing short of VERIFIED may be called through,
+  // which is the rule the existing doors already apply — a suspended or revoked
+  // connection is not a connection that merely needs a warning.
+  if (row.lifecycle !== "VERIFIED") {
+    return {
+      status: "REFUSED",
+      refusal: "BINDING_NOT_USABLE",
+      detail: `This connection is ${row.lifecycle.toLowerCase()}.`,
+    };
+  }
+  const granted = row.grantedCapabilities.some(
+    (capability) => capabilityMutates(capability) === (input.requires === "MUTATING"),
+  );
+  if (!granted) {
+    return {
+      status: "REFUSED",
+      refusal: "CAPABILITY_NOT_GRANTED",
+      detail:
+        input.requires === "MUTATING"
+          ? "This connection was not granted anything that changes the other side."
+          : "This connection was not granted anything that reads.",
+    };
+  }
+  const definition = definitionOf(row.definitionId);
+  if (!definition) {
+    return {
+      status: "REFUSED",
+      refusal: "CONNECTION_INCOMPLETE",
+      detail: "That provider is no longer registered.",
+    };
+  }
+  try {
+    // ONE read, BOTH facts. The address comes from the definition or from the
+    // address this same binding's trusted setup checked and stored; the
+    // credential comes from this same binding's own sealed envelope.
+    const endpoint = endpointOf(row, definition);
+    const credential = await credentialFor(row);
+    return {
+      status: "AUTHORIZED",
+      connection: {
+        bindingId: row.id,
+        definitionId: definition.id,
+        scopeId: row.scopeId,
+        endpoint,
+        credential,
+        authMethod: definition.authMethod,
+      },
+    };
+  } catch (error) {
+    return {
+      status: "REFUSED",
+      refusal: "CONNECTION_INCOMPLETE",
+      detail: error instanceof Error ? error.message : "This connection is incomplete.",
+    };
+  }
+}
+
+/**
+ * How an authorized connection presents itself over HTTP.
+ *
+ * Shaping, not authority: the decision of WHETHER to call was made above, and
+ * this only says what the one material field is called on the wire. It is here
+ * rather than in a protocol client because the material's names belong to the
+ * auth method, and the auth method belongs to the definition.
+ *
+ * A CERTIFICATE is refused rather than squeezed into a header — a client
+ * certificate is a transport handshake this transport does not perform, and
+ * sending it as text would be sending a private key to an application server.
+ *
+ *   RAW_PROVIDER_CREDENTIAL_IN_URL = 0 · RAW_PROVIDER_CREDENTIAL_IN_QUERY = 0
+ */
+export function httpAuthorizationFor(
+  connection: Pick<AuthorizedConnection, "authMethod" | "credential">,
+): Readonly<Record<string, string>> {
+  const material = connection.credential;
+  switch (connection.authMethod) {
+    case "TRUSTED_INTERNAL":
+      return {};
+    case "API_KEY":
+      return { authorization: `Bearer ${material.apiKey ?? ""}` };
+    case "SIGNED_TOKEN":
+      return { authorization: `Bearer ${material.token ?? ""}` };
+    case "OAUTH_AUTHORIZATION_CODE":
+      return { authorization: `Bearer ${material.accessToken ?? ""}` };
+    case "BASIC_CREDENTIAL":
+      return {
+        authorization: `Basic ${Buffer.from(
+          `${material.username ?? ""}:${material.password ?? ""}`,
+          "utf8",
+        ).toString("base64")}`,
+      };
+    case "CERTIFICATE":
+      throw new ProviderBindingError(
+        "This connection authenticates with a certificate, which this transport cannot present.",
+        "STATE",
+      );
+  }
+}
+
+/**
  * The scope's ACCOUNT at one provider, if it holds one.
  *
  * Exact rather than chosen: `scope_provider_bindings` is unique on

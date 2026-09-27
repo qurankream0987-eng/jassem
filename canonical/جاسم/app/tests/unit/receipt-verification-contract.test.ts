@@ -39,10 +39,27 @@ describe("the receipt verification contract", () => {
     const ioMetadata = SCHEMA.slice(SCHEMA.indexOf('ioMetadata: jsonb("ioMetadata")'));
     const declared = strip(ioMetadata.slice(0, ioMetadata.indexOf(".notNull()")));
     expect(declared).not.toMatch(/receiptSecret|webhookSecret/);
-    // The endpoint is NOT touched: whose address a remote system is at is a
-    // separate question this phase deliberately did not widen into.
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: polling still reads `ioMetadata.endpoint`.
+    // WHY_IT_IS_WRONG: it was not wrong then — it recorded, deliberately, that
+    //   the receipt phase corrected the secret and left the ADDRESS coming from
+    //   a discovered row, so the survival of that gap was a stated fact rather
+    //   than an oversight. It is what named the next phase.
+    // NEW_EXPECTATION: no remote path reads the discovery table for an address
+    //   at all. Destination and credential now come from the canonical binding,
+    //   from one read of one row.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: a mutable discovery row could
+    //   previously redirect an already-running execution's readback and its
+    //   cancellation. Now it can redirect nothing, and a remote call that has
+    //   no canonical account fails closed instead of dialling whatever the
+    //   catalog last said.
+    //
+    // The COLUMN keeps its declared endpoint, because discovery legitimately
+    // records where it found something. What changed is that nothing dials it.
     expect(declared).toMatch(/endpoint/);
-    expect(POLLING).toMatch(/ioMetadata\.endpoint/);
+    expect(POLLING).not.toMatch(/ioMetadata/);
   });
 
   it("there is one store, and this file adds no cipher, no table and no kind of its own", () => {

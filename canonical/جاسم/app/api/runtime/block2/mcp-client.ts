@@ -292,6 +292,8 @@ export class McpClient {
   private readonly baseUrl: string;
   private readonly timeoutMs: number;
   private readonly headers: Record<string, string>;
+  /** Whether a redirect would be carrying authority, not merely bytes. */
+  private readonly carriesCredential: boolean;
   private endpointGuard?: Promise<PinnedEndpoint>;
   private nextId = 1;
 
@@ -309,6 +311,9 @@ export class McpClient {
       throw new McpClientError("MCP timeoutMs must be positive", "TRANSPORT");
     }
     this.headers = { ...options.headers };
+    this.carriesCredential = Object.keys(this.headers).some(
+      (name) => name.toLowerCase() === "authorization" || name.toLowerCase() === "proxy-authorization",
+    );
   }
 
   async initialize(): Promise<Record<string, unknown>> {
@@ -388,7 +393,21 @@ export class McpClient {
         if (!location) {
           throw new McpClientError("MCP redirect response lacks a Location header", "TRANSPORT");
         }
-        endpoint = await assertResolvedPublicEndpoint(new URL(location, endpoint.url));
+        const next = new URL(location, endpoint.url);
+        // A binding to https://provider.example does not authorize handing its
+        // credential to https://evil.example, and a public address is not an
+        // authorized one. Same origin follows; anything else stops, rather than
+        // silently continuing without the header and looking like a 401.
+        //
+        //   CREDENTIAL_REDIRECT_TO_UNTRUSTED_ORIGIN = 0
+        //   SSRF_SAFE != AUTHORIZED_DESTINATION
+        if (this.carriesCredential && next.origin !== new URL(endpoint.url).origin) {
+          throw new McpClientError(
+            "MCP redirect crosses origins while carrying a credential",
+            "TRANSPORT",
+          );
+        }
+        endpoint = await assertResolvedPublicEndpoint(next);
       }
     } catch (error) {
       if (controller.signal.aborted) {

@@ -453,6 +453,19 @@ export const remoteExecutions = pgTable(
      * INCONCLUSIVE rather than verified.
      */
     providerBindingRef: varchar("providerBindingRef", { length: 64 }),
+    /**
+     * The trusted PROVIDER DEFINITION this execution was authorized as.
+     *
+     *   DISCOVERED_PROVIDER != AUTHORIZED_CONNECTION
+     *   PROVIDER_CANDIDATE != PROVIDER_BINDING
+     *
+     * `providerId` above is the DISCOVERED candidate — identified per tool
+     * (`mcp:<server>:<tool>`) or per skill (`a2a:<agent>:<skill>`). This is the
+     * canonical definition the account is an account AT. They are two different
+     * namespaces and are bridged only by trusted configuration, never by one
+     * being passed where the other was expected.
+     */
+    providerDefinitionId: varchar("providerDefinitionId", { length: 120 }),
     protocolKind: varchar("protocolKind", { length: 16 }).notNull().$type<"MCP" | "A2A">(),
     /** Provider-side task/reference id once the provider returns one. */
     remoteReference: varchar("remoteReference", { length: 255 }),
