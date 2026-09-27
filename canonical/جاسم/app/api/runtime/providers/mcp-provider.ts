@@ -111,6 +111,10 @@ function clientFor(context: ProviderCallContext, config: McpProviderConfig) {
  */
 function failureOf(error: unknown): ProviderResult {
   if (error instanceof McpClientError) {
+    // Unchanged by the reachability split: an HTTP status the protocol does not
+    // define still leaves JASIM not knowing what happened to the request, which
+    // is UNAVAILABLE. The new code exists to judge whether a SERVICE answered,
+    // not to re-decide what a failed call means.
     return error.code === "PROTOCOL"
       ? { status: "ERROR", detail: error.message }
       : { status: "UNAVAILABLE", detail: error.message };
@@ -145,7 +149,9 @@ export function createMcpProviderAdapter(config: McpProviderConfig): ProviderAda
         const name = typeof info.name === "string" ? info.name : "";
         const version = typeof info.version === "string" ? info.version : "";
         if (!name) {
-          return { ok: false, detail: "The provider did not identify itself." };
+          // It answered; it just did not say who it was. The service is up and
+          // this handshake proved nothing about the account.
+          return { ok: false, detail: "The provider did not identify itself.", reached: true };
         }
         return {
           ok: true,
@@ -155,9 +161,19 @@ export function createMcpProviderAdapter(config: McpProviderConfig): ProviderAda
           ...(version ? { accountLabel: `${name} ${version}` } : {}),
         };
       } catch (error) {
+        // WHICH of the two failed. A status or a malformed body means something
+        // answered — a refused credential arrives that way — and only silence
+        // means the address did not.
+        //
+        //   SERVICE_ANSWERED != CREDENTIAL_ACCEPTED
+        const reached =
+          error instanceof McpClientError
+            ? error.code === "HTTP_STATUS" || error.code === "PROTOCOL"
+            : undefined;
         return {
           ok: false,
           detail: error instanceof Error ? error.message : "The provider could not be reached.",
+          ...(reached === undefined ? {} : { reached }),
         };
       }
     },

@@ -222,6 +222,68 @@ selected rather than coasting on an old success. The registry's only mutation is
 that observation: it cannot change a capability, a definition, an operation, a
 trust class or an address.
 
+### Whose handshake was it
+
+An observation may only speak for its own subject, and the first version of this
+observer forgot that: it read `definitionId` and `reachable` and updated every
+candidate under the definition. Two facts were collapsed into one boolean, and a
+per-account event was promoted to a shared one.
+
+```
+PROVIDER_DEFINITION != PROVIDER_ACCOUNT
+BAD_CREDENTIAL      != PROVIDER_GLOBALLY_DOWN
+ONE_BINDING_FAILURE != ALL_BINDINGS_UNAVAILABLE
+OBSERVATION_AUTHORITY_MUST_MATCH_OBSERVATION_SUBJECT
+```
+
+A handshake produces **three separate facts**, and they belong to different
+subjects:
+
+| fact | subject |
+| --- | --- |
+| something answered at the address | the SERVICE — shared only when the address is |
+| the credential was accepted | ONE ACCOUNT |
+| which capabilities the account has | ONE ACCOUNT, most specifically of all |
+
+So the observation now carries `bindingId`, `endpointMode`, `service` and
+`account`, and the shared candidate is touched in exactly one case:
+
+```
+FIXED address + something ANSWERED → AVAILABLE + lease   (every binding dials that same place)
+FIXED address + SILENCE            → UNAVAILABLE, lease cleared
+anything else                      → nothing is written
+```
+
+An `account: "REFUSED"` never touches it — otherwise any one tenant's bad key
+would take the provider away from every other tenant. A `DECLARED_AT_SETUP`
+definition is never promoted at all, because each connection dials its own
+address. And an adapter that cannot tell a refusal from silence reports
+`service: "UNKNOWN"` and **nothing is written**, rather than guessing.
+
+Telling the two apart needed one small transport change: a non-2xx response now
+raises `HTTP_STATUS` rather than `TRANSPORT`, because *something answered* — a
+401 is a healthy service refusing one credential. What a failed call MEANS is
+unchanged (`UNAVAILABLE`); the new code exists only to judge whether a service
+answered.
+
+**Discovery reports nothing at all now.** It observes which capabilities *this
+account* has, which cannot stand for anything shared — and it used to refresh the
+shared lease, so one account's discovery failure erased an observation whose
+subject was another account.
+
+None of this is authority: availability decides whether a node may *consider* a
+candidate, and execution still needs the acting scope's own VERIFIED binding.
+A restart empties the observations, so nothing is selectable until a handshake
+happens again — forgetting is conservative, and authority lives in the database.
+
+```
+BINDING_A_SUCCESS_MARKS_BINDING_B_AUTHENTICATED = 0
+BINDING_B_AUTH_FAILURE_POISONS_BINDING_A = 0
+BINDING_B_DISCOVERY_FAILURE_POISONS_BINDING_A = 0
+CANDIDATE_AVAILABILITY_BYPASSES_BINDING_GATE = 0
+RESTART_WIDENS_AUTHORITY = 0 · FAKE_GLOBAL_HEALTH_CHECK_ADDED = 0
+```
+
 ### What a candidate still is not
 
 It connects no account, grants no verb, carries no address and holds no
@@ -278,6 +340,7 @@ nothing here has to change for it.
 | where | what |
 | --- | --- |
 | `tests/block31/remote-transport-adapter.test.ts` | a definition supports exactly the verbs it has a tool for; only trusted configuration registers one, and every malformed form fails; a discovered candidate still cannot name a definition or an operation; the adapter receives the bound endpoint and sealed credential and nothing else; an ungranted verb and a revoked connection never reach it; the raw credential is in no row, event or projection after a real call; authenticate is a handshake that calls no tool; discover narrows and does not widen (a `charge_card` tool becomes nothing); a real invoke calls exactly the configured tool once; a verb with no tool is refused before any request; malformed, declining and silent providers all produce non-OK; the credential does not follow a cross-origin redirect; no protocol or domain name appears where a verb becomes a call |
+| `tests/block31/remote-observation-authority.test.ts` | a refused credential at a shared address is nobody else's outage; A's success authenticates and grants B nothing; a handshake at a per-connection address speaks for no shared candidate; silence at the shared address is the one thing that unselects it; an adapter that cannot tell a refusal from silence writes nothing; discovery reports nothing in either direction; availability changes nothing about who may execute; a restart loses selectability and no authority; the two facts are separated at the transport over real HTTP (a 401 is reached, a dead port is not) |
 | `tests/block31/remote-candidate-bridge.test.ts` | no configuration means no candidate and a definition alone is not a provider; a bridged candidate is unselectable until a real handshake, and its lease expires; a failed handshake clears the lease; the DAG's tool equals the adapter's tool; a renamed remote tool changes no verb and no capability; a discovered candidate with identical strings cannot become the bridge; every malformed trusted mapping is a boot failure including a duplicate identity; being selected authorizes nothing (no binding, unverified, wrong scope, ungranted verb, revoked); a candidate carries no address and no credential; the I/O and protocol filters still refuse what they always refused |
 | `tests/block31/remote-capability-grant.test.ts` | the exact-verb gate in front of all of it, unchanged |
 | `tests/block31/remote-execution-authority.test.ts` | the endpoint, credential and pinned-account laws, unchanged |

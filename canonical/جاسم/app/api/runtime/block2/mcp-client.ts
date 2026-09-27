@@ -17,11 +17,23 @@ export type McpClientOptions = {
 
 export class McpClientError extends Error {
   readonly rpcCode?: number;
-  readonly code: "TRANSPORT" | "PROTOCOL" | "TIMEOUT";
+  /**
+   * WHAT WENT WRONG, and in particular whether anything answered.
+   *
+   *   TRANSPORT   — nothing answered: refused, reset, unresolvable, blocked.
+   *   TIMEOUT     — nothing answered in time.
+   *   HTTP_STATUS — the SERVICE answered, with a status the protocol does not
+   *                 define. Reaching a service is a different fact from being
+   *                 accepted by it, and a rejected credential arrives this way.
+   *   PROTOCOL    — the service answered, and the answer was not the protocol.
+   *
+   *   SERVICE_ANSWERED != CREDENTIAL_ACCEPTED
+   */
+  readonly code: "TRANSPORT" | "PROTOCOL" | "TIMEOUT" | "HTTP_STATUS";
 
   constructor(
     message: string,
-    code: "TRANSPORT" | "PROTOCOL" | "TIMEOUT",
+    code: "TRANSPORT" | "PROTOCOL" | "TIMEOUT" | "HTTP_STATUS",
     rpcCode?: number,
   ) {
     super(message);
@@ -423,9 +435,13 @@ export class McpClient {
     }
 
     if (response.status < 200 || response.status >= 300) {
+      // Something answered. WHAT it said is another matter — a 401 is a
+      // credential being refused by a service that is perfectly healthy, and
+      // collapsing that into «unreachable» is how one account's bad key becomes
+      // a provider outage.
       throw new McpClientError(
         `MCP server returned HTTP ${response.status} ${response.statusText}`,
-        "TRANSPORT",
+        "HTTP_STATUS",
       );
     }
 

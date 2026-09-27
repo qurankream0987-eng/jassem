@@ -450,27 +450,75 @@ export function registerConfiguredCandidates(input: {
 }
 
 /**
- * Make what a real handshake reached selectable, and nothing else.
+ * WHAT A HANDSHAKE MAY SAY ABOUT A SHARED CANDIDATE.
  *
- * Installed by boot as the provider runtime's handshake observer. The evidence
- * is a live round trip to the bound endpoint with the bound credential; the
- * lease is the deployment's own statement of how long one such observation
- * stands for. A failed handshake clears the lease, so a system that stopped
- * answering stops being selected rather than coasting on an old success.
+ * ─── THE SUBJECT PROBLEM ────────────────────────────────────────────────────
+ *
+ * A bridged candidate is shared: `resolveProvider` has no acting scope, so the
+ * one availability field it reads is read on behalf of everybody. A handshake,
+ * meanwhile, happens at ONE binding with ONE credential and — when the address
+ * is declared per connection — at ONE address.
+ *
+ *   PROVIDER_DEFINITION != PROVIDER_ACCOUNT
+ *   ACCOUNT_A_REACHABLE != ACCOUNT_B_REACHABLE
+ *   OBSERVATION_AUTHORITY_MUST_MATCH_OBSERVATION_SUBJECT
+ *
+ * So this promotes an observation to the shared candidate in exactly one case,
+ * and refuses in every other:
+ *
+ *   FIXED address + something ANSWERED  → the SERVICE is up. Every binding under
+ *                                         this definition dials that same place,
+ *                                         so it is a fact about all of them.
+ *   FIXED address + SILENCE             → that same place did not answer.
+ *   anything else                       → NOTHING is written.
+ *
+ * ─── AND WHAT IS NEVER PROMOTED ─────────────────────────────────────────────
+ *
+ * Whether a credential was accepted. One account's key being refused says
+ * nothing about another account, and letting it mark a shared candidate
+ * UNAVAILABLE would let any tenant take the provider away from every other one.
+ *
+ *   BAD_CREDENTIAL != PROVIDER_GLOBALLY_DOWN
+ *   ONE_BINDING_FAILURE != ALL_BINDINGS_UNAVAILABLE
+ *
+ * Nor anything from discovery: which capabilities an account has is the most
+ * account-specific fact in the lifecycle. The provider runtime no longer reports
+ * from there at all.
+ *
+ * ─── AND WHAT IT CANNOT DO EITHER WAY ───────────────────────────────────────
+ *
+ * Selection is not authority. Availability decides whether a node may CONSIDER
+ * this candidate; execution still needs the acting scope's own VERIFIED binding
+ * with the exact verb granted.
+ *
+ *   CANDIDATE_AVAILABILITY_BYPASSES_BINDING_GATE = 0
+ *   FAKE_GLOBAL_HEALTH_CHECK_ADDED = 0
  */
 export function configuredCandidateHandshakeObserver(input: {
   providers: CapabilityProviderRegistry;
   capabilities: { getTrustedCapability(name: string): { id: string; testOnly?: boolean } | undefined };
   raw: string | undefined;
-}): (observation: { definitionId: string; reachable: boolean; at: Date }) => void {
+}): (observation: {
+  definitionId: string;
+  bindingId: string;
+  endpointMode: "FIXED" | "DECLARED_AT_SETUP";
+  service: "ANSWERED" | "SILENT" | "UNKNOWN";
+  account: "ACCEPTED" | "REFUSED";
+  at: Date;
+}) => void {
   const bridges = input.raw ? parseConfiguredCandidates(input.raw, input.capabilities) : [];
   return (observation) => {
+    // Each connection dials its own address, so this handshake was about that
+    // one connection. There is nothing here that is true of the others.
+    if (observation.endpointMode !== "FIXED") return;
+    // The adapter could not tell a refusal from silence, so neither can this.
+    if (observation.service === "UNKNOWN") return;
     for (const bridge of bridges) {
       if (bridge.definitionId !== observation.definitionId) continue;
       input.providers.observe(bridge.id, {
-        state: observation.reachable ? "AVAILABLE" : "UNAVAILABLE",
+        state: observation.service === "ANSWERED" ? "AVAILABLE" : "UNAVAILABLE",
         at: observation.at,
-        ...(observation.reachable
+        ...(observation.service === "ANSWERED"
           ? { freshUntil: new Date(observation.at.getTime() + bridge.freshnessSeconds * 1000) }
           : {}),
       });

@@ -83,7 +83,9 @@ describe("what makes a configured definition selectable", () => {
   });
 
   /** The definition registry a deployment would have, with a recording adapter. */
-  function definitionRegistry(reachable = true) {
+  function definitionRegistry(
+    handshake: { ok?: boolean; reached?: boolean } = { ok: true },
+  ) {
     const registry = new binding.ProviderDefinitionRegistry({ allowTestOnly: true });
     const [definition] = configured.parseConfiguredMcpProviders(CONFIG);
     registry.register({
@@ -91,9 +93,13 @@ describe("what makes a configured definition selectable", () => {
       testOnly: true,
       adapter: {
         authenticate: async () =>
-          reachable
+          handshake.ok !== false
             ? ({ ok: true as const, accountRef: "acct" })
-            : ({ ok: false as const, detail: "unreachable" }),
+            : ({
+                ok: false as const,
+                detail: "refused",
+                ...(handshake.reached === undefined ? {} : { reached: handshake.reached }),
+              }),
         discover: async () => ["SEARCH", "TRACK", "CANCEL"] as const,
         invoke: async () => ({ status: "OK" as const, value: {} }),
       },
@@ -172,21 +178,56 @@ describe("what makes a configured definition selectable", () => {
     await connect();
     const observed = registry.get(ids[0]!)!;
     expect(observed.availability.state).toBe("AVAILABLE");
-    expect(observed.freshness?.expiresAt?.getTime()).toBe(at(3 * MINUTE).getTime() + 900_000);
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: the lease runs from the DISCOVERY step, at 3 minutes.
+    // WHY_IT_IS_WRONG: discovery observes WHICH CAPABILITIES THIS ACCOUNT HAS —
+    //   the most account-specific fact in the lifecycle, since one account may
+    //   search where another may book at the very same service. It refreshed a
+    //   SHARED candidate's lease, so one account's discovery outcome spoke for
+    //   every other account.
+    // NEW_EXPECTATION: the lease runs from the handshake that observed the
+    //   SERVICE, at 2 minutes. The provider runtime no longer reports from
+    //   discovery at all.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: the shared candidate is now only ever
+    //   touched by an observation whose subject really is shared, and a lease is
+    //   no longer extended by evidence about somebody's account.
+    //
+    //   ACCOUNT_A_DISCOVERY_SUCCEEDS != ACCOUNT_B_DISCOVERY_SUCCEEDS
+    //
+    expect(observed.freshness?.expiresAt?.getTime()).toBe(at(2 * MINUTE).getTime() + 900_000);
     const selected = resolve(registry);
     expect(selected.status).toBe("SELECTED");
     expect(selected.status === "SELECTED" && selected.binding.providerId).toBe(ids[0]);
 
     // And the lease runs out rather than standing forever.
-    expect(resolve(registry, new Date(at(3 * MINUTE).getTime() + 900_001)).status).toBe("STALE");
+    expect(resolve(registry, new Date(at(2 * MINUTE).getTime() + 900_001)).status).toBe("STALE");
   });
 
-  it("a handshake that failed makes it unselectable again", async () => {
+  it("only SILENCE makes it unselectable again, and a refused credential does not", async () => {
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: any failed handshake clears the shared lease.
+    // WHY_IT_IS_WRONG: a handshake fails for two unrelated reasons — the service
+    //   did not answer, or it answered and refused THIS ACCOUNT'S credential.
+    //   Collapsing them let any tenant's bad key mark the provider unavailable
+    //   for every other tenant.
+    // NEW_EXPECTATION: silence clears it; a refusal does not touch it; and an
+    //   adapter that cannot tell the two apart writes nothing.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: it removes a cross-scope denial that
+    //   any one account could cause, and it refuses to guess when the evidence
+    //   does not distinguish the subjects.
+    //
+    //   BAD_CREDENTIAL != PROVIDER_GLOBALLY_DOWN
+    //   ONE_BINDING_FAILURE != ALL_BINDINGS_UNAVAILABLE
+    //
     const { registry, ids } = bridged(CONFIG);
     registry.observe(ids[0]!, { state: "AVAILABLE", at: T0, freshUntil: at(60 * MINUTE) });
     expect(resolve(registry).status).toBe("SELECTED");
-    // The provider stopped answering. The old success does not coast.
-    definitionRegistry(false);
+    // The address did not answer at all. The old success does not coast.
+    definitionRegistry({ ok: false, reached: false });
     binding.setProviderHandshakeObserver(
       configured.configuredCandidateHandshakeObserver({ providers: registry, capabilities, raw: CONFIG }),
     );

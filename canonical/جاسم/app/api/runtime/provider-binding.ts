@@ -232,7 +232,23 @@ export type AuthenticationOutcome =
       readonly accountRef: string;
       readonly accountLabel?: string;
     }
-  | { readonly ok: false; readonly detail: string };
+  | {
+      readonly ok: false;
+      readonly detail: string;
+      /**
+       * Whether the SERVICE answered, which is not whether this ACCOUNT was
+       * accepted. A refused credential and an unreachable address are different
+       * facts about different subjects, and an adapter that knows the difference
+       * says so here rather than letting one stand for the other.
+       *
+       *   SERVICE_ANSWERED != CREDENTIAL_ACCEPTED
+       *   BAD_CREDENTIAL != PROVIDER_GLOBALLY_DOWN
+       *
+       * Absent means the adapter could not tell, which is read as «unknown» and
+       * never as either answer.
+       */
+      readonly reached?: boolean;
+    };
 
 export type ProviderResult =
   | { readonly status: "OK"; readonly value: unknown; readonly observedAt?: Date }
@@ -1252,13 +1268,27 @@ export async function authenticateBinding(input: {
   }
   const context = await contextFor(row, definition, handshakeCapability(definition));
   const outcome = await definition.adapter.authenticate(context);
-  // Whatever it concluded about the ACCOUNT, it just found out whether the
-  // system answers at all. That is the only live reachability evidence this
-  // repository produces, so it is reported rather than thrown away.
+  // TWO FACTS, kept apart.
+  //
+  // Whether the account was accepted is about this account and nothing else.
+  // Whether anything ANSWERED is about the address — and only the adapter knows
+  // which of the two failed, so an adapter that cannot tell says nothing rather
+  // than letting a refused credential look like an outage.
+  //
+  //   ACCOUNT_A_AUTHENTICATES != ACCOUNT_B_AUTHENTICATES
+  //   BAD_CREDENTIAL != PROVIDER_GLOBALLY_DOWN
   reportHandshake({
     definitionId: definition.id,
     bindingId: row.id,
-    reachable: outcome.ok,
+    endpointMode: definition.endpoint.mode,
+    service: outcome.ok
+      ? "ANSWERED"
+      : outcome.reached === undefined
+        ? "UNKNOWN"
+        : outcome.reached
+          ? "ANSWERED"
+          : "SILENT",
+    account: outcome.ok ? "ACCEPTED" : "REFUSED",
     at: now,
   });
   if (!outcome.ok) {
@@ -1365,12 +1395,24 @@ export async function verifyBinding(input: {
   }
 
   const context = await contextFor(row, definition, handshakeCapability(definition));
+  //
+  // NOTHING IS REPORTED FROM HERE, ON PURPOSE.
+  //
+  // What discovery observes is WHICH CAPABILITIES THIS ACCOUNT HAS. That is the
+  // most account-specific fact in the whole lifecycle — one account may be
+  // allowed to search and another to book at the very same service — so it can
+  // never stand for anything shared.
+  //
+  //   ACCOUNT_A_DISCOVERY_SUCCEEDS != ACCOUNT_B_DISCOVERY_SUCCEEDS
+  //   ACCOUNT_A_CAPABILITIES != ACCOUNT_B_CAPABILITIES
+  //
+  // It used to refresh a shared candidate's freshness lease, which meant one
+  // account's discovery failure erased an observation whose subject was another
+  // account.
   let discovered: readonly ProviderCapability[];
   try {
     discovered = await definition.adapter.discover(context);
-    reportHandshake({ definitionId: definition.id, bindingId: row.id, reachable: true, at: now });
   } catch (error) {
-    reportHandshake({ definitionId: definition.id, bindingId: row.id, reachable: false, at: now });
     await db
       .update(scopeProviderBindings)
       .set({ lifecycle: "SUSPENDED", suspendedReason: "DISCOVERY_FAILED", state: "pending" })
@@ -2186,8 +2228,24 @@ export async function usableBindingFor(input: {
  */
 export type ProviderHandshakeObservation = {
   readonly definitionId: string;
+  /** WHOSE handshake this was. An observation without its subject is a rumour. */
   readonly bindingId: string;
-  readonly reachable: boolean;
+  /**
+   * WHETHER THE ADDRESS THIS BINDING USES IS THE DEFINITION'S OR ITS OWN.
+   *
+   * The only reason a per-account handshake can say anything about a shared
+   * candidate: when the definition's address is FIXED, every binding dials the
+   * same place, so «it answered» is a fact about that place. When each
+   * connection declares its own address, it is not.
+   *
+   *   PROVIDER_DEFINITION != PROVIDER_ACCOUNT
+   *   OBSERVATION_AUTHORITY_MUST_MATCH_OBSERVATION_SUBJECT
+   */
+  readonly endpointMode: EndpointPolicy["mode"];
+  /** Did anything answer at that address. A fact about the SERVICE. */
+  readonly service: "ANSWERED" | "SILENT" | "UNKNOWN";
+  /** Was this account's credential accepted. A fact about ONE ACCOUNT. */
+  readonly account: "ACCEPTED" | "REFUSED";
   readonly at: Date;
 };
 
