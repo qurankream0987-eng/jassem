@@ -4007,6 +4007,7 @@ export async function executeRuntimeDagNode(input: {
     let providerReceiptSecret: string | undefined;
     let providerAccountRef: string | null = null;
     let providerDefinitionId: string | null = null;
+    let providerOperations: { invoke: string; readback?: string; cancel?: string } | null = null;
     let remoteConnection: Awaited<ReturnType<typeof authorizedConnection>> extends infer O
       ? O extends { status: "AUTHORIZED"; connection: infer C }
         ? C | null
@@ -4034,6 +4035,21 @@ export async function executeRuntimeDagNode(input: {
           "That system was discovered but is not a connected provider here.",
         );
       }
+      // ── WHICH EXACT OPERATION, FROM TRUSTED CONFIGURATION ─────────────
+      //
+      // Not from the capability id, not from the tool's name, not from the
+      // remote description, and not from the effect class — an effect class
+      // cannot tell PAY from DELETE, so authorizing by one would let either
+      // stand for the other.
+      //
+      //   MODEL_SELECTS_PROVIDER_CAPABILITY = 0
+      //   SAME_EFFECT_SIDE != SAME_AUTHORITY
+      providerOperations = provider.operations ?? null;
+      if (!providerOperations?.invoke) {
+        throw new RuntimeActionError(
+          "That connection does not say which operation this call would be.",
+        );
+      }
       // WHICH ACCOUNT is about to run this, pinned before the effect exists.
       // The scope holds at most one binding per provider, so this is exact
       // rather than chosen, and it is read ONCE — the execution below records
@@ -4058,10 +4074,7 @@ export async function executeRuntimeDagNode(input: {
         bindingId: providerAccountRef,
         onBehalfOfScopeId: input.ownerId,
         definitionId: providerDefinitionId,
-        // The effect contract already knows whether this changes the world.
-        // A read needs a reading grant; anything else needs a mutating one.
-        requires:
-          registry.effectContract(capabilityId).effectKind === "NONE" ? "READING" : "MUTATING",
+        requiresCapability: providerOperations.invoke as never,
       });
       if (connection.status !== "AUTHORIZED") {
         throw new RuntimeActionError(connection.detail);
@@ -4145,6 +4158,9 @@ export async function executeRuntimeDagNode(input: {
         // And the trusted definition it was authorized as, beside the candidate
         // that was selected. Two namespaces, both recorded.
         providerDefinitionId,
+        // The exact verbs, pinned once. A later readback or withdrawal reads
+        // these rather than re-deriving anything.
+        authorizedOperations: providerOperations,
         protocolKind: providerBinding.kind,
         requestDigest: attemptFingerprint,
         idempotencyKey,

@@ -466,6 +466,24 @@ export const remoteExecutions = pgTable(
      * being passed where the other was expected.
      */
     providerDefinitionId: varchar("providerDefinitionId", { length: 120 }),
+    /**
+     * WHICH EXACT PROVIDER OPERATIONS this execution was authorized as.
+     *
+     *   SAME_EFFECT_SIDE != SAME_AUTHORITY
+     *   AUTHORITY_TO_EXECUTE != AUTHORITY_TO_READ_BACK
+     *   AUTHORITY_TO_CREATE  != AUTHORITY_TO_CANCEL
+     *
+     * Pinned from trusted configuration when the execution is created, so a
+     * later readback or withdrawal asks the row rather than re-deriving a verb
+     * from discovery metadata, a policy or a provider's current manifest. An
+     * absent verb is NOT «anything on the same side»: it is no authority, and
+     * the operation is refused.
+     */
+    authorizedOperations: jsonb("authorizedOperations").$type<{
+      invoke: string;
+      readback?: string;
+      cancel?: string;
+    }>(),
     protocolKind: varchar("protocolKind", { length: 16 }).notNull().$type<"MCP" | "A2A">(),
     /** Provider-side task/reference id once the provider returns one. */
     remoteReference: varchar("remoteReference", { length: 255 }),

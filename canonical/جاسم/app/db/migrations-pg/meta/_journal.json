@@ -211,6 +211,13 @@
       "when": 1788273600011,
       "tag": "0029_remote_execution_binding_authority",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1788273600012,
+      "tag": "0030_remote_execution_exact_capability",
+      "breakpoints": true
     }
   ]
 }

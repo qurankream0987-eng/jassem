@@ -128,6 +128,44 @@ export type CapabilityProvider = {
    *   FOUND_PROVIDER != MAY_EXECUTE_PROVIDER
    */
   definitionId?: string;
+  /**
+   * WHICH EXACT PROVIDER OPERATIONS this candidate's calls are authorized as.
+   *
+   * ─── WHY THIS IS NOT THE CANDIDATE'S TO SAY ────────────────────────────────
+   *
+   * A remote system describes what it does; it does not decide what it is
+   * permitted to do here. A tool called `transfer_funds` may not thereby
+   * authorize PAY, and one called `delete_everything` may not authorize DELETE.
+   * So this travels with `definitionId` under the same trust law: `register`
+   * refuses it on any candidate whose provenance is a discovery source.
+   *
+   *   DISCOVERY_CAN_SELF_DECLARE_EXECUTION_CAPABILITY = 0
+   *   MODEL_SELECTS_PROVIDER_CAPABILITY = 0
+   *
+   * ─── AND WHY THREE OF THEM ─────────────────────────────────────────────────
+   *
+   * Invoking, reading a result back, and withdrawing the instruction are three
+   * separate operations on the other side, and a provider may permit them
+   * separately.
+   *
+   *   AUTHORITY_TO_EXECUTE != AUTHORITY_TO_READ_BACK
+   *   AUTHORITY_TO_CREATE  != AUTHORITY_TO_CANCEL
+   *
+   * `readback` and `cancel` are optional and absent means THERE IS NONE: a
+   * provider whose contract never said which verb authorizes a status read has
+   * no authorized status read, and one that never said which authorizes a
+   * withdrawal cannot be told to stop. Both fail closed rather than falling
+   * back to «something on the same side».
+   *
+   * A provider whose own contract folds cancellation into the verb that started
+   * the work says exactly that here — `cancel: "BOOK"` — rather than the runtime
+   * assuming it for everyone.
+   */
+  operations?: {
+    readonly invoke: string;
+    readonly readback?: string;
+    readonly cancel?: string;
+  };
   //
   // `receiptSecret` USED TO BE DECLARED HERE, AND IS GONE ON PURPOSE.
   //
@@ -221,9 +259,12 @@ export class CapabilityProviderRegistry {
     // MANUAL_CONFIG provenance means.
     //
     //   DISCOVERED_PROVIDER != AUTHORIZED_CONNECTION
-    if (provider.definitionId && DISCOVERY_SOURCES.has(provider.provenance.source)) {
+    if (
+      (provider.definitionId || provider.operations) &&
+      DISCOVERY_SOURCES.has(provider.provenance.source)
+    ) {
       throw new Error(
-        `Provider "${provider.id}" was discovered, so it cannot name a trusted provider definition.`,
+        `Provider "${provider.id}" was discovered, so it cannot name a trusted provider definition or the operations it is authorized as.`,
       );
     }
     if (provider.kind === "NATIVE" && !provider.nativeHandler) {

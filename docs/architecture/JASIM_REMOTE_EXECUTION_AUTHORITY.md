@@ -79,7 +79,9 @@ authorizedConnection({ bindingId, onBehalfOfScopeId, definitionId, requires })
   row missing / legacy / not yours → NO_SUCH_BINDING       (one refusal, no oracle)
   definition does not match        → PROVIDER_MISMATCH
   lifecycle is not VERIFIED        → BINDING_NOT_USABLE
-  no grant on the call's side      → CAPABILITY_NOT_GRANTED
+  the exact verb is not granted     → CAPABILITY_NOT_GRANTED
+  the manifest does not support it  → CAPABILITY_NOT_GRANTED
+  the call names no operation       → CAPABILITY_NOT_GRANTED
   unregistered / no address / no credential → CONNECTION_INCOMPLETE
 
   otherwise → { endpoint, credential, definitionId, scopeId, authMethod }
@@ -92,23 +94,81 @@ returns one without the other:
 CREDENTIAL_BINDING_DIFFERS_FROM_ENDPOINT_BINDING = 0
 ```
 
-### Which grant a remote call requires
+### Which grant a remote call requires — the EXACT verb
 
-This repository has no mapping from a semantic capability id to a provider
-capability verb, and inventing one would be inventing authority. What it does
-have is the effect contract, which already says whether a call changes the
-world, and the grant list, which already says whether this connection was
-allowed to. So the requirement is the one both sides can state:
+The first version of this gate asked only which **side** of the vocabulary a
+call was on, and treated any grant on that side as sufficient. That was too
+weak, and it was the last thing standing between this door and the two older
+ones beside it, which had always required the exact verb:
 
-| call | requires |
-| --- | --- |
-| a capability whose `effectKind` is `NONE` | a **reading** grant |
-| anything else | a **mutating** grant |
-| a readback (poll) | a **reading** grant |
-| a cancellation | a **mutating** grant |
+```
+SAME_EFFECT_SIDE      != SAME_AUTHORITY
+GRANTED_SOME_MUTATION != GRANTED_THIS_MUTATION
+GRANTED_SOME_READ     != GRANTED_THIS_READ
+```
 
-A finer verb-level mapping is not asserted, because nothing in the repository
-supports one. What is asserted is strictly more than before, which was nothing.
+A connection granted only `PAY` passed a `DELETE`; one granted only `OBSERVE`
+passed a `SEARCH`. `capabilityMutates` keeps the job it always had — the
+read/write partition — and is no longer authority for anything.
+
+The gate now proves, for one named verb:
+
+```
+definition.supports  includes it      (a manifest that narrowed invalidates a stale grant)
+binding.granted      includes it      (exact, never a sibling on the same side)
+```
+
+An operation nobody named is refused. There is no default and no "most likely"
+verb: the five reading verbs are a **set**, not a ladder, so nothing could be
+derived even if deriving were safe.
+
+**Where the verb comes from.** Trusted configuration on the candidate bridge,
+beside `definitionId`, and under the same trust law — `register` refuses it on a
+discovered candidate:
+
+```
+operations: { invoke, readback?, cancel? }
+DISCOVERY_CAN_SELF_DECLARE_EXECUTION_CAPABILITY = 0
+MODEL_SELECTS_PROVIDER_CAPABILITY = 0
+```
+
+A tool named `transfer_funds` does not thereby authorize `PAY`. Never derived
+from a capability id, a tool name, a remote description, or an effect class —
+an effect class cannot tell `PAY` from `DELETE`, so authorizing by one would let
+either stand for the other.
+
+**Three operations, three verbs.** Invoking, reading a result back and
+withdrawing the instruction are separate operations that a provider may permit
+separately:
+
+```
+AUTHORITY_TO_EXECUTE != AUTHORITY_TO_READ_BACK
+AUTHORITY_TO_CREATE  != AUTHORITY_TO_CANCEL
+```
+
+`readback` and `cancel` are optional, and absent means **there is none** — not
+"anything on the same side". All three are pinned onto
+`remote_executions.authorizedOperations` when the execution is created, so a
+later follow-up reads the row instead of re-deriving a verb from discovery
+metadata, a policy, or a manifest that has since moved.
+
+```
+MUTABLE_POLICY_CHANGES_REQUIRED_CAPABILITY = 0
+```
+
+### CANCEL, and why the vocabulary needed it
+
+Nothing in the thirteen verbs meant *withdraw an instruction already given*.
+`DELETE` destroys a record, `UPDATE` changes a value, `REFUND` undoes a payment
+specifically. So `CANCEL` was added: generic, on the writing side, naming no
+domain — the same verb withdraws a payment authorization, a reservation and a
+long-running remote job. It flows through the existing path
+(`supports` → `requestedCapabilities` → `grantedCapabilities` → the exact gate)
+and brought no runtime of its own.
+
+A provider whose own contract folds cancellation into the verb that started the
+work says exactly that in configuration — `cancel: "BOOK"` — rather than the
+runtime assuming it for everyone.
 
 ## Poll and cancel: what is remembered and what is re-asked
 
@@ -195,4 +255,5 @@ happened to be empty.
 | --- | --- |
 | `tests/block31/remote-execution-authority.test.ts` | an unbound candidate cannot execute; discovery cannot nominate itself; only VERIFIED with the right side of the grant may be called (setup-pending, authorized, suspended and revoked each refused); the canonical endpoint is used and a mutated discovery row is never dialled, for poll and for cancel; another scope's account and another provider's account refused; the credential and address come from one account; the credential is nowhere in canonical state; a credential does not follow a cross-origin redirect (real MCP client, real sockets); the pinned account survives a policy change and a new account elsewhere; revocation stops new reads and cancellations and leaves state untouched; the three credential kinds still coexist |
 | `tests/unit/remote-execution-authority-contract.test.ts` | no remote path can reach a discovered endpoint; the namespaces are bridged by trusted configuration only; destination and credential leave by the same door; the pinned account is read and never reselected; a credential never reaches a URL, a row or another origin; authority stays in the general runtime |
+| `tests/block31/remote-capability-grant.test.ts` | a mutating grant authorizes its own verb and no other (PAY↛DELETE, DELETE↛PAY); a reading grant likewise (OBSERVE↛SEARCH, SEARCH↛OBSERVE, READ↛TRACK); supported is not granted, and a grant cannot exceed or be requested beyond the manifest; discovery cannot declare the verb it would be authorized as, for MCP and for A2A; a call naming no operation is refused rather than defaulted; a readback needs the verb pinned for it; a cancellation needs its own, and the verb that started the work is not it; an execution that pinned none has no authorized follow-up; nothing that changes afterwards changes which verb was required; the lifecycle and one-account rules unchanged |
 | `tests/block2/mcp-transport.test.ts` | the protocol transport's own laws, unchanged |

@@ -124,7 +124,7 @@ describe("who authorizes a remote call", () => {
         adapterState.authenticates
           ? ({ ok: true as const, accountRef: "acct" })
           : ({ ok: false as const, detail: "refused" }),
-      discover: async () => ["READ", "UPDATE"] as never,
+      discover: async () => ["READ", "UPDATE", "TRACK", "CANCEL"] as never,
       invoke: async () => ({ status: "OK" as const, value: {} }),
     };
     const base = {
@@ -136,7 +136,7 @@ describe("who authorizes a remote call", () => {
     // account of where it lives never reaches it.
     registry.register({
       ...base, id: "rc.remote", displayName: "نظام بعيد",
-      supports: ["READ", "UPDATE"] as const,
+      supports: ["READ", "UPDATE", "TRACK", "CANCEL"] as const,
       endpoint: { mode: "FIXED" as const, baseUrl: AUTHORIZED_ENDPOINT },
     });
     // Reads only: nobody granted it anything that changes the other side.
@@ -180,7 +180,7 @@ describe("who authorizes a remote call", () => {
     const scope = opts.scope ?? ownerScope;
     const opened = await binding.beginProviderSetup({
       principalId: scope, scopeId: scope, definitionId,
-      requestedCapabilities: opts.capabilities ?? ["READ", "UPDATE"], now: T0,
+      requestedCapabilities: opts.capabilities ?? ["READ", "UPDATE", "TRACK", "CANCEL"], now: T0,
     });
     if (opts.stopAt === "SETUP_PENDING") return opened.bindingId;
     await binding.completeProviderSetup({
@@ -224,6 +224,8 @@ describe("who authorizes a remote call", () => {
       bindingId: randomUUID(),
       providerBindingRef: opts.bindingId,
       providerDefinitionId: opts.definitionId,
+      // The exact verbs, pinned from trusted configuration at creation.
+      authorizedOperations: { invoke: "UPDATE", readback: "TRACK", cancel: "CANCEL" },
       protocolKind: "MCP",
       requestDigest: "a".repeat(64),
       idempotencyKey: `idem_${randomUUID()}`,
@@ -257,7 +259,7 @@ describe("who authorizes a remote call", () => {
   it("a discovered candidate with no canonical connection cannot execute", async () => {
     //   UNBOUND_DISCOVERED_PROVIDER_CAN_EXECUTE = 0
     const outcome = await binding.authorizedConnection({
-      bindingId: null, onBehalfOfScopeId: ownerScope, requires: "READING",
+      bindingId: null, onBehalfOfScopeId: ownerScope, requiresCapability: "TRACK",
     });
     expect(outcome.status).toBe("REFUSED");
     expect(outcome).toMatchObject({ refusal: "NO_SUCH_BINDING" });
@@ -295,20 +297,20 @@ describe("who authorizes a remote call", () => {
 
   // ── 2–7 · THE LIFECYCLE AND THE GRANT ────────────────────────────────────
 
-  it("only a VERIFIED connection with the right side of the grant may be called", async () => {
+  it("only a VERIFIED connection holding the exact verb may be called", async () => {
     //   UNVERIFIED_BINDING_CAN_EXECUTE = 0 · SUSPENDED = 0 · REVOKED = 0
     //   UNGRANTED_CAPABILITY_CAN_EXECUTE = 0
     const verified = await connect("rc.remote");
     await expect(
       binding.authorizedConnection({
-        bindingId: verified, onBehalfOfScopeId: ownerScope, requires: "MUTATING",
+        bindingId: verified, onBehalfOfScopeId: ownerScope, requiresCapability: "UPDATE",
       }),
     ).resolves.toMatchObject({ status: "AUTHORIZED" });
 
     for (const stopAt of ["SETUP_PENDING", "AUTHORIZED", "SUSPENDED"] as const) {
       const partial = await connect("rc.remote", { scope: strangerScope, stopAt });
       const outcome = await binding.authorizedConnection({
-        bindingId: partial, onBehalfOfScopeId: strangerScope, requires: "READING",
+        bindingId: partial, onBehalfOfScopeId: strangerScope, requiresCapability: "TRACK",
       });
       expect(outcome.status, stopAt).toBe("REFUSED");
       expect(outcome, stopAt).toMatchObject({ refusal: "BINDING_NOT_USABLE" });
@@ -320,7 +322,7 @@ describe("who authorizes a remote call", () => {
     await binding.revokeBinding({ bindingId: verified, principalId: ownerScope, now: at(5 * MINUTE) });
     expect(
       await binding.authorizedConnection({
-        bindingId: verified, onBehalfOfScopeId: ownerScope, requires: "READING",
+        bindingId: verified, onBehalfOfScopeId: ownerScope, requiresCapability: "TRACK",
       }),
     ).toMatchObject({ status: "REFUSED", refusal: "BINDING_NOT_USABLE" });
 
@@ -328,12 +330,12 @@ describe("who authorizes a remote call", () => {
     const readOnly = await connect("rc.readonly", { capabilities: ["READ"] });
     expect(
       await binding.authorizedConnection({
-        bindingId: readOnly, onBehalfOfScopeId: ownerScope, requires: "READING",
+        bindingId: readOnly, onBehalfOfScopeId: ownerScope, requiresCapability: "READ",
       }),
     ).toMatchObject({ status: "AUTHORIZED" });
     expect(
       await binding.authorizedConnection({
-        bindingId: readOnly, onBehalfOfScopeId: ownerScope, requires: "MUTATING",
+        bindingId: readOnly, onBehalfOfScopeId: ownerScope, requiresCapability: "UPDATE",
       }),
     ).toMatchObject({ status: "REFUSED", refusal: "CAPABILITY_NOT_GRANTED" });
   });
@@ -373,14 +375,14 @@ describe("who authorizes a remote call", () => {
     // Another scope's account is refused, indistinguishably from a guess.
     expect(
       await binding.authorizedConnection({
-        bindingId: theirs, onBehalfOfScopeId: ownerScope, requires: "READING",
+        bindingId: theirs, onBehalfOfScopeId: ownerScope, requiresCapability: "TRACK",
       }),
     ).toMatchObject({ status: "REFUSED", refusal: "NO_SUCH_BINDING" });
     // And an account at a different provider than the execution recorded.
     expect(
       await binding.authorizedConnection({
         bindingId: mine, onBehalfOfScopeId: ownerScope,
-        definitionId: "rc.readonly", requires: "READING",
+        definitionId: "rc.readonly", requiresCapability: "READ",
       }),
     ).toMatchObject({ status: "REFUSED", refusal: "PROVIDER_MISMATCH" });
 

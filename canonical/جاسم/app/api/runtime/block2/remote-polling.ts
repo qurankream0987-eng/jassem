@@ -1,9 +1,5 @@
 import { completeRemoteRuntimeDagNode } from "../jasim-runtime";
-import {
-  authorizedConnection,
-  httpAuthorizationFor,
-  type RequiredGrant,
-} from "../provider-binding";
+import { authorizedConnection, httpAuthorizationFor } from "../provider-binding";
 import { canonicalResultDigest } from "../execution-verifier";
 import { createMcpClient } from "./mcp-client";
 import {
@@ -70,23 +66,39 @@ function defaultClientFactory(
  *
  * ─── AUTHORITY IS RE-CHECKED, NOT REMEMBERED ────────────────────────────────
  *
- * WHICH account ran the request is a settled historical fact. Whether that
- * connection may still be called is a question about NOW, and this asks it
- * again every time: a connection that is no longer VERIFIED is refused for a
- * readback and for a cancellation alike, which is the rule the general
- * provider doors already apply. A cancellation additionally needs a MUTATING
- * grant, because it is a new instruction to the other side and not a reading of
- * what already happened.
+ * WHICH account ran the request is a settled historical fact, and so is WHICH
+ * EXACT OPERATION each follow-up was authorized as — both are read from the row.
+ * Whether that connection may still be called is a question about NOW, and this
+ * asks it again every time: a connection that is no longer VERIFIED is refused
+ * for a readback and for a cancellation alike, which is the rule the general
+ * provider doors already apply.
+ *
+ * The two follow-ups are DIFFERENT operations and need their own grants. Neither
+ * inherits the invocation's, and neither is satisfied by another verb that
+ * happens to be on the same side of the vocabulary.
  */
 async function pinnedConnection(
-  execution: { ownerId: string; providerBindingRef: string | null; providerDefinitionId: string | null },
-  requires: RequiredGrant,
+  execution: {
+    ownerId: string;
+    providerBindingRef: string | null;
+    providerDefinitionId: string | null;
+    authorizedOperations: { invoke: string; readback?: string; cancel?: string } | null;
+  },
+  operation: "readback" | "cancel",
 ): Promise<{ endpoint: string; headers: Readonly<Record<string, string>> }> {
+  // The exact verb this operation was authorized as, read from the row. An
+  // execution that pinned none has no authorized readback and no authorized
+  // withdrawal — which is a refusal, not a reason to look for a verb that would
+  // do.
+  //
+  //   AUTHORITY_TO_EXECUTE != AUTHORITY_TO_READ_BACK
+  //   AUTHORITY_TO_CREATE != AUTHORITY_TO_CANCEL
+  const requiresCapability = execution.authorizedOperations?.[operation] ?? null;
   const outcome = await authorizedConnection({
     bindingId: execution.providerBindingRef,
     onBehalfOfScopeId: execution.ownerId,
     definitionId: execution.providerDefinitionId,
-    requires,
+    requiresCapability: requiresCapability as never,
   });
   if (outcome.status !== "AUTHORIZED") {
     throw new RemoteExecutionError(outcome.detail, "FORBIDDEN");
@@ -169,7 +181,7 @@ export async function pollRemoteExecution(
   }
 
   // A readback of work this account already did. Reading, not changing.
-  const connection = await pinnedConnection(execution, "READING");
+  const connection = await pinnedConnection(execution, "readback");
   const client = (deps.clientFactory ?? defaultClientFactory)(connection.endpoint, connection.headers);
   const observation = taskObservation(await client.getTask(execution.remoteReference));
   if (!observation.completed && !observation.failed) return null;
@@ -234,7 +246,7 @@ export async function requestRemoteCancellation(
   // as it was rather than parking the execution at CANCEL_REQUESTED forever.
   //
   //   REFUSED_CANCEL_MOVES_CANONICAL_STATE = 0
-  const connection = await pinnedConnection(execution, "MUTATING");
+  const connection = await pinnedConnection(execution, "cancel");
   const requested = await transitionRemoteExecution(db, {
     id: execution.id,
     ownerId: input.ownerId,

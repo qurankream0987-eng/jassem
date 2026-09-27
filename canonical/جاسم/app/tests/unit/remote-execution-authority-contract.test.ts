@@ -74,7 +74,29 @@ describe("the remote execution authority contract", () => {
     expect(gate).toMatch(/row\.scopeId !== input\.onBehalfOfScopeId/);
     expect(gate).toMatch(/row\.definitionId !== input\.definitionId/);
     expect(gate).toMatch(/row\.lifecycle !== "VERIFIED"/);
-    expect(gate).toMatch(/capabilityMutates\(capability\) === \(input\.requires === "MUTATING"\)/);
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: the gate compares the call's SIDE of the vocabulary
+    //   against the side of some granted capability.
+    // WHY_IT_IS_WRONG: it was too weak, and this assertion is what pinned the
+    //   weakness in place. A side is a classification: a connection granted
+    //   only PAY passed a DELETE, and one granted only OBSERVE passed a SEARCH.
+    // NEW_EXPECTATION: the gate requires the EXACT verb, in the grant list and
+    //   in the definition's manifest.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: it is the rule the other two doors
+    //   in the same runtime always applied, and this door was the only one that
+    //   did not. `capabilityMutates` keeps its job — the read/write partition —
+    //   and stops being authority.
+    //
+    //   SAME_EFFECT_SIDE != SAME_AUTHORITY
+    //   ANY_MUTATING_GRANT_AUTHORIZES_ANY_MUTATION = 0
+    //
+    expect(gate).not.toMatch(/capabilityMutates/);
+    expect(gate).toMatch(/row\.grantedCapabilities\.includes\(input\.requiresCapability\)/);
+    expect(gate).toMatch(/definition\.supports\.includes\(input\.requiresCapability\)/);
+    // An operation nobody named is refused rather than defaulted.
+    expect(gate).toMatch(/if \(!input\.requiresCapability \|\| !isCapability\(input\.requiresCapability\)\)/);
     // And a null account is refused rather than searched for.
     expect(gate).toMatch(/if \(!input\.bindingId\) \{/);
     expect(gate).not.toMatch(/orderBy|desc\(|createdAt/);
@@ -89,9 +111,12 @@ describe("the remote execution authority contract", () => {
     // follow-up paths.
     expect(POLLING).not.toMatch(/accountBindingFor|usableBindingFor|verifiedBindingsFor/);
     expect(POLLING).not.toMatch(/orderBy|preferredProviders|scopePolicies/);
-    // A readback reads; a cancellation changes something.
-    expect(POLLING).toMatch(/pinnedConnection\(execution, "READING"\)/);
-    expect(POLLING).toMatch(/pinnedConnection\(execution, "MUTATING"\)/);
+    // A readback and a cancellation are different OPERATIONS, each requiring
+    // the exact verb the execution pinned for it — not a side, and not each
+    // other's.
+    expect(POLLING).toMatch(/pinnedConnection\(execution, "readback"\)/);
+    expect(POLLING).toMatch(/pinnedConnection\(execution, "cancel"\)/);
+    expect(POLLING).toMatch(/execution\.authorizedOperations\?\.\[operation\] \?\? null/);
     // And the authority check happens before the cancellation moves state.
     const cancel = POLLING.slice(POLLING.indexOf("export async function requestRemoteCancellation"));
     expect(cancel.indexOf('pinnedConnection(execution, "MUTATING")')).toBeLessThan(

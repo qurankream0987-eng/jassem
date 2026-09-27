@@ -35,9 +35,27 @@ describe("the provider binding contract", () => {
   // ── A · THE VOCABULARY IS CLOSED AND GENERAL ─────────────────────────────
 
   it("capabilities are verbs, and there are no others", () => {
+    //
+    // ── AN INHERITED EXPECTATION THAT CHANGED ──────────────────────────────
+    //
+    // OLD_EXPECTATION: thirteen verbs, ending at REFUND.
+    // WHY_IT_IS_WRONG: it is not wrong — it is the lock that stops a verb
+    //   appearing unnoticed, and it flagged the fourteenth. What it revealed is
+    //   that the set had no verb for WITHDRAWING AN INSTRUCTION ALREADY GIVEN:
+    //   DELETE destroys a record, UPDATE changes a value, REFUND undoes a
+    //   payment specifically, and none of them is «stop the thing you started».
+    // NEW_EXPECTATION: fourteen, with CANCEL, on the writing side.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: without it, authorizing a remote
+    //   cancellation meant accepting any mutating grant — so a connection
+    //   granted only PAY could be told to cancel somebody's booking. The verb
+    //   exists so that authority to start something is provably not authority
+    //   to stop it, and it names no domain: the same verb withdraws a payment
+    //   authorization, a reservation and a long-running remote job.
+    //
     expect([...PROVIDER_CAPABILITIES]).toEqual([
       "READ", "SEARCH", "DISCOVER", "OBSERVE", "TRACK",
       "CREATE", "UPDATE", "DELETE", "BOOK", "SCHEDULE", "MESSAGE", "PAY", "REFUND",
+      "CANCEL",
     ]);
     // Not READ_SHIRTS, not BOOK_HOTEL, not UPDATE_CAR. A capability that named
     // a thing would be the end of the generality this list carries.
@@ -53,6 +71,8 @@ describe("the provider binding contract", () => {
     expect(reads).toEqual(["READ", "SEARCH", "DISCOVER", "OBSERVE", "TRACK"]);
     expect(writes).toEqual([
       "CREATE", "UPDATE", "DELETE", "BOOK", "SCHEDULE", "MESSAGE", "PAY", "REFUND",
+      // Withdrawing an instruction changes the other side, so it is a write.
+      "CANCEL",
     ]);
     // Partitioned: nothing is both, and nothing is neither.
     expect(reads.length + writes.length).toBe(PROVIDER_CAPABILITIES.length);

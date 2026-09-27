@@ -108,6 +108,25 @@ export const PROVIDER_CAPABILITIES = [
   "MESSAGE",
   "PAY",
   "REFUND",
+  /**
+   * WITHDRAW AN INSTRUCTION ALREADY GIVEN.
+   *
+   * Added because nothing in the set above meant it. `DELETE` destroys a
+   * record; `UPDATE` changes a value; `REFUND` undoes a payment specifically.
+   * None of them is «stop the thing you started», which is what cancelling a
+   * remote task, a booking or a dispatched order is — and authority to start
+   * something is not authority to stop it.
+   *
+   *   AUTHORITY_TO_CREATE != AUTHORITY_TO_CANCEL
+   *   PAY != CANCEL · BOOK != CANCEL · MESSAGE != CANCEL
+   *
+   * Generic, and deliberately not a domain: the same verb withdraws a payment
+   * authorization, a reservation and a long-running remote job. A provider
+   * whose own contract folds cancellation into the verb that started the work
+   * says so in its trusted configuration rather than by this verb meaning
+   * something different per provider.
+   */
+  "CANCEL",
 ] as const;
 export type ProviderCapability = (typeof PROVIDER_CAPABILITIES)[number];
 
@@ -127,6 +146,7 @@ const MUTATING: ReadonlySet<string> = new Set([
   "MESSAGE",
   "PAY",
   "REFUND",
+  "CANCEL",
 ]);
 
 export function capabilityMutates(capability: string): boolean {
@@ -2192,21 +2212,26 @@ export type ConnectionOutcome =
   | { readonly status: "AUTHORIZED"; readonly connection: AuthorizedConnection }
   | { readonly status: "REFUSED"; readonly refusal: ConnectionRefusal; readonly detail: string };
 
-/**
- * WHICH SIDE of the vocabulary a call is on.
- *
- * A remote tool invocation carries a semantic capability id, and this
- * repository has no mapping from one of those to a provider capability VERB —
- * inventing one would be inventing authority. What it does have is the
- * effect contract, which already says whether a call changes the world, and
- * the grant list, which already says whether this connection was allowed to.
- * So the requirement is the honest one both sides can state: a read needs a
- * reading grant, and anything that changes something needs a mutating one.
- *
- *   PROVIDER_SUPPORTS_CAPABILITY != BINDING_GRANTED_CAPABILITY
- *   UNGRANTED_CAPABILITY_CAN_EXECUTE = 0
- */
-export type RequiredGrant = "READING" | "MUTATING";
+//
+// `RequiredGrant = "READING" | "MUTATING"` USED TO LIVE HERE, AND IS GONE ON
+// PURPOSE.
+//
+// It let this door authorize a call because the binding held SOME capability on
+// the same side of the vocabulary. So a connection granted only PAY passed a
+// DELETE, and one granted only OBSERVE passed a SEARCH.
+//
+//   SAME_EFFECT_SIDE != SAME_AUTHORITY
+//   GRANTED_SOME_MUTATION != GRANTED_THIS_MUTATION
+//   GRANTED_SOME_READ != GRANTED_THIS_READ
+//
+// `capabilityMutates` remains what it always was — the partition behind
+// «read and write are different sets» — and it is not, by itself, authority to
+// make a particular call. The other two doors in this file always required the
+// exact verb; this one now does too.
+//
+//   ANY_MUTATING_GRANT_AUTHORIZES_ANY_MUTATION = 0
+//   ANY_READING_GRANT_AUTHORIZES_ANY_READ = 0
+//
 
 export async function authorizedConnection(input: {
   /** The ACCOUNT, pinned by the caller. NULL is refused, never searched for. */
@@ -2215,7 +2240,16 @@ export async function authorizedConnection(input: {
   onBehalfOfScopeId: string;
   /** The definition the caller believes this is. Checked, never believed. */
   definitionId?: string | null;
-  requires: RequiredGrant;
+  /**
+   * The EXACT operation this call is.
+   *
+   * A trusted fact about what is about to happen, never derived from a model,
+   * a remote description, a tool name or an effect class. The gate below proves
+   * the definition supports it AND this binding was granted it.
+   *
+   *   MODEL_SELECTS_PROVIDER_CAPABILITY = 0
+   */
+  requiresCapability: ProviderCapability | null;
 }): Promise<ConnectionOutcome> {
   // UNKNOWN_BINDING != ANY_BINDING. There is no lookup here that could find a
   // «reasonable» account, and there is no fallback that could invent one.
@@ -2249,17 +2283,26 @@ export async function authorizedConnection(input: {
       detail: `This connection is ${row.lifecycle.toLowerCase()}.`,
     };
   }
-  const granted = row.grantedCapabilities.some(
-    (capability) => capabilityMutates(capability) === (input.requires === "MUTATING"),
-  );
-  if (!granted) {
+  // An operation nobody named is not an operation this door will authorize.
+  // There is no default verb and no «most likely» one: the reading verbs are a
+  // set rather than a ladder, so nothing could be derived even if it were safe
+  // to try.
+  if (!input.requiresCapability || !isCapability(input.requiresCapability)) {
     return {
       status: "REFUSED",
       refusal: "CAPABILITY_NOT_GRANTED",
-      detail:
-        input.requires === "MUTATING"
-          ? "This connection was not granted anything that changes the other side."
-          : "This connection was not granted anything that reads.",
+      detail: "This call names no provider operation.",
+    };
+  }
+  // THE EXACT VERB. Not a side of the vocabulary, and not another verb that
+  // happens to change things too.
+  //
+  //   GRANTED_SOME_MUTATION != GRANTED_THIS_MUTATION
+  if (!row.grantedCapabilities.includes(input.requiresCapability)) {
+    return {
+      status: "REFUSED",
+      refusal: "CAPABILITY_NOT_GRANTED",
+      detail: `This connection was not granted ${input.requiresCapability}.`,
     };
   }
   const definition = definitionOf(row.definitionId);
@@ -2268,6 +2311,18 @@ export async function authorizedConnection(input: {
       status: "REFUSED",
       refusal: "CONNECTION_INCOMPLETE",
       detail: "That provider is no longer registered.",
+    };
+  }
+  // SUPPORTED != GRANTED, checked in both directions. `verifyBinding` already
+  // computes a grant as the intersection of requested, discovered and
+  // supported, so a grant the definition does not support cannot be written —
+  // and if the definition's manifest later narrowed, the grant is stale and is
+  // refused here rather than honoured from the row alone.
+  if (!definition.supports.includes(input.requiresCapability)) {
+    return {
+      status: "REFUSED",
+      refusal: "CAPABILITY_NOT_GRANTED",
+      detail: `This kind of system does not do ${input.requiresCapability}.`,
     };
   }
   try {
