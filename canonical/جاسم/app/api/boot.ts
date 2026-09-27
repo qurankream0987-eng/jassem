@@ -22,6 +22,8 @@ import { checkRuntimeReadiness } from "./core/runtime-readiness";
 import { initWebSocket } from "./core/websocket";
 import { configureExternalActionProvidersFromConfig } from "./runtime/external-action-session";
 import { createPaymentWebhookRoutes } from "./http/payment-webhook";
+import { providerDefinitions } from "./runtime/provider-binding";
+import { registerConfiguredMcpProviders } from "./runtime/providers/configured-providers";
 
 // ── Block 1: Server-owned External Action provider trust ────────────────────
 // JASIM_EXTERNAL_PROVIDERS is a JSON map:
@@ -41,6 +43,42 @@ import { createPaymentWebhookRoutes } from "./http/payment-webhook";
       logger.error("boot.external_providers_config_invalid", {
         error: error instanceof Error ? error.message : String(error),
       });
+      if (env.isProduction) process.exit(1);
+    }
+  }
+}
+
+// ── The remote systems this deployment runs ─────────────────────────────────
+// JASIM_REMOTE_PROVIDERS is a JSON list of trusted provider definitions:
+//   [{ "id", "displayName", "authMethod", "endpoint", "tools": { CAP: "tool" } }]
+//
+// A definition says a business runs a kind of system at an address and that
+// accounts may be connected to it. Nothing else may assert that — not a
+// conversation, not a discovered tool listing, not an agent card, not a row.
+//
+//   DISCOVERY_CREATES_PROVIDER_DEFINITION = 0
+//   MODEL_CREATES_PROVIDER_DEFINITION = 0
+//   REMOTE_METADATA_CREATES_PROVIDER_DEFINITION = 0
+//
+// Nothing is registered when nothing is configured, and no provider ships here:
+// an installation that configures none can make no remote call, exactly as
+// before.
+//
+//   PRODUCTION_FAKE_PROVIDER = 0
+{
+  const raw = process.env.JASIM_REMOTE_PROVIDERS;
+  if (raw) {
+    try {
+      const registered = registerConfiguredMcpProviders(providerDefinitions, raw);
+      // The ids and nothing else. A definition's address is not a secret and is
+      // still not a log's business, and a credential never reaches this code.
+      logger.info("boot.remote_providers_configured", { providers: registered.length });
+    } catch (error) {
+      logger.error("boot.remote_providers_config_invalid", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      // A misconfigured address or verb is a startup failure, which is the
+      // cheapest place for it to be found.
       if (env.isProduction) process.exit(1);
     }
   }
