@@ -1252,6 +1252,15 @@ export async function authenticateBinding(input: {
   }
   const context = await contextFor(row, definition, handshakeCapability(definition));
   const outcome = await definition.adapter.authenticate(context);
+  // Whatever it concluded about the ACCOUNT, it just found out whether the
+  // system answers at all. That is the only live reachability evidence this
+  // repository produces, so it is reported rather than thrown away.
+  reportHandshake({
+    definitionId: definition.id,
+    bindingId: row.id,
+    reachable: outcome.ok,
+    at: now,
+  });
   if (!outcome.ok) {
     await db
       .update(scopeProviderBindings)
@@ -1359,7 +1368,9 @@ export async function verifyBinding(input: {
   let discovered: readonly ProviderCapability[];
   try {
     discovered = await definition.adapter.discover(context);
+    reportHandshake({ definitionId: definition.id, bindingId: row.id, reachable: true, at: now });
   } catch (error) {
+    reportHandshake({ definitionId: definition.id, bindingId: row.id, reachable: false, at: now });
     await db
       .update(scopeProviderBindings)
       .set({ lifecycle: "SUSPENDED", suspendedReason: "DISCOVERY_FAILED", state: "pending" })
@@ -2152,6 +2163,50 @@ export async function usableBindingFor(input: {
   const row = rows.find((candidate) => candidate.grantedCapabilities.includes(input.capability));
   if (!row) return null;
   return { bindingId: row.id, definitionId: row.definitionId ?? row.providerId };
+}
+
+/**
+ * WHAT A REAL HANDSHAKE PROVED ABOUT REACHABILITY.
+ *
+ * ─── WHY THIS SEAM EXISTS ───────────────────────────────────────────────────
+ *
+ * `resolveProvider` will not select a remote provider that is not observed
+ * AVAILABLE and carrying an unexpired freshness lease, and it is right not to:
+ * a file saying a system exists is not evidence that the system answers.
+ *
+ *   CONFIGURED != REACHABLE · DEFINITION_EXISTS != PROVIDER_AVAILABLE
+ *
+ * This runtime is where the only live evidence in the system happens — the
+ * handshake `authenticateBinding` and `verifyBinding` perform against a real
+ * endpoint with a real credential. So it reports what it saw, and something
+ * else decides what to do with it. A one-way notification: nothing here reads
+ * back, and nothing installed here can change what this runtime authorizes.
+ *
+ * Trusted server code only. No request path installs an observer.
+ */
+export type ProviderHandshakeObservation = {
+  readonly definitionId: string;
+  readonly bindingId: string;
+  readonly reachable: boolean;
+  readonly at: Date;
+};
+
+let handshakeObserver: ((observation: ProviderHandshakeObservation) => void) | undefined;
+
+export function setProviderHandshakeObserver(
+  next: ((observation: ProviderHandshakeObservation) => void) | undefined,
+): void {
+  handshakeObserver = next;
+}
+
+/** Never lets an observer's failure change what the handshake concluded. */
+function reportHandshake(observation: ProviderHandshakeObservation): void {
+  if (!handshakeObserver) return;
+  try {
+    handshakeObserver(observation);
+  } catch {
+    // An observation is a side note. It cannot fail a connection.
+  }
 }
 
 /**

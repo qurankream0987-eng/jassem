@@ -285,6 +285,43 @@ export class CapabilityProviderRegistry {
     return this.list().filter((p) => p.capabilityId === capabilityId);
   }
 
+  /**
+   * Record what was OBSERVED about a provider, and nothing else.
+   *
+   * The only mutation this registry has, and deliberately narrow: a health
+   * state, when it was seen, and how long that observation may stand for. It
+   * cannot change a capability, a definition, an operation, a trust class or an
+   * address — so an observation can make a provider selectable or unselectable
+   * and can never make it something else.
+   *
+   *   CONFIG_FILE_EQUALS_LIVE_AVAILABILITY = NO
+   *   OBSERVATION_CHANGES_PROVIDER_IDENTITY = 0
+   *
+   * `freshUntil` is the lease. Absent CLEARS it, which is how a failed
+   * observation returns a provider to «not selectable» rather than leaving the
+   * last good one standing.
+   */
+  observe(
+    id: string,
+    observed: { state: OperationalHealth; at?: Date; freshUntil?: Date },
+  ): boolean {
+    const provider = this.providers.get(id);
+    if (!provider) return false;
+    const { expiresAt: _dropped, ...freshness } = provider.freshness ?? {
+      discoveredAt: observed.at ?? new Date(),
+    };
+    this.providers.set(id, {
+      ...provider,
+      availability: { state: observed.state, observedAt: observed.at ?? new Date() },
+      freshness: {
+        ...freshness,
+        refreshedAt: observed.at ?? new Date(),
+        ...(observed.freshUntil ? { expiresAt: observed.freshUntil } : {}),
+      },
+    });
+    return true;
+  }
+
   clear(): void {
     this.providers.clear();
   }

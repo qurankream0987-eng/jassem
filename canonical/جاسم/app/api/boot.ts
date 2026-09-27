@@ -22,8 +22,16 @@ import { checkRuntimeReadiness } from "./core/runtime-readiness";
 import { initWebSocket } from "./core/websocket";
 import { configureExternalActionProvidersFromConfig } from "./runtime/external-action-session";
 import { createPaymentWebhookRoutes } from "./http/payment-webhook";
-import { providerDefinitions } from "./runtime/provider-binding";
-import { registerConfiguredMcpProviders } from "./runtime/providers/configured-providers";
+import { providerDefinitions, setProviderHandshakeObserver } from "./runtime/provider-binding";
+import {
+  configuredCandidateHandshakeObserver,
+  registerConfiguredCandidates,
+  registerConfiguredMcpProviders,
+} from "./runtime/providers/configured-providers";
+import {
+  getRuntimeCapabilityRegistry,
+  getRuntimeProviderRegistry,
+} from "./runtime/capability-registry";
 
 // ── Block 1: Server-owned External Action provider trust ────────────────────
 // JASIM_EXTERNAL_PROVIDERS is a JSON map:
@@ -70,9 +78,35 @@ import { registerConfiguredMcpProviders } from "./runtime/providers/configured-p
   if (raw) {
     try {
       const registered = registerConfiguredMcpProviders(providerDefinitions, raw);
+      // And the bridge that makes a configured definition SELECTABLE for a DAG
+      // node, into the one registry the executor resolves against.
+      //
+      //   PROVIDER_DEFINITION != CAPABILITY_PROVIDER
+      //   SECOND_CAPABILITY_PROVIDER_REGISTRY = 0
+      //
+      // Registered UNKNOWN and unleased, so nothing is selectable until a real
+      // handshake reaches the real endpoint — which the observer below records.
+      //
+      //   CONFIG_FILE_EQUALS_LIVE_AVAILABILITY = NO
+      const capabilities = getRuntimeCapabilityRegistry();
+      const bridges = registerConfiguredCandidates({
+        providers: getRuntimeProviderRegistry(),
+        capabilities,
+        raw,
+      });
+      setProviderHandshakeObserver(
+        configuredCandidateHandshakeObserver({
+          providers: getRuntimeProviderRegistry(),
+          capabilities,
+          raw,
+        }),
+      );
       // The ids and nothing else. A definition's address is not a secret and is
       // still not a log's business, and a credential never reaches this code.
-      logger.info("boot.remote_providers_configured", { providers: registered.length });
+      logger.info("boot.remote_providers_configured", {
+        providers: registered.length,
+        candidates: bridges.length,
+      });
     } catch (error) {
       logger.error("boot.remote_providers_config_invalid", {
         error: error instanceof Error ? error.message : String(error),
