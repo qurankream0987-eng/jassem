@@ -33,7 +33,10 @@
  *       "webhook": "SIGNED_HMAC", "receipt": "SIGNED_HMAC",
  *       "freshnessSeconds": 900,
  *       "candidates": {
- *         "<semantic capability id>": { "invoke": "SEARCH", "readback": "TRACK" }
+ *         "<semantic capability id>": {
+ *           "invoke": "SEARCH", "readback": "TRACK",
+ *           "inputSpec": [{ "name": "query", "type": "string", "required": true }]
+ *         }
  *       }
  *     }
  *   ]
@@ -61,6 +64,7 @@
  */
 
 import type { CapabilityProviderRegistry } from "../capability-provider";
+import type { TypedFieldSpec } from "../capability-registry";
 import {
   PROVIDER_AUTH_METHODS,
   PROVIDER_CAPABILITIES,
@@ -273,7 +277,100 @@ export type ConfiguredCandidate = {
   readonly implementationId: string;
   readonly operations: { readonly invoke: string; readonly readback?: string; readonly cancel?: string };
   readonly freshnessSeconds: number;
+  /**
+   * The I/O contract this route offers, when the deployment declares one.
+   *
+   * TRUSTED because it belongs to the same configuration authority that named
+   * the definition and the tool — NOT because a remote account described itself.
+   * Absent means THERE IS NO VERIFIED CONTRACT, and a requirement that actually
+   * asks for fields then fails closed.
+   *
+   *   MODEL_DECLARED_SCHEMA_AUTHORITY = 0
+   *   REMOTE_TOOL_DESCRIPTION_IS_AUTHORITY = 0
+   *   REQUIREMENT_SPEC_COPIED_INTO_OFFERED_SPEC = 0
+   *
+   * Input and output are independent: a deployment that knows what a tool
+   * accepts and not what it returns declares the first and leaves the second
+   * absent, and an output requirement then stays INCOMPATIBLE.
+   *
+   *   OUTPUT_SCHEMA_INVENTED_WHEN_REMOTE_DOES_NOT_PROVIDE_ONE = 0
+   */
+  readonly inputSpec?: readonly TypedFieldSpec[];
+  readonly outputSpec?: readonly TypedFieldSpec[];
 };
+
+/**
+ * WHAT A DECLARED CONTRACT MAY SAY, AND WHAT IT MAY NOT PRETEND TO.
+ *
+ * `TypedFieldSpec` is a flat list of named scalars. It has no element type for an
+ * array, no interior for an object, no enum and no union — so a configuration
+ * that tried to express `filters.category: string` would be flattening a nested
+ * requirement into a claim it cannot check. Anything shaped like nesting is
+ * refused at boot rather than accepted and quietly lost.
+ *
+ *   UNSUPPORTED_JSON_SCHEMA_FAILS_OPEN = 0
+ */
+const SPEC_TYPES: readonly TypedFieldSpec["type"][] = [
+  "string",
+  "number",
+  "boolean",
+  "array",
+  "object",
+];
+
+function specOf(
+  entry: Record<string, unknown>,
+  key: "inputSpec" | "outputSpec",
+  label: string,
+): readonly TypedFieldSpec[] | undefined {
+  const raw = entry[key];
+  if (raw === undefined) return undefined;
+  if (!Array.isArray(raw) || raw.length === 0) {
+    throw new ProviderBindingError(`«${label}» declares an empty ${key}.`, "INVALID");
+  }
+  const names = new Set<string>();
+  return raw.map((field) => {
+    if (!isRecord(field)) {
+      throw new ProviderBindingError(`«${label}» has a malformed ${key} field.`, "INVALID");
+    }
+    const name = typeof field.name === "string" ? field.name.trim() : "";
+    if (!name) {
+      throw new ProviderBindingError(`«${label}» has a ${key} field with no name.`, "INVALID");
+    }
+    if (names.has(name)) {
+      throw new ProviderBindingError(`«${label}» declares ${key} field «${name}» twice.`, "INVALID");
+    }
+    names.add(name);
+    const type = field.type;
+    if (typeof type !== "string" || !(SPEC_TYPES as readonly string[]).includes(type)) {
+      throw new ProviderBindingError(
+        `«${label}» gives ${key} field «${name}» the type «${String(type)}», which cannot be expressed here.`,
+        "INVALID",
+      );
+    }
+    // Nesting has no representation, so a configuration may not imply one.
+    for (const nested of ["properties", "items", "enum", "oneOf", "anyOf", "allOf", "$ref"]) {
+      if (field[nested] !== undefined) {
+        throw new ProviderBindingError(
+          `«${label}» gives ${key} field «${name}» a «${nested}», which cannot be expressed here.`,
+          "INVALID",
+        );
+      }
+    }
+    if (field.required !== undefined && typeof field.required !== "boolean") {
+      throw new ProviderBindingError(
+        `«${label}» gives ${key} field «${name}» a non-boolean «required».`,
+        "INVALID",
+      );
+    }
+    return {
+      name,
+      type: type as TypedFieldSpec["type"],
+      ...(field.required === true ? { required: true } : {}),
+      ...(typeof field.unit === "string" && field.unit.trim() ? { unit: field.unit.trim() } : {}),
+    };
+  });
+}
 
 /**
  * Parse the candidate bridges a deployment stated, against the definitions it
@@ -352,6 +449,7 @@ export function parseConfiguredCandidates(
         invoke: "",
       };
       for (const slot of ["invoke", "readback", "cancel"] as const) {
+        // `inputSpec` / `outputSpec` live beside the verbs and are read below.
         const verb = operationsRaw[slot];
         if (verb === undefined) {
           if (slot === "invoke") {
@@ -385,6 +483,7 @@ export function parseConfiguredCandidates(
         throw new ProviderBindingError(`Duplicate configured candidate «${id}».`, "INVALID");
       }
       seen.add(id);
+      const label = `${definitionId}:${capabilityId}`;
       bridges.push({
         id,
         definitionId,
@@ -393,6 +492,15 @@ export function parseConfiguredCandidates(
         implementationId: tools[operations.invoke]!,
         operations,
         freshnessSeconds,
+        // Declared by the deployment, per ROUTE. Two configured tools with
+        // different contracts cannot share one, because each candidate reads
+        // only its own entry.
+        ...(specOf(operationsRaw, "inputSpec", label)
+          ? { inputSpec: specOf(operationsRaw, "inputSpec", label) }
+          : {}),
+        ...(specOf(operationsRaw, "outputSpec", label)
+          ? { outputSpec: specOf(operationsRaw, "outputSpec", label) }
+          : {}),
       });
     }
   });
@@ -431,6 +539,13 @@ export function registerConfiguredCandidates(input: {
       // one — and the only honest source of a version is the remote system's own
       // `initialize`, which has not been read at registration time. Nothing is
       // invented to pass a filter.
+      // The offered contract, when the deployment declared one. Absent means no
+      // verified contract, and `specCompatible` then refuses any requirement
+      // that actually asks for a field.
+      //
+      //   FAIL_CLOSED > FALSE_COMPATIBILITY
+      ...(bridge.inputSpec ? { inputSpec: [...bridge.inputSpec] } : {}),
+      ...(bridge.outputSpec ? { outputSpec: [...bridge.outputSpec] } : {}),
       trustClass: "TRUSTED_CONFIGURED",
       // UNKNOWN, on purpose. A configuration file is not a reachability
       // observation, and this is the state `resolveProvider` refuses.

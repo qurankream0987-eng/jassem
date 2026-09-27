@@ -799,6 +799,21 @@ export type McpToolMetadata = {
   protocolVersion?: string;
 };
 
+/**
+ * A remote schema becomes a field spec only where it is REPRESENTABLE.
+ *
+ * `TypedFieldSpec` is a flat list of named scalars: there is no element type for
+ * an array, no interior for an object, no enum and no union. So a property whose
+ * type this cannot express has no honest translation, and the whole schema
+ * yields NOTHING rather than a partial one.
+ *
+ *   UNSUPPORTED_JSON_SCHEMA_FAILS_OPEN = 0
+ *
+ * It used to default an unknown or absent type to `"string"`, which is the
+ * dangerous direction: a requirement asking for `query: string` would match an
+ * offered field that was really an object, a union, or nothing at all — false
+ * compatibility built out of a missing word.
+ */
 function jsonSchemaToSpec(
   schema: McpToolMetadata["inputSchema"],
 ): TypedFieldSpec[] | undefined {
@@ -812,11 +827,15 @@ function jsonSchemaToSpec(
     array: "array",
     object: "object",
   };
-  return Object.entries(schema.properties).map(([name, prop]) => ({
-    name,
-    type: typeMap[prop.type ?? ""] ?? "string",
-    required: required.has(name),
-  }));
+  const fields: TypedFieldSpec[] = [];
+  for (const [name, prop] of Object.entries(schema.properties)) {
+    const type = typeMap[prop.type ?? ""];
+    // One unrepresentable property makes the whole contract unknown. A partial
+    // spec would be read as a complete one by everything downstream.
+    if (!type) return undefined;
+    fields.push({ name, type, required: required.has(name) });
+  }
+  return fields;
 }
 
 /**

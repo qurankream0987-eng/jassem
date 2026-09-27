@@ -302,12 +302,8 @@ CONFIGURED_CANDIDATE_ENDPOINT_BYPASSES_BINDING = 0
 Two filters it deliberately does not satisfy, because nothing trustworthy exists
 to satisfy them with:
 
-- **The I/O contract.** A bridged candidate declares no `inputSpec`/`outputSpec`.
-  Copying the requirement across as the offer would be proving nothing, and the
-  remote's own schema has not been read at registration time. The consequence is
-  honest and visible: any caller that *does* pass a requirement spec gets
-  `INCOMPATIBLE`. The DAG's own `resolveProvider` call passes none, so that filter
-  is vacuous on that path — a fact worth naming rather than hiding.
+- **The protocol version** (below). The **I/O contract** was the other, and is now
+  addressed — see *A contract is authority only when its evidence is*.
 - **The protocol version.** A bridged candidate declares no protocol, so it is
   not filtered on one — which is `resolveProvider`'s own rule for a candidate
   that makes no protocol claim. The only honest source of a version is the remote
@@ -317,6 +313,67 @@ to satisfy them with:
 REQUIRED_SPEC_COPIED_AS_OFFERED_PROOF = 0
 MODEL_GENERATES_PROVIDER_IO_CONTRACT = 0
 ```
+
+### A contract is authority only when its evidence is
+
+```
+OBSERVED_SCHEMA_AUTHORITY MUST_MATCH OBSERVATION_SUBJECT
+REQUIREMENT_SPEC_COPIED_INTO_OFFERED_SPEC = 0
+REMOTE_TOOL_DESCRIPTION_IS_AUTHORITY = 0
+FAIL_CLOSED > FALSE_COMPATIBILITY
+```
+
+`resolveProvider` filters external candidates on `inputSpec` / `outputSpec`, and a
+bridged candidate declared neither — so any requirement that actually asked for a
+field failed closed. The obvious source of a contract is the remote's own
+`listTools()` schema, and **it cannot be used for a shared candidate**:
+
+A `listTools()` result is obtained through **one binding, one credential, one
+endpoint**. Nothing in the MCP protocol or in this repository says a server shows
+every credential the same tool surface — servers commonly gate tools per token —
+so account A seeing `search(query)` while account B sees
+`search(query, tenantId required)` is ordinary. Promoting A's schema onto the
+shared candidate would make it *compatible* for a requirement B could never
+satisfy. `FIXED` means every binding dials the same address; it does **not** mean
+every credential sees the same surface. The previous phase proved *service
+answered* and *account accepted* are different facts; a tool surface is a third.
+
+So the contract comes from the same authority that named the definition, the
+tool and the verb — **trusted deployment configuration**, per route:
+
+```json
+"candidates": {
+  "customers.search": {
+    "invoke": "SEARCH",
+    "inputSpec": [{ "name": "query", "type": "string", "required": true }]
+  }
+}
+```
+
+It is trusted because it belongs to the configuration authority, not because a
+remote account claimed it. Absent means **there is no verified contract**, and a
+requirement asking for fields stays `INCOMPATIBLE`. Input and output are
+independent: a deployment that knows what a tool accepts but not what it returns
+declares the first, and an output requirement still fails.
+
+**Nothing observed is promoted.** No handshake writes a contract — a refused
+credential, a silent address and a differing tool surface all leave every
+declared contract exactly as it was. The one registry mutation remains the health
+observation, which cannot carry a spec.
+
+**Unrepresentable is not permissive.** `TypedFieldSpec` is a flat list of named
+scalars: no element type, no interior, no enum, no union. Configuration that
+implies nesting — `properties`, `items`, `enum`, `oneOf`, `$ref` — is refused at
+boot rather than flattened into a claim that cannot be checked. And
+`jsonSchemaToSpec`, which translates a *discovered* candidate's schema, used to
+default an unknown or absent property type to `"string"`; it now yields no spec at
+all, because a missing word must not become a matching type.
+
+One inherited semantic is recorded rather than changed: `specCompatible` weighs
+only the requirement's **required** fields and does not consult the offered
+field's own `required` flag. An optional requirement therefore imposes nothing.
+That is the existing rule for every capability in the system and not this phase's
+to alter.
 
 ### And why the DAG round trip is not proved with a socket
 
@@ -340,6 +397,7 @@ nothing here has to change for it.
 | where | what |
 | --- | --- |
 | `tests/block31/remote-transport-adapter.test.ts` | a definition supports exactly the verbs it has a tool for; only trusted configuration registers one, and every malformed form fails; a discovered candidate still cannot name a definition or an operation; the adapter receives the bound endpoint and sealed credential and nothing else; an ungranted verb and a revoked connection never reach it; the raw credential is in no row, event or projection after a real call; authenticate is a handshake that calls no tool; discover narrows and does not widen (a `charge_card` tool becomes nothing); a real invoke calls exactly the configured tool once; a verb with no tool is refused before any request; malformed, declining and silent providers all produce non-OK; the credential does not follow a cross-origin redirect; no protocol or domain name appears where a verb becomes a call |
+| `tests/block31/remote-io-contract-authority.test.ts` | a route with no declared contract resolves bare and refuses any requirement; a declared contract satisfies exactly what it declares (type mismatch and missing required field both refused); a declared input proves nothing about output; resolving with a requirement never writes it onto the candidate; prose and extra remote tools create nothing; a contract never crosses to another tool or another definition; no handshake of any account ever changes a declared contract; a per-connection address publishes none; unrepresentable configuration is refused at boot and an unrepresentable remote schema yields none; a restart keeps the declared contract and loses the selectability; a compatible candidate still executes nothing by itself; no provider and no domain decides a contract |
 | `tests/block31/remote-observation-authority.test.ts` | a refused credential at a shared address is nobody else's outage; A's success authenticates and grants B nothing; a handshake at a per-connection address speaks for no shared candidate; silence at the shared address is the one thing that unselects it; an adapter that cannot tell a refusal from silence writes nothing; discovery reports nothing in either direction; availability changes nothing about who may execute; a restart loses selectability and no authority; the two facts are separated at the transport over real HTTP (a 401 is reached, a dead port is not) |
 | `tests/block31/remote-candidate-bridge.test.ts` | no configuration means no candidate and a definition alone is not a provider; a bridged candidate is unselectable until a real handshake, and its lease expires; a failed handshake clears the lease; the DAG's tool equals the adapter's tool; a renamed remote tool changes no verb and no capability; a discovered candidate with identical strings cannot become the bridge; every malformed trusted mapping is a boot failure including a duplicate identity; being selected authorizes nothing (no binding, unverified, wrong scope, ungranted verb, revoked); a candidate carries no address and no credential; the I/O and protocol filters still refuse what they always refused |
 | `tests/block31/remote-capability-grant.test.ts` | the exact-verb gate in front of all of it, unchanged |
