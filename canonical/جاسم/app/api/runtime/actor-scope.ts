@@ -35,7 +35,7 @@
  */
 
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "../queries/connection";
 import {
   memberships,
@@ -71,6 +71,21 @@ export type ScopePermission = (typeof SCOPE_PERMISSIONS)[number];
 
 /** The membership grant's resource class. One string, no domain in it. */
 export const ORGANIZATION_RESOURCE_KIND = "organization";
+
+/**
+ * THE `providerClass` THE PROVIDER BINDING RUNTIME OWNS.
+ *
+ * `scope_provider_bindings` carries two runtimes, told apart by `lifecycle`:
+ * NULL is a legacy environment-name binding, anything else is a connection made
+ * through the trusted setup ceremony. The modern runtime writes this one class,
+ * so the name is its identity namespace and the legacy path may not write it.
+ *
+ *   LEGACY_BINDING != MODERN_CONNECTOR_BINDING · SAME_TABLE != SAME_RUNTIME
+ *
+ * Declared here rather than in `provider-binding.ts` because that module already
+ * imports this one; one literal, one direction, no cycle.
+ */
+export const CONNECTOR_PROVIDER_CLASS = "connector";
 
 export type ActingScope =
   | { readonly kind: "PERSONAL"; readonly scopeId: string; readonly principalId: string }
@@ -585,6 +600,34 @@ export async function bindScopeProvider(input: {
   if (!allowed.ok) {
     throw new ActorScopeError("Not permitted to bind providers in this scope.", "FORBIDDEN");
   }
+  // ── THE CLASS THE MODERN RUNTIME OWNS ────────────────────────────────────
+  //
+  //   LEGACY_BINDING != MODERN_CONNECTOR_BINDING
+  //   LEGACY_STATE != MODERN_LIFECYCLE
+  //   SAME_TABLE != SAME_RUNTIME
+  //
+  // Two runtimes share this table and are told apart by `lifecycle`: NULL is a
+  // legacy environment-name binding, anything else is a connection the provider
+  // binding runtime owns through its own ceremony. The modern runtime writes
+  // exactly one `providerClass`, `"connector"` — so that string is its identity
+  // namespace, and a legacy bind naming it would have conflicted with a real
+  // connection and updated it: `state` back to «active», `revokedAt` cleared,
+  // the credential NAME overwritten, and `lifecycle` left untouched. A SUSPENDED
+  // connection would have read as active to this path while the connector
+  // runtime went on refusing it.
+  //
+  //   LEGACY_AUTHORITY_ACT != MODERN_BINDING_MUTATION_AUTHORITY
+  //
+  // Refused here, before any statement runs, because the tuple is what the
+  // identity index arbitrates on: a legacy row that can never carry this class
+  // can never be the same row as a connection.
+  const providerClass = input.providerClass.trim();
+  if (providerClass === CONNECTOR_PROVIDER_CLASS) {
+    throw new ActorScopeError(
+      "Connections to registered systems are made through provider setup, not here.",
+      "INVALID",
+    );
+  }
   const credentialEnvName = input.credentialEnvName?.trim() ?? null;
   // A CANDIDATE id, not the answer.
   //
@@ -605,7 +648,7 @@ export async function bindScopeProvider(input: {
     .values({
       id: candidateId,
       scopeId: input.scopeId,
-      providerClass: input.providerClass.trim(),
+      providerClass,
       providerId: input.providerId.trim(),
       credentialEnvName,
       boundByPrincipalId: input.principalId,
@@ -624,6 +667,16 @@ export async function bindScopeProvider(input: {
       //
       //   REVOKED_BINDING_IDENTITY_IS_TERMINAL
       targetWhere: sql`${scopeProviderBindings.lifecycle} IS DISTINCT FROM 'REVOKED'`,
+      // THE DATABASE'S OWN COPY OF THE SAME BOUNDARY.
+      //
+      // The check above is a string comparison in this process; this is the
+      // invariant itself, applied by the statement that would do the damage. A
+      // row the connector runtime owns carries a lifecycle, so this UPDATE
+      // cannot touch one — and Postgres then returns no row, which the guard
+      // below reads as a refusal rather than as success.
+      //
+      //   LEGACY_BIND_MUTATES_MODERN_ROW = 0
+      setWhere: isNull(scopeProviderBindings.lifecycle),
       set: {
         state: "active",
         revokedAt: null,
@@ -648,11 +701,16 @@ export async function bindScopeProvider(input: {
     // second lookup, a «latest» heuristic or an approximate search.
     .returning({ id: scopeProviderBindings.id });
   if (!persisted) {
-    // Unreachable for `DO UPDATE`, which always returns its row. Fails closed
-    // rather than handing back a reference to nothing.
+    // `DO UPDATE` returns its row, so the only way here is the `setWhere` above
+    // declining: the live row for this tuple belongs to the connector runtime.
+    // Nothing was written, and nothing is reported as though it had been.
     //
     //   A REFERENCE TO NOTHING != SUCCESS
-    throw new ActorScopeError("The provider binding did not persist.", "NOT_FOUND");
+    //   LEGACY_BIND_MODERN_COLLISION_REPORTS_SUCCESS = 0
+    throw new ActorScopeError(
+      "That system is connected through provider setup, and is not this binding's to change.",
+      "INVALID",
+    );
   }
   return { id: persisted.id };
 }
@@ -676,6 +734,13 @@ export async function resolveScopeProvider(input: {
         eq(scopeProviderBindings.scopeId, input.scopeId),
         eq(scopeProviderBindings.providerClass, input.providerClass),
         eq(scopeProviderBindings.state, "active"),
+        // LEGACY ROWS ONLY. A VERIFIED connection also carries `state: "active"`,
+        // so without this the legacy resolver would report a connector row — and
+        // `credentialEnvName` is NULL on one, because a real connection's
+        // credential is sealed in the vault and was never an environment name.
+        //
+        //   LEGACY_RESOLVER_RESOLVES_MODERN_ROW = 0
+        isNull(scopeProviderBindings.lifecycle),
       ),
     )
     .limit(1);

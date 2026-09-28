@@ -366,6 +366,68 @@ invent the missing one.
 The historical-readback policy is untouched: a revoked connection is refused for
 a readback and for a cancellation alike, exactly as before.
 
+## One table, two runtimes, and no door between them
+
+```
+LEGACY_BINDING != MODERN_CONNECTOR_BINDING
+LEGACY_STATE != MODERN_LIFECYCLE
+LEGACY_AUTHORITY_ACT != MODERN_BINDING_MUTATION_AUTHORITY
+SAME_TABLE != SAME_RUNTIME
+```
+
+`scope_provider_bindings` carries both runtimes, and `lifecycle` is what tells
+them apart: `NULL` is a legacy environment-name binding, anything else is a
+connection this runtime owns through its own ceremony. The identity index
+arbitrates on `(scopeId, providerClass, providerId)` — and the legacy
+`provider.bind` act took `providerClass` from the caller while this runtime
+writes exactly one, `"connector"`.
+
+So a legacy bind naming that class conflicted with a real connection and
+**updated it**: `state` back to `active`, `revokedAt` cleared,
+`boundByPrincipalId` reassigned, the credential **name** overwritten — and
+`lifecycle` untouched, because the legacy `set` clause has no reason to know
+about it. The result was one row holding two runtimes' answers at once:
+
+| after a legacy bind on a SUSPENDED connection | |
+| --- | --- |
+| `state` | `active` — so the legacy act reads it back as bound |
+| `lifecycle` | `SUSPENDED` — so `authorizedConnection` goes on refusing it |
+
+**This was not an authority bypass, and is not reported as one.** `callProvider`
+requires `lifecycle = VERIFIED` and the legacy path cannot write `lifecycle`, so
+no capability was ever granted this way. What it was is cross-runtime canonical
+mutation and two contradictory truths about one row — which is enough.
+
+### The boundary is the column that already exists
+
+No new table, no new column, no migration, and no `bindingRuntimeOwner` flag to
+say what `lifecycle` already says. Three places, one invariant:
+
+- **`"connector"` is reserved.** `bindScopeProvider` refuses it with a typed
+  `INVALID` before any statement runs. Since the tuple is what the index
+  arbitrates on, a legacy row that can never carry that class can never *be* a
+  connection's row — there is no race to lose, because the arbiter can never
+  match.
+- **The database says it too.** The upsert's update branch carries
+  `setWhere: lifecycle IS NULL`. A row this runtime owns cannot be updated by it;
+  Postgres then returns no row, and the existing empty-`RETURNING` guard reads
+  that as a refusal rather than as success. The check above is a string
+  comparison in one process; this is the invariant applied by the statement that
+  would do the damage.
+- **Reads are scoped the same way.** A VERIFIED connection also carries
+  `state: "active"`, so `resolveScopeProvider` and the `provider.bind` readback
+  both filter `lifecycle IS NULL`. Otherwise the legacy act could report a
+  connection as its own effect, and describe it as *«reading no credential»* —
+  true only because a real connection's credential is sealed in the vault and
+  never was an environment name.
+
+The reserved name is one exported constant, `CONNECTOR_PROVIDER_CLASS`, declared
+in `actor-scope.ts` because `provider-binding.ts` already imports that module —
+one literal, one direction, no cycle.
+
+Revoked history stays terminal in both directions: a legacy bind may not fill the
+gap a revocation left either, because the class is still not its to write.
+
 ## What was added, and what was not
 
 One migration. Thirteen columns on a table that already existed, and one new
@@ -382,3 +444,9 @@ one index narrowed from «one connection ever» to «one live connection», and 
 | where | what |
 | --- | --- |
 | `tests/block31/provider-reconnect-identity.test.ts` | a disconnected provider reconnects at all, as a new identity beside the old one (new id, old row still `REVOKED` at its own address with its grant and credential stripped, two rows and exactly one live); a second live connection is still refused; the new connection's `PROVIDER_AUTH` v1 does not collide with the old retired v1, revocation retires all three kinds and deletes none, and no reconnect resurrects one; an old remote execution and an old payment intent both stay pinned to the connection that carried them while `accountBindingFor` moves to the new one and a new execution pins it; the old execution's authorized address is still the old address and the pinned connection is refused (revocation, not redirection); account resolution ignores three rounds of revoked history and returns null when nothing is live; two concurrent setups and two concurrent reconnects each produce one live connection and one `ProviderBindingError` with code `STATE` carrying no driver text; a FIXED-address provider reconnects to its definition's address under a new identity; webhook and receipt rotation stay one identity with independent versions and create no row; there is no `PROVIDER_AUTH` rotation path and none was added; the projection still shows one line per provider and still shows a disconnection; a legacy `NULL`-lifecycle row counts as live, blocks a setup, and is never projected or resolved as an account; the identity rule names no provider, domain or protocol, and the migration deletes nothing |
+
+## Proofs — legacy/connector isolation
+
+| where | what |
+| --- | --- |
+| `tests/block31/legacy-connector-isolation.test.ts` | a legacy bind cannot touch a connection in any of the six lifecycles — each row compared field-for-field against its before snapshot, each attempt a typed `ActorScopeError`/`INVALID` with no driver text, and no legacy row appearing beside it; a suspended connection stays suspended and unusable and a verified one stays usable at its own address; the sealed envelopes and every credential/webhook/receipt ref and version are unchanged; the act refuses the connector namespace and its readback reports nothing even when handed a connection's id directly; the legacy resolver never reports a connection; ordinary legacy classes still bind, rebind, replace and clear a credential name, and a class that merely looks like the reserved one is ordinary; concurrent legacy binds still agree on one durable id; four callers racing across both runtimes for one tuple leave exactly one identity, a modern one, with no mixed row and no raw violation; revoked history stays terminal and a reconnect is still a new identity; the boundary is the `lifecycle` column with no second source of truth and one shared literal |

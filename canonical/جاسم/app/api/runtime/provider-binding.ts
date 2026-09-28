@@ -73,7 +73,7 @@ import { and, eq, isNotNull, ne, sql } from "drizzle-orm";
 import { db } from "../queries/connection";
 import { events } from "@db/schema";
 import { providerCredentials, scopeProviderBindings } from "@db/schema-block2";
-import { authorizeScopeAction } from "./actor-scope";
+import { authorizeScopeAction, CONNECTOR_PROVIDER_CLASS } from "./actor-scope";
 import { subjectAuthority } from "./subject-authority";
 import { assertResolvedPublicEndpoint } from "./block2/mcp-client";
 import {
@@ -880,7 +880,7 @@ export async function beginProviderSetup(input: {
     .where(
       and(
         eq(scopeProviderBindings.scopeId, input.scopeId),
-        eq(scopeProviderBindings.providerClass, "connector"),
+        eq(scopeProviderBindings.providerClass, CONNECTOR_PROVIDER_CLASS),
         eq(scopeProviderBindings.providerId, definition.id),
         sql`${scopeProviderBindings.lifecycle} IS DISTINCT FROM 'REVOKED'`,
       ),
@@ -909,7 +909,7 @@ export async function beginProviderSetup(input: {
   const values = {
     id,
     scopeId: input.scopeId,
-    providerClass: "connector",
+    providerClass: CONNECTOR_PROVIDER_CLASS,
     providerId: definition.id,
     definitionId: definition.id,
     lifecycle: "SETUP_PENDING" as const,

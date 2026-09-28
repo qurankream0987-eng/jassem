@@ -46,7 +46,7 @@
  */
 
 import { createHash, randomUUID } from "node:crypto";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { db } from "../queries/connection";
 import {
   agreements,
@@ -1019,6 +1019,16 @@ registerAuthorityAct({
         and(
           eq(scopeProviderBindings.id, result.bindingId as string),
           eq(scopeProviderBindings.scopeId, scope.scopeId),
+          // THIS ACT'S OWN KIND OF ROW, AND NO OTHER.
+          //
+          // A connection made through provider setup also reaches `state:
+          // "active"` when it is VERIFIED. Reading one back here would let this
+          // act claim somebody else's runtime's effect as its own — and report
+          // «reading no credential» about a connection whose credential is
+          // sealed in the vault.
+          //
+          //   LEGACY_READBACK_TREATS_MODERN_ROW_AS_ITS_EFFECT = 0
+          isNull(scopeProviderBindings.lifecycle),
         ),
       )
       .limit(1);
