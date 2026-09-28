@@ -62,7 +62,10 @@ import {
   EconomicAuthorizationError,
   EconomicNotFoundError,
   createExpression,
+  isValueProvenance,
   publishExpression,
+  type AttributeProvenance,
+  type ValueProvenance,
 } from "./economic-fabric";
 import { canonicalJson } from "./capability-registry";
 
@@ -80,6 +83,14 @@ export type DraftStatement = {
   readonly stated: Readonly<Record<string, unknown>>;
   /** References only. Nothing here is read, described or interpreted. */
   readonly attachments: readonly string[];
+  /**
+   * WHERE EACH STATED VALUE CAME FROM, for the fields whose channel knew.
+   *
+   * Shown back to the owner before they confirm, and inside the fingerprint —
+   * so «this one came from your photo, not from you» is part of what publishing
+   * confirms, not a detail discovered afterwards.
+   */
+  readonly provenance: AttributeProvenance;
   /** The exact words that would become public. */
   readonly willPublish: Readonly<Record<string, unknown>>;
   readonly version: number;
@@ -96,12 +107,35 @@ function fingerprintOf(row: EconomicExpression): string {
         id: row.id,
         semanticType: row.semanticType,
         attributes: row.attributes ?? {},
+        // Part of the statement: confirming covers WHICH values were guessed.
+        provenance: row.attributeProvenance ?? {},
         projection: row.publicProjection ?? {},
         version: row.version,
       }),
       "utf8",
     )
     .digest("hex");
+}
+
+/**
+ * Only entries for fields that are actually present, and only known words.
+ *
+ * A provenance entry for a field nobody stated describes nothing, and an
+ * unrecognized word is not quietly read as one of the three — it is dropped, so
+ * a typo can never become a weaker or stronger claim than the caller meant.
+ *
+ *   UNRECOGNIZED_PROVENANCE_READ_AS_STATED = 0
+ */
+function provenanceOf(
+  raw: unknown,
+  attributes: Record<string, unknown>,
+): AttributeProvenance {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  const clean: Record<string, ValueProvenance> = {};
+  for (const [field, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (field in attributes && isValueProvenance(value)) clean[field] = value;
+  }
+  return clean;
 }
 
 function statementOf(row: EconomicExpression): DraftStatement {
@@ -115,6 +149,7 @@ function statementOf(row: EconomicExpression): DraftStatement {
     semanticType: row.semanticType,
     stated: attributes,
     attachments,
+    provenance: provenanceOf(row.attributeProvenance, attributes),
     willPublish: (row.publicProjection ?? {}) as Record<string, unknown>,
     version: row.version,
     fingerprint: fingerprintOf(row),
@@ -152,6 +187,15 @@ export async function composeOffering(input: {
   semanticType?: string;
   /** Replaces the stated values wholesale, so removing one is possible. */
   stated?: Record<string, unknown>;
+  /**
+   * Where each stated value came from, for the fields whose channel knew.
+   *
+   * A channel that INFERRED a value — a model reading a photo, a video, a
+   * sentence — says so here, and that value then decides no hard constraint.
+   * Absent means «not inferred», which is what every owner-typed and
+   * configuration-supplied value has always been.
+   */
+  provenance?: Record<string, ValueProvenance>;
   attachments?: readonly string[];
   /** The exact words that would become public, if the seller publishes. */
   willPublish?: Record<string, unknown>;
@@ -169,6 +213,9 @@ export async function composeOffering(input: {
         ...(input.stated ?? {}),
         ...(input.attachments?.length ? { attachments: [...input.attachments] } : {}),
       },
+      ...(input.provenance
+        ? { attributeProvenance: provenanceOf(input.provenance, input.stated ?? {}) }
+        : {}),
     });
     if (input.willPublish) {
       return composeOffering({ ...input, expressionId: created.id });
@@ -204,6 +251,12 @@ export async function composeOffering(input: {
     .set({
       ...(input.semanticType?.trim() ? { semanticType: input.semanticType.trim() } : {}),
       attributes: { ...stated, ...(attachments.length ? { attachments } : {}) },
+      // Provenance travels with the values it describes: replacing the stated
+      // set without saying where the new ones came from leaves none of the old
+      // labels attached to values that are no longer there.
+      ...(input.provenance !== undefined || input.stated !== undefined
+        ? { attributeProvenance: provenanceOf(input.provenance ?? row.attributeProvenance, stated) }
+        : {}),
       ...(input.willPublish !== undefined ? { publicProjection: input.willPublish } : {}),
       // EVERY AMENDMENT MOVES THE VERSION, so every earlier confirmation is
       // void by construction rather than by comparison.

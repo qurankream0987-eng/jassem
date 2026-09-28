@@ -1,0 +1,45 @@
+-- JASIM — A GUESS ABOUT SOMEBODY'S THING MAY NOT DECIDE A SALE
+--
+--   INFERRED_VALUE_EXCLUDES_A_CANDIDATE = 0
+--   MODEL_GUESS != OWNER_CLAIM
+--   OWNER_CLAIM != VERIFIED_FACT
+--   CATALOG_ENTRY != CURRENT_AVAILABILITY
+--
+-- The NEED side already had this law and enforced it. `goal-spec` records
+-- whether each constraint was STATED or INFERRED, and an INFERRED constraint is
+-- downgraded from HARD to SOFT with the reason recorded and shown:
+--
+--   «an inference may guide, it may not exclude»
+--
+-- The OFFER side had none of it. `economic_expressions.attributes` is a flat bag
+-- of values with no source, and `evaluateMatch` reads it as fact:
+--
+--   evaluateConstraint(constraint, offering.attributes)
+--
+-- So the asymmetry was exact, and it ran the wrong way:
+--
+--   a buyer's INFERRED constraint may not exclude anything
+--   a seller's INFERRED value could DECIDE A MATCH
+--
+-- Concretely: JASIM reads six photos and infers a colour. A buyer states «لا
+-- أريد الأبيض» as a hard constraint. The match is then decided — included or
+-- excluded — by a model's guess about somebody else's car, invisibly, on both
+-- sides.
+--
+-- And it gets worse with every intake channel, which is the point: an offer may
+-- arrive as text, voice, images, video, a spreadsheet, a catalogue, or through
+-- an inventory binding. An ERP reading is OBSERVED and strong. A photo guess is
+-- INFERRED and weak. The owner typing it is STATED. Today all three landed in
+-- the same untyped bag and were read with equal confidence.
+--
+-- So each value carries where it came from. A field with no entry is NOT
+-- inferred: every existing writer is the owner's own composition or trusted
+-- configuration, and this does not retroactively weaken them.
+--
+-- VERIFIED is deliberately absent. It is a verdict `evidence-sufficiency`
+-- reaches about evidence, never a label a writer gives itself — a
+-- self-assignable «verified» is the whole vulnerability this system exists to
+-- prevent.
+
+ALTER TABLE "economic_expressions"
+  ADD COLUMN IF NOT EXISTS "attributeProvenance" jsonb;

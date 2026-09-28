@@ -36,6 +36,34 @@ import {
 
 export type ConstraintState = "PASS" | "SOFT_MATCH" | "UNKNOWN" | "FAIL";
 
+/**
+ * WHERE ONE ATTRIBUTE VALUE CAME FROM.
+ *
+ *   STATED   — the owner said it.
+ *   INFERRED — something derived it: a model reading a photo, a video, a
+ *              sentence. A guess, however good.
+ *   OBSERVED — a connected system reported it.
+ *
+ * The need side has had half of this for a while: `goal-spec` records STATED or
+ * INFERRED per constraint and downgrades an INFERRED one from HARD to SOFT,
+ * because «an inference may guide, it may not exclude». This is the same law on
+ * the other side, where it was missing entirely — and where it mattered more,
+ * because a value decides matches for everybody who searches.
+ *
+ * VERIFIED is deliberately not here. It is a VERDICT `evidence-sufficiency`
+ * reaches about evidence, never a label a writer gives itself: a
+ * self-assignable «verified» would be the whole vulnerability.
+ */
+export const VALUE_PROVENANCES = ["STATED", "INFERRED", "OBSERVED"] as const;
+export type ValueProvenance = (typeof VALUE_PROVENANCES)[number];
+
+/** Per-attribute provenance. A field with no entry is NOT inferred. */
+export type AttributeProvenance = Readonly<Record<string, ValueProvenance>>;
+
+export function isValueProvenance(value: unknown): value is ValueProvenance {
+  return typeof value === "string" && (VALUE_PROVENANCES as readonly string[]).includes(value);
+}
+
 export type ConstraintResult = {
   field: string;
   operator: string;
@@ -154,6 +182,8 @@ export async function createExpression(input: {
   hardConstraints?: ConstraintExpression[];
   softPreferences?: ConstraintExpression[];
   availability?: Record<string, unknown>;
+  /** Where each attribute value came from. A field with no entry is not inferred. */
+  attributeProvenance?: AttributeProvenance;
 }): Promise<EconomicExpression> {
   const [row] = await db
     .insert(economicExpressions)
@@ -165,6 +195,7 @@ export async function createExpression(input: {
       subjectEntityId: input.subjectEntityId,
       schemaRef: input.schemaRef,
       attributes: input.attributes ?? {},
+      ...(input.attributeProvenance ? { attributeProvenance: { ...input.attributeProvenance } } : {}),
       hardConstraints: input.hardConstraints ?? [],
       softPreferences: input.softPreferences ?? [],
       availability: input.availability,
@@ -373,6 +404,7 @@ function evaluateConstraint(
   constraint: ConstraintExpression,
   candidateAttributes: Record<string, unknown>,
   candidateConstraints?: { unit?: string },
+  candidateProvenance?: AttributeProvenance,
 ): ConstraintResult {
   const base: Pick<ConstraintResult, "field" | "operator"> = {
     field: constraint.field,
@@ -381,6 +413,30 @@ function evaluateConstraint(
   const raw = readField(candidateAttributes, constraint.field);
   if (raw === undefined || raw === null) {
     return { ...base, state: "UNKNOWN", detail: "field not present" };
+  }
+  // ── A GUESS ABOUT SOMEBODY'S THING DECIDES NOTHING ──────────────────────
+  //
+  // An INFERRED value is a model's reading of a photo, a video or a sentence.
+  // It may be right, and it is still not the owner speaking. Letting it answer
+  // a hard constraint means a guess decides a real commercial outcome — in
+  // BOTH directions, since excluding a candidate wrongly costs the seller and
+  // including one wrongly costs the buyer.
+  //
+  //   INFERRED_VALUE_EXCLUDES_A_CANDIDATE = 0
+  //   INFERRED_VALUE_ADMITS_A_CANDIDATE = 0
+  //
+  // UNKNOWN is the honest answer and already means what is needed here:
+  // «nothing is known», never FAIL. A buyer who cares then asks — the brokering
+  // path carries the question to the owner, whose answer is theirs.
+  //
+  // This mirrors `evaluateGoalSpec`, which downgrades an INFERRED constraint
+  // from HARD to SOFT for the same reason: an inference may guide, never decide.
+  if (candidateProvenance?.[constraint.field] === "INFERRED") {
+    return {
+      ...base,
+      state: "UNKNOWN",
+      detail: "value is inferred, not stated by its owner",
+    };
   }
 
   let candidateValue = raw;
@@ -447,8 +503,11 @@ export function evaluateMatch(
   offering: EconomicExpression,
 ): { results: ConstraintResult[]; viable: boolean } {
   const constraints = (need.hardConstraints ?? []) as ConstraintExpression[];
+  const provenance = (offering.attributeProvenance ?? undefined) as
+    | AttributeProvenance
+    | undefined;
   const results = constraints.map((constraint) =>
-    evaluateConstraint(constraint, offering.attributes ?? {}),
+    evaluateConstraint(constraint, offering.attributes ?? {}, undefined, provenance),
   );
   // UNKNOWN is never FAIL, but a candidate with zero proven PASSes is not viable either.
   const viable =
@@ -581,6 +640,18 @@ export async function matchNeed(input: {
         (result) => result.field !== capacityConstraint.field && result.state === "FAIL",
       );
       if (otherFailure) continue;
+      // The same law, on the path that does not go through `evaluateConstraint`.
+      // A composite match sums capacities into a promise somebody will be held
+      // to; a guessed capacity has no business in that sum.
+      //
+      //   INFERRED_VALUE_CONTRIBUTES_TO_A_CAPACITY_PROMISE = 0
+      if (
+        (offering.attributeProvenance as AttributeProvenance | null | undefined)?.[
+          capacityConstraint.field
+        ] === "INFERRED"
+      ) {
+        continue;
+      }
       const raw = offering.attributes?.[capacityConstraint.field];
       if (typeof raw === "number" && raw > 0) {
         const unit =

@@ -1206,6 +1206,28 @@ export const economicExpressions = pgTable(
     semanticType: varchar("semanticType", { length: 160 }).notNull(),
     schemaRef: jsonb("schemaRef").$type<{ id: string; version: string }>(),
     attributes: jsonb("attributes").$type<Record<string, unknown>>().notNull().default({}),
+    /**
+     * WHERE EACH ATTRIBUTE VALUE CAME FROM.
+     *
+     *   STATED   — the owner said it.
+     *   INFERRED — something derived it: a model reading a photo, a video, a
+     *              sentence. A guess, however good.
+     *   OBSERVED — a connected system reported it.
+     *
+     * A map keyed by attribute name. A field with no entry is NOT inferred:
+     * every existing writer is the owner's own composition or trusted
+     * configuration, and this does not retroactively weaken them. What is new
+     * is that a channel which KNOWS a value was inferred can say so — and
+     * saying so has consequences.
+     *
+     *   INFERRED_VALUE_EXCLUDES_A_CANDIDATE = 0
+     *
+     * VERIFIED is deliberately not one of these. It is a VERDICT that
+     * `evidence-sufficiency` reaches about evidence, never a label a writer
+     * gives itself — a self-assignable «verified» is the whole vulnerability.
+     */
+    attributeProvenance: jsonb("attributeProvenance")
+      .$type<Record<string, "STATED" | "INFERRED" | "OBSERVED">>(),
     hardConstraints: jsonb("hardConstraints").$type<unknown[]>().notNull().default([]),
     softPreferences: jsonb("softPreferences").$type<unknown[]>().notNull().default([]),
     availability: jsonb("availability").$type<Record<string, unknown>>(),
