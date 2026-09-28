@@ -752,7 +752,18 @@ export async function createEngagement(input: {
   return row;
 }
 
-async function requireEngagementParticipant(
+/**
+ * THE ONE GATE FOR «MAY THESE TWO PARTIES BE IN CONTACT AT ALL».
+ *
+ * Exported so that anything else built between two owners asks THIS question
+ * rather than growing its own answer. An engagement is match-backed and its
+ * participants are derived, never nominated — so participation in one is the
+ * consent, and a second consent path would be a second place to get it wrong.
+ *
+ *   ENGAGEMENT_IS_THE_CONTACT_AUTHORITY
+ *   SECOND_CROSS_OWNER_CONSENT_PATH = 0
+ */
+export async function requireEngagementParticipant(
   engagementId: string,
   ownerId: string,
 ): Promise<EconomicEngagement> {

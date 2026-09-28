@@ -225,6 +225,13 @@
       "when": 1788273600013,
       "tag": "0031_reconnect_binding_identity",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1788273600014,
+      "tag": "0032_cross_party_brokering",
+      "breakpoints": true
     }
   ]
 }

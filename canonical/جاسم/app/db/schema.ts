@@ -1269,6 +1269,62 @@ export const economicEngagements = pgTable(
   }),
 );
 
+export const cross_party_questions_status_enum = pgEnum("cross_party_questions_status", ["asked", "answered", "declined", "withdrawn"]);
+
+/**
+ * A QUESTION ONE PARTY ASKS ABOUT THE OTHER PARTY'S EXPRESSION.
+ *
+ *   ANSWER_AUTHORITY_IS_THE_SUBJECT_OWNER
+ *   SELLER_ANSWER_IS_EVIDENCE_NOT_ATTRIBUTE
+ *   UNANSWERED != FALSE · UNANSWERED != UNAVAILABLE
+ *
+ * JASIM brokers; it never answers for anybody. A buyer asks about a property
+ * the offering does not declare, the question reaches its OWNER, and the answer
+ * comes back as evidence whose source is that owner — never as a new attribute
+ * of the offering, and never as JASIM's own statement.
+ *
+ * `subjectRevision` is pinned when the question is ASKED. An answer describes
+ * the thing as it was at that version; if the owner revises the offering
+ * afterwards, the answer stays attached to what it actually described.
+ *
+ *   ANSWER_SURVIVES_SUBJECT_REVISION = 0
+ */
+export const crossPartyQuestions = pgTable(
+  "cross_party_questions",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    /** The authorized cross-owner relationship this question lives in. */
+    engagementId: varchar("engagementId", { length: 64 }).notNull(),
+    /** WHO asked. Never projected to the answering party. */
+    askedByOwnerId: varchar("askedByOwnerId", { length: 100 }).notNull(),
+    /** WHOSE expression it is about — the only party who may answer. */
+    subjectOwnerId: varchar("subjectOwnerId", { length: 100 }).notNull(),
+    subjectExpressionId: varchar("subjectExpressionId", { length: 64 }).notNull(),
+    /** The version the question was asked about. Pinned, never refreshed. */
+    subjectRevision: integer("subjectRevision").notNull(),
+    /** «mileage», «availability» — a property name, not a schema. */
+    property: varchar("property", { length: 120 }).notNull(),
+    status: cross_party_questions_status_enum("status").notNull().default("asked"),
+    /** What the owner said. NULL until they say it — and NULL is not «no». */
+    answerValue: jsonb("answerValue").$type<{ value: unknown }>(),
+    answeredAt: timestamp("answeredAt", { withTimezone: true }),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    engagementIdx: index("cross_party_questions_engagement_idx").on(table.engagementId),
+    inboxIdx: index("cross_party_questions_inbox_idx").on(table.subjectOwnerId, table.status),
+    // One open question per property per subject revision: asking again is the
+    // same question, not a second one, and a duplicate would be a way to
+    // pressure the other party.
+    openIdx: uniqueIndex("cross_party_questions_open_idx").on(
+      table.engagementId,
+      table.subjectExpressionId,
+      table.subjectRevision,
+      table.property,
+    ),
+  }),
+);
+
 export const economicProposals = pgTable(
   "economic_proposals",
   {
@@ -1341,6 +1397,7 @@ export type EconomicExpression = typeof economicExpressions.$inferSelect;
 export type EconomicMatch = typeof economicMatches.$inferSelect;
 export type EconomicEngagement = typeof economicEngagements.$inferSelect;
 export type EconomicProposal = typeof economicProposals.$inferSelect;
+export type CrossPartyQuestion = typeof crossPartyQuestions.$inferSelect;
 export type TransactionIntent = typeof transactionIntents.$inferSelect;
 export type ExternalActionSession = typeof externalActionSessions.$inferSelect;
 
