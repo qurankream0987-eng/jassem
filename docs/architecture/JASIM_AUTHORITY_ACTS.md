@@ -123,6 +123,59 @@ JASIM's own reading:
 An organization nobody is a member of is a row, not a scope — which is why the
 first readback checks two things.
 
+### A readback can only find what the write actually named
+
+```
+RETURNED_REFERENCE MUST NAME DURABLE_STATE
+UPSERT_RESULT != PREGENERATED_INPUT_ID
+CONFLICT_UPDATE != NEW_BINDING_IDENTITY
+A REFERENCE TO NOTHING != SUCCESS
+WRITE_SUCCEEDED != READBACK_SUCCEEDED
+```
+
+`provider.bind` reads its effect back **by the id its `perform` returned**, which
+is the right shape — an act's readback should not take the act's own word for
+anything. But `bindScopeProvider` generated `bind_<uuid>` *before* an
+`INSERT … ON CONFLICT DO UPDATE` and returned that candidate regardless of which
+branch ran. On a rebind of a tuple that already had a live row, Postgres updated
+**that** row, and the caller was handed an id no row carries. The readback then
+looked it up, found nothing, and reported:
+
+```
+occurred: false — "No active binding of this scope has that id."
+```
+
+for a write that had just succeeded. A correct readback reporting a false
+negative, because the reference it was given pointed at nothing.
+
+The fix is to ask the write which row it wrote. `RETURNING` on `DO UPDATE` yields
+the row as written, whichever branch ran, so the canonical id comes from the
+statement itself — not from a second lookup, a «latest» heuristic or an
+approximate search:
+
+```ts
+const [persisted] = await db.insert(scopeProviderBindings)
+  .values({ id: candidateId, … })
+  .onConflictDoUpdate({ target: […], targetWhere: sql`… IS DISTINCT FROM 'REVOKED'`, set: {…} })
+  .returning({ id: scopeProviderBindings.id });
+return { id: persisted.id };
+```
+
+No table, no column and no migration: one statement now reports what it did.
+
+One thing was fixed in the same breath rather than left as a quieter version of
+the same untruth. The conflict branch's `set` did not write `credentialEnvName`,
+so re-binding with a new variable kept the old one — and this act's readback says
+«reading \<name\>». While the readback could not find the row at all, that was
+invisible; fixing the id is exactly what makes it observable. Both branches now
+store what the call stated, «none» included, which is what the insert branch
+always did.
+
+The identity rule the reconnect phase established is untouched: the arbiter
+predicate stays `lifecycle IS DISTINCT FROM 'REVOKED'`, so a revoked row is
+history rather than a slot — with only revoked history, a legacy bind inserts a
+new live row and mutates none of it.
+
 ## 6. The seven acts
 
 ```
@@ -165,3 +218,9 @@ looser. Comparing something looser is how the digest stops meaning anything.
   ability to approve on your behalf, and adding one would need its own evidence.
 - **No re-approval flow.** A `VOID` request is not revived; the person asks
   again and reads the current version. Reviving one would be reviving words.
+
+## Proofs — the returned reference
+
+| where | what |
+| --- | --- |
+| `tests/block31/legacy-binding-return-identity.test.ts` | a fresh bind returns the id of the row it inserted; binding the same tuple again returns the row that already existed, leaves one live row, and stores the name the second call stated; four rebinds hand back one durable id and no candidate survives without a row; the act reports `occurred: true` on a fresh bind **and** on a rebind, naming the row that carries the binding and the name really on it; a bind with no credential name says «no credential» rather than keeping the old one; with only revoked history a legacy bind creates a new live row and leaves the revoked one byte-for-byte; with a revoked row beside a live one the live one is updated; four concurrent binds agree on one durable id with no driver error reaching a caller; a `NULL`-lifecycle row is what a rebind conflicts with and is still not an account for the connector runtime; resolution still finds the live binding and never the history; the modern reconnect ceremony still produces a new identity and the legacy upsert cannot reach either of its rows; the canonical id comes from the write, with no second lookup, no ordering and no limit |

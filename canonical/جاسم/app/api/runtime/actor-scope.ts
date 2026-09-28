@@ -585,15 +585,29 @@ export async function bindScopeProvider(input: {
   if (!allowed.ok) {
     throw new ActorScopeError("Not permitted to bind providers in this scope.", "FORBIDDEN");
   }
-  const id = `bind_${randomUUID()}`;
-  await db
+  const credentialEnvName = input.credentialEnvName?.trim() ?? null;
+  // A CANDIDATE id, not the answer.
+  //
+  // This is an upsert, so one of two rows ends up carrying this binding and only
+  // the database knows which: the one inserted under this candidate id, or the
+  // live one that was already there. Returning the candidate regardless meant
+  // that on the conflict path the caller was handed an id no row carries — and
+  // `provider.bind`'s own readback, which looks the row up BY that id, then
+  // reported `occurred: false` for a write that had just succeeded.
+  //
+  //   RETURNED_REFERENCE MUST NAME DURABLE_STATE
+  //   UPSERT_RESULT != PREGENERATED_INPUT_ID
+  //   CONFLICT_UPDATE != NEW_BINDING_IDENTITY
+  //   WRITE_SUCCEEDED != READBACK_SUCCEEDED
+  const candidateId = `bind_${randomUUID()}`;
+  const [persisted] = await db
     .insert(scopeProviderBindings)
     .values({
-      id,
+      id: candidateId,
       scopeId: input.scopeId,
       providerClass: input.providerClass.trim(),
       providerId: input.providerId.trim(),
-      credentialEnvName: input.credentialEnvName?.trim() ?? null,
+      credentialEnvName,
       boundByPrincipalId: input.principalId,
     })
     .onConflictDoUpdate({
@@ -610,9 +624,37 @@ export async function bindScopeProvider(input: {
       //
       //   REVOKED_BINDING_IDENTITY_IS_TERMINAL
       targetWhere: sql`${scopeProviderBindings.lifecycle} IS DISTINCT FROM 'REVOKED'`,
-      set: { state: "active", revokedAt: null, boundByPrincipalId: input.principalId },
-    });
-  return { id };
+      set: {
+        state: "active",
+        revokedAt: null,
+        boundByPrincipalId: input.principalId,
+        // THE NAME THE CALLER ACTUALLY STATED.
+        //
+        // The conflict branch used not to write this, so re-binding with a new
+        // variable kept the old one — and `provider.bind`'s readback, which
+        // reports «reading <name>», would have stated a name the person had just
+        // replaced. That was invisible while the readback could not find the row
+        // at all; fixing the id above is what makes it observable, so it is
+        // fixed in the same breath rather than turned into a quiet one.
+        //
+        //   READBACK_REPORTS_SUPERSEDED_CREDENTIAL_NAME = 0
+        //
+        // Both paths now store exactly what this call said, including «none».
+        credentialEnvName,
+      },
+    })
+    // Postgres RETURNING on `DO UPDATE` yields the row as written, whichever
+    // branch ran. So the canonical id comes from the write itself — not from a
+    // second lookup, a «latest» heuristic or an approximate search.
+    .returning({ id: scopeProviderBindings.id });
+  if (!persisted) {
+    // Unreachable for `DO UPDATE`, which always returns its row. Fails closed
+    // rather than handing back a reference to nothing.
+    //
+    //   A REFERENCE TO NOTHING != SUCCESS
+    throw new ActorScopeError("The provider binding did not persist.", "NOT_FOUND");
+  }
+  return { id: persisted.id };
 }
 
 /**
