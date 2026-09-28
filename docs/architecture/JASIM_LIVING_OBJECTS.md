@@ -190,3 +190,73 @@ driver *is* is not, and a map must never invent one. Its `OBSERVABLE` and
   authorization negatives and the sweep.
 - `tests/unit/living-object-contract.test.ts` — 24 contract tests: the closed
   vocabularies, the structural policy, and the source-level guarantees.
+
+## الإخفاء لا يُخفي ما ينتظرك أنت
+
+```
+HIDE != CANCEL · SURFACE_EXIT != SUBJECT_DELETE     (مُغلق سابقاً)
+HIDING_WHAT_WAITS_ON_YOU = 0
+RELEASE_ABANDONS_AN_OBLIGATION = 0
+SURFACE_STATE_SUPPRESSES_A_NEW_DEMAND_ON_YOU = 0
+```
+
+`setLivingObjectState` already carried the first law correctly: it writes two
+columns, touches no subject, and has no `cancel` in it on purpose. Hiding a
+delivery does not stop it. That stays exactly as it was.
+
+The gap was next to it. `projectLivingObjects` filters out `HIDDEN` and
+non-`FOLLOWING` handles by default, so hiding one **removes it from the surface**
+— and a follower could hide a subject that had *stopped and was waiting for
+them*. A payment awaiting their approval would vanish from the only place saying
+the system is stuck on them. Releasing one was worse: reconciliation walks only
+`FOLLOWING` handles, so it could never come back.
+
+Meanwhile `decidePresentation` already refuses to let a richer surface hide a
+blocker or an approval requirement. The principle was held in one place and
+contradicted in another.
+
+### What counts as waiting on you
+
+A closed, structural set — not «important» and not «recent», which are
+judgements:
+
+| status | meaning |
+| --- | --- |
+| `WAITING_APPROVAL` | an approval nobody else can give |
+| `WAITING_USER` | an input only they hold |
+| `BLOCKED` | a blocker only they can clear |
+
+**Everything else may be hidden freely, and that is the point.** A `RUNNING`
+delivery is exactly what *«شيل الخريطة»* is about, and it goes on running unseen.
+`MONITORING`, `ACTIVE`, `VERIFYING` and every terminal state hide without
+argument.
+
+It is not a trap either: acting on the subject moves it out of those statuses,
+and hiding then works. **Deal with it, or leave it visible.** And `RESOLVED` —
+«I have dealt with this» — is never refused, nor is bringing something back.
+
+### Timing is not a way around it
+
+Refusing to hide what waits on you would be trivially defeated by hiding it a
+moment *before* it starts waiting. So reconciliation returns a hidden handle to
+the surface when its subject has since stopped and turned to this person.
+
+Narrowly: only for handles still being **followed**, and only for a demand —
+a subject that merely moves from `RUNNING` to `VERIFYING` stays hidden, because
+otherwise hiding would mean nothing. A `RELEASED` handle is a deliberate *«I am
+not following this»* and is not resurrected; the subject's own runtime still
+asks for what it needs through its own door.
+
+One residual case is recorded rather than papered over: a handle released while
+`RUNNING` whose subject *later* comes to need the person is not re-surfaced
+through this rail. Widening the sweep to released handles would overrule what
+releasing means, and the demand still reaches the person through the subject's
+own runtime.
+
+### And an unreadable subject proves nothing
+
+`UNKNOWN != WAITING`. A subject that cannot be read is not evidence that
+something waits on anybody, so hiding is allowed — a refusal built on nothing
+would be a lock with no key.
+
+| `tests/block31/surface-dismissal-authority.test.ts` | anything that carries on unseen (`RUNNING`, `ACTIVE`, `MONITORING`, `VERIFYING`) may be hidden, stays followed, leaves the subject untouched and is still there when asked for; what has stopped and waits on the follower (`WAITING_APPROVAL`, `WAITING_USER`, `BLOCKED`) can be neither hidden nor released, and stays visible and following after each attempt; it is not a trap — dealing with the subject makes hiding work; resolving and re-showing are never refused; hiding it first does not spare you, because a new demand returns to the surface on reconciliation without the subject being touched; a subject that merely moves on stays hidden; a finished and verified subject resolves and does not come back; the surface still has no way to cancel or delete a subject and the «waiting on you» vocabulary names no domain; an unreadable subject is not evidence that anything waits on anybody |

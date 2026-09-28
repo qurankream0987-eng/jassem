@@ -151,6 +151,26 @@ const TERMINAL_STATUSES: ReadonlySet<LivingObjectRuntimeStatus> = new Set([
   "CANCELLED",
 ]);
 
+/**
+ * A SUBJECT THAT CANNOT MOVE WITHOUT THIS PERSON.
+ *
+ * Not «important», and not «recent» — those are judgements. These are the
+ * statuses where the runtime has STOPPED and is waiting for the follower
+ * themselves: an approval nobody else can give, an input only they hold, a
+ * blocker only they can clear.
+ *
+ *   HIDING_WHAT_WAITS_ON_YOU = 0
+ *
+ * Everything else may be hidden freely, which is the whole point of hiding: a
+ * delivery that is RUNNING is exactly the case «شيل الخريطة» is about, and it
+ * goes on running unseen.
+ */
+const AWAITING_THE_FOLLOWER: ReadonlySet<LivingObjectRuntimeStatus> = new Set([
+  "WAITING_USER",
+  "WAITING_APPROVAL",
+  "BLOCKED",
+]);
+
 export class LivingObjectError extends Error {
   readonly code: "INVALID" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "STATE";
   constructor(message: string, code: LivingObjectError["code"]) {
@@ -859,6 +879,42 @@ export async function setLivingObjectState(input: {
     throw new LivingObjectError("Nothing to change.", "INVALID");
   }
 
+  // ── THE ONE THING A FOLLOWER MAY NOT PUT OUT OF SIGHT ────────────────────
+  //
+  // Hiding is a surface act and stays one: a RUNNING delivery, a MONITORING
+  // condition, a finished thing — all may be hidden, and all carry on. But a
+  // subject that has STOPPED and is waiting for this person is a different
+  // case. `listLivingObjects` filters HIDDEN and non-FOLLOWING handles out by
+  // default, so hiding one would take away the only thing saying that the
+  // system is stuck on them — and releasing one would also stop it being
+  // reconciled, so it could never come back.
+  //
+  //   HIDING_WHAT_WAITS_ON_YOU = 0
+  //   RELEASE_ABANDONS_AN_OBLIGATION = 0
+  //
+  // `decidePresentation` already refuses to let a richer surface hide a blocker
+  // or an approval requirement. This is the same law, where the follower is the
+  // one doing the hiding.
+  //
+  // It is not a trap: acting on it — approving, answering, unblocking — moves
+  // the subject out of these statuses, and hiding then works. «Deal with it or
+  // leave it visible» is the whole of the rule.
+  const leavingTheSurface =
+    input.surfaceState === "HIDDEN" || input.followState === "RELEASED";
+  if (leavingTheSurface) {
+    const snapshot = await readSubject(
+      row.subjectKind as LivingObjectSubjectKind,
+      row.subjectId,
+    );
+    // A subject nobody can read is not evidence that it waits on anybody.
+    if (subjectVisibleTo(snapshot, scopeId) && AWAITING_THE_FOLLOWER.has(snapshot.status)) {
+      throw new LivingObjectError(
+        "This is waiting on you; deal with it and it will stop asking.",
+        "STATE",
+      );
+    }
+  }
+
   const [updated] = await db
     .update(livingObjects)
     .set({
@@ -1065,10 +1121,25 @@ export async function reconcileLivingObjects(input: {
     changed += 1;
 
     const terminal = TERMINAL_STATUSES.has(snapshot.status);
+    // ── A NEW DEMAND ON YOU COMES BACK INTO VIEW ─────────────────────────
+    //
+    // Refusing to hide what waits on you would be easy to walk around by
+    // hiding it a moment BEFORE it starts waiting. So a handle that is still
+    // followed and whose subject has since stopped and turned to this person
+    // returns to the surface.
+    //
+    //   SURFACE_STATE_SUPPRESSES_A_NEW_DEMAND_ON_YOU = 0
+    //
+    // Only for handles still being FOLLOWED: a released one is a deliberate
+    // «I am not following this», and resurfacing it would overrule that. The
+    // subject's own runtime still asks for what it needs through its own door.
+    const resurfaced =
+      !terminal && row.surfaceState === "HIDDEN" && AWAITING_THE_FOLLOWER.has(snapshot.status);
     const [updated] = await db
       .update(livingObjects)
       .set({
         ...(terminal ? { followState: "RESOLVED" as const } : {}),
+        ...(resurfaced ? { surfaceState: "VISIBLE" as const } : {}),
         updatedAt: new Date(),
       })
       .where(eq(livingObjects.id, row.id))
@@ -1081,7 +1152,9 @@ export async function reconcileLivingObjects(input: {
       object: updated!,
       message: terminal
         ? "A followed subject reached a terminal state."
-        : "A followed subject changed.",
+        : resurfaced
+          ? "A followed subject is now waiting on its follower, and returned to the surface."
+          : "A followed subject changed.",
     });
   }
 
