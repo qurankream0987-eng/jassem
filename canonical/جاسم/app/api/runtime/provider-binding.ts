@@ -69,7 +69,7 @@
  */
 
 import { randomUUID } from "node:crypto";
-import { and, eq, isNotNull, ne } from "drizzle-orm";
+import { and, eq, isNotNull, ne, sql } from "drizzle-orm";
 import { db } from "../queries/connection";
 import { events } from "@db/schema";
 import { providerCredentials, scopeProviderBindings } from "@db/schema-block2";
@@ -209,6 +209,25 @@ export class ProviderBindingError extends Error {
     this.code = code;
     this.name = "ProviderBindingError";
   }
+}
+
+/**
+ * A UNIQUE-CONSTRAINT LOSS, RECOGNIZED RATHER THAN LEAKED.
+ *
+ * Postgres `unique_violation`. Two callers may pass the same read-then-write
+ * check at once, and only the database can settle it — so the loser is
+ * translated into the refusal the product already has words for, instead of a
+ * driver error reaching a person or a model.
+ *
+ *   RAW_DATABASE_ERROR_AS_PRODUCT_BEHAVIOR = 0
+ *
+ * The cause chain is walked because drivers wrap: the code may sit on the error
+ * or on something it carries.
+ */
+function isUniqueViolation(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const candidate = error as { code?: unknown; cause?: unknown };
+  return candidate.code === "23505" || isUniqueViolation(candidate.cause);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -839,8 +858,22 @@ export async function beginProviderSetup(input: {
   // trusted surface answers «did the authorized person choose this».
   const declaresEndpoint = definition.endpoint.mode === "DECLARED_AT_SETUP";
 
-  // Connecting the same system twice is a decision, not an accident. An
-  // existing live binding is surfaced rather than silently duplicated.
+  // ── ONE LIVE CONNECTION, AND HISTORY BESIDE IT ───────────────────────────
+  //
+  // Connecting the same system twice is a decision, not an accident, so a live
+  // connection is surfaced rather than silently duplicated. A REVOKED one is
+  // not a live connection and not a slot: it is a historical identity that
+  // canonical records already pin, and it is left exactly as it is.
+  //
+  //   REVOKED_BINDING_IDENTITY_IS_TERMINAL
+  //   RECONNECT != UNREVOKE · RECONNECT != ROTATION
+  //
+  // «Not revoked» is the same predicate the database index uses, NULL included:
+  // a legacy environment-named row was never an account, but it is not history
+  // either, and reusing its row is how a legacy name would have quietly become
+  // a credentialled connection.
+  //
+  //   LEGACY_ROW_SILENTLY_BECOMES_CONNECTOR_BINDING = 0
   const live = await db
     .select()
     .from(scopeProviderBindings)
@@ -849,11 +882,11 @@ export async function beginProviderSetup(input: {
         eq(scopeProviderBindings.scopeId, input.scopeId),
         eq(scopeProviderBindings.providerClass, "connector"),
         eq(scopeProviderBindings.providerId, definition.id),
+        sql`${scopeProviderBindings.lifecycle} IS DISTINCT FROM 'REVOKED'`,
       ),
     )
     .limit(1);
-  const existing = live[0];
-  if (existing && existing.lifecycle && existing.lifecycle !== "REVOKED") {
+  if (live[0]) {
     throw new ProviderBindingError(
       `«${definition.displayName}» is already connected here.`,
       "STATE",
@@ -862,7 +895,17 @@ export async function beginProviderSetup(input: {
 
   const now = input.now ?? new Date();
   const expiresAt = new Date(now.getTime() + (input.ttlMs ?? DEFAULT_SETUP_TTL_MS));
-  const id = existing?.id ?? `bind_${randomUUID()}`;
+  // A NEW IDENTITY, always.
+  //
+  // This used to be `existing?.id ?? bind_…`, which reused the revoked row's id
+  // — and every record that pinned that id would then have been describing a
+  // different account at a possibly different address. It also could not work:
+  // the row's `credentialVersion` was reset to 0, so the reconnect sealed
+  // PROVIDER_AUTH v1 again and collided with the retired v1 that audit keeps.
+  //
+  //   REVOKED_BINDING_ROW_REUSED_FOR_RECONNECT = 0
+  //   RECONNECT_CREDENTIAL_VERSION_COLLISION = 0
+  const id = `bind_${randomUUID()}`;
   const values = {
     id,
     scopeId: input.scopeId,
@@ -890,10 +933,26 @@ export async function beginProviderSetup(input: {
     revokedAt: null,
     boundByPrincipalId: input.principalId,
   };
-  if (existing) {
-    await db.update(scopeProviderBindings).set(values).where(eq(scopeProviderBindings.id, id));
-  } else {
+  // ── THE DATABASE IS THE CONCURRENCY AUTHORITY ────────────────────────────
+  //
+  // The check above is a read, and two setups may pass it at once. Only the
+  // partial unique index can actually decide, so the loser is recognized by its
+  // violation and answered in the product's own words — the same refusal it
+  // would have received a moment earlier.
+  //
+  //   TWO_SIMULTANEOUS_LIVE_BINDINGS = 0
+  //   CONCURRENT_RECONNECT_DUPLICATES = 0
+  //   RECONNECT_UNIQUE_VIOLATION_ESCAPES_RUNTIME = 0
+  try {
     await db.insert(scopeProviderBindings).values(values);
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      throw new ProviderBindingError(
+        `«${definition.displayName}» is already connected here.`,
+        "STATE",
+      );
+    }
+    throw error;
   }
   await audit({
     type: "PROVIDER_SETUP_OPENED",
@@ -2144,9 +2203,38 @@ export async function projectBindings(input: {
     .select()
     .from(scopeProviderBindings)
     .where(eq(scopeProviderBindings.scopeId, input.scopeId));
-  return rows
-    .filter((row) => row.lifecycle !== null)
-    .map((row) => project(row, definitionOf(row.definitionId)));
+  // ── WHAT A PERSON SEES DID NOT CHANGE ────────────────────────────────────
+  //
+  // Before reconnect created a second identity, the table held at most one row
+  // per provider and this showed it whatever its lifecycle — so somebody who
+  // disconnected a system still saw that they had. Both of those were promises,
+  // and preserving history must not silently turn one line per provider into a
+  // growing list of every connection ever made.
+  //
+  // So: the live connection when there is one, and otherwise the most recent
+  // revoked one. Exactly what was shown before, from a table that now knows
+  // more than it did.
+  //
+  //   PROJECTION_GROWS_WITH_RECONNECT_HISTORY = 0
+  //   REVOKED_CONNECTION_DISAPPEARS_FROM_VIEW = 0
+  const current = new Map<string, typeof rows[number]>();
+  for (const row of rows) {
+    if (row.lifecycle === null) continue;
+    const key = `${row.providerClass}\u0000${row.providerId}`;
+    const held = current.get(key);
+    if (!held) {
+      current.set(key, row);
+      continue;
+    }
+    // A live row always wins; between two revoked ones, the later revocation.
+    const heldIsLive = held.lifecycle !== "REVOKED";
+    const rowIsLive = row.lifecycle !== "REVOKED";
+    if (heldIsLive) continue;
+    if (rowIsLive || (row.revokedAt?.getTime() ?? 0) > (held.revokedAt?.getTime() ?? 0)) {
+      current.set(key, row);
+    }
+  }
+  return [...current.values()].map((row) => project(row, definitionOf(row.definitionId)));
 }
 
 /** «ما الذي تستطيع فعله بهذا الربط؟» — granted, never supported. */
@@ -2510,10 +2598,18 @@ export function httpAuthorizationFor(
  * The scope's ACCOUNT at one provider, if it holds one.
  *
  * Exact rather than chosen: `scope_provider_bindings` is unique on
- * (scope, class, provider), so a scope holds at most one binding per provider
- * and there is no «latest», «first» or «any» to pick between. A revoked one is
- * not an account any more, and a legacy environment-named row (NULL lifecycle)
- * never was one.
+ * (scope, class, provider) FOR LIVE ROWS, so a scope holds at most one usable
+ * binding per provider and there is no «latest», «first» or «any» to pick
+ * between. A revoked one is not an account any more — and there may now be
+ * several of those beside the live one, because a reconnect is a new identity
+ * rather than a resurrection — so the filter below is what makes the `limit(1)`
+ * exact, and the partial index is what makes it provably at most one.
+ *
+ *   ACCOUNT_BINDING_RESOLVES_REVOKED_HISTORY = 0
+ *   ACCOUNT_BINDING_AMBIGUOUS_LIVE_SELECTION = 0
+ *
+ * A legacy environment-named row (NULL lifecycle) never was an account either,
+ * and `isNotNull` keeps it out.
  *
  * Used at the moment an effect is created, to PIN which account carried it.
  * Never used afterwards to recover one: re-deriving an account later would let

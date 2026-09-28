@@ -35,7 +35,7 @@
  */
 
 import { randomUUID } from "node:crypto";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "../queries/connection";
 import {
   memberships,
@@ -602,6 +602,14 @@ export async function bindScopeProvider(input: {
         scopeProviderBindings.providerClass,
         scopeProviderBindings.providerId,
       ],
+      // The identity index is PARTIAL — it constrains live rows only, so that a
+      // revoked connection stays as history instead of being a slot somebody
+      // reconnects into. Postgres infers a partial index as the arbiter only
+      // when the statement repeats its predicate, so this names the same one.
+      // Without it this upsert would stop finding any arbiter at all.
+      //
+      //   REVOKED_BINDING_IDENTITY_IS_TERMINAL
+      targetWhere: sql`${scopeProviderBindings.lifecycle} IS DISTINCT FROM 'REVOKED'`,
       set: { state: "active", revokedAt: null, boundByPrincipalId: input.principalId },
     });
   return { id };

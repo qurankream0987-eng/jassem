@@ -265,9 +265,120 @@ They differ on the three axes a real provider actually differs on. They pass
 through one lifecycle, one gate and one vault, and no branch anywhere reads
 which is which.
 
+## A revoked connection is history, not a slot
+
+```
+REVOKED_BINDING_IDENTITY_IS_TERMINAL
+RECONNECT != UNREVOKE · RECONNECT != ROTATION
+PINNED_BINDING_IDENTITY != CURRENT_CONNECTION_FOR_PROVIDER
+RAW_DATABASE_ERROR_AS_PRODUCT_BEHAVIOR = 0
+```
+
+`scope_provider_bindings` was unique on `(scopeId, providerClass, providerId)`
+unconditionally. Read carefully, that asserted something nobody meant: a scope
+may only ever **have had** one connection to a provider, past tense included. So
+`beginProviderSetup` had nowhere to put a second one and reused the revoked row —
+same id, lifecycle back to `SETUP_PENDING`, `endpointUrl` cleared,
+`credentialVersion` back to 0.
+
+That was wrong in two directions at once.
+
+**It did not work.** `provider_credentials` is unique on
+`(bindingId, kind, version)` and a retired envelope is kept for audit, so the
+reconnect's `PROVIDER_AUTH` v1 collided with the revoked connection's retired v1.
+A legitimate reconnect ended in a raw `23505` from the driver:
+
+```
+duplicate key value violates unique constraint
+  "provider_credentials_binding_kind_version_idx"
+Key ("bindingId", kind, version)=(bind_017de99e…, PROVIDER_AUTH, 1) already exists.
+```
+
+**And had it worked, it would have been worse.** Canonical records pin binding
+identity: `remote_executions.providerBindingRef`,
+`payment_intents.providerBindingRef`, every sealed envelope, the webhook and
+receipt material, the audit trail. An execution that ran at bind_A's account and
+address would have found bind_A pointing somewhere else — silently, because the
+owner reconnected. A follow-up about an existing effect must reach the system
+that created it.
+
+### What a reconnect is
+
+A **new binding identity**, beside the old one:
+
+| | old connection | reconnect |
+| --- | --- | --- |
+| binding id | `bind_A`, forever | `bind_B` |
+| lifecycle | `REVOKED`, terminal | its own ceremony from `SETUP_PENDING` |
+| address | whatever it was, unchanged | its own, declared at its own setup |
+| credential versions | retired, kept | its own, starting at 1 |
+| what pins it | every historical record, still | only effects created after it |
+
+Nothing on the revoked row is written again. `revokeBinding` remains its last
+word, and `beginProviderSetup` no longer has a branch that could touch it.
+
+### One live connection, and unlimited history
+
+The constraint is narrowed to what it was always for — the **present**, where two
+live connections to one provider would make «the account» an ambiguous question:
+
+```sql
+-- was
+CREATE UNIQUE INDEX "scope_provider_bindings_unique_idx"
+  ON "scope_provider_bindings" ("scopeId","providerClass","providerId");
+-- is
+CREATE UNIQUE INDEX "scope_provider_bindings_unique_idx"
+  ON "scope_provider_bindings" ("scopeId","providerClass","providerId")
+  WHERE "lifecycle" IS DISTINCT FROM 'REVOKED';
+```
+
+`IS DISTINCT FROM` rather than `<>`, because a legacy environment-named row
+carries `NULL` lifecycle and `NULL <> 'REVOKED'` is `NULL` — which would drop
+those rows out of the index and let a second live row appear beside one. **NULL is
+not revoked, so NULL counts as live.** The new predicate is strictly weaker than
+the old one, so the migration is forward-only and cannot conflict with any
+existing database: nothing is deleted, no binding id is rewritten, no envelope is
+touched.
+
+Two consequences had to be followed through rather than discovered later:
+
+- **The database is the concurrency authority.** The runtime's live-binding check
+  is a read, and two setups may pass it at once. So the insert catches
+  `unique_violation` and answers it in the product's own words — the same refusal
+  a moment earlier would have given — instead of letting a driver error reach a
+  person. A partial index is also only inferred as an `ON CONFLICT` arbiter when
+  the statement repeats its predicate, so the one legacy upsert
+  (`bindScopeProvider`) now names it.
+- **What a person sees did not change.** `projectBindings` showed one line per
+  provider whatever its lifecycle, so a disconnection stayed visible. Preserving
+  history must not silently turn that into a growing list of every connection
+  ever made, so the projection collapses to the live connection when there is
+  one and the most recent revoked one otherwise. Exactly what was shown before,
+  from a table that now knows more.
+
+One thing is recorded rather than built: there is **no outbound-credential
+rotation path on a live connection** at all. `PROVIDER_AUTH` material is sealed in
+exactly one place, `completeProviderSetup`, gated on a one-time `SETUP_PENDING`
+setup. Webhook and receipt material do rotate in place, on the same identity,
+version by version. Reconnect is neither of those things, and this phase did not
+invent the missing one.
+
+The historical-readback policy is untouched: a revoked connection is refused for
+a readback and for a cancellation alike, exactly as before.
+
 ## What was added, and what was not
 
 One migration. Thirteen columns on a table that already existed, and one new
 table for sealed material. No table was dropped or renamed, and a row with a
 `NULL` lifecycle is a legacy environment binding exactly as before — the
 connector runtime refuses to use one, so nothing became usable by being migrated.
+
+The reconnect phase added one more migration: **no new table and no new column**,
+one index narrowed from «one connection ever» to «one live connection», and a
+`23505` translated into a refusal.
+
+## Proofs — reconnect identity
+
+| where | what |
+| --- | --- |
+| `tests/block31/provider-reconnect-identity.test.ts` | a disconnected provider reconnects at all, as a new identity beside the old one (new id, old row still `REVOKED` at its own address with its grant and credential stripped, two rows and exactly one live); a second live connection is still refused; the new connection's `PROVIDER_AUTH` v1 does not collide with the old retired v1, revocation retires all three kinds and deletes none, and no reconnect resurrects one; an old remote execution and an old payment intent both stay pinned to the connection that carried them while `accountBindingFor` moves to the new one and a new execution pins it; the old execution's authorized address is still the old address and the pinned connection is refused (revocation, not redirection); account resolution ignores three rounds of revoked history and returns null when nothing is live; two concurrent setups and two concurrent reconnects each produce one live connection and one `ProviderBindingError` with code `STATE` carrying no driver text; a FIXED-address provider reconnects to its definition's address under a new identity; webhook and receipt rotation stay one identity with independent versions and create no row; there is no `PROVIDER_AUTH` rotation path and none was added; the projection still shows one line per provider and still shows a disconnection; a legacy `NULL`-lifecycle row counts as live, blocks a setup, and is never projected or resolved as an account; the identity rule names no provider, domain or protocol, and the migration deletes nothing |

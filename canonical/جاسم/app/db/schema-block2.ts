@@ -7,6 +7,7 @@
 // convention (portable, no custom PG enum types required).
 // ============================================================================
 
+import { sql } from "drizzle-orm";
 import {
   bigint,
   bigserial,
@@ -731,11 +732,34 @@ export const scopeProviderBindings = pgTable(
     suspendedReason: varchar("suspendedReason", { length: 191 }),
   },
   (table) => [
-    uniqueIndex("scope_provider_bindings_unique_idx").on(
-      table.scopeId,
-      table.providerClass,
-      table.providerId,
-    ),
+    /**
+     * AT MOST ONE LIVE CONNECTION PER PROVIDER, AND ANY AMOUNT OF HISTORY.
+     *
+     * This index used to be unconditional, which said something stronger than
+     * anybody meant: that a scope may only ever have had ONE connection to a
+     * provider. So disconnecting and reconnecting had nowhere to put the second
+     * one, and `beginProviderSetup` reused the revoked row — resurrecting an
+     * identity that canonical records already pin.
+     *
+     *   REVOKED_BINDING_IDENTITY_IS_TERMINAL
+     *   PINNED_BINDING_IDENTITY != CURRENT_CONNECTION_FOR_PROVIDER
+     *
+     * The invariant anybody actually wanted is about the PRESENT: two live
+     * connections to one provider in one scope would make «the account» an
+     * ambiguous question. Revoked rows are history and are not competing for
+     * that answer, so they are excluded from the constraint and kept forever.
+     *
+     * `IS DISTINCT FROM` rather than `<>` on purpose: a legacy environment-named
+     * row carries NULL `lifecycle`, and `NULL <> 'REVOKED'` is NULL — which
+     * would drop those rows out of the index and let a second live row appear
+     * beside one. NULL is not revoked, so NULL counts as live.
+     *
+     *   LEGACY_NULL_LIFECYCLE_ROW_ESCAPES_LIVE_UNIQUENESS = 0
+     *   TWO_SIMULTANEOUS_LIVE_BINDINGS = 0
+     */
+    uniqueIndex("scope_provider_bindings_unique_idx")
+      .on(table.scopeId, table.providerClass, table.providerId)
+      .where(sql`${table.lifecycle} IS DISTINCT FROM 'REVOKED'`),
     index("scope_provider_bindings_lifecycle_idx").on(table.scopeId, table.lifecycle),
   ],
 );

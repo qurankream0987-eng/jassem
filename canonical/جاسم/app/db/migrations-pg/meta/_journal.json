@@ -218,6 +218,13 @@
       "when": 1788273600012,
       "tag": "0030_remote_execution_exact_capability",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1788273600013,
+      "tag": "0031_reconnect_binding_identity",
+      "breakpoints": true
     }
   ]
 }
