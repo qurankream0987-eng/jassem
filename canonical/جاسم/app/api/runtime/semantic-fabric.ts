@@ -165,11 +165,50 @@ function normalizeSemantic(value: string): string {
 // Unit normalization (deterministic, no LLM reasoning over trusted numerics)
 // ---------------------------------------------------------------------------
 
+/**
+ * THE ONE TABLE OF PHYSICAL QUANTITIES, AND THE ONLY ONE.
+ *
+ * ─── WHY IT IS EXPORTED ─────────────────────────────────────────────────────
+ *
+ * `block2/units.ts` used to keep its OWN copy of which unit belongs to which
+ * dimension, hand-written beside this one. Two tables that must agree and are
+ * maintained separately do not stay in agreement, and these had already drifted:
+ * `second` and `seconds` were here and missing there, so the declared BASE UNIT
+ * OF TIME was classified as a custom dimension and sixty seconds did not satisfy
+ * a need for one minute.
+ *
+ *   TWO_TABLES_THAT_MUST_AGREE = 0
+ *
+ * So the dimension map and the base units are derived from this, and adding a
+ * unit is one edit in one place.
+ *
+ * ─── WHAT BELONGS HERE ──────────────────────────────────────────────────────
+ *
+ * Physical dimensions with fixed, exact conversion factors. Nothing whose rate
+ * changes and nothing anybody negotiates: money is not here, because a currency
+ * has no factor — it has a market — and `block3/money` owns it with its own
+ * scales and its refusal to add two currencies.
+ *
+ *   CURRENCY_IS_A_UNIT = 0
+ *
+ * The list is not exhaustive and is not meant to be. It covers the spellings
+ * this system has met; an unknown unit is not an error — `canonicalQuantity`
+ * keeps it under its own name so same-unit comparison still works exactly, and
+ * only CROSS-unit conversion is refused. Adding a spelling is adding a row.
+ */
 const UNIT_TABLE: Record<string, { dimension: string; factor: number }> = {
+  // mass — base kg
   g: { dimension: "mass", factor: 0.001 },
+  gram: { dimension: "mass", factor: 0.001 },
+  grams: { dimension: "mass", factor: 0.001 },
   kg: { dimension: "mass", factor: 1 },
+  kilogram: { dimension: "mass", factor: 1 },
+  kilograms: { dimension: "mass", factor: 1 },
   ton: { dimension: "mass", factor: 1000 },
+  tons: { dimension: "mass", factor: 1000 },
   tonne: { dimension: "mass", factor: 1000 },
+  tonnes: { dimension: "mass", factor: 1000 },
+  // time — base seconds
   second: { dimension: "time", factor: 1 },
   seconds: { dimension: "time", factor: 1 },
   minute: { dimension: "time", factor: 60 },
@@ -180,12 +219,73 @@ const UNIT_TABLE: Record<string, { dimension: string; factor: number }> = {
   days: { dimension: "time", factor: 86400 },
   week: { dimension: "time", factor: 604800 },
   weeks: { dimension: "time", factor: 604800 },
+  // count — base count
   seat: { dimension: "count", factor: 1 },
   seats: { dimension: "count", factor: 1 },
   unit: { dimension: "count", factor: 1 },
   units: { dimension: "count", factor: 1 },
+  piece: { dimension: "count", factor: 1 },
+  pieces: { dimension: "count", factor: 1 },
   count: { dimension: "count", factor: 1 },
+  // length — base m
+  mm: { dimension: "length", factor: 0.001 },
+  cm: { dimension: "length", factor: 0.01 },
+  m: { dimension: "length", factor: 1 },
+  metre: { dimension: "length", factor: 1 },
+  metres: { dimension: "length", factor: 1 },
+  meter: { dimension: "length", factor: 1 },
+  meters: { dimension: "length", factor: 1 },
+  km: { dimension: "length", factor: 1000 },
+  kilometre: { dimension: "length", factor: 1000 },
+  kilometres: { dimension: "length", factor: 1000 },
+  kilometer: { dimension: "length", factor: 1000 },
+  kilometers: { dimension: "length", factor: 1000 },
+  // area — base m2
+  m2: { dimension: "area", factor: 1 },
+  "m^2": { dimension: "area", factor: 1 },
+  sqm: { dimension: "area", factor: 1 },
+  dunum: { dimension: "area", factor: 1000 },
+  hectare: { dimension: "area", factor: 10_000 },
+  hectares: { dimension: "area", factor: 10_000 },
+  ha: { dimension: "area", factor: 10_000 },
+  km2: { dimension: "area", factor: 1_000_000 },
+  "km^2": { dimension: "area", factor: 1_000_000 },
+  // volume — base m3
+  ml: { dimension: "volume", factor: 0.000_001 },
+  l: { dimension: "volume", factor: 0.001 },
+  litre: { dimension: "volume", factor: 0.001 },
+  litres: { dimension: "volume", factor: 0.001 },
+  liter: { dimension: "volume", factor: 0.001 },
+  liters: { dimension: "volume", factor: 0.001 },
+  m3: { dimension: "volume", factor: 1 },
+  "m^3": { dimension: "volume", factor: 1 },
+  cbm: { dimension: "volume", factor: 1 },
 };
+
+/**
+ * The canonical unit each dimension normalizes to.
+ *
+ * Declared rather than derived: several spellings share factor 1 — `second` and
+ * `seconds`, `m2` and `sqm` — so «the one with factor 1» does not name a unit.
+ */
+const BASE_UNITS: Readonly<Record<string, string>> = Object.freeze({
+  mass: "kg",
+  time: "seconds",
+  count: "count",
+  length: "m",
+  area: "m2",
+  volume: "m3",
+});
+
+/** Which dimension a unit belongs to, or undefined when nothing here knows it. */
+export function unitDimension(unit: string): string | undefined {
+  return UNIT_TABLE[normalizeSemantic(unit)]?.dimension;
+}
+
+/** The canonical unit of a dimension, or undefined for a dimension nobody declared. */
+export function baseUnitOf(dimension: string): string | undefined {
+  return BASE_UNITS[dimension];
+}
 
 export function normalizeUnit(
   value: number,

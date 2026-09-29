@@ -6,36 +6,31 @@
  * arithmetic — every trusted numeric comparison flows through here.
  */
 
-import { normalizeUnit, unitsCompatible } from "../semantic-fabric";
+import { baseUnitOf, normalizeUnit, unitDimension, unitsCompatible } from "../semantic-fabric";
 
 export { normalizeUnit, unitsCompatible };
 
-/** Canonical base units per dimension. */
-const BASE_UNIT: Record<string, string> = {
-  mass: "kg",
-  time: "seconds",
-  count: "count",
-};
-
-const DIMENSION_OF: Record<string, string> = {
-  g: "mass",
-  kg: "mass",
-  ton: "mass",
-  tonne: "mass",
-  minute: "time",
-  minutes: "time",
-  hour: "time",
-  hours: "time",
-  day: "time",
-  days: "time",
-  week: "time",
-  weeks: "time",
-  seat: "count",
-  seats: "count",
-  unit: "count",
-  units: "count",
-};
-
+/**
+ * ─── THE SECOND TABLE THAT USED TO LIVE HERE, AND WHY IT IS GONE ────────────
+ *
+ * This module kept its own hand-written map of which unit belongs to which
+ * dimension, beside the one in `semantic-fabric` that it already imported from.
+ * Two tables that must agree and are maintained separately do not stay in
+ * agreement, and these had already drifted: `second` and `seconds` were in the
+ * fabric's table and missing from the copy here, so
+ *
+ *   canonicalQuantity(60, "seconds") → dimension "custom:seconds"
+ *   quantitySatisfies({ 1, "minute" }, { 60, "seconds" }) → undefined
+ *
+ * — the declared BASE UNIT OF TIME was not recognized as time, and sixty
+ * seconds did not satisfy a need for one minute.
+ *
+ *   TWO_TABLES_THAT_MUST_AGREE = 0
+ *
+ * So both facts are asked of the fabric now. Adding a unit is one edit in one
+ * place, and this file cannot drift from it again because it holds nothing to
+ * drift with.
+ */
 function normalizeName(unit: string): string {
   return unit.trim().toLowerCase().replace(/[\s_]+/g, "-");
 }
@@ -57,11 +52,15 @@ export type CanonicalQuantity = {
 export function canonicalQuantity(value: number, unit: string): CanonicalQuantity | undefined {
   if (!Number.isFinite(value) || value < 0) return undefined;
   const name = normalizeName(unit);
-  const dimension = DIMENSION_OF[name];
+  const dimension = unitDimension(name);
   if (!dimension) {
+    // Unknown is not an error. The unit keeps its own name under its own
+    // dimension, so an exact same-unit comparison still works and only
+    // CROSS-unit conversion is refused.
     return { value, unit: name, dimension: `custom:${name}` };
   }
-  const base = BASE_UNIT[dimension];
+  const base = baseUnitOf(dimension);
+  if (!base) return undefined;
   const normalized = name === base ? value : normalizeUnit(value, name, base);
   if (normalized === undefined) return undefined;
   // Round-trip through kg→name→kg can accumulate float error; snap to 1e-9.
