@@ -915,6 +915,50 @@ export const waitingNeeds = pgTable(
 
 export type WaitingNeed = typeof waitingNeeds.$inferSelect;
 
+/**
+ * ENDING AN AGREEMENT IS AN ACT THE TWO PARTIES TAKE.
+ *
+ * A proposal and a response, the same shape as the agreement it ends: one
+ * party offers, the other accepts, and neither can do both sides.
+ *
+ *   RELEASING_IS_NOT_UNDOING · WHAT_WAS_VERIFIED_STAYS_VERIFIED
+ */
+export const agreementReleases = pgTable(
+  "agreement_releases",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    agreementId: varchar("agreementId", { length: 64 }).notNull(),
+    proposedByOwnerId: varchar("proposedByOwnerId", { length: 100 }).notNull(),
+    /** The person. An envelope may agree; it may not undo. */
+    proposedByPrincipalId: varchar("proposedByPrincipalId", { length: 100 }).notNull(),
+    reason: text("reason").notNull(),
+    /**
+     * The obligations this release would end, exactly as proposed. «نتفارق»
+     * can mean «nobody owes anybody» or «stop future work, pay me for what is
+     * done» — materially different agreements to reach, so the list is named
+     * and the acceptance is acceptance of exactly it.
+     *
+     *   AMBIGUOUS_YES_TAKES_THE_CHEAPEST_MEANING = 0
+     */
+    discharges: jsonb("discharges").$type<string[]>().notNull().default([]),
+    state: varchar("state", { length: 16 }).notNull().default("PROPOSED"),
+    respondedByOwnerId: varchar("respondedByOwnerId", { length: 100 }),
+    respondedByPrincipalId: varchar("respondedByPrincipalId", { length: 100 }),
+    respondedAt: timestamp("respondedAt", { withTimezone: true }),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    // At most ONE open offer per agreement: two would let a party accept the
+    // cheaper one while the other still looked open.
+    uniqueIndex("agreement_releases_open_idx")
+      .on(table.agreementId)
+      .where(sql`${table.state} = 'PROPOSED'`),
+    index("agreement_releases_agreement_idx").on(table.agreementId, table.state),
+  ],
+);
+
+export type AgreementRelease = typeof agreementReleases.$inferSelect;
+
 export const privateDisclosures = pgTable(
   "private_disclosures",
   {

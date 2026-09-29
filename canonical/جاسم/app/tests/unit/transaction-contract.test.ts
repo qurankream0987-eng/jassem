@@ -25,6 +25,7 @@ import {
   transactionFacts,
 } from "../../api/runtime/transaction-runtime";
 import { parseTermSheet } from "../../api/runtime/agreement-runtime";
+import { RELEASED_OBLIGATION_STATE } from "../../api/runtime/agreement-release";
 import { AUTHORITY_KEYS } from "../../api/runtime/model-output-trust";
 
 const source = readFileSync(resolve(process.cwd(), "api/runtime/transaction-runtime.ts"), "utf8");
@@ -100,15 +101,67 @@ describe("one transaction for every exchange there is", () => {
   });
 
   it("its vocabularies are closed", () => {
+    //
+    // ── AN INHERITED EXPECTATION, WIDENED BY ONE MEMBER AND TIGHTENED ───────
+    //
+    // OLD_EXPECTATION: TRANSACTION_STATES is exactly
+    //   [OPEN, SETTLED, FAILED, CANCELLED, COMPENSATING] and OBLIGATION_STATES
+    //   is exactly [PENDING, IN_PROGRESS, CLAIMED, FAILED, CANCELLED].
+    // WHY_IT_IS_WRONG: it is not wrong about anything it says — it is only a
+    //   LITERAL LIST, and the rule it stands for is «the set is closed and
+    //   every member is deliberate», not «these five forever». The mutual
+    //   release phase added a state that a real transition needs: two parties
+    //   ending what remained is neither SETTLED (which means every obligation
+    //   was VERIFIED) nor CANCELLED (which means nothing irreversible
+    //   happened), and without it such a transaction stayed OPEN forever.
+    // NEW_EXPECTATION: the lists are pinned as before WITH `RELEASED`, and —
+    //   the part the literal list could never say — every transaction state
+    //   must actually appear in the one function that decides a transaction's
+    //   state, and every value the runtime writes to `commitments.state` must
+    //   be a member of the obligation vocabulary.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: a literal list is passed by adding
+    //   a member to both the list and the test, which is exactly how
+    //   decorative taxonomy arrives — and this module's own header argues
+    //   against «a taxonomy member that changes no behaviour». The first new
+    //   clause fails such a member. The second fails a THIRD vocabulary being
+    //   written to a column that already carries two, which no list could see.
     expect([...TRANSACTION_STATES]).toEqual([
-      "OPEN", "SETTLED", "FAILED", "CANCELLED", "COMPENSATING",
+      "OPEN", "SETTLED", "FAILED", "CANCELLED", "COMPENSATING", "RELEASED",
     ]);
     expect([...OBLIGATION_STATES]).toEqual([
-      "PENDING", "IN_PROGRESS", "CLAIMED", "FAILED", "CANCELLED",
+      "PENDING", "IN_PROGRESS", "CLAIMED", "FAILED", "CANCELLED", "RELEASED",
     ]);
     expect([...OBLIGATION_VERIFICATIONS]).toEqual([
       "PENDING", "VERIFIED", "FAILED", "INCONCLUSIVE",
     ]);
+
+    // Every transaction state earns its place in the function that decides one.
+    const decide = code.slice(code.indexOf("export function deriveTransactionState"));
+    const body = decide.slice(0, decide.indexOf("\nasync function"));
+    for (const state of TRANSACTION_STATES) {
+      expect(body, `${state} changes no decision`).toContain(`"${state}"`);
+    }
+
+    // And nothing invents a third vocabulary for the obligation column. Scoped
+    // to writes on `commitments`: the same `state` key on `transactions` is a
+    // different vocabulary and a check that conflated them would prove nothing.
+    const writers = [
+      readFileSync(resolve(process.cwd(), "api/runtime/transaction-runtime.ts"), "utf8"),
+      readFileSync(resolve(process.cwd(), "api/runtime/agreement-release.ts"), "utf8"),
+    ].join("\n");
+    const values: string[] = [];
+    for (const hit of writers.matchAll(/update\(commitments\)/g)) {
+      const window = writers.slice(hit.index!, hit.index! + 400);
+      const state = /\bstate:\s*(?:RELEASED_OBLIGATION_STATE|"([A-Za-z_]+)")/.exec(window);
+      // A write that sets no state at all is not this rule's business.
+      if (state?.[1]) values.push(state[1]);
+    }
+    expect(values.length).toBeGreaterThan(0);
+    for (const value of values) {
+      expect([...OBLIGATION_STATES], value).toContain(value);
+    }
+    // The release writes its state through a named constant; it must be one too.
+    expect([...OBLIGATION_STATES]).toContain(RELEASED_OBLIGATION_STATE);
   });
 
   it("treats unrelated term keys identically", () => {

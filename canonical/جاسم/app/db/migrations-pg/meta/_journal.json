@@ -260,6 +260,13 @@
       "when": 1788450000000,
       "tag": "0036_waiting_needs",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1788540000000,
+      "tag": "0037_agreement_releases",
+      "breakpoints": true
     }
   ]
 }

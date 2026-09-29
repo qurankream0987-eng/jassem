@@ -93,6 +93,17 @@ export const TRANSACTION_STATES = [
   "CANCELLED",
   /** An effect occurred and a compensating effect is owed. */
   "COMPENSATING",
+  /**
+   * The two parties ended what remained, by mutual consent.
+   *
+   * Deliberately NOT `SETTLED`: nothing about a release says the obligations
+   * were performed, and SETTLED means every one of them was VERIFIED. And
+   * deliberately not `CANCELLED`: that is «ended before anything irreversible»,
+   * which a partly-performed agreement is not.
+   *
+   *   RELEASING_IS_NOT_UNDOING · WHAT_WAS_VERIFIED_STAYS_VERIFIED
+   */
+  "RELEASED",
 ] as const;
 export type TransactionState = (typeof TRANSACTION_STATES)[number];
 
@@ -104,6 +115,8 @@ export const OBLIGATION_STATES = [
   "CLAIMED",
   "FAILED",
   "CANCELLED",
+  /** Ended by both parties. Nobody performed it and nobody failed it. */
+  "RELEASED",
 ] as const;
 export type ObligationState = (typeof OBLIGATION_STATES)[number];
 
@@ -434,11 +447,21 @@ export function deriveTransactionState(
 ): TransactionState {
   if (current === "CANCELLED" || current === "COMPENSATING") return current;
   if (obligations.length === 0) return current;
+  // A release never hides a failure: a failed obligation still decides.
   if (obligations.some((obligation) => obligation.verification === "FAILED")) return "FAILED";
   if (obligations.some((obligation) => obligation.state === "FAILED")) return "FAILED";
-  return obligations.every((obligation) => obligation.verification === "VERIFIED")
-    ? "SETTLED"
-    : "OPEN";
+  // An obligation the two parties ended is no longer awaited — which is the
+  // whole point of ending it. Without this, a released agreement left its
+  // transaction OPEN forever: the residue that made the release act worth
+  // building rather than merely describing.
+  const released = obligations.filter((obligation) => obligation.state === "RELEASED");
+  const awaited = obligations.filter((obligation) => obligation.state !== "RELEASED");
+  if (awaited.every((obligation) => obligation.verification === "VERIFIED")) {
+    //   RELEASING_IS_NOT_UNDOING — so a transaction that reached its end this
+    //   way says so, instead of claiming every obligation was performed.
+    return released.length > 0 ? "RELEASED" : "SETTLED";
+  }
+  return "OPEN";
 }
 
 async function refreshTransactionState(transaction: Transaction): Promise<Transaction> {
