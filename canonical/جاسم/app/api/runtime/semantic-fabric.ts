@@ -277,6 +277,52 @@ const BASE_UNITS: Readonly<Record<string, string>> = Object.freeze({
   volume: "m3",
 });
 
+/**
+ * HOW FAR APART TWO POINTS ARE, IN METRES.
+ *
+ * ─── WHY IT LIVES BESIDE THE UNIT TABLE ─────────────────────────────────────
+ *
+ * A distance is a LENGTH, and length is a dimension this table now declares. So
+ * a proximity requirement is not a new kind of constraint — it is an ordinary
+ * bound over an ordinary quantity, and «within 25 km» normalizes through the
+ * same machinery as «at least 7 tonnes».
+ *
+ *   PROXIMITY_IS_A_NEW_CONSTRAINT_KIND = 0
+ *
+ * ─── AND WHAT IT IS NOT ─────────────────────────────────────────────────────
+ *
+ * Great-circle distance over a sphere: the length of a straight line across the
+ * surface. It is NOT a travel distance and NOT a travel time. No road is
+ * consulted, no traffic, no ferry, no closed bridge. Two points 25 km apart may
+ * be an hour apart by road or unreachable entirely.
+ *
+ *   GREAT_CIRCLE != TRAVEL_DISTANCE · GREAT_CIRCLE != TRAVEL_TIME
+ *
+ * So what this answers is «is it plausibly nearby», which is a filter. It is not
+ * a promise that anybody can get there, and nothing downstream may read it as
+ * one. A real travel distance is a provider's answer, not geometry's.
+ *
+ * The earth is not a sphere either; the mean radius below is good to a few parts
+ * per thousand, which is far inside the honesty of any radius a person names.
+ */
+const EARTH_MEAN_RADIUS_METRES = 6_371_008.8;
+
+export type GeoPoint = { readonly lat: number; readonly lng: number };
+
+export function greatCircleMetres(a: GeoPoint, b: GeoPoint): number {
+  const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+  const lat1 = toRadians(a.lat);
+  const lat2 = toRadians(b.lat);
+  const deltaLat = toRadians(b.lat - a.lat);
+  const deltaLng = toRadians(b.lng - a.lng);
+  const h =
+    Math.sin(deltaLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLng / 2) ** 2;
+  // `asin(min(1, …))` rather than `atan2`: clamps the floating-point overshoot
+  // at antipodal points instead of returning NaN for two real places.
+  return 2 * EARTH_MEAN_RADIUS_METRES * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
 /** Which dimension a unit belongs to, or undefined when nothing here knows it. */
 export function unitDimension(unit: string): string | undefined {
   return UNIT_TABLE[normalizeSemantic(unit)]?.dimension;

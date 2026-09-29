@@ -29,7 +29,9 @@ import {
   grantMembership,
   revokeMembership,
 } from "./block2/membership";
+import { coordinatesFromPayload } from "./observation-presentation";
 import {
+  greatCircleMetres,
   normalizeUnit,
   type ConstraintExpression,
 } from "./semantic-fabric";
@@ -498,16 +500,83 @@ function evaluateConstraint(
   return { ...base, state: outcome ? "PASS" : "FAIL" };
 }
 
+/**
+ * THE NAME A DERIVED DISTANCE TAKES, in metres, the base unit of length.
+ *
+ * Reserved rather than magic: a need bounds `distance` the way it bounds any
+ * other quantity, and the unit table converts «25 km» for it like anything else.
+ */
+export const DERIVED_DISTANCE_FIELD = "distance";
+
+/**
+ * HOW FAR APART, when both sides actually said where they are.
+ *
+ * ─── WHAT IT REFUSES TO DO ──────────────────────────────────────────────────
+ *
+ * A point is read through the same strict reader observations use: two finite
+ * numbers in range, never a coerced string and never an out-of-range pair,
+ * because a coerced point is a fabricated location.
+ *
+ *   FABRICATED_POINT = 0
+ *
+ * One side without a usable point yields NOTHING — not a large distance. «Not
+ * known to be near» is not «far», and returning a number here would turn a
+ * silence into an exclusion.
+ *
+ *   MISSING_POINT_IS_UNKNOWN_NOT_FAR
+ *
+ * And a derived value never displaces a stated one: if the owner themselves
+ * stated a field by this name, theirs stands and nothing is derived over it.
+ *
+ *   DERIVED_VALUE_OVERWRITES_A_STATED_ONE = 0
+ */
+function withDerivedDistance(
+  need: EconomicExpression,
+  offering: EconomicExpression,
+): {
+  attributes: Record<string, unknown>;
+  provenance: AttributeProvenance | undefined;
+} {
+  const attributes = { ...((offering.attributes ?? {}) as Record<string, unknown>) };
+  const provenance = (offering.attributeProvenance ?? undefined) as
+    | AttributeProvenance
+    | undefined;
+  if (DERIVED_DISTANCE_FIELD in attributes) return { attributes, provenance };
+
+  const here = coordinatesFromPayload(
+    (need.attributes?.location ?? undefined) as Record<string, unknown> | undefined,
+  );
+  const there = coordinatesFromPayload(
+    (offering.attributes?.location ?? undefined) as Record<string, unknown> | undefined,
+  );
+  if (!here || !there) return { attributes, provenance };
+
+  attributes[DERIVED_DISTANCE_FIELD] = greatCircleMetres(here, there);
+  attributes[`${DERIVED_DISTANCE_FIELD}Unit`] = "m";
+  // A derivation is only as good as what it was derived FROM. If either side's
+  // location was a model's reading of a photo rather than its owner's word, the
+  // distance inherits that and decides nothing — the same rule, one step along.
+  //
+  //   INFERRED_LOCATION_DECIDES_PROXIMITY = 0
+  const eitherInferred =
+    provenance?.location === "INFERRED" ||
+    (need.attributeProvenance as AttributeProvenance | null | undefined)?.location === "INFERRED";
+  return {
+    attributes,
+    ...(eitherInferred
+      ? { provenance: { ...(provenance ?? {}), [DERIVED_DISTANCE_FIELD]: "INFERRED" as const } }
+      : { provenance }),
+  };
+}
+
 export function evaluateMatch(
   need: EconomicExpression,
   offering: EconomicExpression,
 ): { results: ConstraintResult[]; viable: boolean } {
   const constraints = (need.hardConstraints ?? []) as ConstraintExpression[];
-  const provenance = (offering.attributeProvenance ?? undefined) as
-    | AttributeProvenance
-    | undefined;
+  const { attributes, provenance } = withDerivedDistance(need, offering);
   const results = constraints.map((constraint) =>
-    evaluateConstraint(constraint, offering.attributes ?? {}, undefined, provenance),
+    evaluateConstraint(constraint, attributes, undefined, provenance),
   );
   // UNKNOWN is never FAIL, but a candidate with zero proven PASSes is not viable either.
   const viable =
