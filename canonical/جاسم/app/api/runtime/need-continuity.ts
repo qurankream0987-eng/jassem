@@ -48,6 +48,7 @@ import {
 import { sanitizeModelStructuredOutput } from "./model-output-trust";
 import { isKnownCurrency, parseMoney } from "./block3/money";
 import { unitDimension } from "./semantic-fabric";
+import { DERIVED_DISTANCE_FIELD } from "./economic-fabric";
 
 export class NeedError extends Error {
   readonly code: "INVALID" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "AMBIGUOUS";
@@ -689,8 +690,23 @@ export function translateConstraints(
       continue;
     }
     applied.push({
-      // A MEASURE says what it measures; every other dimension IS its subject.
-      field: constraint.field ?? constraint.dimension.toLowerCase(),
+      // ── «قريب» IS A DISTANCE, AND A DISTANCE IS A QUANTITY ──────────────
+      //
+      // A LOCATION bound stated in a length — «within 25 km» — is a bound on
+      // how far, and how far is the derived `distance` the fabric already
+      // computes on both sides. Naming the field `location` instead would have
+      // compared a bound in kilometres against a stored {lat,lng}, which is
+      // not a comparison at all.
+      //
+      //   PROXIMITY_IS_A_NEW_CONSTRAINT_KIND = 0
+      //
+      // A LOCATION bound in anything that is NOT a length falls through
+      // unchanged and is judged on its own field, because «within 2 zones» is
+      // somebody else's vocabulary, not a distance.
+      field:
+        constraint.dimension === "LOCATION" && unitDimension(unit) === "length"
+          ? DERIVED_DISTANCE_FIELD
+          : (constraint.field ?? constraint.dimension.toLowerCase()),
       operator: "max",
       value: constraint.value,
       unit,

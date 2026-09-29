@@ -11,6 +11,7 @@ import {
 } from "../../../db/schema";
 import {
   evaluateConstraint,
+  withDistanceFrom,
   type AttributeProvenance,
 } from "../economic-fabric";
 import type { ConstraintOperator } from "../semantic-fabric";
@@ -119,6 +120,10 @@ function canonicalMinor(value: unknown): bigint | null {
  */
 function candidateAttributes(row: EconomicExpression): Record<string, unknown> {
   const attributes = { ...(row.attributes ?? {}) } as Record<string, unknown>;
+  if (attributes.location === undefined) {
+    const fromAvailability = object(row.availability).location;
+    if (fromAvailability !== undefined) attributes.location = fromAvailability;
+  }
   if (attributes.quantity === undefined) {
     const fromAvailability = object(row.availability).quantity;
     if (fromAvailability !== undefined) attributes.quantity = fromAvailability;
@@ -146,6 +151,28 @@ function satisfiesMoneyBound(row: EconomicExpression, constraint: HardConstraint
   }
   return minor <= maximum;
 }
+
+/**
+ * WHERE THE ASKING SIDE IS, for this search only.
+ *
+ * «ابحث لي عن مكانيكي» means a NEARBY one, and until now proximity lived on
+ * the matching side alone: `discover` had no idea where anybody was, so a
+ * distance bound could not filter anything at all.
+ *
+ * It is the searcher's OWN point, carried for the length of one query and
+ * never written anywhere. A candidate learns nothing: what leaves this module
+ * is a candidate list built from public projections, and a projection has
+ * never carried coordinates.
+ *
+ *   SEARCHING_NEAR_SOMEBODY_DISCLOSES_NOTHING = 0
+ *   PROXIMITY_FILTERS_WITHOUT_DISCLOSING
+ */
+export type SearchOrigin = {
+  readonly lat: number;
+  readonly lng: number;
+  /** True when the point was derived rather than stated by whoever owns it. */
+  readonly inferred?: boolean;
+};
 
 /** The legacy discovery operators, in the vocabulary the fabric speaks. */
 const OPERATOR_TRANSLATION: Readonly<Record<string, ConstraintOperator>> = Object.freeze({
@@ -184,9 +211,26 @@ const OPERATOR_TRANSLATION: Readonly<Record<string, ConstraintOperator>> = Objec
 export function satisfiesHardConstraints(
   row: EconomicExpression,
   constraints: readonly HardConstraint[],
+  origin?: SearchOrigin,
 ): boolean {
-  const attributes = candidateAttributes(row);
-  const provenance = (row.attributeProvenance ?? undefined) as AttributeProvenance | undefined;
+  // Distance is derived here, exactly as matching derives it, and by the same
+  // function — so «within 25 km» means one thing in this runtime.
+  //
+  //   MISSING_POINT_IS_UNKNOWN_NOT_FAR — one side without a usable point
+  //   yields no distance at all, never a large one, so a silence cannot be
+  //   read as «far away».
+  //
+  //   INFERRED_LOCATION_DECIDES_PROXIMITY = 0 — a point a model read off a
+  //   photo makes the distance INFERRED, and an inferred value decides
+  //   nothing.
+  const derived = withDistanceFrom({
+    origin: origin ? { lat: origin.lat, lng: origin.lng } : undefined,
+    ...(origin?.inferred ? { originInferred: true } : {}),
+    attributes: candidateAttributes(row),
+    provenance: (row.attributeProvenance ?? undefined) as AttributeProvenance | undefined,
+  });
+  const attributes = derived.attributes;
+  const provenance = derived.provenance;
   return constraints.every((constraint) => {
     if (constraint.maxMinor !== undefined || constraint.field === "price") {
       return satisfiesMoneyBound(row, constraint);
@@ -337,6 +381,7 @@ export async function searchInternal(
     status?: "draft" | "active" | "paused" | "closed";
     historical?: boolean;
     hardConstraints?: HardConstraint[];
+    origin?: SearchOrigin;
     limit?: number;
   },
 ): Promise<EconomicExpression[]> {
@@ -363,7 +408,9 @@ export async function searchInternal(
       ),
     )
     .limit(500)
-  ).filter((expression) => satisfiesHardConstraints(expression, input.hardConstraints ?? []));
+  ).filter((expression) =>
+    satisfiesHardConstraints(expression, input.hardConstraints ?? [], input.origin),
+  );
   if (eligible.length === 0) return [];
 
   const ranked = await db
@@ -414,6 +461,11 @@ export async function discover(
      * better answer down.
      */
     sponsoredRefs?: readonly string[];
+    /**
+     * Where the searcher is. Runtime-supplied from their own need, carried for
+     * one query, written nowhere, and disclosed to nobody.
+     */
+    origin?: SearchOrigin;
   },
 ) {
   const sources = planSources(input.query, input.explicitScope, input.availability);
@@ -426,6 +478,7 @@ export async function discover(
       kind: input.kind,
       historical: input.historical,
       hardConstraints: input.hardConstraints,
+      ...(input.origin ? { origin: input.origin } : {}),
       // The display cut belongs to this function, not to the query — a
       // candidate merit leaves OUTSIDE the cut is exactly the one a sponsor may
       // pay to have seen, and the query truncating first would make it

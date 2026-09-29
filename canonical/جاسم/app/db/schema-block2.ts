@@ -864,6 +864,55 @@ export const negotiationEnvelopes = pgTable(
  * anyone. It records that two parties agreed to an exact proposal VERSION, and
  * under whose authority the acceptance happened.
  */
+/**
+ * WHO WAS TOLD WHERE YOU ARE — and under which agreement.
+ *
+ * A precise point never enters a public projection
+ * (`EXACT_COORDINATES_IN_A_PUBLIC_PROJECTION = 0`), which is right and left the
+ * mechanic with no way to be told where to come. This is the other half: a
+ * private field released to ONE counterparty, by its owner, because an
+ * agreement they are both party to exists.
+ *
+ *   AGREEMENT_IS_THE_DISCLOSURE_AUTHORITY · DISCLOSED != PUBLISHED
+ *
+ * The row is the ledger. "Who knows where I am" must be answerable, and it
+ * cannot be answered by a system that released things without writing them
+ * down.
+ */
+export const privateDisclosures = pgTable(
+  "private_disclosures",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    agreementId: varchar("agreementId", { length: 64 }).notNull(),
+    engagementId: varchar("engagementId", { length: 64 }).notNull(),
+    subjectKind: varchar("subjectKind", { length: 64 }).notNull(),
+    subjectId: varchar("subjectId", { length: 128 }).notNull(),
+    field: varchar("field", { length: 64 }).notNull(),
+    discloserOwnerId: varchar("discloserOwnerId", { length: 100 }).notNull(),
+    recipientOwnerId: varchar("recipientOwnerId", { length: 100 }).notNull(),
+    disclosedAt: timestamp("disclosedAt", { withTimezone: true }).defaultNow().notNull(),
+    /**
+     * Stops FUTURE reads. It does not claim the recipient forgot.
+     *
+     *   AGREEMENT_ENDS != DISCLOSURE_UNHAPPENS
+     */
+    withdrawnAt: timestamp("withdrawnAt", { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex("private_disclosures_unique_idx").on(
+      table.agreementId,
+      table.subjectKind,
+      table.subjectId,
+      table.field,
+      table.recipientOwnerId,
+    ),
+    index("private_disclosures_subject_idx").on(table.subjectKind, table.subjectId),
+    index("private_disclosures_recipient_idx").on(table.recipientOwnerId),
+  ],
+);
+
+export type PrivateDisclosure = typeof privateDisclosures.$inferSelect;
+
 export const agreements = pgTable(
   "agreements",
   {

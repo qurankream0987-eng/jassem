@@ -539,6 +539,43 @@ export const DERIVED_DISTANCE_FIELD = "distance";
  *
  *   DERIVED_VALUE_OVERWRITES_A_STATED_ONE = 0
  */
+export function withDistanceFrom(input: {
+  /** Where the asking side is. Undefined when they never said. */
+  readonly origin: { readonly lat: number; readonly lng: number } | undefined;
+  /** True when the origin was derived rather than stated by whoever owns it. */
+  readonly originInferred?: boolean;
+  readonly attributes: Record<string, unknown>;
+  readonly provenance?: AttributeProvenance | undefined;
+}): {
+  attributes: Record<string, unknown>;
+  provenance: AttributeProvenance | undefined;
+} {
+  const attributes = { ...input.attributes };
+  const provenance = input.provenance;
+  if (DERIVED_DISTANCE_FIELD in attributes) return { attributes, provenance };
+
+  const there = coordinatesFromPayload(
+    (attributes.location ?? undefined) as Record<string, unknown> | undefined,
+  );
+  if (!input.origin || !there) return { attributes, provenance };
+
+  attributes[DERIVED_DISTANCE_FIELD] = greatCircleMetres(input.origin, there);
+  attributes[`${DERIVED_DISTANCE_FIELD}Unit`] = "m";
+  // A derivation is only as good as what it was derived FROM. If either side's
+  // location was a model's reading of a photo rather than its owner's word, the
+  // distance inherits that and decides nothing — the same rule, one step along.
+  //
+  //   INFERRED_LOCATION_DECIDES_PROXIMITY = 0
+  const eitherInferred = provenance?.location === "INFERRED" || input.originInferred === true;
+  return {
+    attributes,
+    ...(eitherInferred
+      ? { provenance: { ...(provenance ?? {}), [DERIVED_DISTANCE_FIELD]: "INFERRED" as const } }
+      : { provenance }),
+  };
+}
+
+/** The two-expression shape matching uses. One derivation, two callers. */
 function withDerivedDistance(
   need: EconomicExpression,
   offering: EconomicExpression,
@@ -546,36 +583,16 @@ function withDerivedDistance(
   attributes: Record<string, unknown>;
   provenance: AttributeProvenance | undefined;
 } {
-  const attributes = { ...((offering.attributes ?? {}) as Record<string, unknown>) };
-  const provenance = (offering.attributeProvenance ?? undefined) as
-    | AttributeProvenance
-    | undefined;
-  if (DERIVED_DISTANCE_FIELD in attributes) return { attributes, provenance };
-
-  const here = coordinatesFromPayload(
+  const needProvenance = need.attributeProvenance as AttributeProvenance | null | undefined;
+  const origin = coordinatesFromPayload(
     (need.attributes?.location ?? undefined) as Record<string, unknown> | undefined,
   );
-  const there = coordinatesFromPayload(
-    (offering.attributes?.location ?? undefined) as Record<string, unknown> | undefined,
-  );
-  if (!here || !there) return { attributes, provenance };
-
-  attributes[DERIVED_DISTANCE_FIELD] = greatCircleMetres(here, there);
-  attributes[`${DERIVED_DISTANCE_FIELD}Unit`] = "m";
-  // A derivation is only as good as what it was derived FROM. If either side's
-  // location was a model's reading of a photo rather than its owner's word, the
-  // distance inherits that and decides nothing — the same rule, one step along.
-  //
-  //   INFERRED_LOCATION_DECIDES_PROXIMITY = 0
-  const eitherInferred =
-    provenance?.location === "INFERRED" ||
-    (need.attributeProvenance as AttributeProvenance | null | undefined)?.location === "INFERRED";
-  return {
-    attributes,
-    ...(eitherInferred
-      ? { provenance: { ...(provenance ?? {}), [DERIVED_DISTANCE_FIELD]: "INFERRED" as const } }
-      : { provenance }),
-  };
+  return withDistanceFrom({
+    origin,
+    originInferred: needProvenance?.location === "INFERRED",
+    attributes: (offering.attributes ?? {}) as Record<string, unknown>,
+    provenance: (offering.attributeProvenance ?? undefined) as AttributeProvenance | undefined,
+  });
 }
 
 export function evaluateMatch(
