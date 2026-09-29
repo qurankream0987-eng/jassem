@@ -48,6 +48,10 @@ import {
   type CompensationPolicy,
 } from "./compensation-policy";
 import type { ScopePermission } from "./actor-scope";
+import {
+  assertLookupIsNotTheExecutor,
+  type ReconciliationLookup,
+} from "./reconciliation-lookup";
 
 /**
  * Trusted runtime capabilities.
@@ -169,6 +173,25 @@ export type TrustedCapability = {
    * silent skip.
    */
   compensation?: CompensationPolicy;
+  /**
+   * Trusted server code that asks THE SYSTEM THE EFFECT HAPPENED IN what
+   * became of an attempt nobody could resolve.
+   *
+   * `resolveEffect` reads an effect back after a capability RAN. This runs
+   * when nobody knows whether it ran at all — a crash mid-execution, a lost
+   * connection, a lease that expired with the node still RUNNING. Without it
+   * such an attempt stays uncertain forever, because the executor is exactly
+   * the party that cannot be asked.
+   *
+   *   UNCERTAIN_FOREVER = 0 · LOOKUP != RETRY
+   *
+   * It must READ and never act: `register` refuses a capability that declares
+   * its own executor here. And it must fail closed — a lookup that cannot
+   * reach its authority answers UNKNOWN, never NOT_OCCURRED, because
+   * "I could not find out" and "it did not happen" are different facts and
+   * only one of them is a failure.
+   */
+  reconciliationLookup?: ReconciliationLookup;
   execute: (
     inputs: Record<string, unknown>,
     context: CapabilityExecutionContext,
@@ -333,6 +356,16 @@ export class CapabilityRegistry {
     if (this.capabilities.has(capability.id)) {
       throw new Error(`Capability "${capability.id}" is already registered.`);
     }
+    //   LOOKUP != RETRY
+    //
+    // A capability whose reconciliation lookup is its own executor would turn
+    // every reconciliation pass into a second execution — a blind retry
+    // arriving from the one direction nothing is watching.
+    assertLookupIsNotTheExecutor(
+      capability.id,
+      capability.reconciliationLookup,
+      capability.execute,
+    );
 
     this.capabilities.set(capability.id, capability);
     for (const name of [capability.id, ...capability.aliases]) {
@@ -430,6 +463,7 @@ export class CapabilityRegistry {
     effectEvidenceSource?: EffectClaimSource;
     resolveEffect?: EffectResolver;
     compensation: CompensationPolicy;
+    reconciliationLookup?: ReconciliationLookup;
   } {
     const capability = this.resolveForAssignment(name);
     if (!capability) {
@@ -455,6 +489,12 @@ export class CapabilityRegistry {
           ? { resolveEffect: expectationEffectResolver(db, capability.effectExpectation) }
           : {}),
       compensation: resolveCompensationPolicy(effectKind, capability.compensation),
+      // Carried on the SAME contract the completion policy already reads, so
+      // reconciliation asks the registry rather than a caller. A caller that
+      // could nominate the lookup would choose who confirms its own effect.
+      ...(capability.reconciliationLookup
+        ? { reconciliationLookup: capability.reconciliationLookup }
+        : {}),
     };
   }
 

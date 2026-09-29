@@ -93,6 +93,19 @@ export type SweepResult = {
   temporal: { scanned: number; fired: number; rescheduled: number; completed: number; expired: number };
   monitors: { evaluated: number; triggered: number; replayed: number };
   livingObjects: { scopes: number; changed: number; resolved: number };
+  /**
+   * `unanswerable` is reported beside `unresolved` on purpose: an attempt whose
+   * capability declares no lookup was not failed to resolve, it had nobody to
+   * ask. Collapsing the two would let "nothing could be resolved" read as
+   * "nothing needed resolving".
+   */
+  uncertainAttempts: {
+    scopes: number;
+    examined: number;
+    resolved: number;
+    unresolved: number;
+    unanswerable: number;
+  };
   realtime: { connections: number; delivered: number; resyncRequired: number };
   reservationsExpired: number;
   assignmentOffersExpired: number;
@@ -132,6 +145,15 @@ export async function runBlock2Sweep(
   const { sweepLivingObjects } = await import("../living-object-runtime");
   const livingObjects = await sweepLivingObjects();
 
+  // Uncertain effects are asked about HERE, in the same duty cycle. An attempt
+  // whose process died mid-execution used to stay uncertain forever — the
+  // refusal to retry it blindly was correct and nothing could ever resolve it,
+  // because neither the finder nor the reconciler had a caller anywhere.
+  //
+  //   UNCERTAIN_FOREVER = 0 · SECOND_SCHEDULERS_ADDED = 0
+  const { sweepUncertainAttempts } = await import("../jasim-runtime");
+  const uncertainAttempts = await sweepUncertainAttempts();
+
   // Realtime delivery and heartbeat are steps in the SAME duty cycle. A socket
   // that stopped answering is closed here, and the ledger is carried to every
   // open subscription here — no timer of realtime's own, and a restart costs a
@@ -168,6 +190,7 @@ export async function runBlock2Sweep(
     temporal,
     monitors,
     livingObjects,
+    uncertainAttempts,
     realtime,
     reservationsExpired,
     assignmentOffersExpired,

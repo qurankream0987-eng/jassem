@@ -76,6 +76,13 @@ import {
 } from "./execution-verifier";
 import { gatherEffectAssertions } from "./completion-policy";
 import {
+  NO_ANSWERING_AUTHORITY,
+  answerIsIndependent,
+  type ReconciliationAnswer,
+  type ReconciliationLookup,
+  type ReconciliationSubject,
+} from "./reconciliation-lookup";
+import {
   AuthorityActError,
   requestAuthorityAct,
 } from "./authority-acts";
@@ -10416,22 +10423,18 @@ export async function findUncertainExecutionAttempts(
     .limit(50);
 }
 
-export type UncertainAttemptLookupResult =
-  | {
-      outcome: "occurred";
-      result: Record<string, unknown>;
-      providerReference?: string;
-      notes?: string[];
-    }
-  | {
-      outcome: "not_occurred";
-      notes?: string[];
-    };
-
-export type UncertainAttemptLookup = (input: {
-  attempt: typeof jasimRuntimeExecutionAttempts.$inferSelect;
-  node: typeof jasimRuntimeDagNodes.$inferSelect | undefined;
-}) => Promise<UncertainAttemptLookupResult>;
+/**
+ * The answer shape lives in `reconciliation-lookup`, where the laws that
+ * govern it are stated. It used to be declared here as
+ * `occurred | not_occurred`, which forced an authority that COULD NOT TELL to
+ * say "it did not happen" — and this function then wrote FAILED.
+ *
+ *   NO_ANSWER != NOT_OCCURRED
+ *
+ * These aliases stay so existing callers keep compiling.
+ */
+export type UncertainAttemptLookupResult = ReconciliationAnswer;
+export type UncertainAttemptLookup = ReconciliationLookup;
 
 /**
  * Reconcile a single uncertain execution attempt:
@@ -10470,17 +10473,66 @@ export async function reconcileUncertainAttempt(
       ),
     );
 
+  // ── WHERE THE LOOKUP COMES FROM ──────────────────────────────────────────
+  //
+  //   MODEL_SUPPLIES_A_LOOKUP = 0
+  //
+  // The contract is read HERE, before the outcome is decided, because the
+  // lookup lives on it. Before this phase `lookup` was a parameter and
+  // nothing but a test could ever pass one — which is why this whole layer had
+  // zero production callers and an uncertain effect stayed uncertain forever.
+  // A caller may still hand one in; production reads the registry's, declared
+  // in the same trusted registration that declares the effect kind.
+  const reconcileContract = (capabilityRegistry ?? getRuntimeCapabilityRegistry())
+    .effectContract(attempt.capabilityId);
+  const subject: ReconciliationSubject = {
+    attemptId,
+    runId: attempt.runId,
+    nodeId: attempt.nodeId,
+    capabilityId: attempt.capabilityId,
+    providerReference: attempt.providerReference ?? null,
+    idempotencyKey: attempt.idempotencyKey ?? null,
+  };
+  const effectiveLookup = lookup ?? reconcileContract.reconciliationLookup;
+
   // Map node status → execution status
   let resolvedExecutionStatus: ExecutionAttemptStatus = 'INCONCLUSIVE';
   let resolvedResult: Record<string, unknown> | null = null;
   let lookupResult: UncertainAttemptLookupResult | undefined;
-  if (lookup && node?.status === "RUNNING") {
-    lookupResult = await lookup({ attempt, node });
-    if (lookupResult.outcome === "occurred") {
+  if (effectiveLookup && node?.status === "RUNNING") {
+    lookupResult = await effectiveLookup(subject);
+    if (lookupResult.outcome === "OCCURRED") {
       resolvedExecutionStatus = "COMPLETED";
-      resolvedResult = lookupResult.result;
-    } else {
+      // ── THE ANSWER IS ABOUT THE EFFECT, NOT ABOUT AN ENVELOPE ────────────
+      //
+      // Found while proving this path: the verifier's output half reads
+      // `normalizedResult` as a canonical `{ result, metadata }` envelope, and
+      // a crashed attempt has none — that is what a crash IS. The composite
+      // verdict is downgrade-only, so an effect the owning system had just
+      // confirmed independently was still capped at INCONCLUSIVE, forever, by
+      // the absence of a wrapper the authority was never going to speak.
+      //
+      // The owning system answers about the world. Shaping its answer into the
+      // envelope the runtime's own reader expects is the runtime's job, and it
+      // is recorded as reconciled so nothing later mistakes it for what the
+      // executor returned. The completion policy is untouched: the effect
+      // still reaches VERIFIED only through INDEPENDENT_READBACK.
+      resolvedResult = {
+        result: lookupResult.result,
+        metadata: {
+          reconciled: true,
+          reconciledBy: lookupResult.authority,
+          reference: lookupResult.reference,
+        },
+      };
+    } else if (lookupResult.outcome === "NOT_OCCURRED") {
       resolvedExecutionStatus = "FAILED";
+    } else {
+      //   NO_ANSWER != NOT_OCCURRED
+      //
+      // The owning system was asked and could not say. That is a silence, not
+      // a failure, and it leaves the attempt exactly where it already was.
+      resolvedExecutionStatus = "INCONCLUSIVE";
     }
   } else if (node?.status === 'COMPLETED') {
     resolvedExecutionStatus = 'COMPLETED';
@@ -10500,8 +10552,6 @@ export async function reconcileUncertainAttempt(
   // and it is the reason this layer withholds VERIFIED rather than abolishing
   // it. Without a lookup, an uncertain attempt stays uncertain — which is the
   // truthful answer, not a limitation.
-  const reconcileContract = (capabilityRegistry ?? getRuntimeCapabilityRegistry())
-    .effectContract(attempt.capabilityId);
   const reconcileGathered = await gatherEffectAssertions(reconcileContract, {
     ownerId,
     capabilityId: attempt.capabilityId,
@@ -10511,14 +10561,37 @@ export async function reconcileUncertainAttempt(
     result: canonicalResultPayload(resolvedResult),
   });
   if (lookupResult) {
+    // ── WHO ANSWERED, AND WHETHER THEY WERE ANYBODY ELSE ────────────────────
+    //
+    //   EXECUTOR_RETURN != INDEPENDENT_READBACK
+    //
+    // This authority used to read `attempt.providerReference ?? capabilityId`
+    // — the executor's OWN returned reference, or, failing that, the executor
+    // itself. Every readback was therefore "independent" of nothing, and the
+    // one source that can carry an effect to VERIFIED was being granted to the
+    // claim under examination.
+    //
+    // The authority is now the one the ANSWER names, and it is checked. An
+    // answer that fails the check is not discarded: it enters as SELF_REPORTED,
+    // which no effectful completion policy accepts, so the effect stays
+    // unverified and the ledger says why.
+    const independent = answerIsIndependent(lookupResult, subject);
     reconcileGathered.assertions.push({
-      state: lookupResult.outcome === "occurred" ? "OCCURRED" : "NOT_OCCURRED",
-      source: "INDEPENDENT_READBACK",
-      authority: attempt.providerReference ?? attempt.capabilityId,
-      ...(lookupResult.outcome === "occurred" && lookupResult.providerReference
-        ? { reference: lookupResult.providerReference }
-        : {}),
-      ...(lookupResult.notes ? { notes: lookupResult.notes } : {}),
+      state:
+        lookupResult.outcome === "OCCURRED"
+          ? "OCCURRED"
+          : lookupResult.outcome === "NOT_OCCURRED"
+            ? "NOT_OCCURRED"
+            : "UNCERTAIN",
+      ...(independent
+        ? { source: "INDEPENDENT_READBACK" as const }
+        : { source: "SELF_REPORTED" as const }),
+      authority:
+        lookupResult.outcome === "UNKNOWN"
+          ? NO_ANSWERING_AUTHORITY
+          : lookupResult.authority,
+      ...(lookupResult.outcome === "OCCURRED" ? { reference: lookupResult.reference } : {}),
+      ...(lookupResult.notes ? { notes: [...lookupResult.notes] } : {}),
     });
   } else if (resolvedExecutionStatus === "COMPLETED" && node?.status === "COMPLETED") {
     // A COMPLETED DAG node means JASIM recorded that the STEP finished. For an
@@ -10623,17 +10696,17 @@ export async function reconcileUncertainAttempt(
     if (!node.claimedBy || !attempt.leaseToken) {
       throw new RuntimeActionError("Uncertain attempt is missing its leased execution identity.");
     }
-    if (lookupResult.outcome === "occurred") {
+    if (lookupResult.outcome === "OCCURRED") {
       await completeRuntimeDagNode({
         ownerId,
         nodeId: node.id,
         workerId: node.claimedBy,
         leaseToken: attempt.leaseToken,
         fenceVersion: attempt.fenceVersion,
-        output: lookupResult.result,
+        output: resolvedResult ?? {},
         capabilityRegistry,
       });
-    } else {
+    } else if (lookupResult.outcome === "NOT_OCCURRED") {
       await failRuntimeDagNode({
         ownerId,
         nodeId: node.id,
@@ -10644,9 +10717,122 @@ export async function reconcileUncertainAttempt(
         summary: "Reconciliation proved the controlled provider effect did not occur.",
       });
     }
+    // UNKNOWN moves nothing. The node stays RUNNING and the lease stays where
+    // it is, because failing a node on a silence would invent the failure this
+    // whole layer exists to avoid inventing.
+    //
+    //   NO_ANSWER != NOT_OCCURRED
   }
 
   return verification;
+}
+
+/**
+ * Reconcile every uncertain attempt one scope is carrying.
+ *
+ * `findUncertainExecutionAttempts` and `reconcileUncertainAttempt` both existed
+ * before this function and NEITHER had a caller — not in the runtime, not in
+ * the routers, not in a job. The refusal to retry blindly was real and proven;
+ * the path out of the uncertainty was unreachable. That is what this closes.
+ *
+ *   UNCERTAIN_FOREVER = 0
+ *
+ * An attempt whose capability declares no lookup is visited and left alone:
+ * there is nobody to ask, and asking nobody is not an answer. It is counted
+ * separately so «nothing could be resolved» never reads as «nothing needed
+ * resolving».
+ */
+export async function reconcileUncertainAttemptsForScope(input: {
+  ownerId: string;
+  staleAfterMs?: number;
+  capabilityRegistry?: CapabilityRegistry;
+}): Promise<{
+  readonly examined: number;
+  readonly resolved: number;
+  readonly unresolved: number;
+  readonly unanswerable: number;
+}> {
+  const registry = input.capabilityRegistry ?? getRuntimeCapabilityRegistry();
+  const attempts =
+    input.staleAfterMs === undefined
+      ? await findUncertainExecutionAttempts(input.ownerId)
+      : await findUncertainExecutionAttempts(input.ownerId, input.staleAfterMs);
+  let resolved = 0;
+  let unresolved = 0;
+  let unanswerable = 0;
+  for (const attempt of attempts) {
+    if (!registry.effectContract(attempt.capabilityId).reconciliationLookup) {
+      unanswerable += 1;
+      continue;
+    }
+    // One attempt failing to reconcile must never stop the rest: a scope with
+    // one unreachable authority would otherwise keep every other uncertain
+    // effect uncertain too.
+    try {
+      const verification = await reconcileUncertainAttempt(
+        attempt.id,
+        input.ownerId,
+        undefined,
+        registry,
+      );
+      // Resolved means the uncertainty ENDED, in either direction: confirmed
+      // to have happened, or established not to have. INCONCLUSIVE and PENDING
+      // are the attempt still being uncertain, which is not a resolution.
+      if (verification.status === "VERIFIED" || verification.status === "FAILED") {
+        resolved += 1;
+      } else {
+        unresolved += 1;
+      }
+    } catch {
+      unresolved += 1;
+    }
+  }
+  return { examined: attempts.length, resolved, unresolved, unanswerable };
+}
+
+/**
+ * Every scope's uncertain attempts, in the duty cycle that already exists.
+ *
+ *   SECOND_SCHEDULERS_ADDED = 0
+ *
+ * Shaped exactly like `sweepLivingObjects` and `sweepDueMonitors`, and called
+ * from the same `runBlock2Sweep`. Reconciliation gets no timer, no worker and
+ * no restart story of its own.
+ */
+export async function sweepUncertainAttempts(options?: {
+  staleAfterMs?: number;
+}): Promise<{
+  readonly scopes: number;
+  readonly examined: number;
+  readonly resolved: number;
+  readonly unresolved: number;
+  readonly unanswerable: number;
+}> {
+  const cutoff = new Date(Date.now() - (options?.staleAfterMs ?? 5 * 60 * 1000));
+  const owners = await db
+    .selectDistinct({ ownerId: jasimRuntimeExecutionAttempts.ownerId })
+    .from(jasimRuntimeExecutionAttempts)
+    .where(
+      and(
+        eq(jasimRuntimeExecutionAttempts.executionStatus, "RUNNING"),
+        lt(jasimRuntimeExecutionAttempts.startedAt, cutoff),
+      ),
+    );
+  let examined = 0;
+  let resolved = 0;
+  let unresolved = 0;
+  let unanswerable = 0;
+  for (const { ownerId } of owners) {
+    const result = await reconcileUncertainAttemptsForScope({
+      ownerId,
+      ...(options?.staleAfterMs === undefined ? {} : { staleAfterMs: options.staleAfterMs }),
+    });
+    examined += result.examined;
+    resolved += result.resolved;
+    unresolved += result.unresolved;
+    unanswerable += result.unanswerable;
+  }
+  return { scopes: owners.length, examined, resolved, unresolved, unanswerable };
 }
 
 /**
