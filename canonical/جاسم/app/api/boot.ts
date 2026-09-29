@@ -363,14 +363,35 @@ if (
   globalFlags[BLOCK2_WORKER_FLAG] = true;
   void (async () => {
     try {
-      const [{ getBlock2Worker }, { resumeScheduledRuntimeRun }] = await Promise.all([
+      const [
+        { getBlock2Worker },
+        { resumeScheduledRuntimeRun },
+        { canonicalConditionEvaluator },
+        { db },
+      ] = await Promise.all([
         import("./runtime/block2/worker"),
         import("./runtime/jasim-runtime"),
+        import("./runtime/condition-evaluator"),
+        import("./queries/connection"),
       ]);
       const handle = getBlock2Worker({
         resumeNode: async ({ runId, ownerId }) => {
           await resumeScheduledRuntimeRun({ runId, ownerId });
         },
+        // ── THE WIRE THAT WAS MISSING ────────────────────────────────────
+        //
+        // `ConditionEvaluator` is optional at every layer that passes it on,
+        // and this call supplied none — so `fireDueTemporalTriggers` read
+        // `undefined` for every verdict and EVERY CONDITION TRIGGER
+        // RESCHEDULED FOREVER WITHOUT EVER FIRING. «إذا نزل تحت خمسين» could
+        // be written down, stored and polled, and could never come true.
+        //
+        // Nothing is authorized by supplying it: a true condition dispatches
+        // a continuation, and whatever that resumes still faces its own
+        // approval gate.
+        //
+        //   TARGET / CONDITION != EXECUTION AUTHORITY
+        evaluator: canonicalConditionEvaluator(db),
       });
       await handle.bootstrap();
       void handle.worker.run().catch((error) => {
