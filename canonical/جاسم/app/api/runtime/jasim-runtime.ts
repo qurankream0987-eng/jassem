@@ -20,6 +20,7 @@ import {
   bubbleContentVersions as jasimRuntimeBubbleVersions,
   memoryEntries as jasimRuntimeMemoryEntries,
   executionAttempts as jasimRuntimeExecutionAttempts,
+  temporalTriggers,
   conversationSummaries as jasimRuntimeConversationSummaries,
   type ExecutionAttemptStatus,
   type VerificationStatus,
@@ -9983,11 +9984,40 @@ export async function driveRunToCompletion(
  * Resume a canonically scheduled run through the existing DAG refresh,
  * claim, lease, and fencing path. This is deliberately ineligible for
  * input/approval waits and does not infer authority from a worker payload.
+ *
+ * ── WHAT A CONDITION COULD NOT DO ──────────────────────────────────────────
+ *
+ * Eligibility used to be `resumeAt <= now` — a CLOCK. A run parked on a
+ * condition rather than a time has no `resumeAt`, so when a condition trigger
+ * finally fired and dispatched its continuation, this function refused: the
+ * wake arrived and there was no rule under which it could resume anything.
+ *
+ *   A CONDITION THAT CAME TRUE COULD WAKE NOTHING
+ *
+ * A fired trigger is now its own evidence — and STRICTER evidence than the
+ * clock ever was, because the authority is read from canonical state rather
+ * than taken from the job that arrived:
+ *
+ *   A_RUN_IS_WOKEN_BY_A_TRIGGER_THAT_NAMES_IT
+ *
+ * The trigger must carry this run on its own row, owned by the same scope, and
+ * must actually have fired. A run named only inside a continuation payload
+ * wakes nothing — which is the payload-authority rule this function has always
+ * held, kept exactly.
+ *
+ *   WAKING_IS_NOT_APPROVING
+ *
+ * And the `status = "waiting"` filter is untouched, so a run parked on a
+ * person — `awaiting_input`, `awaiting_approval` — is as unreachable from here
+ * as it ever was. A condition may say the world changed. It may never say a
+ * person agreed.
  */
 export async function resumeScheduledRuntimeRun(input: {
   runId: string;
   ownerId: string;
   now?: Date;
+  /** How this wake arrived. A trigger-driven wake needs no clock. */
+  wokenBy?: "SCHEDULE" | "TRIGGER";
 }): Promise<boolean> {
   const now = input.now ?? new Date();
   const [eligible] = await db
@@ -9997,30 +10027,79 @@ export async function resumeScheduledRuntimeRun(input: {
       and(
         eq(jasimRuntimeRuns.id, input.runId),
         eq(jasimRuntimeRuns.ownerId, input.ownerId),
+        // Untouched: a run waiting on a PERSON is not reachable from here.
         eq(jasimRuntimeRuns.status, "waiting"),
-        isNotNull(jasimRuntimeRuns.resumeAt),
-        lte(jasimRuntimeRuns.resumeAt, now),
+        ...(input.wokenBy === "TRIGGER"
+          ? []
+          : [
+              isNotNull(jasimRuntimeRuns.resumeAt),
+              lte(jasimRuntimeRuns.resumeAt, now),
+            ]),
       ),
     )
     .limit(1);
-  if (!eligible?.resumeAt) return false;
+  if (!eligible) return false;
+  if (input.wokenBy === "TRIGGER") {
+    // The trigger is the authority, read back from canonical state. A run the
+    // trigger does not name on its own row is not a run this wake may resume,
+    // however confidently the job payload named it.
+    const [firedTrigger] = await db
+      .select({ id: temporalTriggers.id })
+      .from(temporalTriggers)
+      .where(
+        and(
+          eq(temporalTriggers.runId, input.runId),
+          eq(temporalTriggers.ownerId, input.ownerId),
+          gt(temporalTriggers.fireCount, 0),
+        ),
+      )
+      .limit(1);
+    if (!firedTrigger) return false;
+  } else if (!eligible.resumeAt) {
+    return false;
+  }
 
   // refreshRuntimeDag recovers expired claims and makes only gate-eligible
   // nodes READY; driveRunToCompletion uses the canonical fenced claim path.
   await refreshRuntimeDag({ runId: input.runId, ownerId: input.ownerId, now });
   await driveRunToCompletion(input.runId, input.ownerId, "block2-resume-v1");
 
-  const [cleared] = await db
-    .update(jasimRuntimeRuns)
-    .set({ resumeAt: null })
-    .where(
-      and(
-        eq(jasimRuntimeRuns.id, input.runId),
-        eq(jasimRuntimeRuns.ownerId, input.ownerId),
-        eq(jasimRuntimeRuns.resumeAt, eligible.resumeAt),
-      ),
-    )
-    .returning({ id: jasimRuntimeRuns.id });
+  // ── WHAT "RESUMED" MEANS ON EACH PATH ───────────────────────────────────
+  //
+  // The scheduled path reports success by CONSUMING the clock: two workers may
+  // both pass eligibility and both drive, and only the one that clears
+  // `resumeAt` reports true. That compare-and-clear is the double-resume
+  // guard, and it is left exactly as it was.
+  //
+  // A trigger-driven wake has no clock to consume. Its guard is the trigger's
+  // own fire claim — the sweep increments `fireCount` under a CAS, so one
+  // firing dispatches one continuation — so reporting success here would
+  // otherwise be reporting the absence of a clock as a failure to resume.
+  if (input.wokenBy === "TRIGGER") {
+    await db.insert(jasimRuntimeRunEvents).values({
+      source: "runtime",
+      runId: input.runId,
+      ownerId: input.ownerId,
+      type: "RUN_TRIGGER_RESUME_CONSUMED",
+      message: "A fired trigger resumed this run through the canonical DAG executor.",
+      payload: { effects: "canonical_executor_only" },
+    });
+    return true;
+  }
+
+  const [cleared] = eligible.resumeAt
+    ? await db
+        .update(jasimRuntimeRuns)
+        .set({ resumeAt: null })
+        .where(
+          and(
+            eq(jasimRuntimeRuns.id, input.runId),
+            eq(jasimRuntimeRuns.ownerId, input.ownerId),
+            eq(jasimRuntimeRuns.resumeAt, eligible.resumeAt),
+          ),
+        )
+        .returning({ id: jasimRuntimeRuns.id })
+    : [];
   if (cleared) {
     await db.insert(jasimRuntimeRunEvents).values({
       source: "runtime",

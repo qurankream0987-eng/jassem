@@ -376,7 +376,13 @@ if (
       ]);
       const handle = getBlock2Worker({
         resumeNode: async ({ runId, ownerId }) => {
-          await resumeScheduledRuntimeRun({ runId, ownerId });
+          // This handler exists BECAUSE a trigger fired. Said so, because the
+          // run it wakes may have been parked on a condition rather than a
+          // clock — and the resume then reads the trigger back from canonical
+          // state as its authority, rather than trusting this payload.
+          //
+          //   A_RUN_IS_WOKEN_BY_A_TRIGGER_THAT_NAMES_IT
+          await resumeScheduledRuntimeRun({ runId, ownerId, wokenBy: "TRIGGER" });
         },
         // ── THE WIRE THAT WAS MISSING ────────────────────────────────────
         //

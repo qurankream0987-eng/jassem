@@ -101,3 +101,42 @@ temperature.
 > **DOMAIN_CONDITIONS_ADDED = 0**
 
 `tests/block31/condition-can-come-true.test.ts` — 12 tests.
+
+---
+
+## AND THE WAKE IT REACHES
+
+Once the condition can become true, the continuation reaches
+`resumeScheduledRuntimeRun` — whose eligibility was `resumeAt <= now`, **a
+clock**. A run parked on a *condition* rather than a time has no `resumeAt`, so
+the wake arrived and there was no rule under which it could resume anything.
+
+> **A CONDITION THAT CAME TRUE COULD WAKE NOTHING**
+
+A fired trigger is now its own evidence, and it is **stricter than the clock
+ever was** — because the authority is read back from canonical state rather than
+taken from the job that arrived:
+
+> **A_RUN_IS_WOKEN_BY_A_TRIGGER_THAT_NAMES_IT**
+
+The trigger must carry this run **on its own row**, owned by the same scope, and
+must actually have fired. A run named only inside a continuation payload wakes
+nothing — which is the function's standing rule ("does not infer authority from
+a worker payload") kept exactly.
+
+> **WAKING_IS_NOT_APPROVING**
+
+The `status = "waiting"` filter is untouched, so a run parked on a **person** —
+`awaiting_input`, `awaiting_approval` — is as unreachable from here as it ever
+was. This is «لا تنفّذ بدون موافقتي» holding structurally: a condition may say
+the world changed; it may never say a person agreed. Terminal runs are not
+restarted by a late wake either.
+
+**A defect found while proving it:** the function returned `Boolean(cleared)` —
+success meant *consuming the clock*. On the scheduled path that compare-and-clear
+is the double-resume guard and is left exactly as it was; on the trigger path
+there is no clock, so it reported a successful resume as a failure. The trigger
+path's guard is the sweep's own fire claim (`fireCount` under a CAS: one firing,
+one continuation).
+
+`tests/block31/condition-wakes-a-run.test.ts` — 11 tests.
