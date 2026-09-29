@@ -10,11 +10,11 @@ import {
   type EconomicExpression,
 } from "../../../db/schema";
 import {
-  evaluateConstraint,
+  evaluateConstraintSet,
   withDistanceFrom,
   type AttributeProvenance,
 } from "../economic-fabric";
-import type { ConstraintOperator } from "../semantic-fabric";
+import type { ConstraintExpression, ConstraintOperator } from "../semantic-fabric";
 
 export type Block31Db = NodePgDatabase<any>;
 
@@ -231,34 +231,54 @@ export function satisfiesHardConstraints(
   });
   const attributes = derived.attributes;
   const provenance = derived.provenance;
-  return constraints.every((constraint) => {
+  // Money is compared here and alone: a currency is not a scale of another
+  // currency, and there is no rate on this path.
+  for (const constraint of constraints) {
     if (constraint.maxMinor !== undefined || constraint.field === "price") {
-      return satisfiesMoneyBound(row, constraint);
+      if (!satisfiesMoneyBound(row, constraint)) return false;
     }
+  }
+
+  // ── EVERYTHING ELSE, TOGETHER ───────────────────────────────────────────
+  //
+  // Translated once into the fabric's vocabulary and evaluated as a SET, so an
+  // offering that declared its configurations must satisfy every bound in the
+  // SAME one. Judging them one at a time is what let a crane reaching 35 m and
+  // lifting 20 t match a need for both, when it can only do either.
+  //
+  //   INDEPENDENT_CONSTRAINTS_SATISFIED != JOINTLY_SATISFIABLE
+  const fieldConstraints: ConstraintExpression[] = [];
+  for (const constraint of constraints) {
+    if (constraint.maxMinor !== undefined || constraint.field === "price") continue;
     const field = constraint.field ?? (constraint.quantity !== undefined ? "quantity" : "");
     if (!field) return false;
     const value = constraint.quantity ?? constraint.value;
     if (value === undefined) return false;
     const operator = OPERATOR_TRANSLATION[constraint.operator ?? "eq"];
     if (!operator) return false;
-    const result = evaluateConstraint(
-      {
-        field,
-        operator,
-        value,
-        ...(constraint.unit ? { unit: constraint.unit } : {}),
-      },
-      attributes,
-      undefined,
-      provenance,
-    );
-    // UNKNOWN is not a hard match — the stance this function has always taken
-    // and the reason it is still the one deciding. What CHANGED is which
-    // answers are UNKNOWN: a missing value, an owner who never stated it, an
-    // inference, or units that cannot be reconciled. Each of those is
-    // "nobody knows", and none of them is "no".
-    return result.state === "PASS" || result.state === "SOFT_MATCH";
-  });
+    fieldConstraints.push({
+      field,
+      operator,
+      value,
+      ...(constraint.unit ? { unit: constraint.unit } : {}),
+    });
+  }
+  if (fieldConstraints.length === 0) return true;
+
+  const { results, jointlySatisfiable } = evaluateConstraintSet(
+    fieldConstraints,
+    attributes,
+    provenance,
+  );
+  // No declared configuration satisfies all of them at once. Not «unknown» —
+  // the owner said what it can do, and this is not among it.
+  if (!jointlySatisfiable) return false;
+  // UNKNOWN is not a hard match — the stance this function has always taken
+  // and the reason it is still the one deciding. What CHANGED is which
+  // answers are UNKNOWN: a missing value, an owner who never stated it, an
+  // inference, or units that cannot be reconciled. Each of those is
+  // "nobody knows", and none of them is "no".
+  return results.every((result) => result.state === "PASS" || result.state === "SOFT_MATCH");
 }
 
 export type WebObservation = {

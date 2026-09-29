@@ -347,7 +347,11 @@ describe("a need can say how much of what, and nothing loses the unit on the way
     const source = readFileSync("api/runtime/block31/discovery.ts", "utf8")
       .replace(/\/\*[\s\S]*?\*\//g, " ")
       .replace(/\/\/[^\n]*/g, " ");
-    expect(source).toContain("evaluateConstraint(");
+    // The shared evaluator, whichever of its two entry points is used: the
+    // joint-satisfiability phase moved discovery from the per-constraint call
+    // to the SET call, which is the same module answering the same question
+    // about more of it at once.
+    expect(source).toMatch(/evaluateConstraint(Set)?\(/);
     // The hand-rolled operator comparisons this function used to carry.
     expect(source).not.toMatch(/actual <= expected|actual >= expected|actual === expected/);
   });

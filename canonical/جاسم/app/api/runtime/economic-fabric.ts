@@ -580,6 +580,135 @@ export function evaluateConstraint(
 }
 
 /**
+ * WHAT THIS THING CAN DO, AT EACH CONFIGURATION IT CAN DO IT IN.
+ *
+ * ── THE FALSE MATCH THIS EXISTS TO END ──────────────────────────────────────
+ *
+ * «رافعتي تصل ٣٥ متراً، لكنها عند ذلك المدى تحمل ٨ أطنان فقط».
+ *
+ * Constraints are evaluated one at a time against scalar attributes, so a need
+ * for `reach >= 32 m` AND `capacity >= 11 t` matched a crane declaring
+ * `reach: 35, capacity: 20` — both PASS, independently, and the crane cannot
+ * do both at once. The same shape produces a generator rated 30 kW whose
+ * continuous output is 22.
+ *
+ *   INDEPENDENT_CONSTRAINTS_SATISFIED != JOINTLY_SATISFIABLE
+ *
+ * This is the worst kind of error this runtime can make: not a refusal, not an
+ * uncertainty, but a MATCH THAT LOOKS RIGHT. Somebody drives out.
+ *
+ * ── AND THE RUNTIME COULD NOT HAVE KNOWN ────────────────────────────────────
+ *
+ * Most attributes genuinely do not interact — a price and a colour constrain
+ * nothing about each other — so assuming interaction everywhere would refuse
+ * the world. The gap was never «assume they interact». It was that AN OWNER
+ * HAD NO WAY TO SAY THAT THEY DO.
+ *
+ *     capabilityPoints: [
+ *       { reach: 20, reachUnit: "m", capacity: 20, capacityUnit: "tonne" },
+ *       { reach: 35, reachUnit: "m", capacity: 8,  capacityUnit: "tonne" },
+ *     ]
+ *
+ * A need is jointly satisfiable when ONE declared point satisfies every
+ * constraint at the same time. Nothing is summed, averaged or interpolated
+ * between points: a configuration nobody declared is a configuration nobody
+ * promised.
+ *
+ *   BETWEEN_TWO_DECLARED_POINTS_IS_NOT_A_PROMISE
+ *
+ *   A_HEADLINE_NUMBER_IS_NOT_A_JOINT_PROMISE — where points cover a field, the
+ *   scalar beside them is a summary and the points are the truth.
+ */
+export const CAPABILITY_POINTS_FIELD = "capabilityPoints";
+
+function declaredPoints(
+  attributes: Record<string, unknown>,
+): readonly Record<string, unknown>[] | null {
+  const raw = attributes[CAPABILITY_POINTS_FIELD];
+  if (!Array.isArray(raw) || raw.length === 0) return null;
+  const points = raw.filter(
+    (entry): entry is Record<string, unknown> =>
+      Boolean(entry) && typeof entry === "object" && !Array.isArray(entry),
+  );
+  return points.length > 0 ? points : null;
+}
+
+export type ConstraintSetResult = {
+  readonly results: ConstraintResult[];
+  /** True when the offering declared configurations rather than bare scalars. */
+  readonly jointlyDeclared: boolean;
+  /** True when one declared configuration satisfies every constraint at once. */
+  readonly jointlySatisfiable: boolean;
+};
+
+/**
+ * Evaluate every constraint TOGETHER, against one configuration at a time.
+ *
+ * With no declared points this is exactly what it always was: each constraint
+ * against the offering's attributes. With points, the candidate is judged
+ * against each configuration in turn, and the answer is the best one — because
+ * a thing that can do what you asked in ANY configuration it declared can do
+ * what you asked.
+ *
+ * "Best" is the configuration with the fewest FAILs, so a candidate that
+ * cannot do it reports WHY from the configuration that came closest rather
+ * than from an arbitrary one.
+ */
+export function evaluateConstraintSet(
+  constraints: readonly ConstraintExpression[],
+  attributes: Record<string, unknown>,
+  provenance?: AttributeProvenance,
+): ConstraintSetResult {
+  const evaluateAgainst = (
+    bag: Record<string, unknown>,
+    bagProvenance: AttributeProvenance | undefined,
+  ) => constraints.map((constraint) => evaluateConstraint(constraint, bag, undefined, bagProvenance));
+
+  const points = declaredPoints(attributes);
+  if (!points) {
+    const results = evaluateAgainst(attributes, provenance);
+    return {
+      results,
+      jointlyDeclared: false,
+      jointlySatisfiable: !results.some((result) => result.state === "FAIL"),
+    };
+  }
+
+  // A point a model read off a spec sheet is a guess about somebody's
+  // machine, and a guess decides nothing — the same rule, one level up.
+  //
+  //   INFERRED_VALUE_EXCLUDES_A_CANDIDATE = 0
+  const pointsInferred = provenance?.[CAPABILITY_POINTS_FIELD] === "INFERRED";
+  const pointProvenance = (point: Record<string, unknown>): AttributeProvenance | undefined => {
+    if (!pointsInferred) return provenance;
+    const marked = { ...(provenance ?? {}) } as Record<string, ValueProvenance>;
+    for (const field of Object.keys(point)) marked[field] = "INFERRED";
+    return marked as AttributeProvenance;
+  };
+
+  let best: ConstraintResult[] | null = null;
+  let bestFailures = Number.POSITIVE_INFINITY;
+  for (const point of points) {
+    // The point wins where it speaks; the scalars fill in everything it does
+    // not mention.  A_HEADLINE_NUMBER_IS_NOT_A_JOINT_PROMISE
+    const results = evaluateAgainst({ ...attributes, ...point }, pointProvenance(point));
+    const failures = results.filter((result) => result.state === "FAIL").length;
+    if (failures === 0) {
+      return { results, jointlyDeclared: true, jointlySatisfiable: true };
+    }
+    if (failures < bestFailures) {
+      bestFailures = failures;
+      best = results;
+    }
+  }
+  return {
+    results: best ?? evaluateAgainst(attributes, provenance),
+    jointlyDeclared: true,
+    jointlySatisfiable: false,
+  };
+}
+
+/**
  * THE NAME A DERIVED DISTANCE TAKES, in metres, the base unit of length.
  *
  * Reserved rather than magic: a need bounds `distance` the way it bounds any
@@ -671,11 +800,19 @@ export function evaluateMatch(
 ): { results: ConstraintResult[]; viable: boolean } {
   const constraints = (need.hardConstraints ?? []) as ConstraintExpression[];
   const { attributes, provenance } = withDerivedDistance(need, offering);
-  const results = constraints.map((constraint) =>
-    evaluateConstraint(constraint, attributes, undefined, provenance),
+  // TOGETHER, not one at a time. An offering that declared its configurations
+  // is judged against each one in turn, so «35 m» and «11 t» must hold in the
+  // SAME configuration rather than in two different ones.
+  //
+  //   INDEPENDENT_CONSTRAINTS_SATISFIED != JOINTLY_SATISFIABLE
+  const { results, jointlySatisfiable } = evaluateConstraintSet(
+    constraints,
+    attributes,
+    provenance,
   );
   // UNKNOWN is never FAIL, but a candidate with zero proven PASSes is not viable either.
   const viable =
+    jointlySatisfiable &&
     !results.some((result) => result.state === "FAIL") &&
     (results.length === 0 || results.some((result) => result.state === "PASS"));
   return { results, viable };

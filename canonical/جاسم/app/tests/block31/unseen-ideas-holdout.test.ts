@@ -384,8 +384,42 @@ describe("ten ideas nobody built anything for", () => {
     }
   });
 
-  it("no core file learned any of these words", () => {
+  it("no core file learned any of these words, and none branches on a kind", () => {
     //   NEW DOMAIN != NEW AGENT · UNKNOWN IDEA != UNSUPPORTED DOMAIN
+    //
+    // ── AN EXPECTATION OF MINE THAT WAS RIGHT, AND TOO BROAD ───────────────
+    //
+    // OLD_EXPECTATION: none of the ten nouns appears ANYWHERE in a core file,
+    //   comments included.
+    // WHY_IT_IS_WRONG: it fired on a COMMENT. The joint-satisfiability phase
+    //   explains its law by naming the example that revealed it — «a crane
+    //   reaching 35 m that lifts 8 t there» — which is exactly how every law
+    //   in this runtime is documented, and is not logic. Meanwhile the rule it
+    //   stands for is about CODE: an example must never become a branch.
+    // NEW_EXPECTATION: the words are checked against the code with comments
+    //   stripped, AND no core file may decide anything by WHICH KIND a thing
+    //   is — no `semanticType` compared to a string literal, no
+    //   `.includes("…")`/`.startsWith("…")` on one, no `switch` over one.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: the old assertion could be passed
+    //   by a branch this list happens not to name — `if (semanticType ===
+    //   "lift.service")` contains none of the ten words. The new one fails
+    //   that branch whatever it is called, which is the rule the word list was
+    //   only ever approximating.
+    //
+    // ── AND WHY IT SAYS «LITERAL» AND NOT «=== AT ALL» ─────────────────────
+    //
+    // Two shapes compare a semanticType and encode no domain, and a rule that
+    // banned them would be a rule this runtime would have to break:
+    //
+    //   typeof projection.semanticType === "string"   a shape guard
+    //   row.semanticType !== semanticType             «did the type change»
+    //
+    // Neither can say WHICH kind: the first asks whether a value is a string,
+    // the second compares two values that both arrive at runtime and treats
+    // every kind identically. What no core file may ever do is name one. So
+    // the typeof guard is stripped, and what remains must never meet a quoted
+    // literal — which is exactly the failure this rule exists to catch, and
+    // catches under any naming.
     const core = [
       "api/runtime/block31/conversation-orchestrator.ts",
       "api/runtime/block31/discovery.ts",
@@ -396,11 +430,24 @@ describe("ten ideas nobody built anything for", () => {
       "api/runtime/semantic-fabric.ts",
     ];
     for (const path of core) {
-      const source = readFileSync(path, "utf8");
+      const code = readFileSync(path, "utf8")
+        .replace(/\/\*[\s\S]*?\*\//g, " ")
+        .replace(/\/\/[^\n]*/g, " ");
       for (const word of ["telescope", "manuscript", "beehive", "pigeon", "blaster",
         "silica", "crane", "bell", "darksky", "divingbell", "assay", "loft"]) {
-        expect(source, `${path} names ${word}`).not.toMatch(new RegExp(`\\b${word}\\b`, "i"));
+        expect(code, `${path} names ${word}`).not.toMatch(new RegExp(`\\b${word}\\b`, "i"));
       }
+      // The rule the list approximates: nothing decides by WHAT KIND of thing.
+      const decisions = code.replace(/typeof\s+[\w.?\[\]"']*semanticType\s*===\s*"string"/g, " ");
+      expect(decisions, `${path} compares a semanticType to a literal`).not.toMatch(
+        /semanticType\s*(===|!==|==|!=)\s*["'`]/,
+      );
+      expect(decisions, `${path} tests a semanticType against a literal`).not.toMatch(
+        /semanticType\s*\??\.(includes|startsWith|endsWith|match)\(\s*[/"'`]/,
+      );
+      expect(decisions, `${path} switches on a semanticType`).not.toMatch(
+        /switch\s*\([^)]*semanticType/,
+      );
     }
   });
 });
