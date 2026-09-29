@@ -47,6 +47,7 @@ import {
 } from "./goal-spec";
 import { sanitizeModelStructuredOutput } from "./model-output-trust";
 import { isKnownCurrency, parseMoney } from "./block3/money";
+import { unitDimension } from "./semantic-fabric";
 
 export class NeedError extends Error {
   readonly code: "INVALID" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "AMBIGUOUS";
@@ -662,18 +663,37 @@ export function translateConstraints(
       continue;
     }
 
-    // Every other dimension: the fabric stores ordinary numeric attributes,
-    // and a bound is comparable only in the unit it is already stored in.
-    // Converting hours to days, or kilometres to metres, needs conversion
-    // metadata this runtime does not have — so it is named, not guessed.
+    // ── EVERY OTHER DIMENSION ────────────────────────────────────────────
+    //
+    // This branch used to end by pushing `{ field, operator, value }` and
+    // DROPPING the unit, under a comment saying that converting hours to days
+    // or kilometres to metres needed metadata this runtime did not have.
+    //
+    // That comment is no longer true. `semantic-fabric` holds every unit this
+    // runtime knows — mass, time, count, length, area, volume — with a
+    // dimension and a factor each. And dropping the unit was never the safe
+    // option it looked like: a bound of «30 m³» became a bare `<= 30`, which a
+    // candidate storing 30000 litres then satisfied. A silent FALSE MATCH, and
+    // the mirror of the false exclusion this file exists to refuse.
+    //
+    //   UNIT_DROPPED_IN_TRANSLATION = 0 — sharpens SILENT_GUESSED_FILTER = 0
+    //
+    // So the unit travels. A unit the fabric does not know is NAMED, exactly
+    // as an unknown currency is, rather than being quietly discarded.
     if (typeof constraint.value !== "number") {
       unapplied.push({ dimension: constraint.dimension, unit, reason: "DIMENSION_NOT_STORED" });
       continue;
     }
+    if (!unitDimension(unit)) {
+      unapplied.push({ dimension: constraint.dimension, unit, reason: "UNKNOWN_UNIT" });
+      continue;
+    }
     applied.push({
-      field: constraint.dimension.toLowerCase(),
+      // A MEASURE says what it measures; every other dimension IS its subject.
+      field: constraint.field ?? constraint.dimension.toLowerCase(),
       operator: "max",
       value: constraint.value,
+      unit,
     });
   }
 

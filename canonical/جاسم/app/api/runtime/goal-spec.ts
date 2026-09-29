@@ -60,6 +60,7 @@
 
 import { z } from "zod";
 import { sanitizeModelStructuredOutput } from "./model-output-trust";
+import { baseUnitOf, normalizeUnit, unitDimension } from "./semantic-fabric";
 
 // ── The frozen vocabulary ────────────────────────────────────────────────────
 
@@ -78,6 +79,27 @@ export const GOAL_DIMENSIONS = [
   "RISK",
   "PRIVACY",
   "LOCATION",
+  /**
+   * A QUANTITY OF SOMETHING, ON A NUMBER LINE.
+   *
+   * «ثلاثين متراً مكعباً» · «سبعة أطنان» · «خمسة آلاف قطعة» · «خمسة وأربعين
+   * يوماً» · «درجتين مئويتين». None of these is a cost, a risk, a privacy
+   * level or an opinion about quality — and before this dimension existed a
+   * need could not state one at all. The offering side has carried arbitrary
+   * `field` + `unit` since the fabric was written; the need side could bound
+   * six abstract dimensions and nothing measurable, which is why every request
+   * shaped like «I need N of X» had nowhere to go.
+   *
+   *   A MEASURE IS NOT A QUALITY
+   *
+   * It stays ONE dimension on purpose. There is no VOLUME, no MASS, no
+   * TEMPERATURE and no DURATION dimension here, because the thing being
+   * measured belongs in `field` and the scale belongs in `unit` — both data.
+   * Enumerating physical quantities would be enumerating the world.
+   *
+   *   DOMAIN_DIMENSIONS_ADDED = 0
+   */
+  "MEASURE",
 ] as const;
 export type GoalDimension = (typeof GOAL_DIMENSIONS)[number];
 
@@ -98,18 +120,14 @@ export type Hardness = "HARD" | "SOFT";
 /** Whether the person said it, or the model worked it out. */
 export type ConstraintSource = "STATED" | "INFERRED";
 
-/**
- * Time units, with fixed factors, so two time bounds can be compared without
- * consulting anything. Every other dimension compares only within one unit —
- * see `contradictions`.
- */
-const SECONDS_PER_UNIT: Readonly<Record<string, number>> = Object.freeze({
-  SECOND: 1,
-  MINUTE: 60,
-  HOUR: 3_600,
-  DAY: 86_400,
-  WEEK: 604_800,
-});
+//
+// The time table that used to live here has been deleted. `semantic-fabric`
+// already holds every unit this runtime knows — mass, time, count, length,
+// area, volume — with one dimension per unit and one factor per unit, and a
+// second copy of the seconds-per-day could only ever drift away from it.
+//
+//   TWO_UNIT_TABLES = 0
+//
 
 // ── The schema ───────────────────────────────────────────────────────────────
 
@@ -121,6 +139,15 @@ const ConstraintSchema = z
     value: z.union([z.number(), z.string().trim().min(1).max(120)]).optional(),
     /** Free-form because units are domain vocabulary: KWD, DAY, KM, STARS. */
     unit: z.string().trim().min(1).max(40).optional(),
+    /**
+     * WHAT is being measured. Required for MEASURE and forbidden elsewhere.
+     *
+     *   A MEASURE OF NOTHING = 0
+     *
+     * «أقل من ثلاثين» is not a requirement until something says thirty of
+     * what, and a COST whose field is «volume» is not a sentence anyone meant.
+     */
+    field: z.string().trim().min(1).max(60).optional(),
     hardness: z.enum(["HARD", "SOFT"]),
     source: z.enum(["STATED", "INFERRED"]),
     /** The words this came from. Quoting keeps the claim checkable. */
@@ -146,6 +173,26 @@ const ConstraintSchema = z
     if (!directional && typeof constraint.value === "number" && !constraint.unit) {
       // A bare number is not a requirement. "at most 2" of what?
       context.addIssue({ code: "custom", message: "A numeric bound needs a unit." });
+    }
+    //   A MEASURE OF NOTHING = 0
+    //
+    // «ثلاثين متراً مكعباً» is a measure of VOLUME; «سبعة أطنان» is a measure
+    // of MASS. Without the field the two land on one number line and one of
+    // them silently decides the other.
+    if (constraint.dimension === "MEASURE" && !constraint.field) {
+      context.addIssue({
+        code: "custom",
+        message: "A MEASURE bound must name what it measures.",
+      });
+    }
+    // And the reverse: a COST or a RISK carrying a field would be two
+    // vocabularies for one idea, which is how a dimension stops meaning
+    // anything.
+    if (constraint.dimension !== "MEASURE" && constraint.field) {
+      context.addIssue({
+        code: "custom",
+        message: "Only a MEASURE names a field; every other dimension is its own subject.",
+      });
     }
   });
 
@@ -204,12 +251,15 @@ export const GOAL_AUTHORITY_KEYS: ReadonlySet<string> = new Set([
 export type GoalAdjustment = {
   readonly code: "INFERRED_CONSTRAINT_DOWNGRADED";
   readonly dimension: GoalDimension;
+  readonly field?: string;
   readonly detail: string;
 };
 
 export type GoalConflict = {
   readonly code: "CONTRADICTORY_HARD_BOUNDS" | "INCOMPARABLE_HARD_BOUNDS";
   readonly dimension: GoalDimension;
+  /** Which measure, when the dimension is MEASURE. A conflict must be nameable. */
+  readonly field?: string;
   readonly detail: string;
 };
 
@@ -239,14 +289,33 @@ export type GoalEvaluation = {
 function comparable(constraint: GoalConstraint): { value: number; unit: string } | null {
   if (typeof constraint.value !== "number" || !constraint.unit) return null;
   const unit = constraint.unit.toUpperCase();
-  if (constraint.dimension === "TIME") {
-    const factor = SECONDS_PER_UNIT[unit];
-    // An unrecognised time unit is not silently treated as seconds.
-    return factor ? { value: constraint.value * factor, unit: "SECOND" } : null;
+
+  // ── ONE UNIT TABLE, FOR EVERY DIMENSION THAT HAS UNITS ──────────────────
+  //
+  // This used to be a `SECONDS_PER_UNIT` lookup that TIME alone consulted, and
+  // every other dimension fell through to "compares only within one unit".
+  // `semantic-fabric` already knows hours, days, tonnes, cubic metres, litres
+  // and pieces, each with its dimension and its factor, so a second table here
+  // could only drift. Weeks and days still compare; so now do tonnes and
+  // kilograms, and m³ and litres.
+  //
+  //   TWO_UNIT_TABLES = 0
+  //
+  // A unit the fabric does not know still returns null — unrecognised is never
+  // silently treated as the base unit.
+  const dimension = unitDimension(unit);
+  if (dimension) {
+    const base = baseUnitOf(dimension);
+    const normalized = base ? normalizeUnit(constraint.value, unit, base) : undefined;
+    if (normalized !== undefined && base) return { value: normalized, unit: base };
+    return null;
   }
-  // Every other dimension compares only within one unit. Two costs in
-  // different currencies need a rate, and a rate is external data this module
-  // does not have — guessing one would be an invented fact.
+
+  // Money is deliberately NOT in that table. Two costs in different currencies
+  // need a rate, a rate is external data this module does not have, and a
+  // currency is not a scale of some other currency.
+  //
+  //   CURRENCY_IS_A_UNIT = 0 · FX_CONVERSION_ADDED = 0
   return { value: constraint.value, unit };
 }
 
@@ -258,9 +327,35 @@ function comparable(constraint: GoalConstraint): { value: number; unit: string }
  */
 function contradictions(constraints: readonly GoalConstraint[]): GoalConflict[] {
   const conflicts: GoalConflict[] = [];
+  // ── WHAT COUNTS AS "THE SAME NUMBER LINE" ────────────────────────────────
+  //
+  // A dimension alone is not the subject any more. «ثلاثين متراً مكعباً»
+  // and «سبعة أطنان» are both MEASURE, and they are two requirements about
+  // two different things — not two bounds on one quantity. Grouping them
+  // together would report a volume and a mass as INCOMPARABLE_HARD_BOUNDS and
+  // send somebody away to resolve a conflict that does not exist.
+  //
+  //   INCOMPARABLE_ACROSS_FIELDS != CONTRADICTORY
+  //
+  // Every dimension but MEASURE is its own subject, so its field is empty and
+  // the grouping is exactly what it was.
+  const subjects = new Map<string, { dimension: GoalDimension; field?: string }>();
   for (const dimension of GOAL_DIMENSIONS) {
+    for (const constraint of constraints) {
+      if (constraint.dimension !== dimension || constraint.hardness !== "HARD") continue;
+      subjects.set(`${dimension}\u0000${constraint.field ?? ""}`, {
+        dimension,
+        ...(constraint.field ? { field: constraint.field } : {}),
+      });
+    }
+  }
+  for (const [key, subject] of subjects) {
+    const dimension = subject.dimension;
+    const named = subject.field ? `${dimension} (${subject.field})` : dimension;
     const onDimension = constraints.filter(
-      (constraint) => constraint.dimension === dimension && constraint.hardness === "HARD",
+      (constraint) =>
+        constraint.hardness === "HARD" &&
+        `${constraint.dimension}\u0000${constraint.field ?? ""}` === key,
     );
     if (onDimension.length < 2) continue;
 
@@ -279,13 +374,14 @@ function contradictions(constraints: readonly GoalConstraint[]): GoalConflict[] 
     // refuse. It is reported as incomparable instead.
     const uncomparable = points.filter(({ point }) => point === null).length;
     if (units.size > 1 || uncomparable > 0) {
-      const named = [...units, ...(uncomparable > 0 ? ["unrecognised"] : [])];
+      const namedUnits = [...units, ...(uncomparable > 0 ? ["unrecognised"] : [])];
       conflicts.push({
         code: "INCOMPARABLE_HARD_BOUNDS",
         dimension,
+        ...(subject.field ? { field: subject.field } : {}),
         // Not a contradiction and not a pass: two hard bounds nobody can check
         // against each other must be surfaced, not assumed compatible.
-        detail: `Two hard bounds on ${dimension} use units that cannot be compared (${named.join(", ")}).`,
+        detail: `Two hard bounds on ${named} use units that cannot be compared (${namedUnits.join(", ")}).`,
       });
       continue;
     }
@@ -309,7 +405,8 @@ function contradictions(constraints: readonly GoalConstraint[]): GoalConflict[] 
       conflicts.push({
         code: "CONTRADICTORY_HARD_BOUNDS",
         dimension,
-        detail: `No value of ${dimension} satisfies every hard bound stated for it.`,
+        ...(subject.field ? { field: subject.field } : {}),
+        detail: `No value of ${named} satisfies every hard bound stated for it.`,
       });
     }
   }

@@ -402,7 +402,16 @@ function readField(source: Record<string, unknown>, field: string): unknown {
   return source[field];
 }
 
-function evaluateConstraint(
+/**
+ * Does this candidate satisfy this constraint?
+ *
+ * Exported because DISCOVERY must reach the same answer as matching. Two
+ * evaluators of one question drift, and the drift resolves in favour of
+ * whichever one said yes.
+ *
+ *   TWO_CONSTRAINT_EVALUATORS = 0
+ */
+export function evaluateConstraint(
   constraint: ConstraintExpression,
   candidateAttributes: Record<string, unknown>,
   candidateConstraints?: { unit?: string },

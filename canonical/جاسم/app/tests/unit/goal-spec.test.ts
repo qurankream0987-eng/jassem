@@ -406,11 +406,40 @@ describe("GOAL is not PLAN", () => {
     );
   });
 
-  it("the dimension list names no domain", () => {
+  it("the dimension list names no domain and no physical quantity", () => {
     for (const dimension of GOAL_DIMENSIONS) {
       expect(dimension).not.toMatch(/DELIVERY|RIDE|FLIGHT|HOTEL|CAR|FOOD|SHOP|DRIVER/i);
     }
-    expect(GOAL_DIMENSIONS).toHaveLength(6);
+    // OLD_EXPECTATION
+    //   `expect(GOAL_DIMENSIONS).toHaveLength(6)` — a pin against anybody
+    //   quietly adding a dimension, which is the right instinct.
+    //
+    // WHY_IT_IS_WRONG
+    //   It was never the count that made the list honest; it was that no entry
+    //   names a domain. Six abstract dimensions also meant a need could not
+    //   state «ثلاثين متراً مكعباً» at all: a measured quantity is not a COST,
+    //   a RISK, a PRIVACY level or an opinion about QUALITY, and the offering
+    //   side has carried arbitrary field+unit since the fabric was written.
+    //   MEASURE closes that, and it names no domain — so the old pin was
+    //   blocking a general primitive while still permitting the real danger.
+    //
+    // NEW_EXPECTATION
+    //   Seven, AND no dimension names a physical quantity either. The specific
+    //   way MEASURE could rot is somebody adding VOLUME, MASS, TEMPERATURE or
+    //   DURATION beside it — enumerating the world one dimension at a time.
+    //   What is measured belongs in `field`, and the scale in `unit`.
+    //
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER
+    //   The old assertion caught any addition, including a correct one, and
+    //   said nothing about WHAT was added. This one fixes the count and names
+    //   the failure mode the new dimension actually introduces — so a
+    //   `VOLUME` dimension now fails on its NAME, not merely on arithmetic,
+    //   and it fails whatever the count happens to be.
+    for (const dimension of GOAL_DIMENSIONS) {
+      expect(dimension).not.toMatch(/VOLUME|MASS|WEIGHT|TEMPERATURE|DURATION|LENGTH|AREA|COUNT/i);
+    }
+    expect(GOAL_DIMENSIONS).toHaveLength(7);
+    expect(GOAL_DIMENSIONS).toContain("MEASURE");
   });
 });
 

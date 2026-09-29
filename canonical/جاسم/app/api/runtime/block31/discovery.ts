@@ -9,6 +9,11 @@ import {
   type DiscoverySourceKind,
   type EconomicExpression,
 } from "../../../db/schema";
+import {
+  evaluateConstraint,
+  type AttributeProvenance,
+} from "../economic-fabric";
+import type { ConstraintOperator } from "../semantic-fabric";
 
 export type Block31Db = NodePgDatabase<any>;
 
@@ -85,6 +90,8 @@ export type HardConstraint = {
   field?: string;
   operator?: "eq" | "=" | "max" | "<=" | "gte" | ">=";
   value?: unknown;
+  /** The scale the bound is stated in. Dropping it is a silent false match. */
+  unit?: string;
   maxMinor?: string;
   currency?: string;
   quantity?: number;
@@ -103,40 +110,110 @@ function canonicalMinor(value: unknown): bigint | null {
   return null;
 }
 
-function candidateField(row: EconomicExpression, field: string): unknown {
-  if (field === "quantity") return row.attributes.quantity ?? object(row.availability).quantity;
-  return row.attributes[field];
+/**
+ * The attribute bag a constraint is judged against.
+ *
+ * `quantity` has always been readable from `availability` as well as from
+ * `attributes`, and that stays true — it is flattened into one bag here so the
+ * shared evaluator sees exactly what this function used to see.
+ */
+function candidateAttributes(row: EconomicExpression): Record<string, unknown> {
+  const attributes = { ...(row.attributes ?? {}) } as Record<string, unknown>;
+  if (attributes.quantity === undefined) {
+    const fromAvailability = object(row.availability).quantity;
+    if (fromAvailability !== undefined) attributes.quantity = fromAvailability;
+  }
+  return attributes;
 }
 
-/** Missing hard-constraint values do not pass: UNKNOWN is not a hard match. */
+/**
+ * Money, compared in exact minor units, in one currency.
+ *
+ *   CURRENCY_IS_A_UNIT = 0
+ *
+ * Kept here and deliberately NOT handed to the shared evaluator: a currency is
+ * not a scale of some other currency, and there is no rate anywhere on this
+ * path.
+ */
+function satisfiesMoneyBound(row: EconomicExpression, constraint: HardConstraint): boolean {
+  const money = object(row.attributes.price ?? row.attributes.money);
+  const minor = canonicalMinor(row.attributes.priceMinor ?? money.minor ?? money.amountMinor);
+  const maximum = canonicalMinor(constraint.maxMinor ?? constraint.value);
+  if (minor === null || maximum === null) return false;
+  const candidateCurrency = String(row.attributes.currency ?? money.currency ?? "").toUpperCase();
+  if (constraint.currency && candidateCurrency !== constraint.currency.trim().toUpperCase()) {
+    return false;
+  }
+  return minor <= maximum;
+}
+
+/** The legacy discovery operators, in the vocabulary the fabric speaks. */
+const OPERATOR_TRANSLATION: Readonly<Record<string, ConstraintOperator>> = Object.freeze({
+  max: "lte",
+  "<=": "lte",
+  gte: "gte",
+  ">=": "gte",
+  eq: "eq",
+  "=": "eq",
+});
+
+/**
+ * Missing hard-constraint values do not pass: UNKNOWN is not a hard match.
+ *
+ * ── WHAT THIS STOPPED DOING BY ITSELF ───────────────────────────────────────
+ *
+ * This function used to compare raw numbers with its own small operator table.
+ * `economic-fabric` had a second evaluator for the same question, and the two
+ * had drifted apart in three ways that all cost real matches:
+ *
+ *   • UNITS — this one had none. A bound of «30 m³» was a bare `<= 30`, and a
+ *     candidate holding 30000 litres satisfied it. The other normalizes.
+ *
+ *   • PROVENANCE — this one had none, so a model's reading of a photo both
+ *     ADMITTED and EXCLUDED candidates on the path everybody searches through.
+ *     INFERRED_VALUE_EXCLUDES_A_CANDIDATE = 0 was enforced on the matching
+ *     side and nowhere here.
+ *
+ *   • OPERATORS — two vocabularies (`max` here, `lte` there) for one idea.
+ *
+ * So the comparison is now the fabric's, and this function keeps only what is
+ * genuinely its own: money, and the legacy shapes discovery callers send.
+ *
+ *   TWO_CONSTRAINT_EVALUATORS = 0
+ */
 export function satisfiesHardConstraints(
   row: EconomicExpression,
   constraints: readonly HardConstraint[],
 ): boolean {
+  const attributes = candidateAttributes(row);
+  const provenance = (row.attributeProvenance ?? undefined) as AttributeProvenance | undefined;
   return constraints.every((constraint) => {
     if (constraint.maxMinor !== undefined || constraint.field === "price") {
-      const money = object(row.attributes.price ?? row.attributes.money);
-      const minor = canonicalMinor(
-        row.attributes.priceMinor ?? money.minor ?? money.amountMinor,
-      );
-      const maximum = canonicalMinor(constraint.maxMinor ?? constraint.value);
-      if (minor === null || maximum === null) return false;
-      const candidateCurrency = String(row.attributes.currency ?? money.currency ?? "").toUpperCase();
-      if (constraint.currency && candidateCurrency !== constraint.currency.trim().toUpperCase()) return false;
-      return minor <= maximum;
+      return satisfiesMoneyBound(row, constraint);
     }
     const field = constraint.field ?? (constraint.quantity !== undefined ? "quantity" : "");
     if (!field) return false;
-    const actual = candidateField(row, field);
-    const expected = constraint.quantity ?? constraint.value;
-    if (actual === undefined || actual === null || expected === undefined) return false;
-    if (constraint.operator === "max" || constraint.operator === "<=") {
-      return typeof actual === "number" && typeof expected === "number" && actual <= expected;
-    }
-    if (constraint.operator === "gte" || constraint.operator === ">=") {
-      return typeof actual === "number" && typeof expected === "number" && actual >= expected;
-    }
-    return actual === expected;
+    const value = constraint.quantity ?? constraint.value;
+    if (value === undefined) return false;
+    const operator = OPERATOR_TRANSLATION[constraint.operator ?? "eq"];
+    if (!operator) return false;
+    const result = evaluateConstraint(
+      {
+        field,
+        operator,
+        value,
+        ...(constraint.unit ? { unit: constraint.unit } : {}),
+      },
+      attributes,
+      undefined,
+      provenance,
+    );
+    // UNKNOWN is not a hard match — the stance this function has always taken
+    // and the reason it is still the one deciding. What CHANGED is which
+    // answers are UNKNOWN: a missing value, an owner who never stated it, an
+    // inference, or units that cannot be reconciled. Each of those is
+    // "nobody knows", and none of them is "no".
+    return result.state === "PASS" || result.state === "SOFT_MATCH";
   });
 }
 
