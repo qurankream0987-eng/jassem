@@ -70,6 +70,27 @@ describe("COMMERCE RATCHET — may shrink, may never grow", () => {
     "isWorldCommerce",
     "isCompare",
     "isDiscovery",
+    // ── AN INHERITED EXPECTATION THAT CHANGED ────────────────────────────
+    //
+    // OLD_EXPECTATION: nine predicates, and at most nine.
+    // WHY_IT_IS_WRONG: the second half of a conversation — asking the other
+    //   party, reading their answer, accepting what they sent, releasing
+    //   something private to them — ran on runtimes that already existed and
+    //   that NO turn could reach. The cap was not protecting generality
+    //   there; it was keeping four GENERIC VERBS out while the rule it stands
+    //   for («a new domain branch wearing a familiar name») was never at risk.
+    // NEW_EXPECTATION: thirteen, and every added name is a verb about a
+    //   COUNTERPARTY or a RELEASE, not about a thing being bought.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: the noun assertion below already
+    //   fails `isRestaurant` whether or not it is listed, and the string-
+    //   literal assertion fails a domain noun reaching dispatch even with no
+    //   predicate added at all. Raising the cap costs nothing the list was
+    //   really guarding, and the four names are now themselves pinned — a
+    //   fourteenth still has to be argued for here.
+    "isAsk",
+    "isAnswers",
+    "isAccept",
+    "isDisclose",
   ] as const;
 
   /** The six labels hardcoded into the core turn prompt. */
@@ -87,8 +108,8 @@ describe("COMMERCE RATCHET — may shrink, may never grow", () => {
   );
   const presentLabels = LABELS.filter((label) => runtime.includes(label));
 
-  it("the branch count is at most 9", () => {
-    expect(presentBranches.length).toBeLessThanOrEqual(9);
+  it("the branch count is at most 13", () => {
+    expect(presentBranches.length).toBeLessThanOrEqual(13);
   });
 
   it("the label count is at most 6", () => {

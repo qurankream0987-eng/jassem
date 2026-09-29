@@ -35,6 +35,15 @@ import {
   readDraft,
 } from "../seller-composition";
 import { resolvePayable } from "./canonical-payable";
+import { askCounterparty, currentAnswersFor } from "../cross-party-brokering";
+import {
+  DISCLOSABLE_SUBJECT_KIND,
+  DisclosureError,
+  discloseToCounterparty,
+} from "../private-disclosure";
+import { commitAgreement } from "../agreement-runtime";
+import { economicProposals, economicEngagements } from "@db/schema";
+import { agreements } from "@db/schema-block2";
 
 type IntentEnvelope = {
   decisionId: string;
@@ -747,6 +756,32 @@ async function proposeTurn(
     .set({ proposalId: proposal.id })
     .where(eq(commercialOrders.id, order.id));
 
+  // ── WHAT A TURN CREATES, A LATER TURN MUST BE ABLE TO NAME ──────────────
+  //
+  // Traced before this phase: this function created an engagement, a need and
+  // a proposal, bound NONE of them, and returned. Every later sentence —
+  // «اسأله إن كانت ما زالت موجودة», «أرسل له موقعي» — had nothing to refer to,
+  // so the whole second half of the conversation was unreachable from the
+  // conversation.
+  //
+  //   WHAT_A_TURN_CREATES_IS_NAMEABLE
+  //
+  // The keys are generic. There is no `current:mechanic` and no `current:car`.
+  for (const [referenceKey, targetKind, targetId] of [
+    ["current:engagement", "engagement", engagement.id],
+    ["current:counterparty_offering", "economic_expression", offering.id],
+    ["current:need", "economic_expression", need.id],
+    ["current:proposal", "economic_proposal", proposal.id],
+  ] as const) {
+    await bindReference(db, {
+      ownerId: input.ownerId,
+      conversationId: input.conversationId,
+      referenceKey,
+      targetKind,
+      targetId,
+    });
+  }
+
   return {
     kind: "structured_result",
     label: "Proposal sent",
@@ -1166,6 +1201,364 @@ async function worldCommerceTurn(
 }
 
 /**
+ * «اسأله إن كانت ما زالت موجودة» — carry a question to the other party.
+ *
+ * The brokering runtime has existed since its own phase and NOTHING called it:
+ * a buyer could not ask a seller anything from inside the conversation. This
+ * is the door, and it is four lines of resolution around a runtime that
+ * already refuses everything it should.
+ *
+ *   QUESTION_LEAKS_ASKER_IDENTITY = 0 — enforced by the runtime, not here.
+ */
+async function askCounterpartyTurn(
+  db: NodePgDatabase<any>,
+  input: { ownerId: string; conversationId: string; content: string; envelope: IntentEnvelope },
+): Promise<ConversationCommerceResult> {
+  const engagement = await activeBinding(db, input.ownerId, input.conversationId, "current:engagement");
+  if (!engagement || engagement.targetKind !== "engagement") {
+    return clarification("لا توجد محادثة قائمة مع طرف آخر لأحمل إليه سؤالك.");
+  }
+  const subject = await activeBinding(
+    db, input.ownerId, input.conversationId, "current:counterparty_offering",
+  );
+  if (!subject) return clarification("لا أعرف عن أي شيء تسأل.");
+
+  // WHICH property. Derived from the classified envelope, never free text: a
+  // question is about a named attribute of a named thing, and a model that
+  // could write the sentence could write anything into somebody's inbox.
+  //
+  //   MODEL_WRITES_THE_QUESTION_TEXT = 0
+  const property = string(input.envelope.intent?.inputs ?? {}, "property", "field", "about");
+  if (!property) return clarification("عن أي تفصيل تريدني أن أسأله؟");
+
+  try {
+    const asked = await askCounterparty({
+      engagementId: engagement.targetId,
+      askedByOwnerId: input.ownerId,
+      subjectExpressionId: subject.targetId,
+      property,
+    });
+    return {
+      kind: "structured_result",
+      label: "Question carried",
+      summary:
+        "حملتُ سؤالك إلى الطرف الآخر. لم يُجب بعد، وجوابه حين يأتي يكون قوله هو لا حقيقة مثبتة.",
+      data: {
+        questionId: asked.questionId,
+        property: asked.property,
+        answered: false,
+        // Named rather than implied, because the difference is the whole point.
+        answerIsEvidenceNotFact: true,
+      },
+      status: "awaiting_input",
+    };
+  } catch (error) {
+    return clarification(
+      error instanceof Error ? error.message : "لا أستطيع حمل هذا السؤال.",
+    );
+  }
+}
+
+/** «ماذا ردّ؟» — what came back, and whether it still describes the thing. */
+async function counterpartyAnswersTurn(
+  db: NodePgDatabase<any>,
+  input: { ownerId: string; conversationId: string; envelope: IntentEnvelope },
+): Promise<ConversationCommerceResult> {
+  const engagement = await activeBinding(db, input.ownerId, input.conversationId, "current:engagement");
+  if (!engagement || engagement.targetKind !== "engagement") {
+    return clarification("لا توجد محادثة قائمة مع طرف آخر لأقرأ ردّه.");
+  }
+  const answers = await currentAnswersFor({
+    engagementId: engagement.targetId,
+    askedByOwnerId: input.ownerId,
+  });
+  const answered = answers.filter((entry) => entry.answer !== undefined);
+  return {
+    kind: "structured_result",
+    label: "Counterparty answers",
+    summary:
+      answered.length === 0
+        ? "لم يصل ردّ بعد."
+        : "هذا ما قاله الطرف الآخر. قوله دليل، لا صفة مثبتة على الشيء.",
+    data: {
+      answers: answers.map((entry) => ({
+        questionId: entry.questionId,
+        property: entry.property,
+        answer: entry.answer?.value ?? null,
+        status: entry.status,
+        // An answer given about an older version no longer describes this.
+        //   ANSWER_SURVIVES_SUBJECT_REVISION = 0
+        stale: entry.stale,
+      })),
+      pending: answers.length - answered.length,
+    },
+    status: answered.length === 0 ? "awaiting_input" : "completed",
+  };
+}
+
+/**
+ * «أقبل» — the OTHER party accepting a proposal that was sent to them.
+ *
+ * Distinct from «أوافق», which pins one's own draft. Traced: `commitAgreement`
+ * was called from no turn at all, so a conversation could send a proposal and
+ * could never become an agreement. That is the step every later one needs.
+ */
+async function acceptProposalTurn(
+  db: NodePgDatabase<any>,
+  input: { ownerId: string; conversationId: string; envelope: IntentEnvelope },
+): Promise<ConversationCommerceResult | null> {
+  // Proposals in engagements this party belongs to, that this party did NOT
+  // make. Read from canonical state; the envelope names none of it.
+  const rows = await db
+    .select({ proposal: economicProposals, engagement: economicEngagements })
+    .from(economicProposals)
+    .innerJoin(
+      economicEngagements,
+      eq(economicEngagements.id, economicProposals.engagementId),
+    )
+    .where(eq(economicProposals.status, "proposed"))
+    .orderBy(desc(economicProposals.createdAt))
+    .limit(50);
+  const mine = rows.filter(
+    (row) =>
+      row.engagement.participants.includes(input.ownerId) &&
+      row.proposal.proposerOwnerId !== input.ownerId,
+  );
+  if (mine.length === 0) return null;
+  if (mine.length > 1) {
+    //   AMBIGUOUS_ACCEPTANCE_GUESS = 0 — accepting the wrong one binds somebody
+    //   to terms they never read.
+    return {
+      kind: "structured_result",
+      label: "Which proposal",
+      summary: `أمامك ${mine.length} عروض قائمة. حدد أيها تقبل.`,
+      data: {
+        effects: "none",
+        proposals: mine.map((row) => ({ proposalId: row.proposal.id, version: row.proposal.version })),
+      },
+      status: "awaiting_input",
+    };
+  }
+
+  const chosen = mine[0]!;
+  // ── A CLASSIFIED SENTENCE IS NOT A PERSON READING TERMS ──────────────────
+  //
+  // This set the direct-acceptance flag until an inherited ratchet caught it,
+  // and the ratchet was right. That flag means THE OWNER THEMSELVES IS
+  // ACCEPTING, NOW — it is reserved for the two places a person is provably
+  // present: the API surface they clicked, and the authority act whose
+  // statement they read term by term before citing its digest. The ratchet
+  // greps for the literal, so this comment deliberately does not spell it.
+  //
+  // A turn is neither. The model decided that «أقبل» meant accept; a model
+  // that could raise that flag would bind somebody to a term sheet by
+  // classifying a sentence.
+  //
+  //   MODEL != AUTHORITY · CLASSIFICATION != ACCEPTANCE
+  //
+  // So acceptance from a conversation goes through the ENVELOPE basis: bounds
+  // this party set in advance, evaluated against the incoming terms, refusing
+  // anything past the reserve. JASIM may say yes for you only inside limits
+  // you set yourself — and when you set none, it says so instead of guessing.
+  let committed;
+  try {
+    committed = await commitAgreement({
+      proposalId: chosen.proposal.id,
+      ownerId: input.ownerId,
+    });
+  } catch (error) {
+    return {
+      kind: "structured_result",
+      label: "Cannot accept for you",
+      summary:
+        "لا أستطيع أن أقبل نيابةً عنك من جملة في المحادثة. اقبله بنفسك، أو اضبط لي حدودك مسبقاً فأقبل ضمنها وحدها.",
+      data: {
+        effects: "none",
+        proposalId: chosen.proposal.id,
+        agreementCreated: false,
+        reason: error instanceof Error ? error.message : "NO_ACCEPTANCE_AUTHORITY",
+      },
+      status: "blocked",
+    };
+  }
+  // ── AN AGREEMENT IS HELD BY EVERY PARTY TO IT ───────────────────────────
+  //
+  // Bound for each participant, not only for whoever happened to say yes. A
+  // draft is one person's; an agreement is the thing both of them are now
+  // inside, and the other party must be able to name it on their next turn —
+  // otherwise «أرسل له موقعي» from the buyer finds no agreement a moment after
+  // the seller accepted.
+  //
+  // Not a leak: the participants are read from the agreement itself, and each
+  // party learns only that the agreement they are already party to exists.
+  for (const participant of committed.agreement.participants) {
+    await bindReference(db, {
+      ownerId: participant,
+      conversationId: input.conversationId,
+      referenceKey: "current:agreement",
+      targetKind: "agreement",
+      targetId: committed.agreement.id,
+    });
+  }
+  return {
+    kind: "structured_result",
+    label: "Agreement reached",
+    summary:
+      "قبلتَ العرض، فنشأ اتفاق والتزامات. لم يُدفع شيء ولم يُنفَّذ شيء بعد.",
+    data: {
+      agreementId: committed.agreement.id,
+      commitments: committed.commitments.length,
+      // AGREEMENT != TRANSACTION != FULFILLMENT. Said, not implied.
+      paid: false,
+      fulfilled: false,
+    },
+    status: "completed",
+  };
+}
+
+/**
+ * «أرسل له موقعي» — release one private field to the party you agreed with.
+ *
+ * TWO turns, deliberately. The model extracted WHICH field from a sentence,
+ * and a released address cannot be un-released:
+ *
+ *   MODEL_EXTRACTION != OWNER_DECLARATION
+ *
+ * So the first turn shows exactly what will be released and to whom, and the
+ * second performs it. The same discipline as publishing a statement.
+ */
+async function discloseTurn(
+  db: NodePgDatabase<any>,
+  input: { ownerId: string; conversationId: string; envelope: IntentEnvelope },
+): Promise<ConversationCommerceResult> {
+  const pending = await pendingDisclosure(db, input);
+  if ("clarify" in pending) return pending.clarify;
+  const { agreementRow, subjectId, field, value, recipient } = pending;
+
+  await bindReference(db, {
+    ownerId: input.ownerId,
+    conversationId: input.conversationId,
+    referenceKey: "current:disclosure",
+    targetKind: "pending_disclosure",
+    // The exact release, named in the binding itself, so confirming cannot
+    // release a different field to a different person than the one shown.
+    targetId: `${agreementRow.id}|${subjectId}|${field}|${recipient}`,
+  });
+  return {
+    kind: "structured_result",
+    label: "Release this?",
+    summary:
+      `سأرسل «${field}» إلى الطرف الذي اتفقتَ معه، ولا شيء غيره. راجعه قبل أن أرسل — لا يمكن سحب ما وصل.`,
+    data: {
+      field,
+      value,
+      recipientOwnerId: recipient,
+      agreementId: agreementRow.id,
+      released: false,
+      effects: "none",
+    },
+    status: "awaiting_approval",
+  };
+}
+
+/** The confirmation. Reads the pinned release back rather than remembering it. */
+async function confirmDiscloseTurn(
+  db: NodePgDatabase<any>,
+  input: { ownerId: string; conversationId: string; envelope: IntentEnvelope },
+): Promise<ConversationCommerceResult | null> {
+  const binding = await activeBinding(db, input.ownerId, input.conversationId, "current:disclosure");
+  if (!binding || binding.targetKind !== "pending_disclosure") return null;
+  const [agreementId, subjectId, field, recipient] = binding.targetId.split("|");
+  if (!agreementId || !subjectId || !field || !recipient) return null;
+  try {
+    const released = await discloseToCounterparty(db, {
+      agreementId,
+      discloserOwnerId: input.ownerId,
+      subjectKind: DISCLOSABLE_SUBJECT_KIND,
+      subjectId,
+      field,
+      recipientOwnerId: recipient,
+    });
+    return {
+      kind: "structured_result",
+      label: "Released",
+      summary:
+        `أرسلتُ «${field}» إلى الطرف الذي اتفقتَ معه وحده. لم يتغيّر أي شيء معروض للعامة.`,
+      data: {
+        disclosureId: released.id,
+        field: released.field,
+        recipientOwnerId: released.recipientOwnerId,
+        released: true,
+        published: false,
+      },
+      status: "completed",
+    };
+  } catch (error) {
+    if (error instanceof DisclosureError) return clarification(error.message);
+    throw error;
+  }
+}
+
+/** What a release WOULD be, read from canonical state at the moment asked. */
+async function pendingDisclosure(
+  db: NodePgDatabase<any>,
+  input: { ownerId: string; conversationId: string; envelope: IntentEnvelope },
+): Promise<
+  | { clarify: ConversationCommerceResult }
+  | {
+      agreementRow: { id: string; participants: string[] };
+      subjectId: string;
+      field: string;
+      value: unknown;
+      recipient: string;
+    }
+> {
+  const bound = await activeBinding(db, input.ownerId, input.conversationId, "current:agreement");
+  if (!bound || bound.targetKind !== "agreement") {
+    //   AGREEMENT_IS_THE_DISCLOSURE_AUTHORITY — being in a conversation with
+    //   somebody has never been permission to learn where you are.
+    return {
+      clarify: clarification(
+        "لم ينشأ اتفاق بعد. لا أرسل شيئاً خاصاً قبل أن يوافق الطرف الآخر ويلتزم.",
+      ),
+    };
+  }
+  const [agreementRow] = await db
+    .select()
+    .from(agreements)
+    .where(eq(agreements.id, bound.targetId))
+    .limit(1);
+  if (!agreementRow) return { clarify: clarification("لم أعد أجد الاتفاق الحالي.") };
+
+  const subjectBinding = await activeBinding(db, input.ownerId, input.conversationId, "current:need");
+  if (!subjectBinding) return { clarify: clarification("لا أعرف عن أي شيء لك تتحدث.") };
+
+  const field = string(input.envelope.intent?.inputs ?? {}, "field", "property", "attribute");
+  if (!field) return { clarify: clarification("أي تفصيل تريدني أن أرسله؟") };
+
+  const [subject] = await db
+    .select()
+    .from(economicExpressions)
+    .where(eq(economicExpressions.id, subjectBinding.targetId))
+    .limit(1);
+  if (!subject || subject.ownerId !== input.ownerId) {
+    return { clarify: clarification("هذا ليس شيئاً تملكه لترسله.") };
+  }
+  const value = (subject.attributes as Record<string, unknown>)[field];
+  if (value === undefined || value === null) {
+    //   DISCLOSING_WHAT_IS_NOT_THERE = 0
+    return {
+      clarify: clarification(`لم تخبرني بـ«${field}» بعد، فليس عندي ما أرسله.`),
+    };
+  }
+  const others = agreementRow.participants.filter((party) => party !== input.ownerId);
+  if (others.length !== 1) {
+    return { clarify: clarification("حدد لمن أرسله من أطراف الاتفاق.") };
+  }
+  return { agreementRow, subjectId: subject.id, field, value, recipient: others[0]! };
+}
+
+/**
  * Trusted, generic bridge from an untrusted classified envelope to Block 3.1
  * discovery and the canonical Block 3 state machines.
  */
@@ -1205,6 +1598,28 @@ export async function orchestrateConversationCommerce(input: {
   // party saying yes.
   const isPropose = hasLabel(input.envelope, /commerce[-_: ]?propose|proposal[-_: ]?send/);
   const isDiscovery = hasLabel(input.envelope, /discovery|search|find|match/) || /(?:^|\s)(?:ابحث|فتش|جد)(?:\s|$)|\b(?:search|find|discover)\b/u.test(text);
+  // ── THE SECOND HALF OF A CONVERSATION ───────────────────────────────────
+  //
+  // Asking the other party, reading their answer, accepting what they sent,
+  // and releasing something private to them. Every one of these ran on a
+  // runtime that already existed and that NO turn could reach.
+  const isAsk =
+    hasLabel(input.envelope, /counterparty[-_: ]?ask|brokering[-_: ]?question/) ||
+    /(?:^|\s)(?:اسأل(?:ه|ها)?|استفسر)(?:\s|$)|\bask\b/u.test(text);
+  const isAnswers =
+    hasLabel(input.envelope, /counterparty[-_: ]?answers|brokering[-_: ]?answers/) ||
+    /(?:^|\s)(?:ماذا\s+رد|ما\s+رده|ردّه|جوابه)(?:\s|$)/u.test(text);
+  // «أقبل» is the OTHER party saying yes to what was sent. Deliberately not
+  // «أوافق», which pins one's own draft — conflating them would let a buyer's
+  // confirmation of their own words look like a seller's acceptance.
+  //
+  //   OWN_CONFIRMATION != COUNTERPARTY_ACCEPTANCE
+  const isAccept =
+    hasLabel(input.envelope, /proposal[-_: ]?accept|agreement[-_: ]?commit/) ||
+    /^(?:أقبل|اقبل|accept\b)/u.test(text.trim());
+  const isDisclose =
+    hasLabel(input.envelope, /disclosure|release[-_: ]?field/) ||
+    /(?:^|\s)(?:أرسل\s+له|ارسل\s+له|أرسل\s+لها|ارسل\s+لها)(?:\s|$)/u.test(text);
 
   // Consequential intents are checked before discovery because classifier
   // labels may contain both "search" and the requested follow-up action.
@@ -1226,8 +1641,22 @@ export async function orchestrateConversationCommerce(input: {
     string(input.envelope.intent?.inputs ?? {}, "subject", "semanticType", "title"),
   );
   if (explicitApproval || (explicitPublish && !describesSomething)) {
+    // A pending RELEASE is confirmed before a pending statement: nothing else
+    // is waiting on a yes that cannot be taken back.
+    const releasedNow = await confirmDiscloseTurn(input.db, input);
+    if (releasedNow) return releasedNow;
     const confirmed = await confirmPublishTurn(input.db, input);
     if (confirmed) return confirmed;
+  }
+  // Releasing and asking come before approval and selection, because both
+  // name a counterparty rather than a result, and «أرسل له موقعي» must never
+  // be read as picking something.
+  if (isDisclose) return discloseTurn(input.db, input);
+  if (isAsk) return askCounterpartyTurn(input.db, input);
+  if (isAnswers) return counterpartyAnswersTurn(input.db, input);
+  if (isAccept) {
+    const accepted = await acceptProposalTurn(input.db, input);
+    if (accepted) return accepted;
   }
   if (isApprove) return approveOrder(input.db, input);
   if (isCompare) return compareTurn(input.db, input);
