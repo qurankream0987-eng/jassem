@@ -801,6 +801,12 @@ async function proposeTurn(
     publicTerms(offering),
     order.partyConfiguration as Record<string, string | number>,
   );
+  // Read from the OFFERING'S OWN published terms, not from `merged` — the
+  // merged record carries what this party configured, and who pays whom is
+  // never theirs to state.
+  //
+  //   THE OFFERING DECLARES THE DIRECTION. THE REQUEST NEVER DOES.
+  const settlementOwedBy = settlementDirectionOf(publicTerms(offering));
   const proposal = await proposeTermSheet({
     engagementId: engagement.id,
     proposerOwnerId: input.ownerId,
@@ -809,6 +815,7 @@ async function proposeTurn(
       configuration: order.partyConfiguration as Record<string, string | number>,
       proposer: input.ownerId,
       counterparty: offering.ownerId,
+      settlementOwedBy,
     }),
   });
 
@@ -847,9 +854,16 @@ async function proposeTurn(
     kind: "structured_result",
     label: "Proposal sent",
     summary:
-      "أرسلتُ طلبك إلى الطرف الآخر. لم يوافق أحد بعد، ولم ينشأ اتفاق ولا التزام ولا معاملة ولا دفع.",
+      settlementOwedBy === "PROVIDER"
+        ? "أرسلتُ طلبك إلى الطرف الآخر. بحسب شروطه المعلنة **هو** من يدفع لك، لا العكس. لم يوافق أحد بعد، ولم ينشأ اتفاق ولا التزام ولا معاملة ولا دفع."
+        : "أرسلتُ طلبك إلى الطرف الآخر. لم يوافق أحد بعد، ولم ينشأ اتفاق ولا التزام ولا معاملة ولا دفع.",
     data: {
       orderId: order.id,
+      // Said out loud, because «who pays» is exactly the thing a person would
+      // otherwise assume from having been the one who asked.
+      //
+      //   WHO_ASKED != WHO_PAYS
+      settlementOwedBy,
       engagementId: engagement.id,
       proposalId: proposal.id,
       proposalVersion: proposal.version,
@@ -863,6 +877,37 @@ async function proposeTurn(
 }
 
 /**
+ * WHO OWES THE MONEY, relative to the offering's owner.
+ *
+ *   REQUESTER — whoever asks pays the owner. Selling something.
+ *   PROVIDER  — the owner pays whoever asks. Collecting something, buying
+ *               something back, paying for a deposit, taking waste away.
+ *
+ * Absent means REQUESTER, so every offering written before this existed keeps
+ * meaning exactly what it meant.
+ */
+const SETTLEMENT_DIRECTIONS = ["REQUESTER", "PROVIDER"] as const;
+type SettlementDirection = (typeof SETTLEMENT_DIRECTIONS)[number];
+
+/**
+ * THE OFFERING DECLARES THE DIRECTION. THE REQUEST NEVER DOES.
+ *
+ * Read from the offering's OWN published terms, never from the merged terms a
+ * requester contributed configuration to — otherwise the person asking could
+ * flip who pays whom by stating a value.
+ *
+ * An unreadable direction falls back to REQUESTER: the status quo, and the one
+ * direction that cannot hand somebody money they were never promised.
+ */
+function settlementDirectionOf(offeringTerms: Record<string, unknown>): SettlementDirection {
+  const declared = object(offeringTerms.money).owedBy;
+  return typeof declared === "string" &&
+    (SETTLEMENT_DIRECTIONS as readonly string[]).includes(declared.trim().toUpperCase())
+    ? (declared.trim().toUpperCase() as SettlementDirection)
+    : "REQUESTER";
+}
+
+/**
  * The merged terms, as the term sheet the agreement runtime already speaks.
  *
  * Two obligations, one each way, and one term for each value this party
@@ -871,16 +916,33 @@ async function proposeTurn(
  * what is being exchanged.
  *
  *   DOMAIN_PROPOSAL_TYPES_ADDED = 0
+ *
+ * ── WHO PAYS WAS A CONSTANT ───────────────────────────────────────────────
+ *
+ * `settlement` used to read `owedBy: proposer` unconditionally, so THE MONEY
+ * ALWAYS FLOWED FROM WHOEVER ASKED. «عندي ١٨٠ لتر زيت مستعمل، أريد من يجمعه»
+ * — where the collector may PAY the owner of the oil — could not be expressed
+ * at all: asking made you the payer.
+ *
+ *   WHO_ASKED != WHO_PAYS · ECONOMICS_IS_DATA
+ *
+ * It is data now, declared by the offering, and the direction of `provision`
+ * is untouched: whoever published the offering is still the one who does the
+ * thing, whichever way the money runs.
  */
 function termSheetFor(input: {
   merged: Record<string, unknown>;
   configuration: Record<string, string | number>;
   proposer: string;
   counterparty: string;
+  /** Declared by the offering. Defaults to the requester paying. */
+  settlementOwedBy?: SettlementDirection;
 }): unknown[] {
   const money = object(input.merged.money);
   const amountMinor = typeof money.amountMinor === "string" ? money.amountMinor : undefined;
   const currency = typeof money.currency === "string" ? money.currency : undefined;
+  // The offering's owner is the counterparty to whoever is proposing here.
+  const ownerPays = (input.settlementOwedBy ?? "REQUESTER") === "PROVIDER";
 
   const terms: Record<string, unknown>[] = [];
   if (amountMinor && currency && /^[0-9]+$/u.test(amountMinor) && BigInt(amountMinor) > 0n) {
@@ -889,8 +951,8 @@ function termSheetFor(input: {
       kind: "NUMBER",
       value: Number(amountMinor),
       unit: "minor",
-      owedBy: input.proposer,
-      owedTo: input.counterparty,
+      owedBy: ownerPays ? input.counterparty : input.proposer,
+      owedTo: ownerPays ? input.proposer : input.counterparty,
       evidence: "INTERNAL_STATE",
       subjectKind: "obligation",
       subjectId: "settlement",
