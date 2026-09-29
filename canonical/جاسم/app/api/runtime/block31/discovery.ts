@@ -324,9 +324,23 @@ export async function discover(
      * caller's payload and never by the model.
      */
     need?: { id: string; revision: number };
+    /**
+     * WHICH OFFERINGS SOMEBODY PAID TO HAVE SEEN.
+     *
+     * Runtime-supplied — a settled commercial fact about who bought placement,
+     * never a payload a caller sends and never a model's suggestion.
+     *
+     *   MODEL_NOMINATES_A_SPONSORED_RESULT = 0
+     *
+     * It is read AFTER eligibility and never by the ordering, so it cannot
+     * admit a candidate the buyer's constraints excluded and cannot move a
+     * better answer down.
+     */
+    sponsoredRefs?: readonly string[];
   },
 ) {
   const sources = planSources(input.query, input.explicitScope, input.availability);
+  const sponsoredRefs = new Set(input.sponsoredRefs ?? []);
   const normalized: NormalizedCandidate[] = [];
   if (sources.includes("JASIM_INTERNAL")) {
     const rows = await searchInternal(db, {
@@ -335,7 +349,12 @@ export async function discover(
       kind: input.kind,
       historical: input.historical,
       hardConstraints: input.hardConstraints,
-      limit: input.limit,
+      // The display cut belongs to this function, not to the query — a
+      // candidate merit leaves OUTSIDE the cut is exactly the one a sponsor may
+      // pay to have seen, and the query truncating first would make it
+      // unreachable. Asked for only when somebody actually paid, so an ordinary
+      // search costs no more than it did.
+      ...(sponsoredRefs.size === 0 ? { limit: input.limit } : {}),
     });
     normalized.push(...rows.map((expression) => normalizeCandidate({ source: "JASIM_INTERNAL", expression })));
   }
@@ -359,11 +378,45 @@ export async function discover(
       ...(input.need ? { needId: input.need.id, needRevision: input.need.revision } : {}),
     })
     .returning();
-  const values = normalized.slice(0, input.limit ?? normalized.length).map((candidate, index) => ({
+  // ── MERIT FIRST, AND MERIT ALONE ─────────────────────────────────────────
+  //
+  // The list a person reads as «the answer» is cut from the ordering above,
+  // which never saw who paid. Sponsorship is applied after this line and can
+  // only ever ADD a labelled placement behind it.
+  //
+  //   SPONSORED != BEST · ADVERTISER_BUYS_JASIM_OPINION = 0
+  const limit = input.limit ?? normalized.length;
+  const merit = normalized.slice(0, limit);
+  // An eligible candidate that merit left outside the limit, whose owner paid
+  // to be seen. ELIGIBLE is the operative word: `normalized` is built from the
+  // pool that already passed the buyer's hard constraints, so nothing here can
+  // reach a candidate those constraints excluded.
+  //
+  //   MONEY_BUYS_AN_EXEMPTION_FROM_A_BUYERS_REQUIREMENT = 0
+  const promoted =
+    sponsoredRefs.size === 0
+      ? []
+      : normalized
+          .slice(limit)
+          .filter((candidate) => candidate.canonicalRef && sponsoredRefs.has(candidate.canonicalRef));
+  const values = [
+    ...merit.map((candidate) => ({
+      candidate,
+      // A candidate that earned its place is still labelled when its owner
+      // paid: the label describes the RELATIONSHIP, not the placement, and
+      // hiding it on the ones that also happen to rank well is the oldest way
+      // of laundering an advertisement.
+      //
+      //   SPONSORED_RESULT_IS_UNLABELLED = 0
+      sponsored: Boolean(candidate.canonicalRef && sponsoredRefs.has(candidate.canonicalRef)),
+    })),
+    ...promoted.map((candidate) => ({ candidate, sponsored: true })),
+  ].map((entry, index) => ({
     id: `drc_${randomUUID()}`,
     resultSetId,
     position: index + 1,
-    ...candidate,
+    sponsored: entry.sponsored,
+    ...entry.candidate,
   }));
   const candidates = values.length
     ? await db.insert(discoveryCandidates).values(values).returning()

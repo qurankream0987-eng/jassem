@@ -15,6 +15,7 @@
 // ============================================================================
 
 import {
+  boolean,
   index,
   integer,
   jsonb,
@@ -107,6 +108,20 @@ export const discoveryCandidates = pgTable(
     actionable: jsonb("actionable").$type<string[]>().notNull().default([]),
     provenance: jsonb("provenance").$type<Record<string, unknown>>().notNull().default({}),
     observedAt: timestamp("observedAt", { withTimezone: true }),
+    /**
+     * WHETHER SOMEBODY PAID FOR THIS TO BE SEEN.
+     *
+     *   SPONSORED != BEST · ADVERTISER_BUYS_JASIM_OPINION = 0
+     *
+     * A label, never an input to anything. Merit order is computed with no
+     * knowledge of this column, eligibility is decided before it is read, and
+     * a sponsored candidate that fails a buyer's hard constraint never appears
+     * at all — money buys exposure, never an exemption and never an opinion.
+     *
+     * `placement` says which list a candidate belongs to, so a sponsored one
+     * cannot be silently mixed into the merit list and read as a ranking.
+     */
+    sponsored: boolean("sponsored").notNull().default(false),
     createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [

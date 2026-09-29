@@ -1,0 +1,35 @@
+-- JASIM — AN ADVERTISER BUYS EXPOSURE, NEVER AN OPINION
+--
+--   SPONSORED != BEST
+--   ADVERTISER_BUYS_JASIM_OPINION = 0
+--   SPONSORED_RESULT_IS_UNLABELLED = 0
+--   MONEY_BUYS_AN_EXEMPTION_FROM_A_BUYERS_REQUIREMENT = 0
+--
+-- The money side of advertising already existed: `fee-rules` carries `promotion`
+-- and `listing` kinds, versioned, owner-configured, never decided by a model.
+-- What did not exist was any notion of a sponsored PLACEMENT — and adding one
+-- naively is how a marketplace stops being worth asking.
+--
+-- The ranking path is already built the right way round. `searchInternal`
+-- filters the eligibility pool by the buyer's hard constraints BEFORE computing
+-- any score, with its own comment: «This makes it impossible for relevance to
+-- admit a hard failure.» Sponsorship must not be allowed to reach behind that.
+--
+-- So this column is a LABEL and nothing else:
+--
+--   * Eligibility is decided before it is read. A sponsored offering that fails
+--     a buyer's hard constraint does not appear — at all, in any list. Money
+--     buys no exemption from what somebody actually asked for.
+--   * Merit order is computed with no knowledge of it. The similarity ordering
+--     never sees this column, so a paid placement cannot move a better answer
+--     down by one position.
+--   * It travels to whoever reads the results, so a person is never shown a
+--     paid placement believing it is JASIM's answer.
+--
+-- What sponsorship legitimately buys is EXPOSURE: an eligible candidate that
+-- merit alone would have left outside the limit may be shown, in its own
+-- labelled placement, after the merit list. Being seen is a real thing to sell.
+-- Being recommended is not.
+
+ALTER TABLE "discovery_candidates"
+  ADD COLUMN IF NOT EXISTS "sponsored" boolean NOT NULL DEFAULT false;

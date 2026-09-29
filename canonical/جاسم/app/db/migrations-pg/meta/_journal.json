@@ -239,6 +239,13 @@
       "when": 1788273600015,
       "tag": "0033_offer_value_provenance",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1788273600016,
+      "tag": "0034_sponsored_placement",
+      "breakpoints": true
     }
   ]
 }
