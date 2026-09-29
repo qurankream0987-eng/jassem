@@ -28,7 +28,12 @@ import { applyApprovedCommercialChange } from "../block3/commercial-changesets";
 import { createWorldPlan } from "../block3/generated-business-economics";
 import type { GeneratedWorldService } from "../../core/generated-world-service";
 import { discover } from "./discovery";
-import { bindReference, resolveOrdinal } from "./reference-bindings";
+import { bindReference, resolveOrdinal, resolveThis } from "./reference-bindings";
+import {
+  composeOffering,
+  publishComposedOffering,
+  readDraft,
+} from "../seller-composition";
 import { resolvePayable } from "./canonical-payable";
 
 type IntentEnvelope = {
@@ -331,7 +336,44 @@ async function compareTurn(
   };
 }
 
+/** Where a composed offering waits between the turn that wrote it and the one
+ * that confirms it. One key, so a second composition supersedes the first. */
+const PENDING_OFFERING_REFERENCE = "pending_offering";
+
+/**
+ * COMPOSE WHAT WILL BE SAID, AND SHOW IT BEFORE SAYING IT.
+ *
+ * ─── WHAT THIS REPLACES ─────────────────────────────────────────────────────
+ *
+ * This turn used to take `envelope.intent.inputs` — a MODEL'S READING of a
+ * sentence — and write it straight into a PUBLIC offering attributed to the
+ * seller, in one step. The seller's «انشر عرضي» published whatever the model
+ * decided the offering says, and a public listing BINDS ITS OWNER.
+ *
+ *   MODEL_EXTRACTION != SELLER_DECLARATION
+ *
+ * The composition runtime already knew how to hold a draft and take a
+ * confirmation over an exact fingerprint. It simply was not reachable by
+ * talking, which is the only way anybody reaches anything here.
+ *
+ * ─── AND WHY THE PARSE IS NOT MARKED AS A GUESS ─────────────────────────────
+ *
+ * Nothing here labels the extracted values INFERRED, and that is deliberate.
+ * This runtime cannot tell a number the seller typed from one the model assumed
+ * — both arrive through the same field — so labelling either way would be a
+ * guess about a guess.
+ *
+ * What it can do is show the seller the EXACT words that would become public
+ * and take their confirmation over that exact statement.
+ *
+ *   CONFIRMATION IS WHAT TURNS A PARSE INTO A DECLARATION.
+ *
+ * A channel that genuinely knows a value was derived — a photo reader, a video
+ * reader — says so through `composeOffering`'s own provenance input, and that
+ * value then decides no hard constraint.
+ */
 async function publishTurn(
+  db: NodePgDatabase<any>,
   worlds: GeneratedWorldService,
   input: { ownerId: string; conversationId: string; content: string; envelope: IntentEnvelope },
 ): Promise<ConversationCommerceResult> {
@@ -359,28 +401,95 @@ async function publishTurn(
     money: { amountMinor: money!.amountMinor, currency: money!.currency },
     ...(worldRef ? { worldRef } : {}),
   };
-  const expression = await createExpression({
-    ownerId: input.ownerId,
-    kind: "offering",
+  const willPublish = {
     semanticType: subject!,
-    subjectEntityId: string(values, "subjectEntityId"),
-    attributes: { priceMinor: money!.amountMinor, currency: money!.currency, ...(worldRef ? { worldRef } : {}) },
-  });
-  const published = await publishExpression({
-    id: expression.id,
+    summary: string(values, "summary") ?? subject!,
+    publicTerms,
+    availability: values.availability ?? "available",
+  };
+  const draft = await composeOffering({
     ownerId: input.ownerId,
-    projection: {
-      semanticType: subject!,
-      summary: string(values, "summary") ?? subject!,
-      publicTerms,
-      availability: values.availability ?? "available",
+    semanticType: subject!,
+    stated: {
+      priceMinor: money!.amountMinor,
+      currency: money!.currency,
+      ...(worldRef ? { worldRef } : {}),
     },
+    willPublish,
+  });
+  // Bound so the next turn knows which statement «أوافق» is about. One key, so
+  // composing again supersedes rather than leaving two drafts both confirmable.
+  await bindReference(db, {
+    ownerId: input.ownerId,
+    conversationId: input.conversationId,
+    referenceKey: PENDING_OFFERING_REFERENCE,
+    targetKind: "offering_draft",
+    targetId: draft.expressionId,
+  });
+  return {
+    kind: "structured_result",
+    label: "Offering ready to publish",
+    summary: "هذا ما سيُنشر باسمك. راجعه، وقل «أوافق» لينشر.",
+    data: {
+      expressionId: draft.expressionId,
+      // The exact words, so a confirmation is a confirmation OF something.
+      willPublish: draft.willPublish,
+      stated: draft.stated,
+      fingerprint: draft.fingerprint,
+      published: false,
+      effects: "none",
+    },
+    status: "awaiting_approval",
+  };
+}
+
+/**
+ * PUBLISH THE STATEMENT THAT WAS SHOWN, AND ONLY THAT.
+ *
+ * Returns null when there is nothing waiting, so the dispatcher falls through
+ * to whatever else a confirmation might mean. A person saying «أوافق» with no
+ * draft pending has not published anything by accident.
+ *
+ *   STALE_CONFIRMATION_PUBLISHES = 0
+ */
+async function confirmPublishTurn(
+  db: NodePgDatabase<any>,
+  input: { ownerId: string; conversationId: string; content: string; envelope: IntentEnvelope },
+): Promise<ConversationCommerceResult | null> {
+  const pending = await resolveThis(db, {
+    ownerId: input.ownerId,
+    conversationId: input.conversationId,
+  });
+  if (pending.status !== "RESOLVED" || pending.value.targetKind !== "offering_draft") {
+    return null;
+  }
+  const expressionId = pending.value.targetId;
+  let draft;
+  try {
+    draft = await readDraft({ expressionId, ownerId: input.ownerId });
+  } catch {
+    // Already published, or no longer this person's to publish. Neither is an
+    // error worth a stack trace in a conversation.
+    return null;
+  }
+  const published = await publishComposedOffering({
+    expressionId,
+    ownerId: input.ownerId,
+    // The fingerprint of the statement AS IT IS NOW. If anything moved since it
+    // was shown, the composition runtime refuses — and it is read here rather
+    // than remembered, so this turn cannot confirm a stale one on its own.
+    confirmFingerprint: draft.fingerprint,
   });
   return {
     kind: "structured_result",
     label: "Offering published",
-    summary: "نُشر العرض بناءً على طلبك الصريح.",
-    data: { expressionId: published.id, version: published.version, status: published.status, publicTerms },
+    summary: "نُشر العرض كما عُرض عليك.",
+    data: {
+      expressionId: published.expressionId,
+      version: published.version,
+      willPublish: draft.willPublish,
+      published: true,
+    },
     status: "completed",
   };
 }
@@ -1102,10 +1211,28 @@ export async function orchestrateConversationCommerce(input: {
   if (isPay) return payTurn(input.db, input);
   if (isConfigure) return configureTurn(input.db, input);
   if (isPropose) return proposeTurn(input.db, input);
+  // ── DESCRIBING SOMETHING IS NOT CONFIRMING SOMETHING ────────────────────
+  //
+  // «أوافق» confirms a pending statement. «اعرض» does too — but ONLY when the
+  // turn names nothing new: a sentence that carries a subject is the seller
+  // describing another thing, and reading it as a confirmation would publish
+  // the previous draft and silently drop the new one.
+  //
+  //   A_NEW_DESCRIPTION_CONFIRMS_THE_PREVIOUS_STATEMENT = 0
+  //
+  // It returns null when nothing is waiting, so «أوافق» over an order still
+  // reaches the order.
+  const describesSomething = Boolean(
+    string(input.envelope.intent?.inputs ?? {}, "subject", "semanticType", "title"),
+  );
+  if (explicitApproval || (explicitPublish && !describesSomething)) {
+    const confirmed = await confirmPublishTurn(input.db, input);
+    if (confirmed) return confirmed;
+  }
   if (isApprove) return approveOrder(input.db, input);
   if (isCompare) return compareTurn(input.db, input);
   if (isSelect) return selectTurn(input.db, input);
-  if (isPublish) return publishTurn(input.worlds, input);
+  if (isPublish) return publishTurn(input.db, input.worlds, input);
   if (isWorldCommerce) return worldCommerceTurn(input.db, input.worlds, input);
   if (isDiscovery) return discoverTurn(input.db, input);
   return null;

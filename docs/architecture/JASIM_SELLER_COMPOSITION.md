@@ -77,8 +77,56 @@ brokering the previous phase closed, and the seller answers in their own words a
 its authorized-keys check. No second path to public was added, and the proofs
 assert the module never writes `visibility: "public"` itself.
 
+## And it is reachable by talking
+
+```
+CONFIRMATION IS WHAT TURNS A PARSE INTO A DECLARATION
+A_NEW_DESCRIPTION_CONFIRMS_THE_PREVIOUS_STATEMENT = 0
+```
+
+The composition runtime above was built and **not wired**, which in JASIM means
+not reachable: talking is the only way anybody reaches anything here. The
+conversation's publish turn still took `envelope.intent.inputs` and went straight
+to public.
+
+It is two turns now:
+
+```
+«اعرض هذا للبيع»  →  draft · the exact public words · a fingerprint
+                     status: awaiting_approval · published: false
+«أوافق»           →  published, exactly what was shown
+```
+
+The draft is bound in the conversation under `offering_draft`, on one key, so
+composing again supersedes rather than leaving two statements both confirmable.
+
+### Why the parse is not marked as a guess
+
+Nothing in the turn labels the extracted values `INFERRED`, and that is
+deliberate. This runtime **cannot tell** a number the seller typed from one the
+model assumed — both arrive through the same field — so labelling either way
+would be a guess about a guess.
+
+What it can do is show the seller the exact words and take their confirmation
+over that exact statement. **The confirmation is what makes the words theirs.** A
+channel that genuinely knows a value was derived says so through
+`composeOffering`'s provenance input, and that value then decides no hard
+constraint.
+
+### Describing is not confirming
+
+«أوافق» confirms. «اعرض» confirms **only when the turn names nothing new** — a
+sentence carrying a subject is the seller describing another thing, and reading
+it as a confirmation would publish the previous draft and silently drop the new
+one. The seller would watch the wrong thing go out under their name.
+
+That was a real bug in the first version of this wiring, caught by the test that
+composes twice.
+
 ## Proofs
 
 | where | what |
 | --- | --- |
 | `tests/block31/seller-composition.test.ts` | composing across turns stays private and publishing quotes exactly what was read; a confirmation of what it used to say publishes nothing, and reading again then confirming works; a fingerprint from another draft, an invented one and an empty one all publish nothing; a published offering cannot be quietly amended nor published twice and is byte-identical after both attempts; an empty statement and an offering with no kind are refused; nobody reads, amends or publishes somebody else's draft (one indistinguishable refusal); photos are carried, are not among the stated values, and no colour nobody stated appears; what the seller did not state stays unstated — no mileage is invented because cars usually have one — until a buyer asks through an engagement and the seller answers as `SELF_REPORTED`, which still does not become what the listing declares; the module consults no model and names no domain |
+
+| `tests/block31/conversational-seller-turn.test.ts` | saying «publish» shows the exact words with a fingerprint, reports `awaiting_approval`, and leaves one private draft with nothing public; confirming publishes exactly that statement and that id; a confirmation with nothing pending publishes nothing and invents no offering; a statement amended after it was shown publishes the current words and never the stale ones; composing again supersedes so one confirmation publishes one thing while the earlier draft stays a draft; one seller's pending statement is not another's to confirm, in their own conversation or the same one; an incomplete statement is refused before a draft exists; saying «publish» again about something new composes rather than confirms, while «publish» naming nothing new does confirm; the pending statement is bound under its own kind with exactly one live at a time and never as a discovery candidate |

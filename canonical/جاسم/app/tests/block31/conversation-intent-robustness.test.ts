@@ -105,20 +105,51 @@ describe("adaptive conversation intent handling", () => {
       ["commerce_publish"],
       { subject: "resource.capability", priceMinor: "3200", currency: "SAR" },
     );
+    // Publishing is two turns now, so the test performs both — otherwise
+    // nothing is public and the discovery turn has no candidate to bind, which
+    // would make this test pass for the wrong reason.
+    const confirmed = await call(conversationId, "أوافق", ["commerce_approve"]);
     const searched = await call(
       conversationId,
       "search resource.capability",
       ["discovery_search"],
       { query: "resource.capability" },
     );
-    expect(published?.label).toBe("Offering published");
+    // OLD_EXPECTATION: the publication turn's label was «Offering published»,
+    //   and NO reference binding in this conversation pointed at the offering.
+    // WHY_IT_IS_WRONG: publishing in one turn took a model's reading of a
+    //   sentence straight to public under the seller's name, and a public
+    //   listing binds its owner. The turn now composes a private draft and
+    //   shows the exact words for confirmation. The broad «no binding points at
+    //   it» also said more than this test means: the draft IS bound now, under
+    //   its own kind, so the next turn knows which statement «أوافق» is about.
+    // NEW_EXPECTATION: the turn reports a statement awaiting approval and
+    //   publishes nothing, and no DISCOVERY binding points at the offering.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: it names the kind that would
+    //   actually be the bug — a published offering re-entering as a discovery
+    //   candidate — instead of forbidding every binding, and it additionally
+    //   asserts that nothing became public at all.
+    expect(published?.label).toBe("Offering ready to publish");
+    expect(published?.status).toBe("awaiting_approval");
+    expect(published?.data.published).toBe(false);
+    // And the confirmation publishes exactly that statement.
+    expect(confirmed?.label).toBe("Offering published");
+    expect(confirmed?.data.expressionId).toBe(published!.data.expressionId);
     expect(searched?.label).toBe("Discovery results");
     expect(searched?.data.resultSetId).toBeTruthy();
     const bindings = await handle.db.select().from(referenceBindings)
       .where(eq(referenceBindings.conversationId, conversationId));
     expect(bindings.some((row) => row.targetKind === "discovery_candidate")).toBe(true);
-    expect(bindings.some((row) => row.targetId === published!.data.expressionId)).toBe(false);
-    expect((await handle.db.select().from(economicExpressions)).length).toBe(1);
+    expect(
+      bindings.some(
+        (row) =>
+          row.targetId === published!.data.expressionId &&
+          row.targetKind === "discovery_candidate",
+      ),
+    ).toBe(false);
+    const expressions = await handle.db.select().from(economicExpressions);
+    expect(expressions.length).toBe(1);
+    expect(expressions[0]!.visibility).toBe("public");
   });
 
   it("returns null for a non-commercial research envelope", async () => {

@@ -123,11 +123,35 @@ describe("conversation commerce wiring", () => {
     expect(missing?.status).toBe("awaiting_input");
     expect((missing?.data.missingInputs as string[]).sort()).toEqual(["currency", "priceMinor"]);
 
-    const published = await turn(
+    // OLD_EXPECTATION: one turn naming a subject and a price reported
+    //   «completed» and left an ACTIVE, public offering.
+    // WHY_IT_IS_WRONG: that took a model's reading of a sentence straight to
+    //   public under the seller's name in a single step, and a public listing
+    //   binds its owner. The seller never saw the words they were held to.
+    // NEW_EXPECTATION: the first turn composes a PRIVATE draft and reports
+    //   «awaiting_approval» with the exact words; a confirmation publishes that
+    //   same statement and only then is it active.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: it asserts the offering is NOT
+    //   public after the describing turn — which the old test could not say at
+    //   all — and that the confirmation publishes the same id it was shown,
+    //   rather than merely that something ended up active.
+    const conversationId = `conv-${randomUUID()}`;
+    const shown = await turn(
       "انشر مقعد عمل",
       envelope(["commerce_publish"], { subject: "workspace.seat", priceMinor: "7000", currency: "SAR" }),
+      { conversationId },
     );
+    expect(shown?.status).toBe("awaiting_approval");
+    expect(shown?.data.published).toBe(false);
+    const [draftRow] = await handle.db.select().from(economicExpressions)
+      .where(eq(economicExpressions.id, shown!.data.expressionId as string));
+    expect(draftRow.ownerId).toBe(OWNER);
+    expect(draftRow.visibility).toBe("private");
+    expect(draftRow.status).toBe("draft");
+
+    const published = await turn("أوافق", envelope(["commerce_approve"]), { conversationId });
     expect(published?.status).toBe("completed");
+    expect(published?.data.expressionId).toBe(shown!.data.expressionId);
     const [row] = await handle.db.select().from(economicExpressions)
       .where(eq(economicExpressions.id, published!.data.expressionId as string));
     expect(row.ownerId).toBe(OWNER);
