@@ -196,8 +196,34 @@ describe("a condition that came true can wake something", () => {
     expect(body).toContain('eq(jasimRuntimeRuns.status, "waiting")');
   });
 
-  it("boot says why the wake arrived", () => {
+  it("only the trigger wake claims to be one", () => {
+    //
+    // ── AN EXPECTATION I WROTE, THEN MOVED ─────────────────────────────────
+    //
+    // OLD_EXPECTATION: `boot.ts` contains `wokenBy: "TRIGGER"`.
+    // WHY_IT_IS_WRONG: it pinned the reason to the file that HAPPENED to pass
+    //   it. The standing-intent phase put a dispatcher between them —
+    //   `wakeRunFromTrigger`, which tells a standing act apart from a paused
+    //   run — so boot now says «a trigger fired» by calling that, and the flag
+    //   travels one layer in. The rule was never about boot.
+    // NEW_EXPECTATION: exactly ONE place in the runtime claims a wake is
+    //   trigger-driven, and it is the function whose whole job is to handle a
+    //   fired trigger.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: the old assertion could not notice
+    //   a SECOND caller granting itself the trigger exemption — which is the
+    //   thing that would actually matter, since that flag is what lets a wake
+    //   skip the clock. This one fails on any such caller appearing, wherever
+    //   it lives.
+    const source = readFileSync("api/runtime/jasim-runtime.ts", "utf8");
+    const claims = source.split('wokenBy: "TRIGGER"').length - 1;
+    expect(claims).toBe(1);
+    const dispatcher = source.slice(source.indexOf("export async function wakeRunFromTrigger"));
+    // To the next top-level declaration, not to the first closing brace — the
+    // body has nested blocks and the claim sits past them.
+    expect(dispatcher.slice(0, dispatcher.indexOf("\nexport "))).toContain('wokenBy: "TRIGGER"');
+    // And boot reaches the wake through it rather than around it.
     const boot = readFileSync("api/boot.ts", "utf8");
-    expect(boot).toContain('wokenBy: "TRIGGER"');
+    expect(boot).toContain("wakeRunFromTrigger(");
+    expect(boot).not.toContain("resumeScheduledRuntimeRun(");
   });
 });

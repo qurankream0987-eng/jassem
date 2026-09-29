@@ -365,7 +365,7 @@ if (
     try {
       const [
         { getBlock2Worker },
-        { resumeScheduledRuntimeRun },
+        { wakeRunFromTrigger },
         { canonicalConditionEvaluator },
         { db },
       ] = await Promise.all([
@@ -382,7 +382,7 @@ if (
           // state as its authority, rather than trusting this payload.
           //
           //   A_RUN_IS_WOKEN_BY_A_TRIGGER_THAT_NAMES_IT
-          await resumeScheduledRuntimeRun({ runId, ownerId, wokenBy: "TRIGGER" });
+          await wakeRunFromTrigger({ runId, ownerId });
         },
         // ── THE WIRE THAT WAS MISSING ────────────────────────────────────
         //

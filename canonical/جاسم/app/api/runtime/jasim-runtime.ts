@@ -5426,6 +5426,44 @@ export async function getExecutionProposal(proposalId: string, ownerId: string) 
 }
 
 /**
+ * A TRIGGER FIRED. WHAT WAS WAITING ON IT?
+ *
+ * Two different things park behind a condition, and they are not the same act:
+ *
+ *   • a run that STARTED and paused — it resumes and carries on
+ *   • a run that never started and carries an ACT — it is PREPARED, which
+ *     means a proposal is created and a person is asked
+ *
+ *   PREPARING IS NOT RESUMING · PREPARING IS NOT DOING
+ *
+ * Telling them apart is not a guess: a standing intent is a run with an act and
+ * no execution yet, and the preparation path refuses anything else. Whichever
+ * branch runs, the authority is the same — the trigger names the run on its own
+ * row — and nothing here executes.
+ */
+export async function wakeRunFromTrigger(input: {
+  runId: string;
+  ownerId: string;
+  now?: Date;
+}): Promise<"PREPARED" | "ALREADY_PREPARED" | "RESUMED" | "NOTHING"> {
+  const { prepareStandingAct } = await import("./standing-intent");
+  const prepared = await prepareStandingAct({
+    runId: input.runId,
+    ownerId: input.ownerId,
+  });
+  if (prepared.status === "PREPARED") return "PREPARED";
+  if (prepared.status === "ALREADY_PREPARED") return "ALREADY_PREPARED";
+
+  const resumed = await resumeScheduledRuntimeRun({
+    runId: input.runId,
+    ownerId: input.ownerId,
+    ...(input.now ? { now: input.now } : {}),
+    wokenBy: "TRIGGER",
+  });
+  return resumed ? "RESUMED" : "NOTHING";
+}
+
+/**
  * Does a trigger name this run?
  *
  * A run that exists in order to fire later, on its own, when nobody is
@@ -5862,6 +5900,35 @@ const MonitoringRequestSchema = z
   .strict();
 
 /**
+ * A REQUEST to park an act behind a condition. Never an authority to run it.
+ *
+ * «إذا نزل تحت خمسين، جهّز لي طلباً — ولا تنفّذ بدون موافقتي». The model may
+ * say WHAT to prepare and WHEN; it may not say that the person agreed, and it
+ * cannot reach execution from here at all: a standing act's proposal lands at
+ * `awaiting_approval` because the run is standing, whatever this envelope says.
+ *
+ *   TARGET / CONDITION != EXECUTION AUTHORITY
+ *   A STANDING ACT IS NOT A WATCHED ACT
+ *
+ * `when` is a monitor condition and is validated as one — a closed operator
+ * set, dotted paths, scalar leaves, and a screen that refuses executable text.
+ * There is no expression string here by construction.
+ */
+const StandingIntentRequestSchema = z
+  .object({
+    /** The act. One capability, and what it will run with. */
+    capability: z.string().trim().min(1).max(120),
+    inputs: z.record(z.string(), z.unknown()).default({}),
+    /** What it is about. A condition with no subject is not a question. */
+    subjectKind: z.string().trim().min(1).max(64),
+    subjectId: z.string().trim().min(1).max(128),
+    observationType: z.string().trim().min(1).max(64),
+    when: z.unknown(),
+    pollMs: z.number().int().positive().max(24 * 60 * 60 * 1000).optional(),
+  })
+  .strict();
+
+/**
  * A REQUEST for a durable world. Never a grant of one.
  *
  *   ROUTED != MATERIALIZED
@@ -6202,6 +6269,7 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       productAction: ProductActionRequestSchema.optional(),
       world: WorldRequestSchema.optional(),
       monitoring: MonitoringRequestSchema.optional(),
+      standingIntent: StandingIntentRequestSchema.optional(),
       livingObject: LivingObjectRequestSchema.optional(),
       providerBinding: ProviderBindingRequestSchema.optional(),
       need: NeedRequestSchema.optional(),
@@ -6243,6 +6311,7 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       productAction: ProductActionRequestSchema.optional(),
       world: WorldRequestSchema.optional(),
       monitoring: MonitoringRequestSchema.optional(),
+      standingIntent: StandingIntentRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -6281,6 +6350,7 @@ const ConversationOutputEnvelopeSchema = z.discriminatedUnion("kind", [
       productAction: ProductActionRequestSchema.optional(),
       world: WorldRequestSchema.optional(),
       monitoring: MonitoringRequestSchema.optional(),
+      standingIntent: StandingIntentRequestSchema.optional(),
       intent: EnvelopeExecutionIntentSchema,
       confidence: z.number().min(0).max(1),
     })
@@ -7594,6 +7664,68 @@ export async function routeRuntimeConversationTurn(input: {
               : error.message,
           state: "REFUSED",
           cause: `LIVING_OBJECT_${error.code}`,
+        });
+      }
+      throw error;
+    }
+  }
+
+  // ── PARKING AN ACT BEHIND A CONDITION ───────────────────────────────────
+  //
+  // Checked BEFORE monitoring, because the two sentences differ in what they
+  // promise and the wider one must not swallow the narrower. «راقب هذا
+  // وأخبرني» asks to be TOLD; «إذا نزل تحت خمسين جهّز لي طلباً» asks for
+  // something to be PREPARED. A monitor's only actions are NOTIFY and NONE, so
+  // routing the second to it would silently deliver half of what was asked.
+  //
+  //   BEING TOLD != HAVING IT READY
+  const standingIntentRequest =
+    "standingIntent" in envelope ? envelope.standingIntent : undefined;
+  if (standingIntentRequest) {
+    const { createStandingIntent, StandingIntentError } = await import("./standing-intent");
+    try {
+      const standing = await createStandingIntent({
+        ownerId: scopeResolution.scope.scopeId,
+        conversationId: input.conversationId,
+        conversationPrincipalId: input.ownerId,
+        // The act names itself. Not every envelope variant carries a goal, and
+        // inventing prose for the run would be this branch writing a sentence
+        // nobody said.
+        goal: "goal" in envelope && typeof envelope.goal === "string"
+          ? envelope.goal
+          : `standing: ${standingIntentRequest.capability}`,
+        capability: standingIntentRequest.capability,
+        inputs: standingIntentRequest.inputs,
+        subjectKind: standingIntentRequest.subjectKind,
+        subjectId: standingIntentRequest.subjectId,
+        observationType: standingIntentRequest.observationType,
+        when: standingIntentRequest.when,
+        ...(standingIntentRequest.pollMs ? { conditionPollMs: standingIntentRequest.pollMs } : {}),
+      });
+      return respondRouted({
+        message:
+          "سأراقب هذا الشرط، وعندما يتحقق أُجهّز ما طلبتَ وأعرضه عليك. لن يُنفَّذ شيء قبل موافقتك — ولا حتى لو كان بسيطاً.",
+        state: "STANDING",
+        cause: "STANDING_INTENT_CREATED",
+        extra: {
+          standingIntent: {
+            runRef: standing.runRef,
+            triggerRef: standing.triggerRef,
+            capability: standing.capability,
+            // Said plainly, because a standing act is exactly the thing a
+            // person would otherwise assume runs by itself.
+            willPrepareOnly: true,
+            requiresApprovalWhenPrepared: true,
+            effects: "none",
+          },
+        },
+      });
+    } catch (error) {
+      if (error instanceof StandingIntentError) {
+        return respondRouted({
+          message: error.message,
+          state: "NEEDS_INPUT",
+          cause: `STANDING_INTENT_${error.code}`,
         });
       }
       throw error;
