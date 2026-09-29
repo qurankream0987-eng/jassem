@@ -91,6 +91,23 @@ describe("COMMERCE RATCHET — may shrink, may never grow", () => {
     "isAnswers",
     "isAccept",
     "isDisclose",
+    // ── AND ONE MORE, ARGUED FOR ─────────────────────────────────────────
+    //
+    // OLD_EXPECTATION: thirteen.
+    // WHY_IT_IS_WRONG: the four above let a person address the OTHER party.
+    //   None of them let a person say something about THEMSELVES, and so the
+    //   need every conversation created stayed permanently empty — proximity
+    //   had no origin to search from and disclosure had nothing to release.
+    //   Two primitives that already existed were unreachable for want of this
+    //   one verb.
+    // NEW_EXPECTATION: fourteen, and `isState` is label-driven ONLY — it
+    //   carries no keyword heuristic, because «أنا عند الدوار» is a fact and
+    //   «قرب الدوار» is a requirement and no pattern can tell them apart.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: the noun assertions below still
+    //   fail any domain name whether or not it is listed, and this entry adds
+    //   a rule the list never had — that a verb about the SELF may not be
+    //   guessed from words. A fifteenth still has to be argued for here.
+    "isState",
   ] as const;
 
   /** The six labels hardcoded into the core turn prompt. */
@@ -108,8 +125,22 @@ describe("COMMERCE RATCHET — may shrink, may never grow", () => {
   );
   const presentLabels = LABELS.filter((label) => runtime.includes(label));
 
-  it("the branch count is at most 13", () => {
-    expect(presentBranches.length).toBeLessThanOrEqual(13);
+  it("the branch count is at most 14", () => {
+    expect(presentBranches.length).toBeLessThanOrEqual(14);
+  });
+
+  it("the self-statement verb is never guessed from words", () => {
+    //   A FACT ABOUT ME IS NOT A REQUIREMENT OF THEM
+    //
+    // «أنا عند الدوار» records where I am; «قرب الدوار» requires it of a
+    // candidate. A keyword heuristic would turn requirements into facts about
+    // the person, so this one predicate must read the classifier and nothing
+    // else.
+    const declaration = orchestrator.slice(orchestrator.indexOf("const isState ="));
+    const body = declaration.slice(0, declaration.indexOf(";"));
+    expect(body).toContain("hasLabel(");
+    expect(body).not.toContain("test(text");
+    expect(body).not.toContain("text.trim()");
   });
 
   it("the label count is at most 6", () => {

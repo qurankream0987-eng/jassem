@@ -361,6 +361,76 @@ export async function publishExpression(input: {
  * discovery. Owners always see their own expressions. PRIVATE/UNLISTED/SHARED
  * never appear in general discovery for other users.
  */
+/**
+ * SOMETHING TRUE OF MY OWN THING — not something I require of yours.
+ *
+ * ── THE DISTINCTION THIS FUNCTION EXISTS TO HOLD ────────────────────────────
+ *
+ *   A FACT ABOUT ME IS NOT A REQUIREMENT OF THEM
+ *
+ * «أريد مكانيكياً ضمن 25 كم» is a CONSTRAINT: what a candidate must satisfy.
+ * «أنا عند الدوار الخامس» is an ATTRIBUTE: what is true of me. Conflating them
+ * turns my own location into something candidates are filtered against, which
+ * is not a sentence anybody meant — and it is why the need a turn created
+ * carried constraints and never once carried a fact.
+ *
+ * ── WHAT A MODEL'S READING OF MY SENTENCE IS WORTH ──────────────────────────
+ *
+ *   MODEL_EXTRACTION != OWNER_DECLARATION
+ *
+ * I said words; something turned them into a value. That value may be right
+ * and it is still not me speaking, so it lands INFERRED by default — and an
+ * INFERRED value already decides nothing anywhere in this runtime. It becomes
+ * STATED when I look at what was recorded and say yes, which is the only
+ * moment at which I actually declared it.
+ *
+ * ── AND IT IS NOT A PUBLICATION ─────────────────────────────────────────────
+ *
+ *   STATING_IS_NOT_PUBLISHING
+ *
+ * The public projection is not touched. Telling JASIM where I am is not
+ * telling the world, and nothing here can widen what anybody else can see.
+ */
+export async function stateOwnAttribute(input: {
+  expressionId: string;
+  ownerId: string;
+  field: string;
+  value: unknown;
+  /** Default INFERRED. STATED only when the owner confirmed this exact value. */
+  provenance?: ValueProvenance;
+}): Promise<EconomicExpression> {
+  const field = input.field.trim();
+  if (!field) throw new EconomicAuthorizationError("A value with no field is not a statement.");
+  const [row] = await db
+    .select()
+    .from(economicExpressions)
+    .where(eq(economicExpressions.id, input.expressionId))
+    .limit(1);
+  if (!row) throw new EconomicNotFoundError("Expression not found.");
+  //   OWNER_STATES_ONLY_THEIR_OWN — stating a fact about somebody else's thing
+  //   is the whole class of impersonation this refuses in one line.
+  requireOwner(row, input.ownerId);
+
+  const attributes = { ...((row.attributes ?? {}) as Record<string, unknown>) };
+  const provenanceMap = {
+    ...((row.attributeProvenance ?? {}) as AttributeProvenance),
+  } as Record<string, ValueProvenance>;
+  attributes[field] = input.value;
+  provenanceMap[field] = input.provenance ?? "INFERRED";
+
+  const [updated] = await db
+    .update(economicExpressions)
+    .set({
+      attributes,
+      attributeProvenance: provenanceMap,
+      version: row.version + 1,
+      // publicProjection deliberately absent. STATING_IS_NOT_PUBLISHING.
+    })
+    .where(eq(economicExpressions.id, row.id))
+    .returning();
+  return updated!;
+}
+
 export async function discoverExpressions(input: {
   kind: "offering" | "need";
   requesterOwnerId: string;

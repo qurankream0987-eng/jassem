@@ -12,6 +12,7 @@ import {
   matchNeedToOffering,
   participantsForMatch,
   publishExpression,
+  stateOwnAttribute,
 } from "../economic-fabric";
 import { proposeTermSheet } from "../agreement-runtime";
 import {
@@ -187,6 +188,45 @@ function safeCandidate(candidate: Awaited<ReturnType<typeof discover>>["candidat
   };
 }
 
+/**
+ * WHERE THE PERSON SAID THEY ARE.
+ *
+ * Read from their own subject, never from the envelope. The origin decides
+ * which candidates are near enough to be found at all, so a model that could
+ * name it could quietly search from somewhere else entirely.
+ *
+ *   MODEL_NAMES_THE_SEARCH_ORIGIN = 0
+ *
+ * A point they have not confirmed is carried with `inferred`, and the fabric
+ * then refuses to let the derived distance decide anything — «not known to be
+ * near» stays different from «near».
+ *
+ *   INFERRED_LOCATION_DECIDES_PROXIMITY = 0
+ */
+async function searchOrigin(
+  db: NodePgDatabase<any>,
+  input: { ownerId: string; conversationId: string },
+): Promise<{ lat: number; lng: number; inferred?: boolean } | undefined> {
+  const bound = await activeBinding(db, input.ownerId, input.conversationId, "current:need");
+  if (!bound) return undefined;
+  const [row] = await db
+    .select()
+    .from(economicExpressions)
+    .where(eq(economicExpressions.id, bound.targetId))
+    .limit(1);
+  if (!row || row.ownerId !== input.ownerId) return undefined;
+  const point = object((row.attributes as Record<string, unknown>).location);
+  const lat = point.lat;
+  const lng = point.lng;
+  if (typeof lat !== "number" || typeof lng !== "number") return undefined;
+  const provenance = (row.attributeProvenance ?? {}) as Record<string, string>;
+  return {
+    lat,
+    lng,
+    ...(provenance.location === "STATED" ? {} : { inferred: true }),
+  };
+}
+
 async function discoverTurn(
   db: NodePgDatabase<any>,
   input: { ownerId: string; conversationId: string; content: string; envelope: IntentEnvelope },
@@ -214,6 +254,14 @@ async function discoverTurn(
     scopeId: input.ownerId,
   });
   const carried = stated.length > 0 ? stated : (translation.applied as never[]);
+  // ── WHERE THE SEARCH IS FROM ────────────────────────────────────────────
+  //
+  // Read from what the person stated about THEMSELVES, never from the
+  // envelope: a model that could name the origin could search from anywhere,
+  // and a point is the one input whose owner matters most.
+  //
+  //   MODEL_NAMES_THE_SEARCH_ORIGIN = 0
+  const origin = await searchOrigin(db, input);
   // What the person stated that this search could NOT honestly act on. Carried
   // into the answer so that «not applied» is something they can read.
   //
@@ -235,6 +283,7 @@ async function discoverTurn(
     explicitScope: values.scope,
     availability: { internal: true, web: Array.isArray(values.webResults) },
     hardConstraints: carried,
+    ...(origin ? { origin } : {}),
     ...(need ? { need: { id: need.id, revision: need.revision } } : {}),
     webResults: Array.isArray(values.webResults) ? values.webResults as never[] : [],
     limit: typeof values.limit === "number" ? values.limit : 20,
@@ -700,12 +749,24 @@ async function proposeTurn(
 
   const semanticType = offering.semanticType;
   // An ordinary NEED, expressed by this party. Not a checkout object.
-  const need = await createExpression({
-    ownerId: input.ownerId,
-    kind: "need",
-    semanticType,
-    attributes: {},
-  });
+  //
+  // THE SAME one the conversation has been about. This used to create a fresh,
+  // empty expression every time, so everything the person had already said
+  // about themselves — «أنا هنا», «كود البوابة كذا» — was left on an object
+  // nothing downstream would ever look at again.
+  //
+  //   ONE_CONVERSATION_ONE_SUBJECT_OF_MINE
+  const needId = await ownSubject(db, input, semanticType);
+  const [need] = await db
+    .select()
+    .from(economicExpressions)
+    .where(eq(economicExpressions.id, needId))
+    .limit(1);
+  if (!need) return clarification("لم أعد أجد ما تطلبه لك.");
+  // The projection carries the TYPE and nothing else. Attributes the person
+  // stated about themselves stay exactly where they were.
+  //
+  //   STATING_IS_NOT_PUBLISHING
   await publishExpression({
     id: need.id,
     ownerId: input.ownerId,
@@ -1201,6 +1262,163 @@ async function worldCommerceTurn(
 }
 
 /**
+ * THE ONE THING OF MINE THIS CONVERSATION IS ABOUT.
+ *
+ * Created on first use and bound, so «أنا هنا» said before the search and
+ * «أرسل له موقعي» said after the agreement reach the SAME subject. Before this
+ * the turn path created a fresh, empty need at proposal time and everything the
+ * person had said about themselves went nowhere.
+ *
+ *   ONE_CONVERSATION_ONE_SUBJECT_OF_MINE
+ */
+async function ownSubject(
+  db: NodePgDatabase<any>,
+  input: { ownerId: string; conversationId: string },
+  semanticType: string,
+): Promise<string> {
+  const bound = await activeBinding(db, input.ownerId, input.conversationId, "current:need");
+  if (bound) {
+    const [row] = await db
+      .select()
+      .from(economicExpressions)
+      .where(eq(economicExpressions.id, bound.targetId))
+      .limit(1);
+    if (row && row.ownerId === input.ownerId) {
+      // ── A FACT ABOUT ME OUTLIVES WHAT I AM LOOKING FOR ──────────────────
+      //
+      // The TYPE follows the current pursuit — «أنا عند الدوار» said before
+      // any search leaves the subject untyped, and the search that follows is
+      // what says what it is about. The ATTRIBUTES do not move: where I am and
+      // what my gate code is are true of me whatever I happen to be asking
+      // for, and dropping them on a retype would throw away the person's own
+      // words for no reason.
+      //
+      //   A FACT ABOUT ME IS NOT A FACT ABOUT THE TOPIC
+      if (row.semanticType !== semanticType) {
+        await db
+          .update(economicExpressions)
+          .set({ semanticType, version: row.version + 1 })
+          .where(eq(economicExpressions.id, row.id));
+      }
+      return row.id;
+    }
+  }
+  const created = await createExpression({
+    ownerId: input.ownerId,
+    kind: "need",
+    semanticType,
+    attributes: {},
+  });
+  await bindReference(db, {
+    ownerId: input.ownerId,
+    conversationId: input.conversationId,
+    referenceKey: "current:need",
+    targetKind: "economic_expression",
+    targetId: created.id,
+  });
+  return created.id;
+}
+
+/**
+ * «أنا عند الدوار الخامس» · «رقمي كذا» · «كود البوابة 8821».
+ *
+ * A fact about MY thing, recorded on my thing. Traced before this phase: no
+ * turn wrote an attribute anywhere, so the need a conversation created was
+ * permanently empty — proximity had no origin to search from and disclosure
+ * had nothing to release. The person could say it and JASIM had nowhere to put
+ * it.
+ *
+ *   A FACT ABOUT ME IS NOT A REQUIREMENT OF THEM
+ *   MODEL_EXTRACTION != OWNER_DECLARATION — it lands INFERRED, and an INFERRED
+ *   value already decides nothing until the person confirms this exact one.
+ */
+async function stateTurn(
+  db: NodePgDatabase<any>,
+  input: { ownerId: string; conversationId: string; content: string; envelope: IntentEnvelope },
+): Promise<ConversationCommerceResult> {
+  const values = input.envelope.intent?.inputs ?? {};
+  const field = string(values, "field", "property", "attribute");
+  if (!field) return clarification("أي تفصيل عنك تريدني أن أسجّله؟");
+  const value = values.value ?? values[field];
+  if (value === undefined || value === null) {
+    return clarification(`وما قيمة «${field}»؟`);
+  }
+  const semanticType = string(values, "subject", "semanticType") ?? "احتياج";
+  const subjectId = await ownSubject(db, input, semanticType);
+  const updated = await stateOwnAttribute({
+    expressionId: subjectId,
+    ownerId: input.ownerId,
+    field,
+    value,
+  });
+  await bindReference(db, {
+    ownerId: input.ownerId,
+    conversationId: input.conversationId,
+    referenceKey: "current:statement",
+    targetKind: "pending_statement",
+    // The exact reading being confirmed. A later confirmation cannot promote a
+    // different field than the one shown.
+    targetId: `${subjectId}|${field}`,
+  });
+  return {
+    kind: "structured_result",
+    label: "Recorded about you",
+    summary:
+      `سجّلتُ «${field}» عنك كما فهمتُه. هذا فهمي لكلامك لا قولك أنت، فهو لا يقرّر شيئاً حتى تؤكّده.`,
+    data: {
+      subjectId: updated.id,
+      field,
+      value,
+      provenance: "INFERRED",
+      // Said plainly: nothing about this is visible to anybody else.
+      published: false,
+      decidesNothingYet: true,
+    },
+    status: "awaiting_approval",
+  };
+}
+
+/** «نعم، هذا هو» — the moment the person actually declared it. */
+async function confirmStateTurn(
+  db: NodePgDatabase<any>,
+  input: { ownerId: string; conversationId: string; envelope: IntentEnvelope },
+): Promise<ConversationCommerceResult | null> {
+  const binding = await activeBinding(db, input.ownerId, input.conversationId, "current:statement");
+  if (!binding || binding.targetKind !== "pending_statement") return null;
+  const [subjectId, field] = binding.targetId.split("|");
+  if (!subjectId || !field) return null;
+  const [row] = await db
+    .select()
+    .from(economicExpressions)
+    .where(eq(economicExpressions.id, subjectId))
+    .limit(1);
+  if (!row || row.ownerId !== input.ownerId) return null;
+  const value = (row.attributes as Record<string, unknown>)[field];
+  if (value === undefined) return null;
+  // Read back rather than remembered: what is promoted is what is THERE now.
+  const updated = await stateOwnAttribute({
+    expressionId: subjectId,
+    ownerId: input.ownerId,
+    field,
+    value,
+    provenance: "STATED",
+  });
+  return {
+    kind: "structured_result",
+    label: "Stated",
+    summary: `الآن «${field}» قولك أنت، وأستطيع أن أبني عليه.`,
+    data: {
+      subjectId: updated.id,
+      field,
+      value,
+      provenance: "STATED",
+      published: false,
+    },
+    status: "completed",
+  };
+}
+
+/**
  * «اسأله إن كانت ما زالت موجودة» — carry a question to the other party.
  *
  * The brokering runtime has existed since its own phase and NOTHING called it:
@@ -1433,7 +1651,7 @@ async function discloseTurn(
 ): Promise<ConversationCommerceResult> {
   const pending = await pendingDisclosure(db, input);
   if ("clarify" in pending) return pending.clarify;
-  const { agreementRow, subjectId, field, value, recipient } = pending;
+  const { agreementRow, subjectId, field, value, recipient, provenance } = pending;
 
   await bindReference(db, {
     ownerId: input.ownerId,
@@ -1448,12 +1666,20 @@ async function discloseTurn(
     kind: "structured_result",
     label: "Release this?",
     summary:
-      `سأرسل «${field}» إلى الطرف الذي اتفقتَ معه، ولا شيء غيره. راجعه قبل أن أرسل — لا يمكن سحب ما وصل.`,
+      provenance === "STATED"
+        ? `سأرسل «${field}» كما ذكرتَه، إلى الطرف الذي اتفقتَ معه ولا أحد غيره. راجعه — لا يمكن سحب ما وصل.`
+        : `سأرسل «${field}» كما فهمتُه من كلامك، لا كما ذكرتَه أنت. راجعه بدقّة قبل أن أرسل — لا يمكن سحب ما وصل.`,
     data: {
       field,
       value,
       recipientOwnerId: recipient,
       agreementId: agreementRow.id,
+      // WHOSE WORD this is. Releasing a model's reading of a sentence as
+      // though the person had stated it is the difference that matters most
+      // at the exact moment it leaves.
+      //
+      //   MODEL_EXTRACTION != OWNER_DECLARATION
+      provenance,
       released: false,
       effects: "none",
     },
@@ -1511,6 +1737,7 @@ async function pendingDisclosure(
       field: string;
       value: unknown;
       recipient: string;
+      provenance: string;
     }
 > {
   const bound = await activeBinding(db, input.ownerId, input.conversationId, "current:agreement");
@@ -1555,7 +1782,9 @@ async function pendingDisclosure(
   if (others.length !== 1) {
     return { clarify: clarification("حدد لمن أرسله من أطراف الاتفاق.") };
   }
-  return { agreementRow, subjectId: subject.id, field, value, recipient: others[0]! };
+  const provenance =
+    ((subject.attributeProvenance ?? {}) as Record<string, string>)[field] ?? "INFERRED";
+  return { agreementRow, subjectId: subject.id, field, value, recipient: others[0]!, provenance };
 }
 
 /**
@@ -1620,6 +1849,13 @@ export async function orchestrateConversationCommerce(input: {
   const isDisclose =
     hasLabel(input.envelope, /disclosure|release[-_: ]?field/) ||
     /(?:^|\s)(?:أرسل\s+له|ارسل\s+له|أرسل\s+لها|ارسل\s+لها)(?:\s|$)/u.test(text);
+  // Saying something about MYSELF. Deliberately label-driven: «أنا عند الدوار»
+  // is a sentence about me, «قرب الدوار» is a requirement of them, and only
+  // the classifier can tell those apart — so a keyword heuristic here would
+  // turn requirements into facts about the person.
+  //
+  //   A FACT ABOUT ME IS NOT A REQUIREMENT OF THEM
+  const isState = hasLabel(input.envelope, /self[-_: ]?state|own[-_: ]?attribute|state[-_: ]?fact/);
 
   // Consequential intents are checked before discovery because classifier
   // labels may contain both "search" and the requested follow-up action.
@@ -1641,16 +1877,26 @@ export async function orchestrateConversationCommerce(input: {
     string(input.envelope.intent?.inputs ?? {}, "subject", "semanticType", "title"),
   );
   if (explicitApproval || (explicitPublish && !describesSomething)) {
-    // A pending RELEASE is confirmed before a pending statement: nothing else
-    // is waiting on a yes that cannot be taken back.
+    // ── WHAT DOES «نعم» CONFIRM? ─────────────────────────────────────────
+    //
+    // Ordered by what a wrong answer costs. A RELEASE cannot be taken back,
+    // so it is asked about first; publishing a statement to everyone is next;
+    // recording a fact about yourself is private and reversible, so it is
+    // last. A bare yes never reaches past the most consequential thing
+    // actually waiting on it.
+    //
+    //   AMBIGUOUS_YES_TAKES_THE_CHEAPEST_MEANING = 0
     const releasedNow = await confirmDiscloseTurn(input.db, input);
     if (releasedNow) return releasedNow;
     const confirmed = await confirmPublishTurn(input.db, input);
     if (confirmed) return confirmed;
+    const stated = await confirmStateTurn(input.db, input);
+    if (stated) return stated;
   }
   // Releasing and asking come before approval and selection, because both
   // name a counterparty rather than a result, and «أرسل له موقعي» must never
   // be read as picking something.
+  if (isState) return stateTurn(input.db, input);
   if (isDisclose) return discloseTurn(input.db, input);
   if (isAsk) return askCounterpartyTurn(input.db, input);
   if (isAnswers) return counterpartyAnswersTurn(input.db, input);
