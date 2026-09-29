@@ -35,6 +35,11 @@ import {
   normalizeUnit,
   type ConstraintExpression,
 } from "./semantic-fabric";
+import {
+  declaredComponents,
+  type ComponentCandidate,
+  type CompositionOutcome,
+} from "./component-composition";
 
 export type ConstraintState = "PASS" | "SOFT_MATCH" | "UNKNOWN" | "FAIL";
 
@@ -709,6 +714,74 @@ export function evaluateConstraintSet(
 }
 
 /**
+ * Which candidate covers which declared part.
+ *
+ * Every judgement below is made by the machinery that judges an ordinary match:
+ * the same semantics gate, the same distance derivation, the same constraint
+ * set evaluator — so a component inherits joint satisfiability, unit
+ * reconciliation and the provenance rules without any of them being restated.
+ */
+export function composeAcrossComponents(input: {
+  need: EconomicExpression;
+  candidates: readonly EconomicExpression[];
+}): CompositionOutcome {
+  const components = declaredComponents(input.need);
+  if (!components) {
+    return { declared: false, components: [], uncovered: [], viable: false };
+  }
+
+  const needProvenance = input.need.attributeProvenance as AttributeProvenance | null | undefined;
+  const origin = (input.need.attributes ?? {}).location as Record<string, unknown> | undefined;
+
+  const coverage = components.map((component) => {
+    // The component's own semantics stand in for the need's, and nothing else
+    // about the need changes: it is still this person's need, at this place.
+    const componentAsNeed = { ...input.need, semanticType: component.semantics };
+    const candidates: ComponentCandidate[] = [];
+    for (const offering of input.candidates) {
+      if (offering.id === input.need.id) continue;
+      if (!semanticsCompatible(componentAsNeed as EconomicExpression, offering)) continue;
+      const derived = withDistanceFrom({
+        origin: coordinatesFromPayload(origin),
+        originInferred: needProvenance?.location === "INFERRED",
+        attributes: (offering.attributes ?? {}) as Record<string, unknown>,
+        provenance: (offering.attributeProvenance ?? undefined) as AttributeProvenance | undefined,
+      });
+      const { results, jointlySatisfiable } = evaluateConstraintSet(
+        component.constraints,
+        derived.attributes,
+        derived.provenance,
+      );
+      // The viability rule of an ordinary match, unchanged: UNKNOWN is never
+      // FAIL, and a candidate with nothing proven is not a candidate.
+      const viable =
+        jointlySatisfiable &&
+        !results.some((result) => result.state === "FAIL") &&
+        (results.length === 0 || results.some((result) => result.state === "PASS"));
+      if (!viable) continue;
+      candidates.push({ offeringId: offering.id, ownerId: offering.ownerId, results });
+    }
+    return {
+      key: component.key,
+      semantics: component.semantics,
+      covered: candidates.length > 0,
+      candidates,
+    };
+  });
+
+  const uncovered = coverage.filter((entry) => !entry.covered).map((entry) => entry.key);
+  return {
+    declared: true,
+    components: coverage,
+    uncovered,
+    // ALL OF THEM, OR NONE. Half a purpose is not a smaller purpose.
+    viable: uncovered.length === 0,
+  };
+}
+
+
+
+/**
  * THE NAME A DERIVED DISTANCE TAKES, in metres, the base unit of length.
  *
  * Reserved rather than magic: a need bounds `distance` the way it bounds any
@@ -878,7 +951,16 @@ export async function matchNeedToOffering(input: {
 export async function matchNeed(input: {
   needId: string;
   requesterOwnerId: string;
-}): Promise<{ matches: EconomicMatch[]; composite?: EconomicMatch }> {
+}): Promise<{
+  matches: EconomicMatch[];
+  composite?: EconomicMatch;
+  /**
+   * Present only when the need DECLARED its parts. It names the parts nothing
+   * covers, so «I could not cover the lifting» can be said instead of «I found
+   * nothing» — which was the whole of the old answer.
+   */
+  coverage?: CompositionOutcome;
+}> {
   const need = await getExpressionInternal(input.needId);
   if (!need) throw new EconomicNotFoundError("Need not found.");
   if (need.ownerId !== input.requesterOwnerId || need.kind !== "need") {
@@ -1035,7 +1117,47 @@ export async function matchNeed(input: {
     }
   }
 
-  return { matches };
+  // ── A PURPOSE THAT DECLARED ITS PARTS ──────────────────────────────────────
+  //
+  // Coverage, not capacity: nothing is summed here. Every part must have a
+  // candidate of its own, and one candidate may cover two parts.
+  //
+  //   PARTIAL_COVERAGE_IS_NOT_A_MATCH · COMPONENTS_ARE_NOT_SUMMED
+  const coverage = composeAcrossComponents({ need, candidates });
+  if (!coverage.declared) return { matches };
+  if (!coverage.viable) {
+    // Reported, never recorded: a row in `economic_matches` is a match, and
+    // half a purpose is not one. The named uncovered parts are the answer.
+    return { matches, coverage };
+  }
+  const [composed] = await db
+    .insert(economicMatches)
+    .values({
+      id: randomUUID(),
+      needId: need.id,
+      offeringId: null,
+      compositeComponents: coverage.components.map((component) => ({
+        // The first candidate is A candidate, not THE choice: choosing is the
+        // owner's, and every candidate this part has travels with the row.
+        expressionId: component.candidates[0]!.offeringId,
+        contribution: {
+          componentKey: component.key,
+          semantics: component.semantics,
+          alternatives: component.candidates.map((candidate) => candidate.offeringId),
+        },
+      })),
+      constraintResults: coverage.components.flatMap((component) =>
+        component.candidates[0]!.results.map((result) => ({
+          ...result,
+          componentKey: component.key,
+          contributorExpressionId: component.candidates[0]!.offeringId,
+        })),
+      ),
+      status: "viable",
+      createdByOwnerId: input.requesterOwnerId,
+    })
+    .returning();
+  return { matches, composite: composed, coverage };
 }
 
 // ---------------------------------------------------------------------------
