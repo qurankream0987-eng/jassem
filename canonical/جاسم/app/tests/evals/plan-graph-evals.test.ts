@@ -108,6 +108,23 @@ describe("COMMERCE RATCHET — may shrink, may never grow", () => {
     //   a rule the list never had — that a verb about the SELF may not be
     //   guessed from words. A fifteenth still has to be argued for here.
     "isState",
+    // ── AND THE LONG-RUNNING HALF ────────────────────────────────────────
+    //
+    // OLD_EXPECTATION: fourteen.
+    // WHY_IT_IS_WRONG: every one of the fourteen answers a question about
+    //   NOW. A search says what exists at the moment it runs, and nothing in
+    //   the runtime ever re-ran a match — so «أخبرني عندما تظهر» had no home
+    //   at all, and a request whose answer had not been published yet came
+    //   back empty and was forgotten. The cap was holding out the whole
+    //   long-running half of the vision.
+    // NEW_EXPECTATION: fifteen, and this one is checked before discovery —
+    //   reading «tell me when it exists» as «search now» would answer
+    //   «nothing found» to somebody who just asked to be told later.
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER: the noun assertions below still
+    //   fail any domain name whether or not it is listed, and this entry adds
+    //   an ORDERING obligation the list never had, asserted directly below. A
+    //   sixteenth still has to be argued for here.
+    "isWait",
   ] as const;
 
   /** The six labels hardcoded into the core turn prompt. */
@@ -125,8 +142,21 @@ describe("COMMERCE RATCHET — may shrink, may never grow", () => {
   );
   const presentLabels = LABELS.filter((label) => runtime.includes(label));
 
-  it("the branch count is at most 14", () => {
-    expect(presentBranches.length).toBeLessThanOrEqual(14);
+  it("the branch count is at most 15", () => {
+    expect(presentBranches.length).toBeLessThanOrEqual(15);
+  });
+
+  it("waiting is decided before searching", () => {
+    //   A NEED CAN WAIT
+    //
+    // «أخبرني عندما تظهر» is not a search that happens to run now. Dispatched
+    // after discovery it would answer «nothing found» to somebody who just
+    // asked to be told later — the one failure mode this verb exists to end.
+    const waitAt = orchestrator.indexOf("if (isWait)");
+    const discoveryAt = orchestrator.indexOf("if (isDiscovery)");
+    expect(waitAt).toBeGreaterThan(-1);
+    expect(discoveryAt).toBeGreaterThan(-1);
+    expect(waitAt).toBeLessThan(discoveryAt);
   });
 
   it("the self-statement verb is never guessed from words", () => {

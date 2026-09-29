@@ -879,6 +879,42 @@ export const negotiationEnvelopes = pgTable(
  * cannot be answered by a system that released things without writing them
  * down.
  */
+/**
+ * A NEED THAT KEEPS LOOKING.
+ *
+ * A need used to be matched only at the instant somebody asked. JASIM could
+ * answer «what exists now» and never «tell me when it exists», so a request
+ * whose answer had not been published yet came back empty and was forgotten.
+ *
+ *   A NEED CAN WAIT · ANSWERING_ONLY_WHAT_EXISTS_NOW = 0
+ *
+ * `expiresAt` is NOT NULL deliberately: an unbounded standing scan is a
+ * resource nobody authorized, and a wait that never ends is not a wait.
+ *
+ *   WAITING_FOREVER = 0
+ */
+export const waitingNeeds = pgTable(
+  "waiting_needs",
+  {
+    id: varchar("id", { length: 64 }).primaryKey(),
+    needId: varchar("needId", { length: 64 }).notNull(),
+    ownerId: varchar("ownerId", { length: 100 }).notNull(),
+    state: varchar("state", { length: 16 }).notNull().default("WAITING"),
+    createdAt: timestamp("createdAt", { withTimezone: true }).defaultNow().notNull(),
+    expiresAt: timestamp("expiresAt", { withTimezone: true }).notNull(),
+    lastSweptAt: timestamp("lastSweptAt", { withTimezone: true }),
+    lastNotifiedAt: timestamp("lastNotifiedAt", { withTimezone: true }),
+    /** How many times something NEW was found. Never how many sweeps ran. */
+    noticesSent: integer("noticesSent").notNull().default(0),
+  },
+  (table) => [
+    uniqueIndex("waiting_needs_need_idx").on(table.needId),
+    index("waiting_needs_due_idx").on(table.state, table.expiresAt),
+  ],
+);
+
+export type WaitingNeed = typeof waitingNeeds.$inferSelect;
+
 export const privateDisclosures = pgTable(
   "private_disclosures",
   {

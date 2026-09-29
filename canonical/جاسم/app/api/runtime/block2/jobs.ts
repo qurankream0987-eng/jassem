@@ -106,6 +106,13 @@ export type SweepResult = {
     unresolved: number;
     unanswerable: number;
   };
+  /**
+   * `notified` counts NEW arrivals, never sweeps. A standing scan that
+   * reported the same candidate every cycle would be noise nobody could keep.
+   *
+   *   NEW_MATCH != EVERY_SWEEP
+   */
+  waitingNeeds: { swept: number; expired: number; notified: number; newMatches: number };
   realtime: { connections: number; delivered: number; resyncRequired: number };
   reservationsExpired: number;
   assignmentOffersExpired: number;
@@ -136,6 +143,16 @@ export async function runBlock2Sweep(
   //   SECOND_SCHEDULERS_ADDED = 0
   const { sweepDueMonitors } = await import("../monitoring-runtime");
   const monitors = await sweepDueMonitors({ now });
+
+  // Waiting needs look again HERE, beside the monitors and for the same
+  // reason. A monitor watches a SUBJECT; a need waiting for an offering that
+  // does not exist yet has no subject to watch — which is why it is its own
+  // step and not a fifth monitor source, and why it is still not its own
+  // scheduler.
+  //
+  //   A NEED CAN WAIT · SECOND_SCHEDULERS_ADDED = 0
+  const { sweepWaitingNeeds } = await import("../waiting-needs");
+  const waiting = await sweepWaitingNeeds(db as never, { now });
 
   // Living objects reconcile HERE, and BEFORE realtime delivery, so a handle
   // whose subject moved reaches its follower inside the same cycle rather than
@@ -191,6 +208,7 @@ export async function runBlock2Sweep(
     monitors,
     livingObjects,
     uncertainAttempts,
+    waitingNeeds: waiting,
     realtime,
     reservationsExpired,
     assignmentOffersExpired,

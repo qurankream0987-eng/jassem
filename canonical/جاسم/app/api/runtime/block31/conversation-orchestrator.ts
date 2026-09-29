@@ -1332,6 +1332,75 @@ async function ownSubject(
  *   MODEL_EXTRACTION != OWNER_DECLARATION — it lands INFERRED, and an INFERRED
  *   value already decides nothing until the person confirms this exact one.
  */
+/**
+ * «استمر بالبحث وأخبرني عندما تظهر» · «كفى، لا تبحث».
+ *
+ * A search answers what exists NOW. Traced: nothing ever re-ran a match, so a
+ * request whose answer had not been published yet came back empty and was
+ * forgotten — the entire long-running half of the runtime.
+ *
+ *   A NEED CAN WAIT · ANSWERING_ONLY_WHAT_EXISTS_NOW = 0
+ *
+ * A wait finds candidates. It reserves nothing, contacts nobody and buys
+ * nothing, exactly like a search that happened to run today.
+ *
+ *   MATCH != OFFER · TARGET / CONDITION != EXECUTION AUTHORITY
+ */
+async function waitTurn(
+  db: NodePgDatabase<any>,
+  input: { ownerId: string; conversationId: string; content: string; envelope: IntentEnvelope },
+): Promise<ConversationCommerceResult> {
+  const bound = await activeBinding(db, input.ownerId, input.conversationId, "current:need");
+  if (!bound) {
+    // Waiting for nothing in particular is not a wait.
+    return clarification("لم تخبرني بعد بما تريده لأستمر في البحث عنه.");
+  }
+  const { waitForMatch, stopWaiting } = await import("../waiting-needs");
+  const values = input.envelope.intent?.inputs ?? {};
+  const stop = values.stop === true || /(?:^|\s)(?:كفى|توقف|ألغِ|الغ)(?:\s|$)/u.test(input.content);
+
+  try {
+    if (stop) {
+      const stopped = await stopWaiting(db, { needId: bound.targetId, ownerId: input.ownerId });
+      return {
+        kind: "structured_result",
+        label: stopped ? "Stopped looking" : "Not looking",
+        summary: stopped
+          ? "توقفتُ عن البحث. ما وجدتُه سابقاً باقٍ كما هو، ولم يُلغَ شيء."
+          : "لم أكن أبحث عن هذا أصلاً.",
+        data: { waiting: false, effects: "none" },
+        status: "completed",
+      };
+    }
+    const until = typeof values.until === "string" ? new Date(values.until) : undefined;
+    const wait = await waitForMatch(db, {
+      needId: bound.targetId,
+      ownerId: input.ownerId,
+      ...(until && Number.isFinite(until.getTime()) ? { expiresAt: until } : {}),
+    });
+    return {
+      kind: "structured_result",
+      label: "Watching for it",
+      summary:
+        "سأستمر بالبحث وأخبرك عندما يظهر شيء جديد يطابقه — الجديد وحده، لا نفس النتيجة كل مرة. ولن أحجز شيئاً ولن أتواصل مع أحد.",
+      data: {
+        waiting: true,
+        needRef: wait.needId,
+        until: wait.expiresAt.toISOString(),
+        // Said plainly, because a standing scan invites exactly this confusion.
+        reservesNothing: true,
+        contactsNobody: true,
+        // WAITING != PUBLISHING — nobody is shown what this person wants.
+        published: false,
+        effects: "none",
+      },
+      status: "awaiting_input",
+    };
+  } catch (error) {
+    return clarification(error instanceof Error ? error.message : "لا أستطيع الاستمرار بهذا.");
+  }
+}
+
 async function stateTurn(
   db: NodePgDatabase<any>,
   input: { ownerId: string; conversationId: string; content: string; envelope: IntentEnvelope },
@@ -1856,6 +1925,23 @@ export async function orchestrateConversationCommerce(input: {
   //
   //   A FACT ABOUT ME IS NOT A REQUIREMENT OF THEM
   const isState = hasLabel(input.envelope, /self[-_: ]?state|own[-_: ]?attribute|state[-_: ]?fact/);
+  // ── «استمر بالبحث وأخبرني» — THE LONG-RUNNING HALF ──────────────────────
+  //
+  // A search answers what exists NOW; this answers «tell me when it exists».
+  //
+  //   A NEED CAN WAIT
+  //
+  // «راقب» is deliberately NOT here, and a regression caught it: «راقب هذا
+  // وأخبرني إذا تغيّر» names a SUBJECT THAT EXISTS and belongs to the
+  // monitoring runtime, which watches it durably. «أخبرني عندما تظهر» names
+  // nothing at all — the thing it waits for has no id yet. Two sentences that
+  // sound alike and are not the same act, and claiming the shared word would
+  // have silently taken over the older one.
+  //
+  //   WATCHING_A_SUBJECT != WAITING_FOR_ONE_TO_EXIST
+  const isWait =
+    hasLabel(input.envelope, /need[-_: ]?wait|standing[-_: ]?search/) ||
+    /(?:^|\s)(?:أخبرني\s+عندما\s+تظهر|اخبرني\s+عندما\s+تظهر|استمر\s+بالبحث)(?:\s|$)/u.test(text);
 
   // Consequential intents are checked before discovery because classifier
   // labels may contain both "search" and the requested follow-up action.
@@ -1896,6 +1982,10 @@ export async function orchestrateConversationCommerce(input: {
   // Releasing and asking come before approval and selection, because both
   // name a counterparty rather than a result, and «أرسل له موقعي» must never
   // be read as picking something.
+  // Before discovery, deliberately: «أخبرني عندما تظهر» is not a search that
+  // happens to run now, and reading it as one would answer «nothing found» to
+  // somebody who just asked to be told later.
+  if (isWait) return waitTurn(input.db, input);
   if (isState) return stateTurn(input.db, input);
   if (isDisclose) return discloseTurn(input.db, input);
   if (isAsk) return askCounterpartyTurn(input.db, input);
