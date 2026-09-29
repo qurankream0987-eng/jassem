@@ -5425,6 +5425,23 @@ export async function getExecutionProposal(proposalId: string, ownerId: string) 
   return executionProposalResponse(await loadExecutionProposalRecord(proposalId, ownerId));
 }
 
+/**
+ * Does a trigger name this run?
+ *
+ * A run that exists in order to fire later, on its own, when nobody is
+ * looking. The same evidence the wake reads — `A_RUN_IS_WOKEN_BY_A_TRIGGER_
+ * THAT_NAMES_IT` — so a standing run cannot be one thing to the waker and
+ * another to the approval gate.
+ */
+async function runIsStanding(runId: string, ownerId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ id: temporalTriggers.id })
+    .from(temporalTriggers)
+    .where(and(eq(temporalTriggers.runId, runId), eq(temporalTriggers.ownerId, ownerId)))
+    .limit(1);
+  return Boolean(row);
+}
+
 export async function createExecutionProposal(input: {
   ownerId: string;
   conversationId: string;
@@ -5469,12 +5486,33 @@ export async function createExecutionProposal(input: {
   ];
   const normalizedInputs = inputValidation.valid ? inputValidation.normalizedInputs : {};
 
+  // ── AN ACT NOBODY IS WATCHING ────────────────────────────────────────────
+  //
+  //   A STANDING ACT IS NOT A WATCHED ACT
+  //
+  // Approval used to be decided by RISK ALONE: high or critical asks, anything
+  // else proceeds. That is right for an act a person authored a moment ago and
+  // is watching happen. It is not right for one that fires at three in the
+  // morning because a number moved — the same «low risk» does not mean the
+  // same thing when nobody is there.
+  //
+  // A run that a trigger NAMES is a standing run: it exists in order to run
+  // later, on its own. Read from canonical state rather than from a flag,
+  // because the same evidence already decides whether a fired trigger may wake
+  // it — one fact, one place, and nothing to forget to set.
+  //
+  //   TARGET / CONDITION != EXECUTION AUTHORITY
+  //
+  // This never LOOSENS anything: a high-risk act still asks, and this can only
+  // turn «allow» into «require_approval», never the reverse.
+  const standing = input.runId ? await runIsStanding(input.runId, input.ownerId) : false;
+
   const policyDecision: RuntimeExecutionProposalResponse["policyDecision"] =
     referenceNeedsInput || requiredInputs.length > 0
       ? "require_input"
       : !capability
         ? "deny"
-        : input.risk === "high" || input.risk === "critical"
+        : input.risk === "high" || input.risk === "critical" || standing
           ? "require_approval"
           : "allow";
   const approvalRequired = policyDecision === "require_approval";
