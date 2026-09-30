@@ -4852,16 +4852,66 @@ export type RuntimeReferenceResolution = {
 };
 
 /**
- * The words that make an utterance a reference at all.
+ * WHAT MAKES AN UTTERANCE A REFERENCE AT ALL.
  *
- * This list held no ordinal, so «قارن الثاني والرابع» was `not_requested`:
- * the runtime did not fail to resolve the reference, it never saw that one
- * had been made. The ordinal vocabulary is appended from its own module
- * rather than transcribed here, so the two cannot drift apart.
+ * ─── THE DOMAIN THAT WAS LIVING HERE ────────────────────────────────────────
+ *
+ * This was one hand-maintained list, and fifteen of its forty-nine
+ * alternatives were DOMAIN NOUNS: «متجر», «الطلب», «الإعلان», «المنتج»,
+ * «الخدمة», «السيارة», «الهاتف», `my store`, `product`, `car`, `phone`…
+ *
+ * So the runtime recognised «اعرض لي السيارة» as a reference and
+ * «اعرض لي السائق» as nothing at all — not «I could not resolve it», but
+ * «no reference was made». A new domain word was invisible, which is exactly
+ * what the architecture forbids, in the one file it forbids it hardest:
+ *
+ *   NEW DOMAIN != NEW AGENT · DOMAIN_SPECIFIC_CORE = 0
+ *
+ * No guard caught it. `frozen-corpus.test.ts` checks the BENCHMARK machinery
+ * and `unseen-ideas-holdout` checks a list of core files that does not include
+ * this one. `reference-cue-is-grammatical.test.ts` now does.
+ *
+ * ─── WHAT REPLACED IT ───────────────────────────────────────────────────────
+ *
+ * The grammatical property the nouns were approximating. In Arabic a definite
+ * noun — «السائق», «الرافعة», «المخطوطة» — is how one points at something
+ * already in play, and that is a fact about the LANGUAGE, true of every noun
+ * there is and of nouns nobody has thought of.
+ *
+ * Two tiers, because they are not equally strong:
+ *
+ *   STRUCTURAL — an ordinal, a relative pronoun, a demonstrative, an explicit
+ *     recency word, or one of the RUNTIME's own nouns (a conversation, a
+ *     message, a run, a task, a world, a bubble, a source, an image). These
+ *     say «I am pointing» outright.
+ *
+ *   DEFINITE — «ال» on a word of three letters or more, or English «the …».
+ *     A weak cue: it opens the door and claims nothing.
+ *
+ *   A DEFINITE ARTICLE IS A WEAK CUE, NOT A CLAIM THAT SOMETHING WAS MEANT
+ *
+ * That distinction is load-bearing. «ما الفرق بين الطاقة الشمسية وطاقة
+ * الرياح؟» carries a definite noun and points at nothing, so a resolver that
+ * treated every «ال» as a claim would answer an ordinary question with «which
+ * one do you mean?». When only the weak cue fired and nothing matched, the
+ * honest answer stays `not_requested`.
  */
+const STRUCTURAL_CUE_SOURCE =
+  "(?:فقاع(?:ة|ه)|العالم|المهمة|العملية|المحادثة|الرسالة|المصدر|مصدر|الصورة|صورة" +
+  "|السابق|السابقة|الذي|التي|هذه|هذا|ما زالت|مازال" +
+  "|previous|the one|that|this|latest|source|image|bubble|run|task|world|message)";
+
+/** Grammar, not vocabulary: «ال» on a noun, or English «the …». */
+const DEFINITE_CUE_SOURCE =
+  "(?<![\\p{L}\\p{N}])(?:[وفبلك]?ال)\\p{L}{3,}|(?<![a-z])the\\s+[a-z]{3,}";
+
+const structuralCuePattern = new RegExp(
+  `${STRUCTURAL_CUE_SOURCE}|${ORDINAL_CUE_SOURCE}`,
+  "iu",
+);
+const definiteCuePattern = new RegExp(DEFINITE_CUE_SOURCE, "iu");
 const referenceCuePattern = new RegExp(
-  "(?:متجر|متجري|منص(?:ة|تي)|فقاع(?:ة|ه)|العالم|المهمة|العملية|العملية التي|الطلب|الإعلان|المنتج|الخدمة|السيارة|الهاتف|الجهاز|المحادثة|الرسالة|المصدر|مصدر|الصورة|صورة|السابق|السابقة|الذي|التي|هذه|هذا|ما زالت|مازال|previous|the one|that|this|latest|source|image|my store|my platform|bubble|run|task|world|message|product|service|car|phone)" +
-    `|${ORDINAL_CUE_SOURCE}`,
+  `${STRUCTURAL_CUE_SOURCE}|${ORDINAL_CUE_SOURCE}|${DEFINITE_CUE_SOURCE}`,
   "iu",
 );
 
@@ -5004,9 +5054,24 @@ export async function resolveRuntimeReferences(input: {
     requestedTypes.add("dataset_row");
   }
   if (/صورة|image/i.test(lowerContent)) requestedTypes.add("artifact");
-  if (/منتج|سيارة|هاتف|جهاز|خدمة|entity|product|car|phone|service/i.test(lowerContent)) {
-    requestedTypes.add("entity");
-  }
+  // ── THE SAME DOMAIN LEAK, ONE LAYER DOWN ─────────────────────────────────
+  //
+  // This read «منتج|سيارة|هاتف|جهاز|خدمة|product|car|phone|service» and
+  // narrowed the candidate set to ENTITY. It is the cue pattern's defect
+  // again: a hand-listed set of business nouns deciding what somebody meant,
+  // in the file that may not name one.
+  //
+  // And it did real damage rather than merely sitting there. «أكمل ما بدأته
+  // على الجهاز الآخر» contains «جهاز», so the runtime concluded the person
+  // meant an ENTITY and threw away every message, conversation and run before
+  // scoring — resolving a continuation to nothing because of a noun.
+  //
+  //   A HINT THAT EXCLUDES IS NOT A HINT
+  //
+  // Nothing replaces it. A type hint may only ever come from the RUNTIME's own
+  // nouns above; anything else leaves the field open and lets the token score
+  // decide, which is what ranks an entity first when the person named one.
+  // Removing a narrowing can lose no candidate — it can only stop losing them.
 
   type Candidate = {
     type: RuntimeReferenceType;
@@ -5244,6 +5309,13 @@ export async function resolveRuntimeReferences(input: {
     }
   }
 
+  // Was this a claim, or only ordinary language? A weak cue that finds nothing
+  // is not an unresolved reference — nobody pointed at anything.
+  //
+  //   A DEFINITE ARTICLE IS A WEAK CUE, NOT A CLAIM THAT SOMETHING WAS MEANT
+  const weakCueOnly =
+    !structuralCuePattern.test(input.content) && definiteCuePattern.test(input.content);
+
   const typed = candidates
     .filter((candidate) => requestedTypes.size === 0 || requestedTypes.has(candidate.type))
     .map((candidate) => ({
@@ -5254,7 +5326,9 @@ export async function resolveRuntimeReferences(input: {
   const ranked = typed
     .sort((left, right) => right.score - left.score || left.recency - right.recency)
     .slice(0, 5);
-  if (ranked.length === 0) return { status: "unresolved", references: [] };
+  if (ranked.length === 0) {
+    return { status: weakCueOnly ? "not_requested" : "unresolved", references: [] };
+  }
 
   // The ordinal branch above owns positions now. What reaches here named no
   // position, or named one against nothing that was ever enumerated, so the
@@ -5266,7 +5340,7 @@ export async function resolveRuntimeReferences(input: {
     lowerContent,
   );
   if (recencyOnly && (requestedTypes.size === 0 || !explicitRecencyReference)) {
-    return { status: "unresolved", references: [] };
+    return { status: weakCueOnly ? "not_requested" : "unresolved", references: [] };
   }
   if (second && best.score === second.score && best.score > 0) {
     return {

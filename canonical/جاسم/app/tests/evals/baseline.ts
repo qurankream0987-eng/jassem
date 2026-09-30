@@ -22,6 +22,9 @@
 
 import { randomUUID } from "node:crypto";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { eq, inArray } from "drizzle-orm";
+import { dagNodes, messages, runs } from "@db/schema";
+import { parseOrdinalReferences } from "../../api/runtime/ordinal-reference";
 import { FROZEN_V1 } from "./corpus/frozen-v1";
 import { FUTURE_PROBES } from "./baseline-future-probes";
 import { evaluateScenario } from "./evaluate";
@@ -108,6 +111,105 @@ async function runExecutable(
   return readTrajectory(db, { ownerId, runId: run.id });
 }
 
+/** The content words of an utterance — what a later turn could point back at. */
+function contentWords(utterance: string): string[] {
+  return utterance
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .split(/\s+/)
+    .filter((word) => word.length > 2);
+}
+
+/**
+ * Give a reference scenario the history it refers to.
+ *
+ * What each one needs is decided by what it EXPECTS, not by its id:
+ *
+ *   resolved  — something the words can match, so one candidate stands out
+ *   ambiguous — TWO candidates that match equally, so picking either is a guess
+ *
+ * and an ordinal utterance needs an enumerated list, because a position can
+ * only be resolved against a list that was actually shown.
+ */
+async function seedReferenceHistory(
+  options: BaselineOptions,
+  scenario: Scenario,
+  conversationId: string,
+): Promise<() => Promise<void>> {
+  // ── NOTHING, FIRST ─────────────────────────────────────────────────────
+  //
+  //   AN EXPECTATION OF «NOTHING» IS SATISFIED BY SEEDING NOTHING
+  //
+  // Checked before anything else, because S26 hands the runtime a raw
+  // identifier — «اعرض لي السجل رقم 123» — whose digits PARSE AS AN ORDINAL.
+  // Seeding first and asking afterwards therefore built it the very
+  // enumeration it then resolved against, and turned a cross-owner refusal
+  // into a hit. The fixture was the attacker.
+  if (scenario.expect.reference !== "resolved" && scenario.expect.reference !== "ambiguous") {
+    return async () => {};
+  }
+
+  const words = contentWords(scenario.utterance);
+  const ordinals = parseOrdinalReferences(scenario.utterance);
+
+  if (ordinals.length > 0) {
+    // A completed node carrying an ordered list — the only thing a position
+    // may be resolved against.
+    const run = await options.runtime.createRuntimeRun({
+      ownerId: options.ownerId,
+      goal: scenario.utterance,
+      idempotencyKey: `eval-${scenario.id}-${randomUUID()}`,
+      conversationId,
+    });
+    const count = Math.max(4, ...ordinals.map((entry) => entry.position ?? 0));
+    await options.db.insert(dagNodes).values({
+      runId: run.id,
+      ownerId: options.ownerId,
+      nodeKey: `eval-${scenario.id}`,
+      capabilityId: "eval",
+      status: "SUCCEEDED",
+      inputs: {},
+      output: {
+        sources: Array.from({ length: count }, (_, index) => ({
+          sourceId: `s-${index + 1}`,
+          title: `${words[0] ?? "entry"} ${index + 1}`,
+          snippet: words.join(" "),
+          url: `https://example.invalid/${index + 1}`,
+        })),
+      },
+      completedAt: new Date(),
+    } as never);
+    return async () => {
+      await options.db.delete(runs).where(eq(runs.id, run.id));
+    };
+  }
+
+  // How many equally-matching candidates this scenario needs to exist.
+  //
+  // NONE, for a scenario that expects `unresolved`. S26 hands the runtime a
+  // raw identifier from somewhere else and the whole point is that it matches
+  // NOTHING the owner has; seeding it a candidate built from the attacker's own
+  // words made it resolve, and turned a cross-owner refusal into a hit.
+  //
+  //   AN EXPECTATION OF «NOTHING» IS SATISFIED BY SEEDING NOTHING
+  const wanted = scenario.expect.reference === "ambiguous" ? 2 : 1;
+  const rows = Array.from({ length: wanted }, (_, index) => ({
+    conversationId: Number(conversationId),
+    role: "assistant" as const,
+    // The SAME words, so the candidates score equally and «which one» is the
+    // only honest answer. Differing text would rank one above the other and
+    // measure ranking instead of ambiguity.
+    content: `${words.join(" ")} (${index + 1})`,
+    ownerId: options.ownerId,
+  }));
+  if (rows.length === 0) return async () => {};
+  const inserted = await options.db.insert(messages).values(rows as never).returning();
+  return async () => {
+    await options.db
+      .delete(messages)
+      .where(inArray(messages.id, inserted.map((row) => (row as { id: number }).id)));
+  };
+}
+
 export async function runBaseline(options: BaselineOptions): Promise<readonly ScenarioResult[]> {
   const results: ScenarioResult[] = [];
 
@@ -162,11 +264,36 @@ export async function runBaseline(options: BaselineOptions): Promise<readonly Sc
         ownerId: options.ownerId,
         title: `eval ${scenario.id}`,
       });
+      // ── AND A CONVERSATION THAT ACTUALLY HAPPENED ───────────────────────
+      //
+      // These scenarios were PARTIAL for one reason: they ran against an EMPTY
+      // conversation, and «the second one» cannot resolve where nothing was
+      // ever listed, nor «which one do you mean» where there is only one. The
+      // resolver ran correctly every time; the fixture could not supply what it
+      // needed, and the report said so.
+      //
+      //   A REFERENCE NEEDS SOMETHING TO REFER TO
+      //
+      // Every seeded turn is built FROM THE SCENARIO'S OWN UTTERANCE, so this
+      // machinery writes no noun of its own. The benchmark may hear a domain;
+      // it may not encode one — and echoing the person's words back as prior
+      // turns is exactly what a real conversation would have held.
+      // ── AND TAKEN AWAY AGAIN ────────────────────────────────────────────
+      //
+      // The resolver reads every message this OWNER has, across conversations
+      // — deliberately, because a reference may point at another one. So a
+      // scenario's seeded history is visible to every scenario after it, and
+      // S26 («اعرض لي السجل رقم 123», which must resolve to NOTHING) matched
+      // a row S05 had left behind on the single shared word «اعرض».
+      //
+      //   A FIXTURE THAT OUTLIVES ITS SCENARIO IS MEASURING THE NEXT ONE
+      const forget = await seedReferenceHistory(options, scenario, conversation.id);
       const resolution = await options.runtime.resolveRuntimeReferences({
         ownerId: options.ownerId,
         conversationId: conversation.id,
         content: scenario.utterance,
       });
+      await forget();
       const expected = scenario.expect.reference;
       const matched = expected ? resolution.status === expected : true;
       results.push({
@@ -179,7 +306,15 @@ export async function runBaseline(options: BaselineOptions): Promise<readonly Sc
           {
             name: "reference_resolution",
             passed: matched,
-            detail: `expected ${expected}, observed ${resolution.status}`,
+            // What it resolved TO, not merely that it did: a contaminated
+            // fixture and a real defect look identical without it.
+            detail:
+              `expected ${expected}, observed ${resolution.status}` +
+              (resolution.references.length
+                ? ` → ${resolution.references
+                    .map((reference) => `${reference.referenceType}:${reference.resolvedId}`)
+                    .join(", ")}`
+                : ""),
             severity: "QUALITY",
           },
           {
