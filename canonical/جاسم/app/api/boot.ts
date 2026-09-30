@@ -410,6 +410,51 @@ if (
   })();
 }
 
+// ── DOES THIS DATABASE HAVE WHAT THE CODE EXPECTS? ─────────────────────────
+//
+// JASIM had 4136 passing tests and could not answer a single sentence in a
+// browser: every authenticated request returned 401 because one table the
+// migrations declare — `identity_session_revocations` — was missing from the
+// database the app runs on. Thirteen more were missing with it, `agreements`,
+// `commitments` and `transactions` among them, and
+// `drizzle.__drizzle_migrations` did not exist at all: the migrate command had
+// never run once.
+//
+// The tests could not have caught it. The Block 3.1 suite RECREATES its
+// database from the journal on every run, so it always has every table.
+//
+//   TESTS PASS AGAINST A DATABASE BUILT FROM MIGRATIONS
+//   != THE DATABASE THE APP RUNS ON WAS BUILT THAT WAY
+//
+// So JASIM now says so itself, at boot, once. It does NOT refuse to start:
+// a partially-migrated database still serves everything that does not touch a
+// missing table, and refusing would turn a diagnosable state into a silent
+// one. The log line is the thing that was missing, not a new gate.
+if (process.env.VITEST !== "true" && process.env.NODE_ENV !== "test") {
+  void (async () => {
+    try {
+      const { schemaDrift } = await import("../scripts/schema-drift.mjs");
+      const drift = await schemaDrift(env.databaseUrl);
+      if (drift.missing.length > 0) {
+        logger.error("boot.schema_incomplete", {
+          missingCount: drift.missing.length,
+          missing: drift.missing,
+          migrationsRecorded: drift.applied,
+          remedy: "npm run db:migrate",
+        });
+      } else {
+        logger.info("boot.schema_complete", {
+          tables: drift.declared,
+          migrationsRecorded: drift.applied,
+        });
+      }
+    } catch (error) {
+      // A check that cannot run must not stop a boot that otherwise would.
+      logger.warn("boot.schema_check_failed", { error: String(error) });
+    }
+  })();
+}
+
 if (env.isProduction) {
   const { serve } = await import("@hono/node-server");
   const { serveStaticFiles } = await import("./lib/vite");
