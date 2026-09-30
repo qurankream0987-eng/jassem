@@ -728,6 +728,116 @@ export function safeParsePresentationDefinition(value: unknown) {
  * Converts a semantic structured result into the existing Presentation IR.
  * This is intentionally read-only and carries no executable action.
  */
+/**
+ * THE GENERIC INTENTS A SURFACE MAY OFFER.
+ *
+ * Exactly the set the trusted action path already accepts. A button is an
+ * INTENT and nothing more, so an intent nothing can carry out is a button that
+ * lies about what will happen.
+ *
+ *   BUTTON != EXECUTION AUTHORITY
+ *
+ * An unfamiliar intent renders NO action rather than a domain verb somebody
+ * invented — there is no BUY, ORDER, APPLY or BOOK here and there never can be.
+ */
+const SURFACE_INTENTS: ReadonlySet<string> = new Set([
+  "open",
+  "open_reference",
+  "select",
+  "approve",
+  "reject",
+  "resume",
+  "execute",
+  "run",
+  "retry",
+  "cancel",
+]);
+
+/** An exact minor-unit amount, or nothing. Never a float, never inferred. */
+function canonicalMoney(value: unknown): { amountMinor: string; currency: string } | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const money = value as Record<string, unknown>;
+  const amountMinor = typeof money.amountMinor === "string" ? money.amountMinor : undefined;
+  const currency = typeof money.currency === "string" ? money.currency.trim() : "";
+  // An amount that is not an exact integer of minor units is not money this
+  // runtime stores, and displaying it would be inventing a scale.
+  if (!amountMinor || !/^-?\d+$/.test(amountMinor) || !currency) return undefined;
+  return { amountMinor, currency };
+}
+
+/**
+ * A CANONICAL CANDIDATE, IN THE VOCABULARY THE CARD READS.
+ *
+ * ─── THE GAP THIS CLOSES ────────────────────────────────────────────────────
+ *
+ * Every piece of this already existed. Discovery persists a result set, the
+ * orchestrator narrows each row to what may be shown, `decidePresentation`
+ * already chooses ENTITY_GRID at six results or more, and the commerce turn
+ * already writes the result into `metadata.presentation`. The candidates then
+ * travelled through VERBATIM — so the canonical amount arrived as
+ * `observedMoney` and the canonical intents as `actionable`, while the card
+ * reads `money` and `actions`. Facts that were present, correct and
+ * authorized rendered as nothing at all.
+ *
+ *   A NAME THE RENDERER DOES NOT READ IS A FACT NOBODY SEES
+ *
+ * ─── AND WHAT THIS MAY NOT DO ───────────────────────────────────────────────
+ *
+ * It renames and filters. It never adds.
+ *
+ *   MODEL != PRICE AUTHORITY · MODEL != AVAILABILITY AUTHORITY
+ *   MODEL != IMAGE AUTHORITY · MODEL != ACTION AUTHORITY
+ *
+ * NO IMAGE IS PROJECTED, EVER. A canonical candidate carries no media field —
+ * `NormalizedCandidate` has none — so any picture on such a card could only
+ * have come from a sentence. `safeMediaUrl` proves a URL is safe to FETCH; it
+ * proves nothing about whether that picture is of this thing.
+ *
+ *   SAFE_MEDIA_URL != TRUE IMAGE ASSOCIATION
+ *
+ * A fact that is absent stays absent: UNKNOWN != EMPTY != FALSE != ZERO.
+ */
+export function projectCandidateForSurface(
+  candidate: Record<string, unknown>,
+): Record<string, unknown> {
+  const text = (value: unknown): string | undefined =>
+    typeof value === "string" && value.trim() ? value.trim() : undefined;
+
+  // Identity for selection comes from canonical references, never from a
+  // title, a position in an array, or whatever was newest.
+  const reference =
+    text(candidate.canonicalRef) ?? text(candidate.externalRef) ?? text(candidate.id);
+
+  const money = canonicalMoney(candidate.observedMoney);
+  const availability = text(candidate.availability);
+  const actions = (Array.isArray(candidate.actionable) ? candidate.actionable : [])
+    .filter((intent): intent is string => typeof intent === "string")
+    .map((intent) => intent.trim().toLowerCase())
+    .filter((intent) => SURFACE_INTENTS.has(intent))
+    .map((intent) => ({ intent, label: intent }));
+
+  return {
+    ...(reference ? { ref: reference, id: reference } : {}),
+    ...(text(candidate.title) ? { title: candidate.title } : {}),
+    ...(text(candidate.summary) ? { description: candidate.summary } : {}),
+    ...(money ? { money } : {}),
+    // Availability is a canonical observation when it is there, and nothing at
+    // all when it is not. An absent availability is not "unavailable".
+    ...(availability ? { badges: [availability] } : {}),
+    ...(actions.length > 0 ? { actions } : {}),
+    ...(text(candidate.source) ? { source: candidate.source } : {}),
+    ...(candidate.attributes && typeof candidate.attributes === "object" &&
+      !Array.isArray(candidate.attributes)
+      ? { attributes: candidate.attributes }
+      : {}),
+    // Carried so nothing downstream has to go back to the database to know how
+    // far this row may be trusted.
+    ...(candidate.trust !== undefined ? { trust: candidate.trust } : {}),
+    ...(candidate.provenance !== undefined ? { provenance: candidate.provenance } : {}),
+    ...(typeof candidate.position === "number" ? { position: candidate.position } : {}),
+  };
+}
+
 export function projectStructuredResult(input: {
   label: string;
   summary: string;
@@ -917,13 +1027,20 @@ export function decidePresentation(
     });
   }
   if (hasResultSet || parsedInput.semanticOutput === "candidates") {
+    // The ONE place a candidate is renamed into what a card reads. Renaming
+    // and filtering only — see `projectCandidateForSurface`.
+    const surfaceCandidates = (candidateData ?? []).map((candidate) =>
+      projectCandidateForSurface(candidate as Record<string, unknown>),
+    );
     return validatePresentationDefinition({
       primitive: resultCount >= 6 ? "ENTITY_GRID" : "SEARCH_RESULTS",
       version: 1,
       data: {
-        candidates: candidateData ?? [],
-        resultCount,
         ...parsedInput.data,
+        // After the spread, so a `candidates` key travelling in `data` cannot
+        // put the raw shape back and undo the projection.
+        candidates: surfaceCandidates,
+        resultCount,
       },
     });
   }

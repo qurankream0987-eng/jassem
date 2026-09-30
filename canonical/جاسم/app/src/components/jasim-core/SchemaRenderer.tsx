@@ -386,6 +386,14 @@ function reservedEntityKey(key: string): boolean {
     'provenance',
     'money',
     'availability',
+    // Carried for downstream use, never shown as a fact ABOUT the thing:
+    // «trust: CANONICAL» and «position: 1» are how the runtime describes a row,
+    // not something the person asked to see. Developer output is not a card.
+    'trust',
+    'provenance',
+    'position',
+    'canonicalRef',
+    'externalRef',
   ]).has(key);
 }
 
