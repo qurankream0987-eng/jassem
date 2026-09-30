@@ -23,6 +23,7 @@
 import { randomUUID } from "node:crypto";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { FROZEN_V1 } from "./corpus/frozen-v1";
+import { FUTURE_PROBES } from "./baseline-future-probes";
 import { evaluateScenario } from "./evaluate";
 import { readTrajectory, type Trajectory } from "./trajectory";
 import type { Scenario, ScenarioResult } from "./scenario";
@@ -215,7 +216,55 @@ export async function runBaseline(options: BaselineOptions): Promise<readonly Sc
       continue;
     }
 
-    // ── Offline, no executable path yet ────────────────────────────────────
+    // ── Offline, measured by a direct runtime probe ────────────────────────
+    //
+    // The five scenarios that used to land in the fallback below. Each one's
+    // mechanism was there the whole time; what was missing was a way for this
+    // harness to reach it, because its only executor drives a CAPABILITY and
+    // these are runtime paths.
+    const probe = FUTURE_PROBES[scenario.id];
+    if (probe) {
+      try {
+        const checks = await probe({
+          db: options.db,
+          ownerId: options.ownerId,
+          otherOwnerId: `${options.ownerId}-other`,
+        });
+        const failed = checks.filter((check) => !check.passed);
+        const blocking = failed.filter(
+          (check) => check.severity === "SECURITY" || check.severity === "TRUTH",
+        );
+        results.push({
+          scenarioId: scenario.id,
+          outcome: blocking.length > 0 ? "FAIL" : failed.length > 0 ? "PARTIAL" : "PASS",
+          checks,
+          observedRequirement: scenario.expectedRequirement,
+          notes: [],
+        });
+      } catch (error) {
+        // A probe that throws is a FAIL, never a silent return to FUTURE: the
+        // mechanism was claimed reachable and it was not.
+        results.push({
+          scenarioId: scenario.id,
+          outcome: "FAIL",
+          checks: [{
+            name: "probe_ran", passed: false,
+            detail: String(error).slice(0, 300), severity: "TRUTH",
+          }],
+          observedRequirement: scenario.expectedRequirement,
+          notes: ["The probe threw; this scenario's mechanism is not reachable as claimed."],
+        });
+      }
+      continue;
+    }
+
+    // ── Offline, and this harness cannot reach it ──────────────────────────
+    //
+    //   A HARNESS WITH NO PROBE REPORTS THE ABSENCE OF A MECHANISM
+    //
+    // This note used to read «the mechanism does not exist on the live path
+    // yet», which was never measured — and was wrong for all five scenarios
+    // that landed here. It now says the only thing this branch actually knows.
     results.push(
       evaluateScenario({
         scenario,
@@ -223,7 +272,7 @@ export async function runBaseline(options: BaselineOptions): Promise<readonly Sc
         blocked: {
           outcome: "FUTURE",
           reason:
-            "The mechanism this scenario measures does not exist on the live path yet (planning, world mutation, or opportunity matching).",
+            "This harness has no probe that reaches what the scenario measures. That is a statement about the harness, not a finding about the runtime.",
         },
       }),
     );

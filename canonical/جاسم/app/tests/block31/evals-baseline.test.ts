@@ -47,6 +47,13 @@ describe("JASIM baseline — frozen corpus v1, no provider", () => {
     });
 
     console.log(`\n${formatReport(results)}\n`);
+    // `formatReport` prints check NAMES. A red row nobody can act on is barely
+    // better than no row, so the detail is printed too.
+    for (const result of results) {
+      for (const check of result.checks.filter((entry) => !entry.passed)) {
+        console.log(`  ${result.scenarioId} ${check.name}: ${check.detail}`);
+      }
+    }
 
     expect(results).toHaveLength(FROZEN_V1.length);
     const summary = summarize(results);
