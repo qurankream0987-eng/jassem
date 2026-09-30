@@ -18,6 +18,7 @@
  * machinery, and `unseen-ideas-holdout` checks a list of core files that never
  * included `jasim-runtime.ts`. This file is the guard that was missing.
  */
+import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
@@ -91,5 +92,93 @@ describe("what makes an utterance a reference is a property of language", () => 
     expect(body).toContain("weakCueOnly");
     // Both places that give up must respect it, not just the first.
     expect(body.split('weakCueOnly ? "not_requested" : "unresolved"').length - 1).toBe(2);
+  });
+});
+
+describe("a word is uninformative because of the candidates, not itself", () => {
+  /** The rule, read out of the runtime rather than restated here. */
+  function runtimeSource(): string {
+    return readFileSync("api/runtime/jasim-runtime.ts", "utf8");
+  }
+
+  it("the stopword list names no business", () => {
+    const source = runtimeSource();
+    const start = source.indexOf("const REFERENCE_STOPWORDS");
+    const list = source.slice(start, source.indexOf("];", start));
+    for (const domain of [
+      // The six that were there.
+      "متجر", "متجري", "منصة", "منصتي", "منتج", "خدمة",
+      // And ones nobody listed, which must stay unlisted.
+      "رافعة", "شاحنة", "سائق", "فندق", "شقة", "وظيفة",
+      "store", "platform", "product", "service", "crane", "truck",
+    ]) {
+      expect(list, `the stopwords name «${domain}»`).not.toContain(domain);
+    }
+  });
+
+  it("but grammar and the runtime's own nouns stay, because they are not a business", () => {
+    const source = runtimeSource();
+    const start = source.indexOf("const REFERENCE_STOPWORDS");
+    const list = source.slice(start, source.indexOf("];", start));
+    for (const kept of ["الذي", "هذه", "previous", "العملية", "فقاعة", "المحادثة"]) {
+      expect(list, kept).toContain(kept);
+    }
+  });
+
+  it("a word every candidate carries stops being evidence — whatever the word is", async () => {
+    //
+    // The proof that matters: not that the source says so, but that the
+    // resolver BEHAVES so, on a noun that appears in no list anywhere.
+    const { db } = await import("../../api/queries/connection");
+    const { users, messages } = await import("@db/schema");
+    const runtime = await import("../../api/runtime/jasim-runtime");
+    const { eq } = await import("drizzle-orm");
+
+    const [person] = await db
+      .insert(users)
+      .values({ unionId: `cue-${randomUUID()}`, name: "ش", preferences: {} } as never)
+      .returning();
+    const owner = String((person as { id: unknown }).id);
+
+    /** Ask «اعرض لي الرافعة» against a world of `texts`. */
+    async function ask(texts: readonly string[]) {
+      const conversation = await runtime.createRuntimeConversation({ ownerId: owner, title: "ج" });
+      await db.insert(messages).values(
+        texts.map((content) => ({
+          conversationId: Number(conversation.id),
+          role: "assistant" as const,
+          content,
+          ownerId: owner,
+        })) as never,
+      );
+      const resolution = await runtime.resolveRuntimeReferences({
+        ownerId: owner,
+        conversationId: conversation.id,
+        content: "اعرض لي الرافعة",
+      });
+      await db.delete(messages).where(eq(messages.ownerId, owner));
+      return resolution;
+    }
+
+    // ── ONE candidate carries the word: it is evidence, and it wins. ────────
+    const distinguishing = await ask([
+      "الرافعة الزرقاء جاهزة",
+      "الشاحنة في الطريق",
+      "الطلب مؤجل",
+      "الموعد غدا",
+    ]);
+    expect(distinguishing.status, "one candidate carries it").toBe("resolved");
+
+    // ── EVERY candidate carries it: it separates none of them. ──────────────
+    //
+    // Nothing anywhere lists «رافعة». The old list knew this property for six
+    // business nouns and for no others; the rule knows it for all of them.
+    const uninformative = await ask([
+      "الرافعة الزرقاء جاهزة",
+      "الرافعة الحمراء مشغولة",
+      "الرافعة الصفراء في الصيانة",
+      "الرافعة البيضاء محجوزة",
+    ]);
+    expect(uninformative.status, "every candidate carries it").not.toBe("resolved");
   });
 });

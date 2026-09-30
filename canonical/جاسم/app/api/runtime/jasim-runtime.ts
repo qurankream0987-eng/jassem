@@ -4915,51 +4915,87 @@ const referenceCuePattern = new RegExp(
   "iu",
 );
 
+/**
+ * WORDS THAT CANNOT TELL ONE THING FROM ANOTHER.
+ *
+ * ─── THE DOMAIN THAT WAS IN HERE ────────────────────────────────────────────
+ *
+ * One list held three different kinds of word, and only two of them belonged:
+ *
+ *   GRAMMAR — «الذي», «هذه», «السابق», `the`, `previous`. Function words. A
+ *     fact about language, true of every sentence anybody will ever say.
+ *
+ *   THE RUNTIME'S OWN NOUNS — «العملية», «فقاعة», «العالم», «المهمة»,
+ *     «المحادثة». These name what JASIM is made of, and the type hints above
+ *     already read them; as MATCH tokens they are noise, not evidence.
+ *
+ *   A BUSINESS — «متجر», «متجري», «منصة», «منصتي», «منتج», «خدمة». These were
+ *     here for a real reason: where everything on offer is a «متجر», two texts
+ *     sharing that word share nothing. But the reason is a property of the
+ *     CANDIDATES, not of the word, and writing it as a list meant JASIM knew
+ *     the property for six nouns and for no others. In a world of cranes,
+ *     «رافعة» was evidence.
+ *
+ *   A WORD IS UNINFORMATIVE BECAUSE OF THE CANDIDATES, NOT BECAUSE OF ITSELF
+ *
+ * So the six are gone and `uninformativeTokens` computes the property instead,
+ * from whatever is actually in front of it. It holds for a domain nobody has
+ * thought of, which a list can never do.
+ */
+const REFERENCE_STOPWORDS: ReadonlySet<string> = new Set([
+  // Grammar and deixis.
+  "الذي", "التي", "هذا", "هذه", "السابقة", "السابق", "الموجود", "موجود",
+  "the", "one", "that", "this", "previous",
+  // The runtime's own nouns. Naming these names no business.
+  "العملية", "عملية", "فقاعة", "العالم", "مهمة", "المهمة", "رسالة", "المحادثة",
+]);
+
 function referenceTokens(value: string): string[] {
   return value
     .toLocaleLowerCase("ar")
     .replace(/[^\p{L}\p{N}]+/gu, " ")
     .split(/\s+/)
     .filter((token) => token.length > 2)
-    .filter(
-      (token) =>
-        !new Set([
-          "الذي",
-          "التي",
-          "هذا",
-          "هذه",
-          "السابقة",
-          "السابق",
-          "العملية",
-          "الموجود",
-          "موجود",
-          "متجر",
-          "متجري",
-          "منصة",
-          "منصتي",
-          "فقاعة",
-          "العالم",
-          "مهمة",
-          "المهمة",
-          "عملية",
-          "العملية",
-          "رسالة",
-          "المحادثة",
-          "منتج",
-          "خدمة",
-          "the",
-          "one",
-          "that",
-          "this",
-          "previous",
-        ]).has(token),
-    );
+    .filter((token) => !REFERENCE_STOPWORDS.has(token));
 }
 
-function referenceScore(query: string, candidate: string): number {
+const NO_TOKENS: ReadonlySet<string> = new Set();
+
+/**
+ * The tokens nearly every candidate carries, and which therefore separate none.
+ *
+ * Deliberately conservative: it needs at least three candidates before it will
+ * discount anything, and a token must appear in FOUR FIFTHS of them. Two texts
+ * sharing a word is a coincidence worth scoring; twenty texts sharing one is
+ * the subject everybody is talking about, and pointing at it points at all of
+ * them.
+ */
+function uninformativeTokens(texts: readonly string[]): ReadonlySet<string> {
+  if (texts.length < 3) return NO_TOKENS;
+  const frequency = new Map<string, number>();
+  for (const text of texts) {
+    for (const token of new Set(referenceTokens(text))) {
+      frequency.set(token, (frequency.get(token) ?? 0) + 1);
+    }
+  }
+  const threshold = texts.length * 0.8;
+  const common = new Set<string>();
+  for (const [token, count] of frequency) {
+    if (count >= threshold) common.add(token);
+  }
+  return common;
+}
+
+function referenceScore(
+  query: string,
+  candidate: string,
+  uninformative: ReadonlySet<string> = NO_TOKENS,
+): number {
   const queryTokens = new Set(referenceTokens(query));
   const candidateTokens = new Set(referenceTokens(candidate));
-  return [...queryTokens].filter((token) => candidateTokens.has(token)).length;
+  return [...queryTokens].filter(
+    (token) => !uninformative.has(token) && candidateTokens.has(token),
+  ).length;
 }
 
 function referenceEvidence(input: {
@@ -5316,11 +5352,15 @@ export async function resolveRuntimeReferences(input: {
   const weakCueOnly =
     !structuralCuePattern.test(input.content) && definiteCuePattern.test(input.content);
 
-  const typed = candidates
-    .filter((candidate) => requestedTypes.size === 0 || requestedTypes.has(candidate.type))
+  const considered = candidates.filter(
+    (candidate) => requestedTypes.size === 0 || requestedTypes.has(candidate.type),
+  );
+  // Computed over exactly what is being ranked, once.
+  const uninformative = uninformativeTokens(considered.map((candidate) => candidate.text));
+  const typed = considered
     .map((candidate) => ({
       ...candidate,
-      score: referenceScore(input.content, candidate.text),
+      score: referenceScore(input.content, candidate.text, uninformative),
     }))
     .sort((left, right) => left.score - right.score || left.recency - right.recency);
   const ranked = typed
