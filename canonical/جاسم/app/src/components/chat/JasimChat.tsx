@@ -19,6 +19,15 @@ export interface JasimChatProps {
   showSuggestions?: boolean;
   disabled?: boolean;
   /**
+   * The generated surface for this conversation, rendered INSIDE the
+   * conversation's own scroll flow rather than in a drawer beside it.
+   *
+   * A node rather than a component, so this file knows nothing about what a
+   * surface is, who owns it, or how it was made — which is what keeps the
+   * conversation the primary surface and the instrument an instrument.
+   */
+  surface?: React.ReactNode;
+  /**
    * Arabic-first means Arabic is the default, not the alternative.
    * This defaulted to `false` and Home never passed it, so the entire empty
    * state — heading, subtitle and all four suggestions — shipped in English
@@ -163,6 +172,7 @@ export function JasimChat({
   showSuggestions = true,
   disabled = false,
   rtl = true,
+  surface,
 }: JasimChatProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -184,8 +194,15 @@ export function JasimChat({
   return (
     <div className="flex h-full flex-col bg-[var(--jasim-bg)]">
       {/* Messages Area */}
+      {/*
+        `min-h-0` on the scroll area is what makes it SCROLL instead of GROW.
+        Without it a flex child may exceed the space left to it, so a tall
+        generated surface pushed the composer off a 844px phone — measured at
+        scrollHeight 1951 / clientHeight 1951, a viewport that had swollen to
+        fit its content rather than scrolling it.
+      */}
       {hasMessages ? (
-        <ScrollArea className="flex-1 px-4 py-2" ref={scrollRef}>
+        <ScrollArea className="min-h-0 flex-1 px-4 py-2" ref={scrollRef}>
           <div className="max-w-3xl mx-auto">
             {messages.map((message, index) => (
               <ChatMessage
@@ -198,6 +215,22 @@ export function JasimChat({
               />
             ))}
             {isLoading && !isStreaming && <TypingIndicator />}
+          </div>
+          {/*
+            THE GENERATED SURFACE SCROLLS WITH THE CONVERSATION.
+            It sat in a sibling drawer capped at 38dvh — about 320px on a
+            phone, barely one card — with its own inner scroller, so a rich
+            result could not occupy the space it needed and the person scrolled
+            a box inside a box.
+
+              CONVERSATION = PRIMARY SURFACE
+              GENERATED UI = AN INSTRUMENT INSIDE IT, NOT A SECOND APPLICATION
+
+            Wider than the reading column on purpose: text wants a readable
+            line length, and a grid of results does not.
+          */}
+          {surface && <div className="mx-auto mt-2 w-full max-w-5xl">{surface}</div>}
+          <div className="mx-auto max-w-3xl">
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>

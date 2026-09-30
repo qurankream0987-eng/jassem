@@ -75,7 +75,51 @@ function artifactFor(goal) {
  * them apart by reading the prompt, so this does too — by the one key only the
  * envelope prompt names.
  */
+/**
+ * Entities that share NOTHING but their shape — which is the point.
+ *
+ * A grid of five is what a real model returns when somebody asks to be shown
+ * things, and it is the only way to measure whether a generated surface can
+ * occupy the space it needs. Every variant the layout must survive is here:
+ * with and without a picture, with and without an amount, many attributes,
+ * two actions, and one URL the runtime must refuse.
+ */
+function entities() {
+  return [
+    { ref: "e1", title: "الأول", image: "https://placehold.co/600x400/1e3a5f/ffffff.png",
+      money: { amountMinor: "125000000", currency: "ريال" },
+      badges: ["أ", "ب", "ج"], actions: [{ intent: "open", label: "التفاصيل" }, { intent: "save", label: "احفظ" }] },
+    { ref: "e2", title: "الثاني بعنوانٍ طويل يمتدّ على أكثر من سطرٍ واحد ليُختبر الالتفاف",
+      image: "https://placehold.co/600x400/3f2d1e/ffffff.png",
+      money: { amountMinor: "18900000", currency: "ريال" },
+      badges: ["د", "هـ"], actions: [{ intent: "open", label: "التفاصيل" }] },
+    { ref: "e3", title: "الثالث بلا صورة",
+      attributes: { "الأولى": "قيمة", "الثانية": "قيمة", "الثالثة": "قيمة",
+        "الرابعة": "قيمة", "الخامسة": "قيمة", "السادسة": "قيمة" },
+      actions: [{ intent: "open", label: "افتح" }] },
+    { ref: "e4", title: "الرابع بلا مبلغ", image: "https://placehold.co/600x400/1e3f2d/ffffff.png",
+      badges: ["و", "ز"], actions: [{ intent: "apply", label: "تقدّم" }] },
+    { ref: "e5", title: "الخامس بصورةٍ مرفوضة", image: "http://tracker.invalid/pixel.gif",
+      money: { amountMinor: "1500", currency: "ريال" }, badges: ["ح"],
+      actions: [{ intent: "order", label: "اطلب" }] },
+  ];
+}
+
 function envelopeFor(goal) {
+  const wantsThings = /أرني|اعرض|ابحث|أفضل|المتاحة|الذين|show|find/.test(String(goal || ""));
+  if (wantsThings) {
+    return {
+      version: 1,
+      decisionId: randomUUID(),
+      kind: "ephemeral_bubble",
+      title: "النتائج",
+      semanticDescription: "خمسة عناصر من مزوّدٍ وهميّ وُضع لقياس التخطيط، لا من نموذج.",
+      activeView: "default",
+      presentationState: { primitive: "ENTITY_GRID", type: "entity_grid", items: entities() },
+      references: [],
+      confidence: 0.5,
+    };
+  }
   return {
     version: 1,
     decisionId: randomUUID(),

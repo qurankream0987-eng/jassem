@@ -565,7 +565,14 @@ function renderEntityCollection(
     ? rawItems.filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object'))
     : [];
   return (
-    <div className={grid ? 'grid gap-3 sm:grid-cols-2' : 'space-y-3'}>
+    <div
+      className={grid ? 'grid gap-3' : 'space-y-3'}
+      // The renderer decides from the space it was GIVEN, not from a viewport
+      // breakpoint and never from what the entities are about: one strong card
+      // on a narrow phone, more as the container grows. A surface placed in a
+      // narrow column and the same surface at full width both get it right.
+      style={grid ? { gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 17rem), 1fr))' } : undefined}
+    >
       {items.length === 0 && <p className="rounded-xl bg-white/5 p-4 text-sm text-slate-400">No results available.</p>}
       {items.map((item, index) => (
         <div key={safeText(item.ref ?? item.entityRef ?? item.id, `entity-${index}`)}>

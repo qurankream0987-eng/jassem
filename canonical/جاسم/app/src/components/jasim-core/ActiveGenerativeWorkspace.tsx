@@ -439,7 +439,7 @@ export function ActiveGenerativeWorkspace({
       data-presentation-transition={presentationTransition.transition}
       data-presentation-primitive={presentationTransition.semanticPrimitive ?? undefined}
       data-presentation-identity={presentationTransition.presentationIdentity ?? undefined}
-      className={`${workspaceTransitionClass(presentationTransition.transition)} flex min-h-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] shadow-2xl shadow-black/10 backdrop-blur-xl ${className}`}
+      className={`${workspaceTransitionClass(presentationTransition.transition)} flex flex-col rounded-2xl border border-white/10 bg-white/[0.035] shadow-2xl shadow-black/10 backdrop-blur-xl ${className}`}
     >
       <header className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-3.5 py-3">
         <div className="flex min-w-0 items-center gap-2.5">
@@ -478,7 +478,10 @@ export function ActiveGenerativeWorkspace({
         <div
           id="active-generative-workspace-content"
           data-testid="workspace-content"
-          className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3.5"
+          // No inner viewport. The surface grows with what it holds and the
+          // conversation scrolls — a scroll area inside a scroll area inside a
+          // chat is a box the person fights, not an instrument they use.
+          className="space-y-3 p-3.5"
         >
           <WorkspaceStatus projection={projection} />
           <GoalSummary projection={projection} />

@@ -394,6 +394,21 @@ export default function Home() {
         <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
           <div className="min-h-0 min-w-0 flex-1">
             <JasimChat
+              // The generated surface belongs to this conversation and now
+              // scrolls with it. One mount, one query, one scroll owner.
+              surface={
+                currentConversation?.id ? (
+                  <ActiveGenerativeWorkspace
+                    conversationId={currentConversation.id}
+                    onPresentationAction={(intent, context) => {
+                      void dispatchWorkspaceAction(intent, context);
+                    }}
+                    onPresentationSubmit={(data, schema, context) => {
+                      void dispatchWorkspaceSubmit(data, schema, context);
+                    }}
+                  />
+                ) : undefined
+              }
               messages={messages}
               isLoading={isLoading}
               isStreaming={isStreaming}
@@ -421,21 +436,30 @@ export default function Home() {
             desktop empty state was a centred conversation with a third of the
             screen held black beside it for nothing.
           */}
+          {/*
+            ONLY the rail lives beside the conversation now.
+
+            The generated surface used to sit here too, capped at 38dvh on a
+            phone — about 320px, barely one card — with its own inner scroller.
+            It has moved into the conversation's scroll flow, where an
+            instrument inside a conversation belongs.
+
+              GENERATED UI != SECOND APPLICATION
+
+            The rail RETURNS NULL when it holds nothing, so this column reserves
+            no height for an empty list — that was already true and is kept.
+
+            Its cap stays, and only its cap: lifting it made the rail grow to
+            503px on a 844px phone, taking more of the screen than the thing it
+            is secondary to. A bounded list of ongoing contexts is a list; the
+            generated surface is the instrument, and only the instrument needed
+            its ceiling removed.
+          */}
           {currentConversation?.id && (
-          <div className="flex min-h-0 w-full shrink-0 flex-col gap-2 lg:w-[min(38vw,32rem)] lg:flex-row">
-            <ActiveGenerativeWorkspace
-              conversationId={currentConversation?.id}
-              onPresentationAction={(intent, context) => {
-                void dispatchWorkspaceAction(intent, context);
-              }}
-              onPresentationSubmit={(data, schema, context) => {
-                void dispatchWorkspaceSubmit(data, schema, context);
-              }}
-              className="order-2 max-h-[38dvh] w-full border-t border-[var(--jasim-border)] p-2 lg:order-1 lg:max-h-none lg:min-w-0 lg:flex-1 lg:border-t-0 lg:p-3"
-            />
+          <div className="flex min-h-0 w-full shrink-0 lg:w-[min(13vw,11rem)]">
             <ActiveObjectsRail
               onOpen={handleLivingObjectOpen}
-              className="order-1 max-h-[14dvh] w-full overflow-hidden lg:order-2 lg:max-h-none lg:w-[min(13vw,11rem)]"
+              className="max-h-[14dvh] w-full overflow-y-auto lg:max-h-none"
             />
           </div>
           )}
