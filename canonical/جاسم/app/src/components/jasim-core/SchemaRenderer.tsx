@@ -411,41 +411,146 @@ function renderText(schema: BubbleSchema) {
   );
 }
 
-function renderEntityCard(entity: Record<string, unknown>) {
+/**
+ * A DECLARED AMOUNT, SHOWN AS THE PERSON WOULD READ IT.
+ *
+ * Exact minor units are how the runtime stores money — never a float — so the
+ * only work here is putting the separator back. An amount whose shape this
+ * does not recognise is shown as it arrived rather than guessed at.
+ */
+function renderMoney(value: unknown): string | null {
+  if (typeof value === "string" || typeof value === "number") return safeText(value) || null;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const money = value as Record<string, unknown>;
+  const minor = safeText(money.amountMinor ?? money.minor);
+  const currency = safeText(money.currency);
+  if (!minor || !/^\d+$/.test(minor)) return null;
+  const major = minor.length > 2 ? minor.slice(0, -2) : "0";
+  const fraction = minor.padStart(3, "0").slice(-2);
+  const grouped = major.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const amount = fraction === "00" ? grouped : `${grouped}.${fraction}`;
+  return currency ? `${amount} ${currency}` : amount;
+}
+
+/**
+ * WHAT A CARD SHOWS, AND WHY NONE OF IT IS A DOMAIN.
+ *
+ * ─── THE GAP ────────────────────────────────────────────────────────────────
+ *
+ * `image`, `media`, `money` and `actions` have been RESERVED KEYS on an entity
+ * since this renderer was written — the contract anticipated all four — and the
+ * card drew none of them. A generated surface could carry a picture and a price
+ * and an offer to act, and the person saw a title and a list of key/value
+ * pairs.
+ *
+ *   A CONTRACT NOTHING RENDERS IS A CONTRACT NOBODY HAS
+ *
+ * ─── AND WHY A PHOTOGRAPH IS NOT A DOMAIN ───────────────────────────────────
+ *
+ * A card with a picture, a headline amount, some chips and one thing to do is
+ * the SAME card whether what it describes is a place to live, a machine to
+ * hire, a job to apply for, or a meal. What differs is the DATA, which is
+ * exactly where a difference belongs.
+ *
+ *   NEW DOMAIN != NEW COMPONENT
+ *
+ * Nothing here reads a semantic type, and there is no branch on what the thing
+ * is. Every field is generic and optional: a card given none of them renders
+ * precisely what it rendered before.
+ *
+ * ─── AND THE IMAGE IS NOT TRUSTED ───────────────────────────────────────────
+ *
+ * A URL in a generated surface came from a model or a counterparty, and
+ * fetching one tells whoever owns that host that this person is looking. So it
+ * goes through `safeMediaUrl`, which is the runtime's existing rule and not a
+ * new one: a same-origin path, an inline image, or https. Anything else draws
+ * nothing rather than drawing somebody else's pixel.
+ *
+ *   MODEL != TRUTH, including about where a picture lives
+ */
+function renderEntityCard(
+  entity: Record<string, unknown>,
+  onAction?: (actionId: string, schema: BubbleSchema) => void,
+  schema?: BubbleSchema,
+) {
   const attributes = entityAttributes(entity);
   const badges = Array.isArray(entity.badges) ? entity.badges : [];
+  const image = safeMediaUrl(entity.image ?? entity.media);
+  const headline = renderMoney(entity.money);
+  const actions = Array.isArray(entity.actions)
+    ? entity.actions.filter((action): action is Record<string, unknown> =>
+        Boolean(action && typeof action === "object"))
+    : [];
+  const reference = safeText(entity.ref ?? entity.entityRef ?? entity.id);
+  const title = safeText(entity.title ?? entity.name ?? entity.label, 'Untitled');
+
   return (
-    <article className="rounded-xl border border-white/10 bg-white/5 p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="truncate font-semibold text-white">
-            {safeText(entity.title ?? entity.name ?? entity.label, 'Untitled')}
-          </h3>
-          {safeText(entity.subtitle) && <p className="mt-1 text-xs text-slate-400">{safeText(entity.subtitle)}</p>}
+    <article className="overflow-hidden rounded-xl border border-white/10 bg-white/5">
+      {image && (
+        <img
+          src={image}
+          // The card's own title, because a picture with no name is a picture
+          // a screen reader cannot announce.
+          alt={title}
+          loading="lazy"
+          className="aspect-video w-full object-cover"
+        />
+      )}
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="truncate font-semibold text-white">{title}</h3>
+            {safeText(entity.subtitle) && <p className="mt-1 text-xs text-slate-400">{safeText(entity.subtitle)}</p>}
+          </div>
+          {safeText(entity.status) && <Badge variant="outline">{safeText(entity.status)}</Badge>}
         </div>
-        {safeText(entity.status) && <Badge variant="outline">{safeText(entity.status)}</Badge>}
+        {headline && (
+          <p className="mt-2 text-lg font-semibold tabular-nums text-white">{headline}</p>
+        )}
+        {safeText(entity.description) && <p className="mt-3 text-sm leading-5 text-slate-300">{safeText(entity.description)}</p>}
+        {badges.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {badges.slice(0, 8).map((badge, index) => (
+              <Badge key={`${displayValue(badge)}-${index}`} variant="secondary">{displayValue(badge)}</Badge>
+            ))}
+          </div>
+        )}
+        {attributes.length > 0 && (
+          <dl className="mt-4 grid gap-2 sm:grid-cols-2">
+            {attributes.map(([key, value]) => (
+              <div key={key} className="rounded-lg bg-black/10 px-3 py-2">
+                <dt className="text-[11px] text-slate-500">{key}</dt>
+                <dd className="mt-0.5 text-sm text-slate-200">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        {actions.length > 0 && reference && onAction && schema && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {actions.map((action, index) => {
+              const intent = safeText(action.intent, 'select');
+              return (
+                <Button
+                  key={`${intent}-${index}`}
+                  type="button"
+                  // The first thing offered is the one being offered; the rest
+                  // are alternatives, and saying so is not a domain rule.
+                  variant={index === 0 ? 'default' : 'outline'}
+                  size="sm"
+                  data-action-intent={intent}
+                  data-reference={reference}
+                  onClick={() => onAction(`${intent}:${reference}`, schema)}
+                >
+                  {safeText(action.label, intent)}
+                </Button>
+              );
+            })}
+          </div>
+        )}
+        {safeText(entity.source ?? entity.provenance) && (
+          <p className="mt-3 text-[11px] text-slate-500">Source: {safeText(entity.source ?? entity.provenance)}</p>
+        )}
       </div>
-      {safeText(entity.description) && <p className="mt-3 text-sm leading-5 text-slate-300">{safeText(entity.description)}</p>}
-      {badges.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {badges.slice(0, 8).map((badge, index) => (
-            <Badge key={`${displayValue(badge)}-${index}`} variant="secondary">{displayValue(badge)}</Badge>
-          ))}
-        </div>
-      )}
-      {attributes.length > 0 && (
-        <dl className="mt-4 grid gap-2 sm:grid-cols-2">
-          {attributes.map(([key, value]) => (
-            <div key={key} className="rounded-lg bg-black/10 px-3 py-2">
-              <dt className="text-[11px] text-slate-500">{key}</dt>
-              <dd className="mt-0.5 text-sm text-slate-200">{value}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
-      {safeText(entity.source ?? entity.provenance) && (
-        <p className="mt-3 text-[11px] text-slate-500">Source: {safeText(entity.source ?? entity.provenance)}</p>
-      )}
     </article>
   );
 }
@@ -464,31 +569,9 @@ function renderEntityCollection(
       {items.length === 0 && <p className="rounded-xl bg-white/5 p-4 text-sm text-slate-400">No results available.</p>}
       {items.map((item, index) => (
         <div key={safeText(item.ref ?? item.entityRef ?? item.id, `entity-${index}`)}>
-          {renderEntityCard(item)}
-          {Array.isArray(item.actions) && (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {item.actions
-                .filter((action): action is Record<string, unknown> => Boolean(action && typeof action === 'object'))
-                .map((action, actionIndex) => {
-                  const ref = safeText(item.ref ?? item.entityRef ?? item.id);
-                  const intent = safeText(action.intent, 'select');
-                  if (!ref) return null;
-                  return (
-                    <Button
-                      key={`${intent}-${actionIndex}`}
-                      type="button"
-                      variant="outline"
-                      data-action-intent={intent}
-                      data-reference={ref}
-                      size="sm"
-                      onClick={() => onAction?.(`${intent}:${ref}`, schema)}
-                    >
-                      {safeText(action.label, intent)}
-                    </Button>
-                  );
-                })}
-            </div>
-          )}
+          {/* The actions belong to the card now, beneath what they act on,
+              rather than floating under it in a second row. */}
+          {renderEntityCard(item, onAction, schema)}
         </div>
       ))}
     </div>
