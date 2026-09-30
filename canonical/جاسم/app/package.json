@@ -23,7 +23,9 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "proof:block0:migrations": "node scripts/jasim-block0-migration-proof.mjs",
-    "db:check": "node scripts/schema-drift.mjs"
+    "db:check": "node scripts/schema-drift.mjs",
+    "readiness": "node scripts/provider-readiness.mjs",
+    "stub:model": "node scripts/stub-model-provider.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.965.0",
