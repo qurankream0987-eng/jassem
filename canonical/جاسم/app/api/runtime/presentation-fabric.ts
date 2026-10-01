@@ -122,6 +122,16 @@ export type ActiveWorkspaceProjection = {
     presentationVersion?: string | null;
   } | null;
   currentPresentation: PresentationDefinition | null;
+  /**
+   * The canonical record the presented surface was read out of.
+   *
+   *   CANONICAL_PRESENTATION_STATE != VISIBLE_RENDER_INSTANCE
+   *
+   * One stored surface, read by two renderers, was shown twice. This says
+   * WHICH record is being presented so a host can claim it by identity —
+   * never by comparing what two surfaces look like.
+   */
+  currentPresentationSource?: { kind: "message"; id: string } | null;
   resultSet: {
     id: string;
     version: number;
@@ -471,6 +481,18 @@ export const ActiveWorkspaceProjectionSchema = z.object({
     })
     .nullable(),
   currentPresentation: PresentationDefinitionSchema.nullable(),
+  // Optional by construction. A projection from a client or a cache that
+  // predates this field must still PARSE — a missing claim means «nobody is
+  // presenting it», which returns the record's own copy to the conversation.
+  // Refusing the whole projection instead would blank the workspace over a
+  // field whose entire job is to remove a duplicate.
+  //
+  //   AN ABSENT CLAIM IS NOT AN INVALID PROJECTION
+  currentPresentationSource: z
+    .object({ kind: z.literal("message"), id: z.string().min(1).max(240) })
+    .nullable()
+    .optional()
+    .default(null),
   resultSet: z
     .object({
       id: z.string().min(1),

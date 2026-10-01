@@ -165,6 +165,7 @@ function emptyProjection(ownerId: string): ActiveWorkspaceProjection {
     conversation: null,
     activeGoal: null,
     currentPresentation: null,
+    currentPresentationSource: null,
     resultSet: null,
     selectedEntityReferences: [],
     activeRun: null,
@@ -328,6 +329,14 @@ export async function getActiveWorkspaceProjection(input: {
 
   const latestMessage = latestMessages[0];
   const currentPresentation = presentationFromMessage(latestMessage?.metadata);
+  // The surface is READ OUT OF this record; it is not a second copy of it. So
+  // the projection names the record, and a host can claim exactly that one.
+  //
+  //   CANONICAL_PRESENTATION_STATE != VISIBLE_RENDER_INSTANCE
+  const currentPresentationSource =
+    currentPresentation && latestMessage
+      ? ({ kind: "message", id: String(latestMessage.id) } as const)
+      : null;
   const activeTask =
     taskRows.find((task) => !isTerminalTask(task.status)) ??
     taskRows[0] ??
@@ -436,6 +445,7 @@ export async function getActiveWorkspaceProjection(input: {
     conversation: projectConversation(conversation),
     activeGoal,
     currentPresentation,
+    currentPresentationSource,
     resultSet: latestResultSet
       ? {
           id: latestResultSet.id,

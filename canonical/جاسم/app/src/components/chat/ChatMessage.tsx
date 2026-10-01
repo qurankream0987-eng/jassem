@@ -20,6 +20,18 @@ export interface ChatMessageProps {
   isLast?: boolean;
   onActionClick?: (actionId: string, bubbleData?: BubbleSchema) => void;
   onBubbleClick?: (bubble: BubbleSchema) => void;
+  /**
+   * The record a generated-surface host is currently drawing, if any.
+   *
+   *   CANONICAL_PRESENTATION_STATE != VISIBLE_RENDER_INSTANCE
+   *
+   * The workspace projection READS its surface out of a message's own
+   * metadata — one stored surface, two renderers, and the person saw it
+   * twice. When a host announces THIS record, this message does not draw the
+   * same surface a second time. It is an identity, so two turns that happened
+   * to produce byte-identical surfaces are still two surfaces and both appear.
+   */
+  presentedByHostRecordId?: string | null;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -201,6 +213,7 @@ export function ChatMessage({
   isLast = false,
   onActionClick,
   onBubbleClick,
+  presentedByHostRecordId,
 }: ChatMessageProps) {
   const [copied, setCopied] = useState(false);
   const displayContent = safeReceiptDisplayContent(message);
@@ -248,10 +261,17 @@ export function ChatMessage({
 
   const inlineActions = message.metadata?.actions as Array<{ id: string; label: string; type?: string }> | undefined;
   const presentation = message.metadata?.presentation;
+  // Identity, never shape: this exact record, claimed by a host that is really
+  // drawing it. Nothing here reads the primitive, the title, the card count or
+  // the bytes, so it holds for a grid, a chart, a map, a form, a payment
+  // surface and whatever is built next, with no branch per kind.
+  const presentedByHost =
+    Boolean(presentedByHostRecordId) && String(message.id) === String(presentedByHostRecordId);
   const shouldRenderPresentation =
     isAssistant &&
     Boolean(presentation) &&
-    (presentation as { primitive?: unknown } | undefined)?.primitive !== 'TEXT';
+    (presentation as { primitive?: unknown } | undefined)?.primitive !== 'TEXT' &&
+    !presentedByHost;
 
   if (isSystem) {
     return (

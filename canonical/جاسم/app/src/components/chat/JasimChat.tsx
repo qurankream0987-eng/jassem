@@ -28,6 +28,16 @@ export interface JasimChatProps {
    */
   surface?: React.ReactNode;
   /**
+   * The record the `surface` host has announced it is drawing, if any.
+   *
+   * Passed straight through: this file still knows nothing about what a
+   * surface is or who owns one — only that a message whose record a host has
+   * claimed must not draw the same thing again.
+   *
+   *   ONE SEMANTIC PRESENTATION -> ONE VISIBLE INSTANCE
+   */
+  presentedByHostRecordId?: string | null;
+  /**
    * Arabic-first means Arabic is the default, not the alternative.
    * This defaulted to `false` and Home never passed it, so the entire empty
    * state — heading, subtitle and all four suggestions — shipped in English
@@ -173,6 +183,7 @@ export function JasimChat({
   disabled = false,
   rtl = true,
   surface,
+  presentedByHostRecordId,
 }: JasimChatProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -212,6 +223,7 @@ export function JasimChat({
                 isLast={index === messages.length - 1}
                 onActionClick={onActionClick}
                 onBubbleClick={onBubbleClick}
+                presentedByHostRecordId={presentedByHostRecordId}
               />
             ))}
             {isLoading && !isStreaming && <TypingIndicator />}

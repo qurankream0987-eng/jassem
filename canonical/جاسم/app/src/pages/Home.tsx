@@ -107,6 +107,24 @@ export default function Home() {
     [refreshRuntimeBubbles, runtimeBubbles, transitionRuntimeBubble],
   );
 
+  /**
+   * WHICH RECORD THE GENERATED-SURFACE HOST IS DRAWING RIGHT NOW.
+   *
+   *   ONE SEMANTIC PRESENTATION -> ONE VISIBLE OWNER -> ONE VISIBLE INSTANCE
+   *
+   * The workspace projection reads its surface out of the latest message's own
+   * metadata, so that one message and the host were drawing the same stored
+   * bytes and the person saw them twice. The host announces the record it is
+   * really drawing; the conversation keeps every OTHER turn's surface exactly
+   * where that turn made it, so history is untouched.
+   *
+   * The live surface stays with the host because that is the one with a
+   * trusted action path — `source: 'WORKSPACE'`, an expected presentation
+   * version to guard against acting on a stale surface, and submit. Leaving it
+   * in the bubble instead would leave buttons that resolve to nothing.
+   */
+  const [presentedByHostRecordId, setPresentedByHostRecordId] = useState<string | null>(null);
+
   const handleActionClick = useCallback(
     (actionId: string, bubbleData?: BubbleSchema) => {
       if (bubbleData) {
@@ -406,9 +424,11 @@ export default function Home() {
                     onPresentationSubmit={(data, schema, context) => {
                       void dispatchWorkspaceSubmit(data, schema, context);
                     }}
+                    onPresentingRecord={setPresentedByHostRecordId}
                   />
                 ) : undefined
               }
+              presentedByHostRecordId={presentedByHostRecordId}
               messages={messages}
               isLoading={isLoading}
               isStreaming={isStreaming}

@@ -171,6 +171,28 @@ export type ActiveWorkspaceProjection = {
     presentationVersion?: string | null;
   } | null;
   currentPresentation: PresentationDefinition | null;
+  /**
+   * WHICH CANONICAL RECORD THE PRESENTED SURFACE CAME FROM.
+   *
+   * ─── WHY AN IDENTITY AND NOT A FLAG ─────────────────────────────────────
+   *
+   *   CANONICAL_PRESENTATION_STATE != VISIBLE_RENDER_INSTANCE
+   *
+   * `currentPresentation` is not a second copy of anything: the projection
+   * READS it out of the latest message's own metadata. So one stored surface
+   * had two renderers reading the same bytes, and the person saw it twice.
+   *
+   * Deciding that by comparing the two surfaces would be the wrong rule —
+   * two genuinely different turns may produce byte-identical surfaces and
+   * both must still be shown.
+   *
+   *   VISUAL_EQUALITY_USED_FOR_DEDUPE = 0 · JSON_EQUALITY_USED_FOR_DEDUPE = 0
+   *
+   * So the projection says WHICH record it is presenting. A host claims that
+   * record; the record's own place in the conversation then knows not to draw
+   * it a second time. Identity, never shape.
+   */
+  currentPresentationSource?: { kind: "message"; id: string } | null;
   resultSet: {
     id: string;
     version: number;
@@ -257,6 +279,18 @@ const activeWorkspaceProjectionSchema = z.object({
     presentationVersion: z.string().nullable().optional(),
   }).nullable(),
   currentPresentation: PresentationDefinitionSchema.nullable(),
+  // Optional by construction. A projection from a client or a cache that
+  // predates this field must still PARSE — a missing claim means «nobody is
+  // presenting it», which returns the record's own copy to the conversation.
+  // Refusing the whole projection instead would blank the workspace over a
+  // field whose entire job is to remove a duplicate.
+  //
+  //   AN ABSENT CLAIM IS NOT AN INVALID PROJECTION
+  currentPresentationSource: z
+    .object({ kind: z.literal("message"), id: z.string().min(1).max(240) })
+    .nullable()
+    .optional()
+    .default(null),
   resultSet: z.object({
     id: z.string().min(1),
     version: z.number().int(),

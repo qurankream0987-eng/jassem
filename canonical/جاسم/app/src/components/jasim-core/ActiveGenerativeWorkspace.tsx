@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { BubbleSchema } from '@contracts/jasim';
 import {
   AlertCircle,
@@ -38,6 +38,19 @@ export interface ActiveGenerativeWorkspaceProps {
     schema: BubbleSchema,
     context: WorkspacePresentationContext,
   ) => void | Promise<void>;
+  /**
+   * WHICH CANONICAL RECORD THIS HOST IS CURRENTLY DRAWING, OR NOTHING.
+   *
+   *   ONE SEMANTIC PRESENTATION -> ONE VISIBLE OWNER -> ONE VISIBLE INSTANCE
+   *
+   * The projection READS the surface out of a message's own metadata, so the
+   * message and this host were drawing the same stored bytes and the person
+   * saw them twice. This announces the record by IDENTITY — never by what the
+   * surface looks like — and only while this host is really drawing it. A
+   * collapsed, stale, erroring or empty workspace claims nothing, so the
+   * record keeps its own place in the conversation.
+   */
+  onPresentingRecord?: (recordId: string | null) => void;
   className?: string;
 }
 
@@ -321,6 +334,7 @@ export function ActiveGenerativeWorkspace({
   conversationId,
   onPresentationAction,
   onPresentationSubmit,
+  onPresentingRecord,
   className = '',
 }: ActiveGenerativeWorkspaceProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -395,6 +409,32 @@ export function ActiveGenerativeWorkspace({
     presentationTransition.transition,
     showExitShell,
   ]);
+
+  // ── THE CLAIM ────────────────────────────────────────────────────────────
+  //
+  // Every condition below is one under which this host does NOT draw the
+  // surface. Claiming it anyway would hide the record's own copy and leave the
+  // person with nothing, which is a worse failure than showing it twice.
+  const presentingRecordId =
+    conversationId &&
+    !workspaceQuery.isLoading &&
+    !workspaceQuery.isError &&
+    !presentationTransition.isStale &&
+    meaningful &&
+    projection &&
+    projection.currentPresentation &&
+    !isCollapsed
+      ? projection.currentPresentationSource?.id ?? null
+      : null;
+
+  // Announced in an effect, because deciding during render what another part
+  // of the tree draws is how one render makes a different one wrong.
+  useEffect(() => {
+    onPresentingRecord?.(presentingRecordId);
+    // Releasing on unmount is the same rule: a host that is gone presents
+    // nothing, and the record must get its own copy back.
+    return () => onPresentingRecord?.(null);
+  }, [onPresentingRecord, presentingRecordId]);
 
   if (!conversationId) return null;
   if (workspaceQuery.isLoading) return <WorkspaceSkeleton className={className} />;
