@@ -602,30 +602,84 @@ async function selectTurn(
   if (!resolution.value.canonicalRef || resolution.value.trust !== "canonical_internal") {
     return clarification("هذه النتيجة دليل خارجي غير موثوق ولا يمكن تحويلها تلقائياً إلى إجراء تجاري.");
   }
-  const offering = await currentOffering(db, resolution.value.canonicalRef, input.ownerId);
-  if (!offering) return clarification("العرض الأساسي لم يعد متاحاً أو مرئياً.");
-  const terms = {
-    offeringRef: offering.id,
-    offeringVersion: offering.version,
-    ...publicTerms(offering),
+  const selected = await selectOfferingAsDraftOrder(db, {
+    ownerId: input.ownerId,
+    conversationId: input.conversationId,
+    offeringId: resolution.value.canonicalRef,
+    resultSetId: resolution.value.resultSetId,
+    candidateId: resolution.value.id,
+  });
+  if (selected.status === "OFFERING_UNAVAILABLE") {
+    return clarification("العرض الأساسي لم يعد متاحاً أو مرئياً.");
+  }
+  const order = selected.order;
+  return {
+    kind: "structured_result",
+    label: "Draft order",
+    summary: "أُنشئ طلب مسودة بالشروط الحالية. راجع الشروط ووافق عليها صراحةً قبل إنشاء نية دفع.",
+    data: { orderId: order.id, status: order.status, terms: order.terms, termsVersion: order.termsVersion, termsFingerprint: order.termsFingerprint },
+    status: "awaiting_approval",
   };
+}
+
+/**
+ * SELECTING SOMETHING SOMEBODY ELSE IS OFFERING.
+ *
+ * ─── ONE IMPLEMENTATION, TWO WAYS IN ────────────────────────────────────────
+ *
+ * This was the body of `selectTurn` and is now shared with the trusted action
+ * path, so a person saying «اختر الثاني» and a person pressing the card's
+ * control reach the SAME canonical effect. Two selection implementations would
+ * drift, and the drift would resolve in favour of whichever one said yes.
+ *
+ *   TWO_SELECTION_BRIDGES = 0
+ *
+ * ─── AND WHAT SELECTING IS NOT ──────────────────────────────────────────────
+ *
+ *   SELECTION != PROPOSAL · PROPOSAL != AGREEMENT · AGREEMENT != TRANSACTION
+ *
+ * What comes out is a DRAFT order the buyer must still approve explicitly. No
+ * agreement is made, no transaction opens, no payment intent is created, and
+ * the seller has agreed to nothing. The offering is READ and never written.
+ *
+ * The published terms are pinned AS THEY WERE at selection, so a later change
+ * by the counterparty can never be mistaken for this party configuring their
+ * own draft.
+ */
+export async function selectOfferingAsDraftOrder(
+  db: NodePgDatabase<any>,
+  input: {
+    ownerId: string;
+    conversationId: string;
+    offeringId: string;
+    /** Why the candidate was on screen. Absent when nothing presented it. */
+    resultSetId?: string | null;
+    candidateId?: string | null;
+  },
+): Promise<
+  | { status: "OFFERING_UNAVAILABLE" }
+  | { status: "DRAFTED"; order: Awaited<ReturnType<typeof createCommercialOrder>> }
+> {
+  const offering = await currentOffering(db, input.offeringId, input.ownerId);
+  if (!offering) return { status: "OFFERING_UNAVAILABLE" };
   const order = await createCommercialOrder(db, {
     ownerId: input.ownerId,
     sellerRef: offering.id,
     buyerRef: input.ownerId,
-    terms,
+    terms: {
+      offeringRef: offering.id,
+      offeringVersion: offering.version,
+      ...publicTerms(offering),
+    },
   });
-  // The SOURCE offering's published terms, pinned as they were at selection.
-  // A later change to them is the counterparty moving, and it must not be
-  // confusable with this party configuring their own draft.
   await db
     .update(commercialOrders)
     .set({
       offeringFingerprint: termsFingerprint(publicTerms(offering)),
       // WHICH presented set this came out of, and which item it was. A
       // selection that lost this would lose WHY the candidate was on screen.
-      resultSetId: resolution.value.resultSetId,
-      candidateId: resolution.value.id,
+      ...(input.resultSetId ? { resultSetId: input.resultSetId } : {}),
+      ...(input.candidateId ? { candidateId: input.candidateId } : {}),
     })
     .where(eq(commercialOrders.id, order.id));
   await bindReference(db, {
@@ -635,13 +689,7 @@ async function selectTurn(
     targetKind: "commercial_order",
     targetId: order.id,
   });
-  return {
-    kind: "structured_result",
-    label: "Draft order",
-    summary: "أُنشئ طلب مسودة بالشروط الحالية. راجع الشروط ووافق عليها صراحةً قبل إنشاء نية دفع.",
-    data: { orderId: order.id, status: order.status, terms: order.terms, termsVersion: order.termsVersion, termsFingerprint: order.termsFingerprint },
-    status: "awaiting_approval",
-  };
+  return { status: "DRAFTED", order };
 }
 
 /**

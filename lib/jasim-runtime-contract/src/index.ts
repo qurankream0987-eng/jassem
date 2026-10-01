@@ -570,6 +570,21 @@ export type TrustedActionSource = z.infer<typeof TrustedActionSourceSchema>;
 export const TrustedReferenceKindSchema = z.enum([
   "conversation", "runtime_task", "runtime_run", "smart_bubble",
   "generated_system", "execution_proposal",
+  /**
+   * SOMETHING SOMEBODY IS OFFERING, NAMED CANONICALLY.
+   *
+   * A card could carry a canonical reference and the trusted path had no kind
+   * that could receive one, so a candidate was unaddressable by any action.
+   *
+   *   REFERENCE, NEVER POSITION — this is the record's own id, so «the second
+   *   card» never reaches the runtime as an identity.
+   *
+   * Naming a thing is not permission to do anything to it: the dispatcher
+   * still resolves it under this owner, still requires the presentation
+   * version to match, and each action type still declares which kinds it will
+   * accept at all.
+   */
+  "economic_expression",
 ]);
 export type TrustedReferenceKind = z.infer<typeof TrustedReferenceKindSchema>;
 

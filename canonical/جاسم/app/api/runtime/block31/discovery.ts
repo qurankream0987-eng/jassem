@@ -313,6 +313,63 @@ export type NormalizedCandidate = {
   observedAt: Date | null;
 };
 
+/**
+ * WHAT A CANDIDATE CAN BE ASKED TO DO, DECIDED BY WHAT IT IS.
+ *
+ * ─── THE GAP THIS CLOSES ────────────────────────────────────────────────────
+ *
+ * `actionable` was written as `[]` in both branches of `normalizeCandidate`
+ * since the file was written — the only two writers there have ever been. So
+ * the card's action path, the bridge's intent filter, the host's trusted
+ * dispatch and its staleness guard were all built, wired and proven, and no
+ * person could press anything, because nothing ever declared an intent.
+ *
+ * ─── WHERE AN INTENT MAY COME FROM ──────────────────────────────────────────
+ *
+ *   MODEL_TEXT != DECLARED_ACTION · DOMAIN NOUN != ACTION MAPPING
+ *
+ * Only from CANONICAL STRUCTURE: the source, the trust, and whether a canonical
+ * record is named. Not from a title, a summary, a semantic type, a page's
+ * button text, or anything a model said. This function cannot read any of
+ * those — they are not parameters — which is the structural form of the rule.
+ *
+ * ─── AND WHY `select` IS THE ONLY ONE TODAY ─────────────────────────────────
+ *
+ *   CAPABILITY_SUPPORTED != ACTION AUTHORIZED
+ *
+ * A declared intent is a statement that a general runtime path EXISTS for this
+ * class of candidate — not that this person may take it, not that the holder
+ * agreed, and not that anything will happen. `select` is declared because the
+ * selection bridge exists and already accepts exactly this class: it refuses
+ * anything that is not `canonical_internal`, and what it produces is a DRAFT
+ * order awaiting explicit approval.
+ *
+ *   SELECTION != PROPOSAL · PROPOSAL != AGREEMENT · AGREEMENT != TRANSACTION
+ *
+ * Every other verb is absent because no general runtime path takes a candidate
+ * as its subject. An intent the runtime cannot carry out is a button that lies.
+ *
+ * ─── AND NOTHING AT ALL FOR AN OBSERVATION ──────────────────────────────────
+ *
+ *   WEB_OBSERVATION != PROVIDER BINDING · WEB_PAGE_SAYS_BUY != JASIM_CAN_BUY
+ *
+ * A page is evidence. Nothing about having read one gives this runtime
+ * authority over the system behind it, so it declares no intent — not a
+ * mutating one, and not a reading one either, because the trusted read action
+ * (`OPEN_REFERENCE`) has a closed reference vocabulary that no web address is
+ * in. Declaring an intent nothing can carry out would be the lie again.
+ */
+export function declaredCandidateIntents(candidate: {
+  readonly source: DiscoverySourceKind;
+  readonly trust: CandidateTrust;
+  readonly canonicalRef: string | null;
+}): string[] {
+  if (candidate.source !== "JASIM_INTERNAL") return [];
+  if (candidate.trust !== "canonical_internal") return [];
+  if (!candidate.canonicalRef) return [];
+  return ["select"];
+}
+
 export function normalizeCandidate(
   input:
     | { source: "JASIM_INTERNAL"; expression: EconomicExpression }
@@ -341,7 +398,11 @@ export function normalizeCandidate(
       availability: null,
       trust: "canonical_internal",
       capabilityRef: null,
-      actionable: [],
+      actionable: declaredCandidateIntents({
+        source: input.source,
+        trust: "canonical_internal",
+        canonicalRef: input.expression.id,
+      }),
       provenance: { canonicalKind: "economic_expression", version: input.expression.version },
       observedAt: input.expression.updatedAt,
     };
@@ -379,7 +440,12 @@ export function normalizeCandidate(
     availability: input.result.availability ?? null,
     trust: "untrusted_external_evidence",
     capabilityRef: null,
-    actionable: [],
+    //   UNBOUND_WEB_RESULT_MUTATING_ACTIONS = 0 — and no reading one either.
+    actionable: declaredCandidateIntents({
+      source: input.source,
+      trust: "untrusted_external_evidence",
+      canonicalRef: null,
+    }),
     provenance: {
       url: input.result.url,
       domain,

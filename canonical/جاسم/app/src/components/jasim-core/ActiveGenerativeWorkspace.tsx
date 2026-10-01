@@ -19,6 +19,7 @@ import type {
   ActiveWorkspaceProjection,
 } from '@workspace/jasim-runtime-contract';
 import { PresentationRenderer } from './PresentationRenderer';
+import { candidateActionTarget } from './candidateActionTarget';
 import { useWorkspacePresentationTransition } from './useWorkspacePresentationTransition';
 import {
   isWorkspaceExit,
@@ -56,6 +57,7 @@ export interface ActiveGenerativeWorkspaceProps {
 
 export type WorkspacePresentationReference = {
   kind:
+    | 'economic_expression'
     | 'conversation'
     | 'runtime_task'
     | 'runtime_run'
@@ -556,9 +558,28 @@ export function ActiveGenerativeWorkspace({
               <PresentationRenderer
                 presentation={projection.currentPresentation}
                 onAction={(intent) => {
-                  if (presentationContext) {
-                    onPresentationAction?.(intent, presentationContext);
-                  }
+                  if (!presentationContext) return;
+                  // A press on a CARD acts on the card's own canonical thing,
+                  // at that thing's own version — resolved from the canonical
+                  // projection, never from the DOM or from a position. A press
+                  // that is not a candidate's keeps the workspace's own target.
+                  //
+                  //   CARD_POSITION_IS_ACTION_AUTHORITY = 0
+                  const candidate = candidateActionTarget(
+                    projection.currentPresentation,
+                    intent,
+                  );
+                  onPresentationAction?.(
+                    intent,
+                    candidate
+                      ? {
+                          ...presentationContext,
+                          targetReference: candidate.reference as WorkspacePresentationReference,
+                          targetExpectedPresentationVersion:
+                            candidate.expectedPresentationVersion,
+                        }
+                      : presentationContext,
+                  );
                 }}
                 onSubmit={(data, schema) => {
                   if (presentationContext) {

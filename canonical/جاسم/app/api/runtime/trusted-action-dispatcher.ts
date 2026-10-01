@@ -24,6 +24,11 @@ import {
   type RuntimeBubblePresentationAction,
 } from "./jasim-runtime";
 import { getLivingObjectsProjection } from "./living-object-projection";
+import { getExpression } from "./economic-fabric";
+import { selectOfferingAsDraftOrder } from "./block31/conversation-orchestrator";
+import { db } from "../queries/connection";
+import { discoveryCandidates, discoveryResultSets } from "@db/schema-block31";
+import { and, desc, eq } from "drizzle-orm";
 
 type AuthorizedTarget = {
   reference: TrustedReference;
@@ -107,7 +112,10 @@ const expectedReferenceKinds: Partial<
   UPDATE_BUBBLE_PRESENTATION: ["smart_bubble"],
   ATTACH_ARTIFACT: ["smart_bubble"],
   SUBMIT_INPUT: ["runtime_task"],
-  SELECT_ENTITY: ["runtime_run", "runtime_task"],
+  //   CANDIDATE != ACTION AUTHORITY
+  // Naming the kind is only the first gate: the reference must still resolve
+  // under this owner, and the route still re-reads the offering at press time.
+  SELECT_ENTITY: ["economic_expression", "runtime_run", "runtime_task"],
   REQUEST_CHANGE: ["runtime_run", "runtime_task", "smart_bubble"],
   CREATE_PROPOSAL: ["runtime_run", "runtime_task"],
   APPROVE_PROPOSAL: ["execution_proposal"],
@@ -415,6 +423,34 @@ async function resolveCanonicalReference(
           canonicalState: proposal.status,
         };
       }
+      case "economic_expression": {
+        //
+        // ── WHAT MAY BE NAMED, AND AT WHICH VERSION ──────────────────────
+        //
+        // Resolved through the fabric's own public view, so the visibility and
+        // ownership rules that decide whether this person may SEE the offering
+        // are the same ones that decide whether they may name it. A private
+        // offering belonging to somebody else resolves to nothing, and an
+        // unresolvable reference is an invalid action, never a silent one.
+        //
+        // The version is the offering's own. A card drawn against version 3
+        // and pressed after the holder republished at version 4 is STALE, and
+        // the dispatcher refuses it before any route runs — so a press can
+        // never act on terms that have since moved.
+        //
+        //   ACTION_VISIBLE != ACTION_EXECUTED
+        const view = await getExpression(reference.id, ownerId);
+        return view
+          ? {
+              reference,
+              // `<kind>:<version>`, the same shape the surface forms from the
+              // candidate's own provenance — neither side holds a table of
+              // the other's spellings.
+              currentPresentationVersion: `${reference.kind}:${view.version}`,
+              canonicalState: view.status,
+            }
+          : null;
+      }
       case "generated_system": {
         const projection = await getLivingObjectsProjection({ ownerId, limit: 100 });
         const object = projection.objects.find(
@@ -435,6 +471,43 @@ async function resolveCanonicalReference(
   } catch {
     return null;
   }
+}
+
+/**
+ * WHICH PRESENTED SET A PRESS CAME OUT OF.
+ *
+ * Read from canonical state — the owner's own result sets in this very
+ * conversation — and never taken from the press. A client that could nominate
+ * its own provenance could attach a selection to a list it never saw.
+ *
+ *   SELECTION PROVENANCE IS READ, NEVER SUPPLIED
+ *
+ * Absent is a perfectly good answer: a selection with nothing that presented it
+ * is still a selection, and inventing a result set would be a record of
+ * something that never happened.
+ */
+async function presentedCandidateFor(
+  ownerId: string,
+  conversationId: string,
+  expressionId: string,
+): Promise<{ resultSetId: string; candidateId: string } | null> {
+  const [row] = await db
+    .select({
+      resultSetId: discoveryCandidates.resultSetId,
+      candidateId: discoveryCandidates.id,
+    })
+    .from(discoveryCandidates)
+    .innerJoin(discoveryResultSets, eq(discoveryResultSets.id, discoveryCandidates.resultSetId))
+    .where(
+      and(
+        eq(discoveryCandidates.canonicalRef, expressionId),
+        eq(discoveryResultSets.ownerId, ownerId),
+        eq(discoveryResultSets.conversationId, conversationId),
+      ),
+    )
+    .orderBy(desc(discoveryCandidates.createdAt))
+    .limit(1);
+  return row ?? null;
 }
 
 function unavailableRoute(message: string) {
@@ -597,7 +670,52 @@ export function createCanonicalTrustedActionDependencies(): TrustedActionDepende
           refreshProjection: true,
         };
       },
-      SELECT_ENTITY: unavailableRoute("Entity selection has no trusted canonical route yet."),
+      SELECT_ENTITY: async ({ ownerId, action, target }) => {
+        //
+        // ── THE PRESS ENTERS THE EXISTING RUNTIME ────────────────────────
+        //
+        // `selectOfferingAsDraftOrder` is the SAME function the conversational
+        // «اختر الثاني» turn calls — extracted, not copied, so the two ways in
+        // cannot drift apart.
+        //
+        //   SELECTION != PROPOSAL · PROPOSAL != AGREEMENT
+        //   ACTION_PRESS_AUTO_CREATES_AGREEMENT  = 0
+        //   ACTION_PRESS_AUTO_CREATES_TRANSACTION = 0
+        //   ACTION_PRESS_AUTO_CREATES_PAYMENT     = 0
+        //
+        // What it produces is a DRAFT order awaiting explicit approval. The
+        // seller has agreed to nothing and nothing has been paid.
+        if (target.reference.kind !== "economic_expression") {
+          return { outcome: "BLOCKED", message: "Entity selection needs a canonical offering." };
+        }
+        const conversationId = action.conversationReference?.kind === "conversation"
+          ? action.conversationReference.id
+          : null;
+        if (!conversationId) {
+          // The draft is bound into a conversation, and inventing which one
+          // would put somebody's order in a thread they were not in.
+          return { outcome: "BLOCKED", message: "Selection must name the conversation it happens in." };
+        }
+        // Why the candidate was on screen, read from canonical state rather
+        // than taken from the press — a client cannot nominate its provenance.
+        const provenance = await presentedCandidateFor(ownerId, conversationId, target.reference.id);
+        const selected = await selectOfferingAsDraftOrder(db, {
+          ownerId,
+          conversationId,
+          offeringId: target.reference.id,
+          resultSetId: provenance?.resultSetId ?? null,
+          candidateId: provenance?.candidateId ?? null,
+        });
+        if (selected.status === "OFFERING_UNAVAILABLE") {
+          return { outcome: "BLOCKED", message: "That offering is no longer available or visible." };
+        }
+        return {
+          outcome: "DISPATCH_ACCEPTED",
+          message: "A draft order was created. Review the terms and approve them explicitly.",
+          canonicalState: selected.order.status,
+          refreshProjection: true,
+        };
+      },
       REQUEST_CHANGE: unavailableRoute("Change requests require an existing trusted route."),
       CREATE_PROPOSAL: unavailableRoute("Proposal creation requires an existing trusted route."),
       CANCEL_OPERATION: unavailableRoute("Cancellation is not exposed by the current runtime."),
