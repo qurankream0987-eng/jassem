@@ -126,16 +126,61 @@ describe("a select control in the conversation is backed or absent", () => {
     expect(handler).not.toContain("trpc");
   });
 
-  it("no approval control was added to the draft review", () => {
-    //   DRAFT_REVIEW_APPROVAL_CONTROLS_ADDED = 0
+  it("the draft review carries one SENDING control and no ACCEPTING one", () => {
+    //
+    // ── AN INHERITED EXPECTATION, REPLACED ────────────────────────────────
+    //
+    // OLD_EXPECTATION
+    //   The review builder contains no `actions` at all, and none of the words
+    //   approve / confirm / buy / pay / send.
+    //
+    // WHY_IT_IS_WRONG
+    //   It was right when written: tracing then showed NO trusted action type
+    //   could propose a draft, so any control would have been a button with
+    //   nothing behind it. That premise is what the next phase changed — the
+    //   route now exists and is proven. Kept as it stood, the assertion would
+    //   forbid a control FOREVER, including a correct one, which makes the
+    //   review permanently unusable. And it was simultaneously too weak: it
+    //   matched word fragments in one function, so a control named anything
+    //   else would have passed it untouched.
+    //
+    // NEW_EXPECTATION
+    //   At most ONE control; its intent is one the trusted dispatcher actually
+    //   routes; it disappears once the draft is sent; and it is a SENDING verb,
+    //   never an accepting one — nothing here may speak for the counterparty.
+    //
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER
+    //   It catches everything the old one caught — an invented approval control
+    //   still fails, by intent and by count — and three things it could not: a
+    //   second control, a control whose intent no route accepts, and a control
+    //   that survives into the sent state. It also cannot be satisfied by
+    //   deleting the feature, which is the only way the old one could be.
+    //
     const fabric = readFileSync("api/runtime/presentation-fabric.ts", "utf8");
-    const builder = fabric.slice(
-      fabric.indexOf("export function projectDraftOrderForReview"),
-      fabric.indexOf("export function projectStructuredResult"),
-    );
-    expect(builder).not.toContain("actions");
-    for (const verb of ["approve", "confirm", "buy", "pay", "send"]) {
-      expect(builder.toLowerCase(), verb).not.toContain(verb);
+    const builder = fabric
+      .slice(
+        fabric.indexOf("export function projectDraftOrderForReview"),
+        fabric.indexOf("export function projectStructuredResult"),
+      )
+      .replace(/\/\*[\s\S]*?\*\//g, " ")
+      .replace(/\/\/[^\n]*/g, " ");
+
+    // Exactly one intent, and it is the one that means «send what I reviewed».
+    const intents = [...builder.matchAll(/intent:\s*"([a-z_]+)"/g)].map((match) => match[1]);
+    expect(intents).toEqual(["propose"]);
+
+    // A sending verb. Accepting for the other party is not on this surface.
+    for (const accepting of ["approve", "confirm", "accept", "buy", "pay", "checkout"]) {
+      expect(builder.toLowerCase(), accepting).not.toContain(accepting);
     }
+
+    // The dispatcher really routes it — not `unavailableRoute`.
+    const dispatcher = readFileSync("api/runtime/trusted-action-dispatcher.ts", "utf8");
+    expect(dispatcher).toContain("CREATE_PROPOSAL: async");
+    expect(dispatcher).not.toContain('CREATE_PROPOSAL: unavailableRoute');
+
+    // And it is gone the moment the draft is somebody else's turn.
+    expect(builder).toContain("input.order.proposalId");
+    expect(builder.indexOf("input.order.proposalId")).toBeLessThan(builder.indexOf('intent: "propose"'));
   });
 });

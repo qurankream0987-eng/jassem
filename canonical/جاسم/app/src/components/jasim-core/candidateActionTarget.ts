@@ -56,21 +56,32 @@ export function referenceFromPress(intent: string): string | null {
   return reference || null;
 }
 
+/**
+ * EVERY THING THIS SURFACE IS SHOWING, however it draws them.
+ *
+ * A grid carries `data.candidates`; a detail carries `data.entity`. Reading
+ * both is what lets one resolver serve a search result and a draft under
+ * review without knowing that either exists.
+ */
+function surfaceEntities(presentation: unknown): Record<string, unknown>[] {
+  const data = record(record(presentation)?.data);
+  const many = Array.isArray(data?.candidates) ? data.candidates : [];
+  const one = record(data?.entity);
+  return [...many.map(record), one]
+    .filter((entry): entry is Record<string, unknown> => entry !== null && entry !== undefined);
+}
+
 export function candidateActionTarget(
   presentation: unknown,
   intent: string,
 ): CandidateActionTarget | null {
   const reference = referenceFromPress(intent);
   if (!reference) return null;
-  const data = record(record(presentation)?.data);
-  const candidates = Array.isArray(data?.candidates) ? data.candidates : [];
-
-  // Matched by reference against canonical state. A press naming something the
-  // current surface does not carry resolves to nothing rather than to the
-  // nearest thing — a surface the person is not looking at is not a target.
-  const candidate = candidates
-    .map(record)
-    .find((entry) => entry && (entry.ref === reference || entry.id === reference));
+  // A surface shows MANY things or ONE. Both are the same question — «which
+  // of the things on this surface is the press naming» — so both are read, and
+  // nothing here knows which primitive drew them.
+  const candidate = surfaceEntities(presentation)
+    .find((entry) => entry.ref === reference || entry.id === reference);
   if (!candidate) return null;
 
   const provenance = record(candidate.provenance);
@@ -111,12 +122,8 @@ export function candidateActionTarget(
  * version — so a stored surface somebody tampered with buys nothing here.
  */
 export function presentationActionsAreDispatchable(presentation: unknown): boolean {
-  const data = record(record(presentation)?.data);
-  const candidates = Array.isArray(data?.candidates) ? data.candidates : [];
-  const withActions = candidates
-    .map(record)
-    .filter((candidate): candidate is Record<string, unknown> =>
-      Boolean(candidate && Array.isArray(candidate.actions) && candidate.actions.length > 0));
+  const withActions = surfaceEntities(presentation)
+    .filter((candidate) => Array.isArray(candidate.actions) && candidate.actions.length > 0);
   if (withActions.length === 0) return false;
   // Each card's OWN declared intents, never a name this file supplies. A kind
   // of press nobody has declared yet is covered without an edit here, and this

@@ -13,6 +13,7 @@ import {
   runtimeTasks,
 } from "@db/schema";
 import { commercialOrders } from "@db/schema-block3";
+import { commercialOrderVersion } from "./block31/conversation-orchestrator";
 import {
   ActiveWorkspaceProjectionSchema,
   PresentationDefinitionSchema,
@@ -88,7 +89,14 @@ async function draftAwaitingReview(
     .from(commercialOrders)
     .where(and(eq(commercialOrders.id, binding.targetId), eq(commercialOrders.ownerId, ownerId)))
     .limit(1);
-  if (!order || order.status !== "DRAFT" || order.proposalId) return null;
+  //
+  // A draft that has been OFFERED is still the thing this conversation is on —
+  // it is simply waiting on somebody else now. Dropping it here would send the
+  // person back to the search grid at the moment they pressed send, so the
+  // same surface keeps showing it and the builder drops the control.
+  //
+  //   PRESENTATION != CANONICAL STATE
+  if (!order || order.status !== "DRAFT") return null;
 
   // How the thing was NAMED when the person chose it, frozen at discovery.
   // A discovery candidate row is never updated, so this cannot drift into
@@ -111,10 +119,13 @@ async function draftAwaitingReview(
         termsVersion: order.termsVersion,
         termsFingerprint: order.termsFingerprint,
         partyConfiguration: order.partyConfiguration,
+        configurationFingerprint: order.configurationFingerprint,
         offeringFingerprint: order.offeringFingerprint,
         resultSetId: order.resultSetId,
         candidateId: order.candidateId,
+        proposalId: order.proposalId,
       },
+      version: commercialOrderVersion(order),
       presentedAs: presentedAs ?? null,
     }),
   };

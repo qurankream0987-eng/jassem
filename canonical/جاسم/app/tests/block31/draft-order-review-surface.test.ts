@@ -159,19 +159,46 @@ describe("a draft becomes the surface the person must review", () => {
     expect((await handle.db.execute(sql.raw("SELECT * FROM economic_proposals"))).rows).toHaveLength(0);
   });
 
-  it("the surface carries no control, because no trusted path proposes a draft", async () => {
-    //   BUTTON != EXECUTION AUTHORITY
+  it("the surface carries exactly one control, and it has a real route", async () => {
     //
-    // `CREATE_PROPOSAL`'s route is still `unavailableRoute` and its payload is
-    // a goal string, so an approval button here would resolve to nothing.
+    // ── AN INHERITED EXPECTATION, REPLACED ────────────────────────────────
+    //
+    // OLD_EXPECTATION
+    //   The review surface carries NO control at all, evidenced by
+    //   `CREATE_PROPOSAL: unavailableRoute` in the dispatcher.
+    //
+    // WHY_IT_IS_WRONG
+    //   True when written — no trusted action type could propose a draft, so a
+    //   control would have been a button with nothing behind it. The next
+    //   phase changed that premise by building the route and proving it. Left
+    //   as it stood, the assertion pins the product to a missing capability:
+    //   it passes only while the review stays unusable, and it asserts the
+    //   ABSENCE of a feature rather than the correctness of one.
+    //
+    // NEW_EXPECTATION
+    //   Exactly one control on an unsent draft, carrying an intent the
+    //   dispatcher actually routes, and acting on the draft's own canonical
+    //   reference — never on a position.
+    //
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER
+    //   An invented approval button still fails it (wrong intent, and a second
+    //   control fails the count), and it additionally catches a control whose
+    //   route does not exist and one that acts on the wrong thing — neither of
+    //   which the old assertion could see.
+    //
     await publish(HOLDOUTS[2], 6);
     const { conversationId, cards } = await search(HOLDOUTS[2]);
     await pressSelect(conversationId, cards[0]!);
     const after = await surfaceOf(conversationId);
-    expect(after.currentPresentation!.actions).toBeUndefined();
-    expect(after.availablePresentationActions).toEqual([]);
+    const entity = (after.currentPresentation!.data as { entity: Record<string, unknown> }).entity;
+    expect(entity.actions).toEqual([{ intent: "propose", label: "إرسال العرض" }]);
+    // It acts on the draft itself, at the draft's own version.
+    const [order] = await handle.db.select().from(commercialOrders);
+    expect(entity.ref).toBe(order!.id);
+    expect((entity.provenance as Record<string, unknown>).canonicalKind).toBe("commercial_order");
     const dispatcher = readFileSync("api/runtime/trusted-action-dispatcher.ts", "utf8");
-    expect(dispatcher).toContain('CREATE_PROPOSAL: unavailableRoute');
+    expect(dispatcher).toContain("CREATE_PROPOSAL: async");
+    expect(dispatcher).not.toContain("CREATE_PROPOSAL: unavailableRoute");
   });
 
   it("a holder who changes the offering afterwards does not change what was selected", async () => {

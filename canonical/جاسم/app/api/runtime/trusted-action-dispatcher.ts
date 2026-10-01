@@ -25,9 +25,14 @@ import {
 } from "./jasim-runtime";
 import { getLivingObjectsProjection } from "./living-object-projection";
 import { getExpression } from "./economic-fabric";
-import { selectOfferingAsDraftOrder } from "./block31/conversation-orchestrator";
+import {
+  commercialOrderVersion,
+  proposeCommercialOrder,
+  selectOfferingAsDraftOrder,
+} from "./block31/conversation-orchestrator";
 import { db } from "../queries/connection";
 import { discoveryCandidates, discoveryResultSets } from "@db/schema-block31";
+import { commercialOrders } from "@db/schema-block3";
 import { and, desc, eq } from "drizzle-orm";
 
 type AuthorizedTarget = {
@@ -117,7 +122,8 @@ const expectedReferenceKinds: Partial<
   // under this owner, and the route still re-reads the offering at press time.
   SELECT_ENTITY: ["economic_expression", "runtime_run", "runtime_task"],
   REQUEST_CHANGE: ["runtime_run", "runtime_task", "smart_bubble"],
-  CREATE_PROPOSAL: ["runtime_run", "runtime_task"],
+  //   CANDIDATE != ACTION AUTHORITY — naming the kind is the first gate only.
+  CREATE_PROPOSAL: ["commercial_order", "runtime_run", "runtime_task"],
   APPROVE_PROPOSAL: ["execution_proposal"],
   CANCEL_OPERATION: ["runtime_run", "runtime_task"],
   REQUEST_EXECUTION: ["runtime_run"],
@@ -209,9 +215,16 @@ const actionPayloadSchemas: Partial<Record<TrustedActionType, z.ZodType>> = {
   REQUEST_CHANGE: z
     .object({ instruction: z.string().trim().min(1).max(2_000) })
     .strict(),
-  CREATE_PROPOSAL: z
-    .object({ goal: z.string().trim().min(1).max(4_000) })
-    .strict(),
+  // A goal belongs to the run/task shape this action was written for. A
+  // commercial draft already HOLDS the terms being offered, so its press sends
+  // NOTHING — and the route below refuses a payload for that target rather
+  // than letting a client restate the business it is approving.
+  //
+  //   CLIENT_SUPPLIES_PROPOSAL_TERMS = 0
+  CREATE_PROPOSAL: z.union([
+    z.object({ goal: z.string().trim().min(1).max(4_000) }).strict(),
+    z.object({}).strict(),
+  ]),
   APPROVE_PROPOSAL: z
     .object({ decision: z.enum(["approve", "reject"]) })
     .strict(),
@@ -422,6 +435,35 @@ async function resolveCanonicalReference(
           currentPresentationVersion: proposal.version,
           canonicalState: proposal.status,
         };
+      }
+      case "commercial_order": {
+        //
+        // ── THE EXACT DRAFT, AT THE EXACT VERSION IT WAS SHOWN ────────────
+        //
+        // Read under this owner, so another person's draft resolves to nothing
+        // and a forged id resolves to nothing.
+        //
+        //   CROSS_OWNER_PROPOSAL = 0 · FORGED_ORDER_PROPOSAL = 0
+        //
+        // The version covers the published terms AND this party's own stated
+        // configuration, because both change what is being agreed to and only
+        // the first bumps `termsVersion`. A control drawn before either moved
+        // is STALE, and the dispatcher refuses it before any route runs.
+        //
+        //   STALE_DRAFT_BUTTON_CREATES_PROPOSAL = 0
+        const [order] = await db
+          .select()
+          .from(commercialOrders)
+          .where(and(eq(commercialOrders.id, reference.id), eq(commercialOrders.ownerId, ownerId)))
+          .limit(1);
+        return order
+          ? {
+              reference,
+              currentPresentationVersion:
+                `${reference.kind}:${commercialOrderVersion(order)}`,
+              canonicalState: order.status,
+            }
+          : null;
       }
       case "economic_expression": {
         //
@@ -717,7 +759,85 @@ export function createCanonicalTrustedActionDependencies(): TrustedActionDepende
         };
       },
       REQUEST_CHANGE: unavailableRoute("Change requests require an existing trusted route."),
-      CREATE_PROPOSAL: unavailableRoute("Proposal creation requires an existing trusted route."),
+      CREATE_PROPOSAL: async ({ ownerId, action, target }) => {
+        //
+        // ── THE PRESS ENTERS THE PROPOSAL RUNTIME THAT ALREADY EXISTS ─────
+        //
+        // `proposeCommercialOrder` is the SAME function the spoken «أرسل» turn
+        // calls — extracted, not copied — so one offer cannot mean two things.
+        //
+        //   SECOND_PROPOSAL_RUNTIME_ADDED = 0
+        //   BUTTON_AUTO_ACCEPTS_COUNTERPARTY = 0 · _CREATES_AGREEMENT = 0
+        //   _CREATES_TRANSACTION = 0 · _PAYS = 0
+        //
+        // What it produces is a term sheet OFFERED. The other party has agreed
+        // to nothing, and their answer is theirs alone.
+        if (target.reference.kind !== "commercial_order") {
+          return { outcome: "BLOCKED", message: "Proposal creation needs a canonical draft." };
+        }
+        // The draft holds the terms. A press that carried any is refused rather
+        // than ignored, because silently dropping it is how a caller comes to
+        // believe it worked.
+        //
+        //   COMMERCIAL_ORDER_PROPOSAL_PAYLOAD_CONTAINS_GOAL = 0
+        //   COMMERCIAL_ORDER_PROPOSAL_PAYLOAD_CONTAINS_TERMS = 0
+        if (Object.keys(action.payload ?? {}).length > 0) {
+          return {
+            outcome: "BLOCKED",
+            message: "A draft already holds its terms; this action takes no payload.",
+          };
+        }
+        const conversationId = action.conversationReference?.kind === "conversation"
+          ? action.conversationReference.id
+          : null;
+        if (!conversationId) {
+          return { outcome: "BLOCKED", message: "Sending must name the conversation it happens in." };
+        }
+        const sent = await proposeCommercialOrder(db, {
+          ownerId,
+          conversationId,
+          orderId: target.reference.id,
+          // The dispatcher already compared the version; this is the identity
+          // condition the spoken path does not need: the draft being sent must
+          // still be the one this conversation is on.
+          //
+          //   STALE_A_BUTTON_SENDS_B = 0
+          requireCurrent: true,
+        });
+        switch (sent.status) {
+          case "SENT":
+            return {
+              outcome: "DISPATCH_ACCEPTED",
+              message: "The draft was offered to the other party. Nobody has accepted it.",
+              canonicalState: "PROPOSED",
+              refreshProjection: true,
+            };
+          case "ALREADY_SENT":
+            // Not an error and not a second offer: the same draft sent twice is
+            // one proposal, so a double press settles here.
+            return {
+              outcome: "DISPATCH_ACCEPTED",
+              message: "This draft was already offered; no second proposal was created.",
+              canonicalState: "PROPOSED",
+              refreshProjection: true,
+            };
+          case "OFFERING_CHANGED":
+            return {
+              outcome: "BLOCKED",
+              message: "The offering changed after this draft was reviewed. Select again.",
+              refreshProjection: true,
+            };
+          case "STALE":
+          case "NOT_CURRENT":
+            return {
+              outcome: "BLOCKED",
+              message: "This draft is no longer the one under review.",
+              refreshProjection: true,
+            };
+          default:
+            return { outcome: "BLOCKED", message: "That draft is no longer available." };
+        }
+      },
       CANCEL_OPERATION: unavailableRoute("Cancellation is not exposed by the current runtime."),
     },
   };

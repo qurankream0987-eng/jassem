@@ -592,6 +592,20 @@ export const TrustedReferenceKindSchema = z.enum([
    * accept at all.
    */
   "economic_expression",
+  /**
+   * A DRAFT SOMEBODY IS REVIEWING BEFORE THEY SEND IT.
+   *
+   * A commercial order is the fabric's GENERIC commercial draft — the same row
+   * behind hiring, booking, subscribing and every unfamiliar kind — so this is
+   * one canonical reference kind, not a shape per trade.
+   *
+   *   NEW_DOMAIN_REFERENCE_KINDS = 0
+   *
+   * Naming it is not permission to send it: the dispatcher still resolves it
+   * under this owner, still compares the version the person was shown, and the
+   * route still re-reads the draft before anything is offered to anybody.
+   */
+  "commercial_order",
 ]);
 export type TrustedReferenceKind = z.infer<typeof TrustedReferenceKindSchema>;
 

@@ -180,6 +180,7 @@ export default function Home() {
         | 'OPEN_REFERENCE'
         | 'SUBMIT_INPUT'
         | 'SELECT_ENTITY'
+        | 'CREATE_PROPOSAL'
         | 'APPROVE_PROPOSAL'
         | 'RESUME_OPERATION'
         | 'REQUEST_EXECUTION'
@@ -207,6 +208,19 @@ export default function Home() {
         targetReference = context.targetReference;
       } else if (normalizedIntent === 'cancel') {
         actionType = 'CANCEL_OPERATION';
+        targetReference = context.targetReference;
+      } else if (normalizedIntent.startsWith('propose:')) {
+        //
+        // ── «SEND THE DRAFT I AM LOOKING AT» ──────────────────────────────
+        //
+        //   SELECTION != PROPOSAL · PROPOSAL != AGREEMENT
+        //
+        // The draft already holds the terms, so this carries NO payload: a
+        // client that restated the business would be restating what it is
+        // asking somebody to approve.
+        //
+        //   CLIENT_SUPPLIES_PROPOSAL_TERMS = 0
+        actionType = 'CREATE_PROPOSAL';
         targetReference = context.targetReference;
       } else if (normalizedIntent.startsWith('select:')) {
         actionType = 'SELECT_ENTITY';

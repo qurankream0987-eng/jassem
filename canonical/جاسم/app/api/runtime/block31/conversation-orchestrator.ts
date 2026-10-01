@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import {
   commercialOrders,
@@ -782,6 +782,225 @@ async function configureTurn(
  *
  *   NEW_PROPOSAL_RUNTIME_ADDED = 0
  */
+/**
+ * THE CANONICAL VERSION OF A DRAFT, AS ANYTHING THAT BINDS TO ONE MUST SEE IT.
+ *
+ *   A VERSION THAT MISSES A FIELD IS A GUARD THAT MISSES A CHANGE
+ *
+ * Three things move independently and all three change what a person is
+ * agreeing to: `termsVersion` and `termsFingerprint` move when the published
+ * terms are rewritten, and `configurationFingerprint` moves when THIS party
+ * states values of their own — which `updateCommercialTerms` deliberately does
+ * NOT count as a terms change.
+ *
+ *   PARTY_CONFIGURATION != COUNTERPARTY_CHANGED_TERMS
+ *
+ * So a version built from the terms alone would let a reconfigured draft be
+ * sent from a review of the configuration before it.
+ */
+export function commercialOrderVersion(order: {
+  termsVersion: number;
+  termsFingerprint: string;
+  configurationFingerprint?: string | null;
+}): string {
+  return `${order.termsVersion}:${order.termsFingerprint}:${order.configurationFingerprint ?? "-"}`;
+}
+
+export type ProposeCommercialOrderResult =
+  | { status: "NO_ORDER" }
+  | { status: "OFFERING_UNREADABLE" }
+  | { status: "OFFERING_CHANGED"; orderId: string }
+  | { status: "STALE"; orderId: string; currentVersion: string }
+  | { status: "NOT_CURRENT"; orderId: string }
+  | { status: "ALREADY_SENT"; orderId: string; proposalId: string }
+  | {
+      status: "SENT";
+      orderId: string;
+      proposalId: string;
+      proposalVersion: number;
+      engagementId: string;
+      settlementOwedBy: ReturnType<typeof settlementDirectionOf>;
+    };
+
+/**
+ * SENDING THE EXACT DRAFT SOMEBODY REVIEWED.
+ *
+ * ─── ONE RUNTIME, TWO WAYS IN ───────────────────────────────────────────────
+ *
+ *   SECOND_PROPOSAL_RUNTIME_ADDED = 0
+ *
+ * This was the body of `proposeTurn` and is now shared with the trusted action
+ * path, so «أرسل» spoken and a press on the review reach the SAME canonical
+ * operation. Nothing here reads an envelope, so the trusted path needs no
+ * invented model intent to call it.
+ *
+ *   BUTTON_PROPOSAL_REQUIRES_MODEL = NO
+ *
+ * ─── AND WHAT SENDING IS NOT ────────────────────────────────────────────────
+ *
+ *   PROPOSAL != AGREEMENT != COMMITMENT != TRANSACTION != PAYMENT
+ *
+ * A term sheet is offered. Nobody has accepted, nothing is owed, and the
+ * counterparty's answer is theirs alone.
+ *
+ * ─── AND WHY IT HOLDS A LOCK ────────────────────────────────────────────────
+ *
+ * The «already sent» check reads `proposalId` and the write sets it much
+ * later, so two sends arriving together both read null and both proposed —
+ * measured, not supposed. The lock is Postgres's own, per order, taken for the
+ * transaction and released with it.
+ *
+ *   CONCURRENT_SAME_DRAFT_PROPOSALS = 1
+ */
+export async function proposeCommercialOrder(
+  db: NodePgDatabase<any>,
+  input: {
+    ownerId: string;
+    conversationId: string;
+    orderId: string;
+    /** The version the person was looking at. Absent only for the spoken path,
+     *  which reads the draft at the moment it is told to send it. */
+    expectedVersion?: string;
+    /** Whether this order must still be the conversation's active one. */
+    requireCurrent?: boolean;
+  },
+): Promise<ProposeCommercialOrderResult> {
+  return db.transaction(async (tx) => {
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtextextended(${`propose:${input.orderId}`}, 0))`,
+    );
+    const [order] = await tx.select().from(commercialOrders).where(and(
+      eq(commercialOrders.id, input.orderId),
+      eq(commercialOrders.ownerId, input.ownerId),
+    )).limit(1);
+    if (!order || order.status !== "DRAFT") return { status: "NO_ORDER" };
+
+    // THE EXACT DRAFT, not «whatever is current now». The active binding is a
+    // further condition, never a substitute for the identity being sent.
+    //
+    //   BUTTON_REVIEWED_ORDER_DIFFERS_FROM_SENT_ORDER = 0
+    if (input.requireCurrent) {
+      const binding = await activeBinding(db, input.ownerId, input.conversationId, "current:order");
+      if (!binding || binding.targetId !== order.id) {
+        return { status: "NOT_CURRENT", orderId: order.id };
+      }
+    }
+
+    const currentVersion = commercialOrderVersion(order);
+    if (input.expectedVersion !== undefined && input.expectedVersion !== currentVersion) {
+      return { status: "STALE", orderId: order.id, currentVersion };
+    }
+
+    if (order.proposalId) {
+      return { status: "ALREADY_SENT", orderId: order.id, proposalId: order.proposalId };
+    }
+
+    const offeringId = string(object(order.terms), "offeringRef");
+    const offering = offeringId ? await currentOffering(db, offeringId, input.ownerId) : null;
+    if (!offering) return { status: "OFFERING_UNREADABLE" };
+
+    // CHANGED_OFFERING → the draft is stale. The other party moved, and a stale
+    // draft must never quietly become a proposal at terms nobody is offering.
+    if (order.offeringFingerprint && order.offeringFingerprint !== termsFingerprint(publicTerms(offering))) {
+      return { status: "OFFERING_CHANGED", orderId: order.id };
+    }
+
+    const semanticType = offering.semanticType;
+    // THE SAME subject the conversation has been about, so everything the
+    // person already said about themselves travels with the request.
+    //
+    //   ONE_CONVERSATION_ONE_SUBJECT_OF_MINE
+    const needId = await ownSubject(db, input, semanticType);
+    const [need] = await db
+      .select()
+      .from(economicExpressions)
+      .where(eq(economicExpressions.id, needId))
+      .limit(1);
+    if (!need) return { status: "NO_ORDER" };
+    //   STATING_IS_NOT_PUBLISHING — the projection carries the TYPE and nothing else.
+    await publishExpression({
+      id: need.id,
+      ownerId: input.ownerId,
+      projection: { semanticType, summary: "احتياج" },
+    });
+    const match = await matchNeedToOffering({
+      needId: need.id,
+      offeringId: offering.id,
+      createdByOwnerId: input.ownerId,
+    });
+    //   MODEL_CAN_BIND_TRANSACTION_TO_NEED = NO
+    const { currentNeed } = await import("../need-continuity");
+    const sourceNeed = await currentNeed({
+      conversationId: input.conversationId,
+      scopeId: input.ownerId,
+    });
+    const engagement = await createEngagement({
+      matchId: match.id,
+      initiatorOwnerId: input.ownerId,
+      // DERIVED from the authorized match. This party cannot nominate who the
+      // other party is.
+      participants: await participantsForMatch(match.id),
+      ...(sourceNeed ? { need: { id: sourceNeed.id, revision: sourceNeed.revision } } : {}),
+    });
+
+    const merged = mergedProposalTerms(
+      publicTerms(offering),
+      order.partyConfiguration as Record<string, string | number>,
+    );
+    // Read from the OFFERING'S OWN published terms, not from `merged` — the
+    // merged record carries what this party configured, and who pays whom is
+    // never theirs to state.
+    //
+    //   THE OFFERING DECLARES THE DIRECTION. THE REQUEST NEVER DOES.
+    const settlementOwedBy = settlementDirectionOf(publicTerms(offering));
+    const proposal = await proposeTermSheet({
+      engagementId: engagement.id,
+      proposerOwnerId: input.ownerId,
+      terms: termSheetFor({
+        merged,
+        configuration: order.partyConfiguration as Record<string, string | number>,
+        proposer: input.ownerId,
+        counterparty: offering.ownerId,
+        settlementOwedBy,
+      }),
+    });
+
+    await tx
+      .update(commercialOrders)
+      .set({ proposalId: proposal.id })
+      .where(eq(commercialOrders.id, order.id));
+
+    // ── WHAT A TURN CREATES, A LATER TURN MUST BE ABLE TO NAME ──────────────
+    //
+    //   WHAT_A_TURN_CREATES_IS_NAMEABLE
+    //
+    // The keys are generic. There is no `current:mechanic` and no `current:car`.
+    for (const [referenceKey, targetKind, targetId] of [
+      ["current:engagement", "engagement", engagement.id],
+      ["current:counterparty_offering", "economic_expression", offering.id],
+      ["current:need", "economic_expression", need.id],
+      ["current:proposal", "economic_proposal", proposal.id],
+    ] as const) {
+      await bindReference(db, {
+        ownerId: input.ownerId,
+        conversationId: input.conversationId,
+        referenceKey,
+        targetKind,
+        targetId,
+      });
+    }
+
+    return {
+      status: "SENT",
+      orderId: order.id,
+      proposalId: proposal.id,
+      proposalVersion: proposal.version,
+      engagementId: engagement.id,
+      settlementOwedBy,
+    };
+  });
+}
+
 async function proposeTurn(
   db: NodePgDatabase<any>,
   input: { ownerId: string; conversationId: string; envelope: IntentEnvelope },
@@ -790,168 +1009,59 @@ async function proposeTurn(
   if (!binding || binding.targetKind !== "commercial_order") {
     return clarification("لم تختر شيئاً بعد لأرسله.");
   }
-  const [order] = await db.select().from(commercialOrders).where(and(
-    eq(commercialOrders.id, binding.targetId),
-    eq(commercialOrders.ownerId, input.ownerId),
-  )).limit(1);
-  if (!order) return clarification("لم أجد الطلب الحالي ضمن حسابك.");
-
-  const offeringId = string(object(order.terms), "offeringRef");
-  const offering = offeringId ? await currentOffering(db, offeringId, input.ownerId) : null;
-  if (!offering) return clarification("لا يمكن إعادة قراءة العرض الأساسي الحالي.");
-
-  // CHANGED_OFFERING → the draft is stale. The other party moved, and a stale
-  // draft must never quietly become a proposal at terms nobody is offering.
-  const offeringNow = termsFingerprint(publicTerms(offering));
-  if (order.offeringFingerprint && order.offeringFingerprint !== offeringNow) {
-    return {
-      kind: "structured_result",
-      label: "Offer changed",
-      summary: "تغيّر العرض منذ اخترته. اختر من جديد قبل أن أرسل طلبك.",
-      data: { orderId: order.id, offeringChanged: true },
-      status: "reapproval_required",
-    };
-  }
-
-  // Idempotent on (offering, configuration): the same draft sent twice is the
-  // same proposal, so a retry or a double tap never opens a second one.
-  if (order.proposalId) {
-    return {
-      kind: "structured_result",
-      label: "Proposal already sent",
-      summary: "طلبك مُرسَل بالفعل وبانتظار ردّ الطرف الآخر. لم أرسل نسخة ثانية.",
-      data: { orderId: order.id, proposalId: order.proposalId, counterpartyAccepted: false },
-      status: "awaiting_approval",
-    };
-  }
-
-  const semanticType = offering.semanticType;
-  // An ordinary NEED, expressed by this party. Not a checkout object.
-  //
-  // THE SAME one the conversation has been about. This used to create a fresh,
-  // empty expression every time, so everything the person had already said
-  // about themselves — «أنا هنا», «كود البوابة كذا» — was left on an object
-  // nothing downstream would ever look at again.
-  //
-  //   ONE_CONVERSATION_ONE_SUBJECT_OF_MINE
-  const needId = await ownSubject(db, input, semanticType);
-  const [need] = await db
-    .select()
-    .from(economicExpressions)
-    .where(eq(economicExpressions.id, needId))
-    .limit(1);
-  if (!need) return clarification("لم أعد أجد ما تطلبه لك.");
-  // The projection carries the TYPE and nothing else. Attributes the person
-  // stated about themselves stay exactly where they were.
-  //
-  //   STATING_IS_NOT_PUBLISHING
-  await publishExpression({
-    id: need.id,
+  const sent = await proposeCommercialOrder(db, {
     ownerId: input.ownerId,
-    projection: { semanticType, summary: "احتياج" },
-  });
-  const match = await matchNeedToOffering({
-    needId: need.id,
-    offeringId: offering.id,
-    createdByOwnerId: input.ownerId,
-  });
-  // The need this attempt comes from, read from canonical state at the moment
-  // the attempt is made. The model never supplies it.
-  //
-  //   MODEL_CAN_BIND_TRANSACTION_TO_NEED = NO
-  const { currentNeed } = await import("../need-continuity");
-  const sourceNeed = await currentNeed({
     conversationId: input.conversationId,
-    scopeId: input.ownerId,
+    orderId: binding.targetId,
   });
-  const engagement = await createEngagement({
-    matchId: match.id,
-    initiatorOwnerId: input.ownerId,
-    // DERIVED from the authorized match. This party cannot nominate who the
-    // other party is.
-    participants: await participantsForMatch(match.id),
-    ...(sourceNeed
-      ? { need: { id: sourceNeed.id, revision: sourceNeed.revision } }
-      : {}),
-  });
-
-  const merged = mergedProposalTerms(
-    publicTerms(offering),
-    order.partyConfiguration as Record<string, string | number>,
-  );
-  // Read from the OFFERING'S OWN published terms, not from `merged` — the
-  // merged record carries what this party configured, and who pays whom is
-  // never theirs to state.
-  //
-  //   THE OFFERING DECLARES THE DIRECTION. THE REQUEST NEVER DOES.
-  const settlementOwedBy = settlementDirectionOf(publicTerms(offering));
-  const proposal = await proposeTermSheet({
-    engagementId: engagement.id,
-    proposerOwnerId: input.ownerId,
-    terms: termSheetFor({
-      merged,
-      configuration: order.partyConfiguration as Record<string, string | number>,
-      proposer: input.ownerId,
-      counterparty: offering.ownerId,
-      settlementOwedBy,
-    }),
-  });
-
-  await db
-    .update(commercialOrders)
-    .set({ proposalId: proposal.id })
-    .where(eq(commercialOrders.id, order.id));
-
-  // ── WHAT A TURN CREATES, A LATER TURN MUST BE ABLE TO NAME ──────────────
-  //
-  // Traced before this phase: this function created an engagement, a need and
-  // a proposal, bound NONE of them, and returned. Every later sentence —
-  // «اسأله إن كانت ما زالت موجودة», «أرسل له موقعي» — had nothing to refer to,
-  // so the whole second half of the conversation was unreachable from the
-  // conversation.
-  //
-  //   WHAT_A_TURN_CREATES_IS_NAMEABLE
-  //
-  // The keys are generic. There is no `current:mechanic` and no `current:car`.
-  for (const [referenceKey, targetKind, targetId] of [
-    ["current:engagement", "engagement", engagement.id],
-    ["current:counterparty_offering", "economic_expression", offering.id],
-    ["current:need", "economic_expression", need.id],
-    ["current:proposal", "economic_proposal", proposal.id],
-  ] as const) {
-    await bindReference(db, {
-      ownerId: input.ownerId,
-      conversationId: input.conversationId,
-      referenceKey,
-      targetKind,
-      targetId,
-    });
+  switch (sent.status) {
+    case "NO_ORDER":
+      return clarification("لم أجد الطلب الحالي ضمن حسابك.");
+    case "NOT_CURRENT":
+      return clarification("هذا ليس الطلب الحالي في هذه المحادثة.");
+    case "OFFERING_UNREADABLE":
+      return clarification("لا يمكن إعادة قراءة العرض الأساسي الحالي.");
+    case "STALE":
+      return clarification("تغيّرت شروط الطلب منذ راجعته. راجعه من جديد قبل أن أرسله.");
+    case "OFFERING_CHANGED":
+      return {
+        kind: "structured_result",
+        label: "Offer changed",
+        summary: "تغيّر العرض منذ اخترته. اختر من جديد قبل أن أرسل طلبك.",
+        data: { orderId: sent.orderId, offeringChanged: true },
+        status: "reapproval_required",
+      };
+    case "ALREADY_SENT":
+      return {
+        kind: "structured_result",
+        label: "Proposal already sent",
+        summary: "طلبك مُرسَل بالفعل وبانتظار ردّ الطرف الآخر. لم أرسل نسخة ثانية.",
+        data: { orderId: sent.orderId, proposalId: sent.proposalId, counterpartyAccepted: false },
+        status: "awaiting_approval",
+      };
+    case "SENT":
+      return {
+        kind: "structured_result",
+        label: "Proposal sent",
+        summary:
+          sent.settlementOwedBy === "PROVIDER"
+            ? "أرسلتُ طلبك إلى الطرف الآخر. بحسب شروطه المعلنة **هو** من يدفع لك، لا العكس. لم يوافق أحد بعد، ولم ينشأ اتفاق ولا التزام ولا معاملة ولا دفع."
+            : "أرسلتُ طلبك إلى الطرف الآخر. لم يوافق أحد بعد، ولم ينشأ اتفاق ولا التزام ولا معاملة ولا دفع.",
+        data: {
+          orderId: sent.orderId,
+          //   WHO_ASKED != WHO_PAYS
+          settlementOwedBy: sent.settlementOwedBy,
+          engagementId: sent.engagementId,
+          proposalId: sent.proposalId,
+          proposalVersion: sent.proposalVersion,
+          // Named rather than implied. A sent proposal is not a deal.
+          counterpartyAccepted: false,
+          agreementCreated: false,
+          transactionCreated: false,
+        },
+        status: "awaiting_approval",
+      };
   }
-
-  return {
-    kind: "structured_result",
-    label: "Proposal sent",
-    summary:
-      settlementOwedBy === "PROVIDER"
-        ? "أرسلتُ طلبك إلى الطرف الآخر. بحسب شروطه المعلنة **هو** من يدفع لك، لا العكس. لم يوافق أحد بعد، ولم ينشأ اتفاق ولا التزام ولا معاملة ولا دفع."
-        : "أرسلتُ طلبك إلى الطرف الآخر. لم يوافق أحد بعد، ولم ينشأ اتفاق ولا التزام ولا معاملة ولا دفع.",
-    data: {
-      orderId: order.id,
-      // Said out loud, because «who pays» is exactly the thing a person would
-      // otherwise assume from having been the one who asked.
-      //
-      //   WHO_ASKED != WHO_PAYS
-      settlementOwedBy,
-      engagementId: engagement.id,
-      proposalId: proposal.id,
-      proposalVersion: proposal.version,
-      // Named rather than implied. A sent proposal is not a deal.
-      counterpartyAccepted: false,
-      agreementCreated: false,
-      transactionCreated: false,
-    },
-    status: "awaiting_approval",
-  };
 }
 
 /**

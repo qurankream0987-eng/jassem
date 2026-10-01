@@ -116,7 +116,7 @@ export const SchemaRenderer: React.FC<SchemaRendererProps> = ({
       case 'entity_grid':
         return renderEntityCollection(schema, true, onAction);
       case 'detail':
-        return renderDetail(schema);
+        return renderDetail(schema, onAction);
       case 'choice':
         return renderChoice(schema, onAction);
       case 'comparison':
@@ -593,16 +593,32 @@ function renderEntityCollection(
   );
 }
 
-function renderDetail(schema: BubbleSchema) {
+/**
+ * ONE THING, ON THE SAME CARD AS MANY THINGS.
+ *
+ * This called `renderEntityCard` with the entity ALONE, so `onAction` and
+ * `schema` were undefined and the card's own action condition could never be
+ * met — a DETAIL could carry a declared action and draw nothing for it, for
+ * any surface, not just one. The collection renderer has always passed both;
+ * this now does the same, and the card decides as it always has.
+ */
+function renderDetail(
+  schema: BubbleSchema,
+  onAction?: (actionId: string, schema: BubbleSchema) => void,
+) {
   const entity =
     schema.data.entity && typeof schema.data.entity === 'object' && !Array.isArray(schema.data.entity)
       ? schema.data.entity as Record<string, unknown>
       : schema.data;
-  return renderEntityCard({
-    ...entity,
-    title: entity.title ?? schema.data.title ?? schema.title,
-    description: entity.description ?? entity.summary ?? schema.data.summary ?? schema.data.description,
-  });
+  return renderEntityCard(
+    {
+      ...entity,
+      title: entity.title ?? schema.data.title ?? schema.title,
+      description: entity.description ?? entity.summary ?? schema.data.summary ?? schema.data.description,
+    },
+    onAction,
+    schema,
+  );
 }
 
 function renderChoice(

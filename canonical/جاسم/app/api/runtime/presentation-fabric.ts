@@ -1132,14 +1132,21 @@ export function projectCandidateForSurface(
  *
  *   SHOWING TERMS != ACCEPTING TERMS · DRAFT_SURFACE != AUTHORITY
  *
- * It carries NO action. Tracing found no trusted action type that proposes a
- * draft — `CREATE_PROPOSAL`'s route is still `unavailableRoute` and its payload
- * is a goal string — so an approval control here would be a button with nothing
- * behind it.
+ * It carries exactly ONE action, and only while the draft is unsent: `propose`,
+ * meaning «send the draft I am looking at». It does not mean accepting for the
+ * other party, and nothing downstream treats it that way.
+ *
+ *   SELECTION != PROPOSAL · PROPOSAL != AGREEMENT != TRANSACTION != PAYMENT
+ *
+ * `propose` is deliberately NOT in `SURFACE_INTENTS`, the filter a candidate's
+ * declared intents pass through — so a search result can never declare it, and
+ * sending is reachable only from a draft a person has in front of them.
  *
  *   BUTTON != EXECUTION AUTHORITY
  *
- * The existing way to approve is to say so, and that path is untouched.
+ * Once the draft carries a proposal the control is gone: the same surface,
+ * reading the same canonical state, showing a draft that is now waiting on
+ * somebody else. There is no second «sent» surface to keep in step.
  */
 export function projectDraftOrderForReview(input: {
   order: {
@@ -1149,10 +1156,15 @@ export function projectDraftOrderForReview(input: {
     termsVersion: number;
     termsFingerprint: string;
     partyConfiguration?: Record<string, unknown> | null;
+    configurationFingerprint?: string | null;
     offeringFingerprint?: string | null;
     resultSetId?: string | null;
     candidateId?: string | null;
+    /** Present once the draft has been offered. */
+    proposalId?: string | null;
   };
+  /** `<termsVersion>:<termsFingerprint>:<configurationFingerprint>`. */
+  version: string;
   /** The row the person actually saw, frozen at discovery. */
   presentedAs?: { title?: string | null; summary?: string | null } | null;
 }): PresentationDefinition {
@@ -1194,11 +1206,18 @@ export function projectDraftOrderForReview(input: {
           ? { description: input.presentedAs.summary.trim() }
           : {}),
         status: input.order.status,
+        ...(input.order.proposalId
+          ? { badges: ["بانتظار ردّ الطرف الآخر"] }
+          : { actions: [{ intent: "propose", label: "إرسال العرض" }] }),
         ...(money ? { money } : {}),
         ...(Object.keys(attributes).length > 0 ? { attributes } : {}),
         // Carried, never drawn as a property OF the thing — the card's own
         // reserved-key rule already keeps machinery off the attribute rows.
         provenance: {
+          // The two the press needs, in the shape every surface uses: a
+          // canonical kind and the version of that exact thing.
+          canonicalKind: "commercial_order",
+          version: input.version,
           offeringRef: (terms as Record<string, unknown>).offeringRef ?? null,
           offeringVersion: (terms as Record<string, unknown>).offeringVersion ?? null,
           termsVersion: input.order.termsVersion,
@@ -1209,8 +1228,11 @@ export function projectDraftOrderForReview(input: {
         },
       },
       // What the person is being asked to do, stated rather than implied.
-      reviewRequired: true,
+      // What the person is being asked to do, stated rather than implied —
+      // and no longer asked once the draft is somebody else's turn.
+      reviewRequired: !input.order.proposalId,
       orderStatus: input.order.status,
+      proposalSent: Boolean(input.order.proposalId),
     },
   });
 }
