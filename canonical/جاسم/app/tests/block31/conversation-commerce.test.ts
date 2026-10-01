@@ -111,8 +111,57 @@ describe("conversation commerce wiring", () => {
     expect(result?.data.resultSetId).toBeTruthy();
     const candidates = result?.data.candidates as Array<Record<string, unknown>>;
     expect(candidates.length).toBeGreaterThan(0);
-    // Candidate data must be the safe projection (no protected internals).
-    expect(JSON.stringify(candidates[0])).not.toContain("attributes");
+    //
+    // ── AN INHERITED EXPECTATION, REPLACED ────────────────────────────────
+    //
+    // OLD_EXPECTATION
+    //   The serialized candidate must not contain the literal token
+    //   "attributes", as a proxy for «the safe projection carries no
+    //   protected internals».
+    //
+    // WHY_IT_IS_WRONG
+    //   The proxy tests a CONTAINER'S NAME, not what is inside it. Two
+    //   different bags carry that name: the owner's PRIVATE declared facts in
+    //   `economic_expressions.attributes`, which discovery filters on, and the
+    //   AUTHORIZED PUBLIC PROJECTION that `normalizeCandidate` puts on the
+    //   candidate row. The old check cannot tell them apart, so it was
+    //   simultaneously too strict (it forbids the published bag, which the
+    //   owner published in order to be seen) and too weak (a private field
+    //   carried under ANY other key name passes it untouched).
+    //
+    //     MATCHED_ON != PUBLISHED
+    //     A PROXY FOR A RULE IS NOT THE RULE
+    //
+    // NEW_EXPECTATION
+    //   Name the internals. The row's own machinery must be absent, the
+    //   owner's private declared facts must be absent, and whatever
+    //   `attributes` does carry must be a subset of `PUBLIC_PROJECTION_KEYS` —
+    //   the allowlist `publishExpression` already enforces.
+    //
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER
+    //   It catches everything the old one caught and three classes it could
+    //   not: a private field renamed on the way out, an execution handle
+    //   (`capabilityRef`) reaching a surface, and an unauthorized key inside
+    //   the published bag. It also cannot be satisfied by deleting a feature,
+    //   which is the only way the old one could be satisfied at all.
+    //
+    const candidate = candidates[0]!;
+    for (const internal of [
+      "capabilityRef", "providerId", "sponsored", "resultSetId",
+      "observedPriceMinor", "observedCurrency", "createdAt", "observedAt",
+    ]) {
+      expect(Object.keys(candidate), internal).not.toContain(internal);
+    }
+    // The private declared facts the search MATCHED on, which it may not show.
+    expect(JSON.stringify(candidate)).not.toContain("priceMinor");
+    // And the published bag never exceeds what publication authorizes.
+    const PUBLISHED = new Set(["semanticType", "summary", "publicTerms", "availability",
+      "publicEvidence", "engagementAction", "locationSummary", "configurableTerms"]);
+    for (const key of Object.keys(
+      (candidate.attributes ?? {}) as Record<string, unknown>,
+    )) {
+      expect(PUBLISHED.has(key), `unauthorized published key: ${key}`).toBe(true);
+    }
     const bindings = await handle.db.select().from(referenceBindings)
       .where(eq(referenceBindings.conversationId, conversationId));
     expect(bindings.some((b) => b.referenceKey === "ordinal:1")).toBe(true);

@@ -185,6 +185,36 @@ function safeCandidate(candidate: Awaited<ReturnType<typeof discover>>["candidat
       : { amountMinor: String(candidate.observedPriceMinor), currency: candidate.observedCurrency },
     availability: candidate.availability,
     actionable: candidate.actionable,
+    // ── WHAT THE OWNER PUBLISHED, AND ONLY THAT ────────────────────────────
+    //
+    //   MATCHED_ON != PUBLISHED
+    //
+    // Two different bags carry this name. Discovery FILTERS on
+    // `economicExpressions.attributes` — the owner's PRIVATE declared facts —
+    // while `normalizeCandidate` puts the AUTHORIZED PUBLIC PROJECTION on the
+    // candidate row under the same word. Only the second one was ever allowed
+    // to leave, and `PUBLIC_PROJECTION_KEYS` is what makes that structural: a
+    // private attribute, a hard constraint, an internal id or a secret cannot
+    // be in there, because `publishExpression` refuses every other key.
+    //
+    // So a candidate may have been SELECTED on a fact its card must not show.
+    // Releasing a private field to a counterparty is a separate, authorized
+    // act with its own module (`private-disclosure.ts`) and its own authority —
+    // never a side effect of appearing in a list.
+    //
+    // ── AND WHY ONLY THE CANONICAL CLASS ──────────────────────────────────
+    //
+    //   MODEL != ATTRIBUTE AUTHORITY
+    //
+    // `webResults` arrive in the model's own envelope (see the discovery turn),
+    // so an external candidate's bag is a model's prose wearing a shape. Its
+    // trust already says so — `untrusted_external_evidence` — and rendering it
+    // as properties OF the thing would let a guess read as an established
+    // fact. The class whose attributes are safe to present is the class whose
+    // attributes an OWNER published.
+    ...(candidate.trust === "canonical_internal"
+      ? { attributes: candidate.attributes }
+      : {}),
   };
 }
 

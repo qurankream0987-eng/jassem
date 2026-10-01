@@ -766,6 +766,243 @@ function canonicalMoney(value: unknown): { amountMinor: string; currency: string
 }
 
 /**
+ * KEYS THE CARD ALREADY RENDERS THROUGH A PATH OF ITS OWN.
+ *
+ * A fact shown twice reads as two facts. The amount has `money`, the
+ * description has `description`, the kind of thing IS the title, availability
+ * has the badge path, and what may be done has `actions`. So none of them is
+ * repeated as a property row.
+ *
+ *   MONEY_DUPLICATED_AS_ATTRIBUTE = 0 · AVAILABILITY_DUPLICATED_AS_ATTRIBUTE = 0
+ *
+ * `engagementAction` is here for a second reason: it names something to DO, and
+ * an attribute has never been permission to do anything.
+ *
+ *   ATTRIBUTE != EXECUTION AUTHORITY
+ *
+ * Every word in this set is the economic fabric's OWN vocabulary — the keys
+ * `PUBLIC_PROJECTION_KEYS` authorizes and the ones `safeCandidate` renames.
+ * Not one of them is a domain noun, and nothing here reads what the thing is.
+ */
+const DEDICATED_SURFACE_KEYS: ReadonlySet<string> = new Set([
+  "semantictype",
+  "title",
+  "name",
+  "label",
+  "summary",
+  "description",
+  "availability",
+  "money",
+  "price",
+  "priceminor",
+  "amountminor",
+  "observedmoney",
+  "currency",
+  "actions",
+  "actionable",
+  "engagementaction",
+]);
+
+/**
+ * MACHINERY, WHICH IS NOT A PROPERTY OF ANYTHING.
+ *
+ * «trust: canonical_internal» and «position: 1» are how the runtime describes a
+ * ROW. Nobody asked to see them, and a card is not developer output. The same
+ * is true of ids, scopes, policies, raw payloads and ranking debris.
+ *
+ * ── AND WHY THE TEST IS IN TWO HALVES ──────────────────────────────────────
+ *
+ * The first draft matched these as SEGMENTS of any key, and that filter hid
+ * `internalVolume` — a chamber's declared internal volume, which is exactly the
+ * kind of owner-published fact this phase exists to show. A guard that cannot
+ * tell the fact from the machinery deletes the fact.
+ *
+ * So: a bare word that is machinery ONLY when it is the whole key goes in the
+ * first set, and a word that is machinery in ANY compound goes in the second.
+ * `maxPayload` is a declared capacity; `rawPayload` is a dump — which is why
+ * «payload» is whole-key only, and «token» is not.
+ */
+const MACHINERY_WHOLE_KEY: ReadonlySet<string> = new Set([
+  "id", "ids", "ref", "refs", "uuid", "guid",
+  "key", "keys", "token", "tokens", "secret", "secrets",
+  "credential", "credentials", "password", "passphrase", "hash", "signature", "hmac",
+  "payload", "raw", "debug", "trace", "internal", "private",
+  "rank", "ranking", "score",
+  "trust", "provenance", "position", "cursor",
+  "policy", "scope", "principal", "callback", "webhook",
+]);
+
+/**
+ * A name whose LAST word says «this is an identifier, a credential, a ranking,
+ * or how the runtime describes a row». `canonicalRef`, `scopeId`, `apiKey`,
+ * `clientSecret` and `rankScore` all end in one; `keyLength`, `scoreRange`,
+ * `internalVolume` and `traceWidth` do not, and they are facts.
+ */
+const MACHINERY_FINAL_SEGMENT: ReadonlySet<string> = new Set([
+  "id", "ids", "uuid", "guid", "ref", "refs",
+  "key", "keys", "token", "tokens", "secret", "secrets",
+  "credential", "credentials", "password", "passphrase", "hash", "signature", "hmac",
+  "score", "rank", "cursor", "policy", "principal", "scope",
+  "trust", "provenance", "position",
+]);
+
+/**
+ * A name whose FIRST word has no life as a qualifier of a published fact.
+ * `debugInfo`, `callbackUrl` and `webhookTarget` are plumbing under any tail.
+ *
+ * Deliberately NOT here: «raw». `rawMaterial` is a real declared fact, and
+ * `rawPayload` is the only thing this lets through — an owner's own word, in
+ * their own authorized publication, which is theirs to publish.
+ */
+const MACHINERY_LEADING_SEGMENT: ReadonlySet<string> = new Set([
+  "debug", "callback", "webhook",
+]);
+
+/** `ratedDepth` → ["rated","depth"]; `scope_id` → ["scope","id"]. */
+function keySegments(key: string): readonly string[] {
+  return key
+    .replace(/([\p{Ll}\p{N}])(\p{Lu})/gu, "$1 $2")
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean)
+    .map((part) => part.toLowerCase());
+}
+
+function isMachineryKey(key: string): boolean {
+  if (MACHINERY_WHOLE_KEY.has(key.trim().toLowerCase())) return true;
+  const segments = keySegments(key);
+  if (segments.length === 0) return false;
+  if (MACHINERY_FINAL_SEGMENT.has(segments[segments.length - 1]!)) return true;
+  return segments.length > 1 && MACHINERY_LEADING_SEGMENT.has(segments[0]!);
+}
+
+type SurfaceScalar = string | number | boolean;
+
+/**
+ * THE VALUE FORMS CANONICAL ATTRIBUTES ALREADY USE, AND NO OTHERS.
+ *
+ * A bare number stays a bare number: «300» does not become 300 kg and «12»
+ * does not become $12. Nothing here infers a scale, a currency or a unit.
+ *
+ *   UNKNOWN != EMPTY != FALSE != ZERO
+ *
+ * A shape this does not recognise renders NOTHING rather than `[object
+ * Object]`, which is the honest outcome — an unreadable value is not a value.
+ */
+function surfaceScalar(value: unknown): SurfaceScalar | undefined {
+  if (typeof value === "string") {
+    const text = value.trim();
+    return text ? text : undefined;
+  }
+  if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
+  if (typeof value === "boolean") return value;
+  return undefined;
+}
+
+function surfaceValue(value: unknown): SurfaceScalar | readonly SurfaceScalar[] | undefined {
+  if (Array.isArray(value)) {
+    const members = value
+      .map(surfaceScalar)
+      .filter((member): member is SurfaceScalar => member !== undefined);
+    return members.length > 0 ? members : undefined;
+  }
+  return surfaceScalar(value);
+}
+
+function plainObject(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
+}
+
+/**
+ * A MEASUREMENT, THE WAY THE FABRIC ALREADY WRITES ONE.
+ *
+ * `evaluateConstraint` reads a unit from the sibling `<field>Unit`, so that is
+ * the convention a declared measurement already has — this reuses it rather
+ * than inventing a second one. The unit attaches ONLY when its owner declared
+ * it, which is why a bare number cannot acquire one.
+ *
+ *   TWO_MEASUREMENT_CONVENTIONS = 0
+ */
+const UNIT_SUFFIX = "Unit";
+
+function pairedUnit(source: Record<string, unknown>, key: string): string | undefined {
+  const unit = source[`${key}${UNIT_SUFFIX}`];
+  return typeof unit === "string" && unit.trim() ? unit.trim() : undefined;
+}
+
+/**
+ * How many property rows one card may carry. The renderer shows twelve; this
+ * bounds what travels, so a bag nobody capped cannot become the payload.
+ */
+const MAX_SURFACE_ATTRIBUTES = 24;
+
+/**
+ * THE AUTHORIZED PUBLIC PROJECTION, AS PROPERTY ROWS A CARD CAN READ.
+ *
+ * ─── WHY THIS IS NOT A MAPPER ───────────────────────────────────────────────
+ *
+ *   NEW DOMAIN != NEW COMPONENT · NEW ATTRIBUTE != NEW UI COMPONENT
+ *
+ * Nothing here knows what anything IS. There is no semantic type, no list of
+ * expected properties, and no branch on the thing's kind. A depth, an
+ * attenuation, a throughput and a language travel the identical path, and an
+ * attribute nobody has ever seen before needs no code at all.
+ *
+ * ─── AND THE ONE STRUCTURAL THING IT DOES ───────────────────────────────────
+ *
+ * The declared terms of an offering sit NESTED, under `publicTerms`. The card's
+ * renderer reads scalars, so before this they rendered as nothing — present,
+ * authorized, and invisible. So one level of nesting is flattened, generically:
+ * any container, not a named one. A child keeps its own name when that name is
+ * free and takes `parent.child` when it is not, so flattening can never make
+ * two different facts look like one.
+ */
+function surfaceAttributes(source: unknown): Record<string, SurfaceScalar | readonly SurfaceScalar[]> {
+  const bag = plainObject(source);
+  if (!bag) return {};
+  const out: Record<string, SurfaceScalar | readonly SurfaceScalar[]> = {};
+
+  const admissible = (key: string): boolean =>
+    !DEDICATED_SURFACE_KEYS.has(key.trim().toLowerCase()) &&
+    !isMachineryKey(key) &&
+    // A unit belongs TO its measurement and is never a row of its own.
+    !(key.endsWith(UNIT_SUFFIX) && key.length > UNIT_SUFFIX.length &&
+      Object.prototype.hasOwnProperty.call(bag, key.slice(0, -UNIT_SUFFIX.length)));
+
+  const put = (name: string, container: Record<string, unknown>, key: string, value: unknown) => {
+    if (Object.keys(out).length >= MAX_SURFACE_ATTRIBUTES) return;
+    const rendered = surfaceValue(value);
+    if (rendered === undefined) return;
+    const unit = Array.isArray(rendered) ? undefined : pairedUnit(container, key);
+    out[name] = unit === undefined ? rendered : `${rendered} ${unit}`;
+  };
+
+  // Top level first, so a declared fact keeps its own name and a nested one
+  // qualifies — never the other way round.
+  for (const [key, value] of Object.entries(bag)) {
+    if (!admissible(key)) continue;
+    put(key, bag, key, value);
+  }
+  for (const [parent, value] of Object.entries(bag)) {
+    if (!admissible(parent)) continue;
+    const nested = plainObject(value);
+    if (!nested) continue;
+    const childAdmissible = (key: string): boolean =>
+      !DEDICATED_SURFACE_KEYS.has(key.trim().toLowerCase()) &&
+      !isMachineryKey(key) &&
+      !(key.endsWith(UNIT_SUFFIX) && key.length > UNIT_SUFFIX.length &&
+        Object.prototype.hasOwnProperty.call(nested, key.slice(0, -UNIT_SUFFIX.length)));
+    for (const [child, childValue] of Object.entries(nested)) {
+      if (!childAdmissible(child)) continue;
+      const name = Object.prototype.hasOwnProperty.call(out, child) ? `${parent}.${child}` : child;
+      put(name, nested, child, childValue);
+    }
+  }
+  return out;
+}
+
+/**
  * A CANONICAL CANDIDATE, IN THE VOCABULARY THE CARD READS.
  *
  * ─── THE GAP THIS CLOSES ────────────────────────────────────────────────────
@@ -810,6 +1047,7 @@ export function projectCandidateForSurface(
 
   const money = canonicalMoney(candidate.observedMoney);
   const availability = text(candidate.availability);
+  const attributes = surfaceAttributes(candidate.attributes);
   const actions = (Array.isArray(candidate.actionable) ? candidate.actionable : [])
     .filter((intent): intent is string => typeof intent === "string")
     .map((intent) => intent.trim().toLowerCase())
@@ -826,10 +1064,10 @@ export function projectCandidateForSurface(
     ...(availability ? { badges: [availability] } : {}),
     ...(actions.length > 0 ? { actions } : {}),
     ...(text(candidate.source) ? { source: candidate.source } : {}),
-    ...(candidate.attributes && typeof candidate.attributes === "object" &&
-      !Array.isArray(candidate.attributes)
-      ? { attributes: candidate.attributes }
-      : {}),
+    // Narrowed, never passed through: see `surfaceAttributes`. An empty result
+    // writes no key at all, so a thing that declared nothing renders no empty
+    // property block — ABSENT_ATTRIBUTE_INVENTED = 0.
+    ...(Object.keys(attributes).length > 0 ? { attributes } : {}),
     // Carried so nothing downstream has to go back to the database to know how
     // far this row may be trusted.
     ...(candidate.trust !== undefined ? { trust: candidate.trust } : {}),
