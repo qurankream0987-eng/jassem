@@ -131,7 +131,7 @@ export type ActiveWorkspaceProjection = {
    * WHICH record is being presented so a host can claim it by identity —
    * never by comparing what two surfaces look like.
    */
-  currentPresentationSource?: { kind: "message"; id: string } | null;
+  currentPresentationSource?: { kind: "message" | "commercial_order"; id: string } | null;
   resultSet: {
     id: string;
     version: number;
@@ -489,7 +489,14 @@ export const ActiveWorkspaceProjectionSchema = z.object({
   //
   //   AN ABSENT CLAIM IS NOT AN INVALID PROJECTION
   currentPresentationSource: z
-    .object({ kind: z.literal("message"), id: z.string().min(1).max(240) })
+    .object({
+      // The runtime's own canonical record kinds — the same vocabulary a
+      // reference binding's `targetKind` uses. A surface is read out of a
+      // message's metadata, or built from a canonical row that is waiting on
+      // the person; naming which is what keeps one thing from being drawn twice.
+      kind: z.enum(["message", "commercial_order"]),
+      id: z.string().min(1).max(240),
+    })
     .nullable()
     .optional()
     .default(null),
@@ -980,7 +987,7 @@ const MAX_SURFACE_ATTRIBUTES = 24;
  * free and takes `parent.child` when it is not, so flattening can never make
  * two different facts look like one.
  */
-function surfaceAttributes(source: unknown): Record<string, SurfaceScalar | readonly SurfaceScalar[]> {
+export function surfaceAttributes(source: unknown): Record<string, SurfaceScalar | readonly SurfaceScalar[]> {
   const bag = plainObject(source);
   if (!bag) return {};
   const out: Record<string, SurfaceScalar | readonly SurfaceScalar[]> = {};
@@ -1096,6 +1103,116 @@ export function projectCandidateForSurface(
     ...(candidate.provenance !== undefined ? { provenance: candidate.provenance } : {}),
     ...(typeof candidate.position === "number" ? { position: candidate.position } : {}),
   };
+}
+
+/**
+ * A DRAFT, AS THE PERSON MUST SEE IT BEFORE THEY AGREE TO ANYTHING.
+ *
+ * ─── THE GAP THIS CLOSES ────────────────────────────────────────────────────
+ *
+ * Pressing a card creates a canonical draft order and binds it into the
+ * conversation — and the workspace went on showing the search grid, because
+ * `currentPresentation` is read out of the LATEST MESSAGE's metadata and the
+ * trusted dispatch writes no message. So the terms a person must review before
+ * approving were canonical, pinned, and nowhere on screen.
+ *
+ * ─── WHAT IT MAY READ ───────────────────────────────────────────────────────
+ *
+ *   LATEST_OFFERING_TERMS_REPLACE_DRAFT_TERMS = 0
+ *
+ * ONLY the draft's own pinned terms. The offering is not re-read here, so a
+ * holder who changed their terms after the selection cannot have the new ones
+ * shown as though they were what this person chose. (The existing propose path
+ * compares fingerprints and refuses a stale draft; that stays where it is.)
+ *
+ * The label is the candidate's title AS IT WAS PRESENTED — a frozen discovery
+ * row, never a fresh read — so the thing is named the way the person saw it.
+ *
+ * ─── AND WHAT IT IS NOT ─────────────────────────────────────────────────────
+ *
+ *   SHOWING TERMS != ACCEPTING TERMS · DRAFT_SURFACE != AUTHORITY
+ *
+ * It carries NO action. Tracing found no trusted action type that proposes a
+ * draft — `CREATE_PROPOSAL`'s route is still `unavailableRoute` and its payload
+ * is a goal string — so an approval control here would be a button with nothing
+ * behind it.
+ *
+ *   BUTTON != EXECUTION AUTHORITY
+ *
+ * The existing way to approve is to say so, and that path is untouched.
+ */
+export function projectDraftOrderForReview(input: {
+  order: {
+    id: string;
+    status: string;
+    terms: Record<string, unknown>;
+    termsVersion: number;
+    termsFingerprint: string;
+    partyConfiguration?: Record<string, unknown> | null;
+    offeringFingerprint?: string | null;
+    resultSetId?: string | null;
+    candidateId?: string | null;
+  };
+  /** The row the person actually saw, frozen at discovery. */
+  presentedAs?: { title?: string | null; summary?: string | null } | null;
+}): PresentationDefinition {
+  const terms = input.order.terms ?? {};
+  const configuration = input.order.partyConfiguration ?? {};
+  // WHAT THE SELECTION ITSELF PINNED, as opposed to what the holder published.
+  // `selectOfferingAsDraftOrder` writes these two into the terms so the draft
+  // remembers which offering at which version it came from. They are this
+  // runtime's own bookkeeping, they are carried in `provenance` below, and
+  // «offeringVersion: 2» is not a property of the thing being bought.
+  //
+  // Named here rather than guessed at by shape, because the function that
+  // WRITES them is the one that knows them.
+  const PINNED_BY_SELECTION = ["offeringRef", "offeringVersion"] as const;
+  // A party's own stated values and the published terms are two different
+  // movements, and they are read together here only to be SHOWN together.
+  //
+  //   PARTY_CONFIGURATION != COUNTERPARTY_CHANGED_TERMS
+  const published = Object.fromEntries(
+    Object.entries({ ...terms, ...configuration }).filter(
+      ([key]) => !(PINNED_BY_SELECTION as readonly string[]).includes(key),
+    ),
+  );
+  const attributes = surfaceAttributes(published);
+  const money = canonicalMoney((terms as Record<string, unknown>).money);
+  const title = typeof input.presentedAs?.title === "string" && input.presentedAs.title.trim()
+    ? input.presentedAs.title.trim()
+    : input.order.id;
+
+  return validatePresentationDefinition({
+    primitive: "DETAIL",
+    version: 1,
+    data: {
+      entity: {
+        ref: input.order.id,
+        id: input.order.id,
+        title,
+        ...(typeof input.presentedAs?.summary === "string" && input.presentedAs.summary.trim()
+          ? { description: input.presentedAs.summary.trim() }
+          : {}),
+        status: input.order.status,
+        ...(money ? { money } : {}),
+        ...(Object.keys(attributes).length > 0 ? { attributes } : {}),
+        // Carried, never drawn as a property OF the thing — the card's own
+        // reserved-key rule already keeps machinery off the attribute rows.
+        provenance: {
+          offeringRef: (terms as Record<string, unknown>).offeringRef ?? null,
+          offeringVersion: (terms as Record<string, unknown>).offeringVersion ?? null,
+          termsVersion: input.order.termsVersion,
+          termsFingerprint: input.order.termsFingerprint,
+          offeringFingerprint: input.order.offeringFingerprint ?? null,
+          resultSetId: input.order.resultSetId ?? null,
+          candidateId: input.order.candidateId ?? null,
+        },
+      },
+      // What the person is being asked to do, stated rather than implied.
+      reviewRequired: true,
+      orderStatus: input.order.status,
+    },
+  });
 }
 
 export function projectStructuredResult(input: {

@@ -12,9 +12,11 @@ import {
   runs,
   runtimeTasks,
 } from "@db/schema";
+import { commercialOrders } from "@db/schema-block3";
 import {
   ActiveWorkspaceProjectionSchema,
   PresentationDefinitionSchema,
+  projectDraftOrderForReview,
   type ActiveWorkspaceAttention,
   type ActiveWorkspaceProjection,
   type ActiveWorkspaceStatus,
@@ -54,6 +56,68 @@ function presentationFromMessage(metadata: unknown): PresentationDefinition | nu
   const candidate = record?.presentation;
   const parsed = PresentationDefinitionSchema.safeParse(candidate);
   return parsed.success ? parsed.data : null;
+}
+
+/**
+ * THE DRAFT THIS CONVERSATION IS WAITING ON, IF THERE IS ONE.
+ *
+ *   PRESENTATION != CANONICAL STATE · UI STATE != BUSINESS STATE
+ *
+ * Nothing is stored for the review: the canonical order already exists, and
+ * this reads it. Hiding or leaving the surface therefore cannot touch it.
+ *
+ *   NEW_ORDER_STATE_TABLE = NO · HIDING_REVIEW_DELETES_DRAFT = 0
+ *
+ * Only a DRAFT that has not been sent is waiting on the person. Once it
+ * carries a proposal it is waiting on the OTHER party, and once it leaves
+ * DRAFT it is not a review at all — in both cases the conversation's own
+ * surface takes over again.
+ */
+async function draftAwaitingReview(
+  ownerId: string,
+  references: readonly (typeof referenceBindings.$inferSelect)[],
+): Promise<{ orderId: string; presentation: PresentationDefinition } | null> {
+  const binding = references.find(
+    (reference) =>
+      reference.referenceKey === "current:order" &&
+      reference.targetKind === "commercial_order",
+  );
+  if (!binding) return null;
+  const [order] = await db
+    .select()
+    .from(commercialOrders)
+    .where(and(eq(commercialOrders.id, binding.targetId), eq(commercialOrders.ownerId, ownerId)))
+    .limit(1);
+  if (!order || order.status !== "DRAFT" || order.proposalId) return null;
+
+  // How the thing was NAMED when the person chose it, frozen at discovery.
+  // A discovery candidate row is never updated, so this cannot drift into
+  // showing a label the holder changed afterwards.
+  const [presentedAs] = order.candidateId
+    ? await db
+        .select({ title: discoveryCandidates.title, summary: discoveryCandidates.summary })
+        .from(discoveryCandidates)
+        .where(eq(discoveryCandidates.id, order.candidateId))
+        .limit(1)
+    : [];
+
+  return {
+    orderId: order.id,
+    presentation: projectDraftOrderForReview({
+      order: {
+        id: order.id,
+        status: order.status,
+        terms: order.terms,
+        termsVersion: order.termsVersion,
+        termsFingerprint: order.termsFingerprint,
+        partyConfiguration: order.partyConfiguration,
+        offeringFingerprint: order.offeringFingerprint,
+        resultSetId: order.resultSetId,
+        candidateId: order.candidateId,
+      },
+      presentedAs: presentedAs ?? null,
+    }),
+  };
 }
 
 function conversationIdFromInput(value: string | undefined): number | null {
@@ -328,13 +392,36 @@ export async function getActiveWorkspaceProjection(input: {
     : [];
 
   const latestMessage = latestMessages[0];
-  const currentPresentation = presentationFromMessage(latestMessage?.metadata);
+  const shownPresentation = presentationFromMessage(latestMessage?.metadata);
+
+  // ── WHICH SURFACE IS THE PRIMARY ONE ─────────────────────────────────────
+  //
+  //   SOMETHING OF THIS CONVERSATION THAT IS WAITING ON THIS PERSON
+  //   OUTRANKS SOMETHING THEY WERE MERELY SHOWN
+  //
+  // `currentPresentation` was read only out of the latest message's metadata.
+  // A trusted press writes no message, so selecting a candidate created a
+  // canonical draft and the workspace went on showing the search grid — the
+  // terms to review were pinned and invisible.
+  //
+  // The rule is scoped three ways, and each one is a refusal:
+  //   - the binding is (owner, conversation) and `supersededAt IS NULL`, so an
+  //     order from ANOTHER conversation can never become this one's surface,
+  //     and a second selection supersedes the first rather than showing both;
+  //   - the order row is re-read under this owner;
+  //   - only a draft nobody has sent yet is waiting on the person at all.
+  //
+  //   OLD_DRAFT_HIJACKS_NEW_CONVERSATION = 0
+  //   CROSS_CONVERSATION_DRAFT_SURFACE = 0 · CROSS_OWNER_DRAFT_SURFACE = 0
+  const awaitingReview = await draftAwaitingReview(input.ownerId, referenceRows);
+  const currentPresentation = awaitingReview?.presentation ?? shownPresentation;
   // The surface is READ OUT OF this record; it is not a second copy of it. So
   // the projection names the record, and a host can claim exactly that one.
   //
   //   CANONICAL_PRESENTATION_STATE != VISIBLE_RENDER_INSTANCE
-  const currentPresentationSource =
-    currentPresentation && latestMessage
+  const currentPresentationSource = awaitingReview
+    ? ({ kind: "commercial_order", id: awaitingReview.orderId } as const)
+    : currentPresentation && latestMessage
       ? ({ kind: "message", id: String(latestMessage.id) } as const)
       : null;
   const activeTask =

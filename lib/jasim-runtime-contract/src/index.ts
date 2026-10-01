@@ -192,7 +192,7 @@ export type ActiveWorkspaceProjection = {
    * record; the record's own place in the conversation then knows not to draw
    * it a second time. Identity, never shape.
    */
-  currentPresentationSource?: { kind: "message"; id: string } | null;
+  currentPresentationSource?: { kind: "message" | "commercial_order"; id: string } | null;
   resultSet: {
     id: string;
     version: number;
@@ -287,7 +287,14 @@ const activeWorkspaceProjectionSchema = z.object({
   //
   //   AN ABSENT CLAIM IS NOT AN INVALID PROJECTION
   currentPresentationSource: z
-    .object({ kind: z.literal("message"), id: z.string().min(1).max(240) })
+    .object({
+      // The runtime's own canonical record kinds — the same vocabulary a
+      // reference binding's `targetKind` uses. A surface is read out of a
+      // message's metadata, or built from a canonical row that is waiting on
+      // the person; naming which is what keeps one thing from being drawn twice.
+      kind: z.enum(["message", "commercial_order"]),
+      id: z.string().min(1).max(240),
+    })
     .nullable()
     .optional()
     .default(null),
