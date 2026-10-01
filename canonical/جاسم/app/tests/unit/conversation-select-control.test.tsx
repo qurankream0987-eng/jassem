@@ -157,11 +157,16 @@ describe("a select control in the conversation is backed or absent", () => {
     //   deleting the feature, which is the only way the old one could be.
     //
     const fabric = readFileSync("api/runtime/presentation-fabric.ts", "utf8");
+    //
+    // Sliced to the NEXT export, not to a named one. The first version ended
+    // at `projectStructuredResult`, and a later phase inserted another builder
+    // in between — so the slice silently grew to cover a function this
+    // assertion was never about, and reported that function's intent as this
+    // one's. A boundary that depends on what happens to come next is not a
+    // boundary.
+    const start = fabric.indexOf("export function projectDraftOrderForReview");
     const builder = fabric
-      .slice(
-        fabric.indexOf("export function projectDraftOrderForReview"),
-        fabric.indexOf("export function projectStructuredResult"),
-      )
+      .slice(start, fabric.indexOf("\nexport ", start + 1))
       .replace(/\/\*[\s\S]*?\*\//g, " ")
       .replace(/\/\/[^\n]*/g, " ");
 

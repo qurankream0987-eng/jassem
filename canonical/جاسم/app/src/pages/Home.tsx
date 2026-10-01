@@ -209,6 +209,20 @@ export default function Home() {
       } else if (normalizedIntent === 'cancel') {
         actionType = 'CANCEL_OPERATION';
         targetReference = context.targetReference;
+      } else if (normalizedIntent.startsWith('approve:')) {
+        //
+        // ── «أوافق على هذه الشروط، بنفسي، الآن» ──────────────────────────
+        //
+        // Distinct from the bare `approve` below, which answers an EXECUTION
+        // proposal in the workspace's own context. This one names the term
+        // sheet it is answering, because a person may have more than one
+        // waiting and accepting the wrong one binds them to terms they never
+        // read.
+        //
+        //   AMBIGUOUS_ACCEPTANCE_GUESS = 0
+        actionType = 'APPROVE_PROPOSAL';
+        targetReference = context.targetReference;
+        payload = { decision: 'approve' };
       } else if (normalizedIntent.startsWith('propose:')) {
         //
         // ── «SEND THE DRAFT I AM LOOKING AT» ──────────────────────────────
@@ -233,7 +247,11 @@ export default function Home() {
         return;
       }
       const expectedPresentationVersion =
-        actionType === 'APPROVE_PROPOSAL' || actionType === 'RESUME_OPERATION'
+        // An approval that NAMES its term sheet carries that sheet's own
+        // version; the bare workspace approval still carries the approval
+        // context's, as it always did.
+        (actionType === 'APPROVE_PROPOSAL' && !normalizedIntent.startsWith('approve:')) ||
+        actionType === 'RESUME_OPERATION'
           ? context.approvalExpectedPresentationVersion
           : context.targetExpectedPresentationVersion;
       if (!expectedPresentationVersion) {

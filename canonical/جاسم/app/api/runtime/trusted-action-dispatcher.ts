@@ -33,6 +33,8 @@ import {
 import { db } from "../queries/connection";
 import { discoveryCandidates, discoveryResultSets } from "@db/schema-block31";
 import { commercialOrders } from "@db/schema-block3";
+import { economicProposals, economicEngagements } from "@db/schema";
+import { commitAgreement } from "./agreement-runtime";
 import { and, desc, eq } from "drizzle-orm";
 
 type AuthorizedTarget = {
@@ -124,7 +126,7 @@ const expectedReferenceKinds: Partial<
   REQUEST_CHANGE: ["runtime_run", "runtime_task", "smart_bubble"],
   //   CANDIDATE != ACTION AUTHORITY — naming the kind is the first gate only.
   CREATE_PROPOSAL: ["commercial_order", "runtime_run", "runtime_task"],
-  APPROVE_PROPOSAL: ["execution_proposal"],
+  APPROVE_PROPOSAL: ["economic_proposal", "execution_proposal"],
   CANCEL_OPERATION: ["runtime_run", "runtime_task"],
   REQUEST_EXECUTION: ["runtime_run"],
   RECONCILE_RUN: ["runtime_run"],
@@ -436,6 +438,33 @@ async function resolveCanonicalReference(
           canonicalState: proposal.status,
         };
       }
+      case "economic_proposal": {
+        //
+        // ── ONLY A PARTY TO IT, AND NEVER ITS AUTHOR ─────────────────────
+        //
+        // Resolved through the engagement's own participant list, so a
+        // stranger's reference resolves to nothing, and the proposer is
+        // refused their own proposal here as well as in the runtime beneath.
+        //
+        //   A PARTY CANNOT AGREE TO ITS OWN PROPOSAL
+        //
+        // The version is the proposal's own, so a superseded term sheet
+        // cannot be accepted from a surface drawn before it moved.
+        const [row] = await db
+          .select({ proposal: economicProposals, engagement: economicEngagements })
+          .from(economicProposals)
+          .innerJoin(economicEngagements, eq(economicEngagements.id, economicProposals.engagementId))
+          .where(eq(economicProposals.id, reference.id))
+          .limit(1);
+        if (!row) return null;
+        if (!row.engagement.participants.includes(ownerId)) return null;
+        if (row.proposal.proposerOwnerId === ownerId) return null;
+        return {
+          reference,
+          currentPresentationVersion: `${reference.kind}:${row.proposal.version}`,
+          canonicalState: row.proposal.status,
+        };
+      }
       case "commercial_order": {
         //
         // ── THE EXACT DRAFT, AT THE EXACT VERSION IT WAS SHOWN ────────────
@@ -663,6 +692,52 @@ export function createCanonicalTrustedActionDependencies(): TrustedActionDepende
         };
       },
       APPROVE_PROPOSAL: async ({ ownerId, action, target }) => {
+        if (target.reference.kind === "economic_proposal") {
+          //
+          // ── THE SECOND PLACE A PERSON IS PROVABLY PRESENT ────────────────
+          //
+          // `commitAgreement` reserves `ownerDirect` for places the owner
+          // themselves is accepting, NOW — and the conversational path is
+          // deliberately refused, because a model deciding that «أقبل» meant
+          // accept would bind somebody to a term sheet by classifying a
+          // sentence.
+          //
+          //   MODEL != AUTHORITY · CLASSIFICATION != ACCEPTANCE
+          //
+          // A trusted press is that kind of place, and carries MORE evidence
+          // of presence than the router it joins: the owner comes from the
+          // session, the action type is explicit, and the presentation version
+          // proves they were looking at THIS term sheet at THIS version when
+          // they pressed. A surface drawn before the terms moved is refused
+          // before this line is reached.
+          if (action.payload.decision !== "approve") {
+            // Declining is a different canonical act with its own path, and
+            // this is not it. Refused rather than silently treated as assent.
+            return { outcome: "BLOCKED", message: "Declining is not this action." };
+          }
+          try {
+            const committed = await commitAgreement({
+              proposalId: target.reference.id,
+              ownerId,
+              principalId: ownerId,
+              ownerDirect: true,
+            });
+            return {
+              outcome: "DISPATCH_ACCEPTED",
+              message: "The terms were agreed. The agreement is now held by both parties.",
+              canonicalState: committed.agreement.status,
+              refreshProjection: true,
+            };
+          } catch (error) {
+            // The runtime's own refusal, carried rather than reinterpreted:
+            // an expired proposal, a policy cap, an envelope bound.
+            return {
+              outcome: "BLOCKED",
+              message: error instanceof Error ? error.message : "The agreement was refused.",
+              refreshProjection: true,
+            };
+          }
+        }
         const decision = action.payload.decision;
         if (
           target.reference.kind !== "execution_proposal" ||

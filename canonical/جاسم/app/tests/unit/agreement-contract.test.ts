@@ -251,11 +251,68 @@ describe("a capability cannot approve", () => {
       .split("\n")
       .filter(Boolean)
       .sort();
-    // Two places, and both are ones where a person is actually present: the
-    // router, and the authority act whose statement they read term by term
-    // before citing its digest. Nowhere else — and a third entry appearing
-    // here is the diff that has to be argued for.
-    expect(callers).toEqual(["api/routers/fabric.ts", "api/runtime/authority-acts.ts"]);
+    //
+    // ── THE THIRD ENTRY, ARGUED ───────────────────────────────────────────
+    //
+    // OLD_EXPECTATION
+    //   Exactly two callers: `api/routers/fabric.ts` and
+    //   `api/runtime/authority-acts.ts`.
+    //
+    // WHY_IT_IS_WRONG
+    //   It is not wrong about the RULE — «only where a person is provably
+    //   present» — it is wrong as a complete list, and it said so itself: «a
+    //   third entry appearing here is the diff that has to be argued for».
+    //   This is that diff. A counterparty could be sent a term sheet and had
+    //   nowhere to answer it: the conversational path is refused on purpose
+    //   (a model deciding «أقبل» meant accept would bind somebody to terms by
+    //   classifying a sentence), and the router endpoint had no surface. So
+    //   the rule was satisfied and half the brokerage was unreachable.
+    //
+    // NEW_EXPECTATION
+    //   Three callers, and each one proves presence by its own mechanism —
+    //   asserted below rather than taken on the filename.
+    //
+    // WHY_THE_NEW_EXPECTATION_IS_STRICTER
+    //   The old assertion checked WHERE the literal appears and nothing about
+    //   WHY that place is allowed, so a fourth file could be added by editing
+    //   one line and any of the three could quietly lose what makes it safe.
+    //   This additionally requires, of the trusted path: the owner comes from
+    //   the dispatcher's own argument and never from the client payload; a
+    //   presentation version is compared before the route runs; and the
+    //   conversational orchestrator still cannot reach it at all. Those are
+    //   the properties; the list is only their index.
+    //
+    expect(callers).toEqual([
+      "api/routers/fabric.ts",
+      "api/runtime/authority-acts.ts",
+      "api/runtime/trusted-action-dispatcher.ts",
+    ]);
+
+    const dispatcher = readFileSync(
+      resolve(process.cwd(), "api/runtime/trusted-action-dispatcher.ts"),
+      "utf8",
+    );
+    const accept = dispatcher.slice(
+      dispatcher.indexOf('if (target.reference.kind === "economic_proposal")'),
+      dispatcher.indexOf("APPROVE_PROPOSAL route end marker") >= 0 ? undefined : undefined,
+    );
+    const commitCall = accept.slice(accept.indexOf("commitAgreement({"), accept.indexOf("});"));
+    // The owner is the dispatcher's own, never anything the client sent.
+    expect(commitCall).toContain("ownerId,");
+    expect(commitCall).not.toContain("payload");
+    expect(commitCall).not.toContain("action.");
+    // A version is required for this action type, so a press from a surface
+    // drawn before the terms moved is STALE before the route is reached.
+    expect(dispatcher.slice(
+      dispatcher.indexOf("const requiredPresentationVersion"),
+      dispatcher.indexOf("const forbiddenPayloadKeys"),
+    )).toContain("APPROVE_PROPOSAL");
+    // And the conversational path still cannot accept for anybody.
+    const orchestrator = readFileSync(
+      resolve(process.cwd(), "api/runtime/block31/conversation-orchestrator.ts"),
+      "utf8",
+    );
+    expect(orchestrator).not.toContain("ownerDirect");
   });
 
   it("no reserve leaves through the API surface", () => {

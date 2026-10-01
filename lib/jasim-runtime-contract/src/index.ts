@@ -192,7 +192,7 @@ export type ActiveWorkspaceProjection = {
    * record; the record's own place in the conversation then knows not to draw
    * it a second time. Identity, never shape.
    */
-  currentPresentationSource?: { kind: "message" | "commercial_order"; id: string } | null;
+  currentPresentationSource?: { kind: "message" | "commercial_order" | "economic_proposal"; id: string } | null;
   resultSet: {
     id: string;
     version: number;
@@ -292,7 +292,7 @@ const activeWorkspaceProjectionSchema = z.object({
       // reference binding's `targetKind` uses. A surface is read out of a
       // message's metadata, or built from a canonical row that is waiting on
       // the person; naming which is what keeps one thing from being drawn twice.
-      kind: z.enum(["message", "commercial_order"]),
+      kind: z.enum(["message", "commercial_order", "economic_proposal"]),
       id: z.string().min(1).max(240),
     })
     .nullable()
@@ -606,6 +606,15 @@ export const TrustedReferenceKindSchema = z.enum([
    * route still re-reads the draft before anything is offered to anybody.
    */
   "commercial_order",
+  /**
+   * A TERM SHEET SOMEBODY OFFERED, named so the person it was offered TO can
+   * answer it.
+   *
+   * Naming it is not permission to accept it: the dispatcher resolves it only
+   * for a participant of its engagement, refuses the proposer their own
+   * proposal, and compares the version the person was shown.
+   */
+  "economic_proposal",
 ]);
 export type TrustedReferenceKind = z.infer<typeof TrustedReferenceKindSchema>;
 

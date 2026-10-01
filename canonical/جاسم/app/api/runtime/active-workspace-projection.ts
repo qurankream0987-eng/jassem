@@ -8,6 +8,10 @@ import {
   generatedSystems,
   messages,
   proposalApprovals,
+  economicProposals,
+  economicEngagements,
+  economicMatches,
+  economicExpressions,
   referenceBindings,
   runs,
   runtimeTasks,
@@ -18,6 +22,7 @@ import {
   ActiveWorkspaceProjectionSchema,
   PresentationDefinitionSchema,
   projectDraftOrderForReview,
+  projectInboundProposalForReview,
   type ActiveWorkspaceAttention,
   type ActiveWorkspaceProjection,
   type ActiveWorkspaceStatus,
@@ -127,6 +132,70 @@ async function draftAwaitingReview(
       },
       version: commercialOrderVersion(order),
       presentedAs: presentedAs ?? null,
+    }),
+  };
+}
+
+/**
+ * A PROPOSAL SOMEBODY SENT TO THIS PERSON, STILL OPEN.
+ *
+ *   A REQUEST ADDRESSED TO ME IS NOT A FACT ABOUT MY THREAD
+ *
+ * Person-scoped, not conversation-scoped, because that is what it IS: nobody
+ * sends a term sheet to a thread. The query is the one `acceptProposalTurn`
+ * already uses — proposals in engagements this person is a participant of,
+ * that this person did NOT make, still open — so the surface and the spoken
+ * path can never disagree about what is waiting.
+ *
+ * Nothing is stored for it. Leaving the surface cannot touch the proposal.
+ */
+async function inboundProposalAwaitingReply(
+  ownerId: string,
+): Promise<{ proposalId: string; presentation: PresentationDefinition } | null> {
+  const rows = await db
+    .select({ proposal: economicProposals, engagement: economicEngagements })
+    .from(economicProposals)
+    .innerJoin(economicEngagements, eq(economicEngagements.id, economicProposals.engagementId))
+    .where(eq(economicProposals.status, "proposed"))
+    .orderBy(desc(economicProposals.createdAt))
+    .limit(50);
+  const mine = rows.filter(
+    (row) =>
+      row.engagement.participants.includes(ownerId) &&
+      row.proposal.proposerOwnerId !== ownerId,
+  );
+  const row = mine[0];
+  if (!row) return null;
+
+  // ── A UUID IS NOT A NAME FOR SOMETHING YOU ARE AGREEING TO ──────────────
+  //
+  // A term sheet carries terms, not a label. The thing it is ABOUT is reached
+  // canonically — engagement → match → offering — and its PUBLISHED projection
+  // is what names it. Read only for the label: the terms shown are still the
+  // proposal's own, and nothing of the offering's current terms reaches them.
+  const [about] = await db
+    .select({ expression: economicExpressions })
+    .from(economicMatches)
+    .innerJoin(economicExpressions, eq(economicExpressions.id, economicMatches.offeringId))
+    .where(eq(economicMatches.id, row.engagement.matchId))
+    .limit(1);
+  const projectionOf = (about?.expression.publicProjection ?? {}) as Record<string, unknown>;
+
+  return {
+    proposalId: row.proposal.id,
+    presentation: projectInboundProposalForReview({
+      proposal: {
+        id: row.proposal.id,
+        version: row.proposal.version,
+        terms: row.proposal.terms,
+        proposerOwnerId: row.proposal.proposerOwnerId,
+        expiresAt: row.proposal.expiresAt,
+      },
+      viewerOwnerId: ownerId,
+      presentedAs: {
+        title: typeof projectionOf.semanticType === "string" ? projectionOf.semanticType : null,
+        summary: typeof projectionOf.summary === "string" ? projectionOf.summary : null,
+      },
     }),
   };
 }
@@ -425,13 +494,33 @@ export async function getActiveWorkspaceProjection(input: {
   //   OLD_DRAFT_HIJACKS_NEW_CONVERSATION = 0
   //   CROSS_CONVERSATION_DRAFT_SURFACE = 0 · CROSS_OWNER_DRAFT_SURFACE = 0
   const awaitingReview = await draftAwaitingReview(input.ownerId, referenceRows);
-  const currentPresentation = awaitingReview?.presentation ?? shownPresentation;
+  // WHAT I AM DOING OUTRANKS WHAT SOMEBODY ASKS OF ME, and both outrank what I
+  // was merely shown. A person mid-decision on their own draft is not
+  // interrupted by an inbound ask; a person with nothing of their own pending
+  // sees the ask instead of a stale list.
+  //
+  // ── AND A THREAD THAT IS DOING SOMETHING IS NOT INTERRUPTED ─────────────
+  //
+  // Measured, not supposed: with only the draft condition, the holder ran
+  // their OWN search and saw somebody's proposal instead of their results.
+  // An inbound ask is person-scoped, so it may only take a thread that has
+  // nothing of its own to show — never one mid-task.
+  //
+  //   UNRELATED_ASK_HIJACKS_AN_ACTIVE_THREAD = 0
+  const awaitingReply =
+    awaitingReview || shownPresentation
+      ? null
+      : await inboundProposalAwaitingReply(input.ownerId);
+  const currentPresentation =
+    awaitingReview?.presentation ?? awaitingReply?.presentation ?? shownPresentation;
   // The surface is READ OUT OF this record; it is not a second copy of it. So
   // the projection names the record, and a host can claim exactly that one.
   //
   //   CANONICAL_PRESENTATION_STATE != VISIBLE_RENDER_INSTANCE
   const currentPresentationSource = awaitingReview
     ? ({ kind: "commercial_order", id: awaitingReview.orderId } as const)
+    : awaitingReply
+    ? ({ kind: "economic_proposal", id: awaitingReply.proposalId } as const)
     : currentPresentation && latestMessage
       ? ({ kind: "message", id: String(latestMessage.id) } as const)
       : null;

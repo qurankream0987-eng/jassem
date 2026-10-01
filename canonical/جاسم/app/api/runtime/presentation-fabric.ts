@@ -131,7 +131,7 @@ export type ActiveWorkspaceProjection = {
    * WHICH record is being presented so a host can claim it by identity —
    * never by comparing what two surfaces look like.
    */
-  currentPresentationSource?: { kind: "message" | "commercial_order"; id: string } | null;
+  currentPresentationSource?: { kind: "message" | "commercial_order" | "economic_proposal"; id: string } | null;
   resultSet: {
     id: string;
     version: number;
@@ -494,7 +494,7 @@ export const ActiveWorkspaceProjectionSchema = z.object({
       // reference binding's `targetKind` uses. A surface is read out of a
       // message's metadata, or built from a canonical row that is waiting on
       // the person; naming which is what keeps one thing from being drawn twice.
-      kind: z.enum(["message", "commercial_order"]),
+      kind: z.enum(["message", "commercial_order", "economic_proposal"]),
       id: z.string().min(1).max(240),
     })
     .nullable()
@@ -937,6 +937,12 @@ function surfaceValue(value: unknown): SurfaceScalar | readonly SurfaceScalar[] 
   return surfaceScalar(value);
 }
 
+function objectOrNull(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
 function plainObject(value: unknown): Record<string, unknown> | undefined {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -1233,6 +1239,123 @@ export function projectDraftOrderForReview(input: {
       reviewRequired: !input.order.proposalId,
       orderStatus: input.order.status,
       proposalSent: Boolean(input.order.proposalId),
+    },
+  });
+}
+
+/**
+ * SOMETHING SOMEBODY IS ASKING OF YOU.
+ *
+ * ─── THE GAP THIS CLOSES ────────────────────────────────────────────────────
+ *
+ * A proposal could be sent and the person it was sent TO saw nothing at all.
+ * The workspace derives its surface from the latest message or from this
+ * conversation's own draft, and an inbound proposal is neither: it is not
+ * addressed to a thread, it is addressed to a PERSON.
+ *
+ *   A REQUEST ADDRESSED TO ME IS NOT A FACT ABOUT MY THREAD
+ *
+ * So JASIM could broker half a deal — one side could ask, and the other side
+ * was blind.
+ *
+ * ─── WHAT IT SHOWS ──────────────────────────────────────────────────────────
+ *
+ * The TERM SHEET AS PROPOSED, read from the proposal's own row. Not the
+ * offering as it stands now, and not what the proposer's draft says — the
+ * exact text the other party committed to the wire.
+ *
+ *   SHOWING TERMS != ACCEPTING TERMS
+ *
+ * ─── AND THE ONE CONTROL ────────────────────────────────────────────────────
+ *
+ * `approve`, meaning «I agree to these terms, myself, now». That is the whole
+ * weight of it: accepting is what turns a proposal into an agreement, so the
+ * runtime reserves it for places a person is provably present and refuses it
+ * from a sentence a model classified.
+ *
+ *   MODEL != AUTHORITY · CLASSIFICATION != ACCEPTANCE
+ *
+ * There is no `reject` here, and that is not an oversight: declining is a
+ * different canonical act with its own path, and a control whose press has
+ * nowhere to go is the defect this codebase has closed twice already.
+ */
+export function projectInboundProposalForReview(input: {
+  proposal: {
+    id: string;
+    version: number;
+    terms: Record<string, unknown>;
+    proposerOwnerId: string;
+    expiresAt?: Date | string | null;
+  };
+  /** Who is looking, so «who pays» is stated rather than left to be inferred. */
+  viewerOwnerId?: string;
+  /** How the thing was named where it came from, frozen. */
+  presentedAs?: { title?: string | null; summary?: string | null } | null;
+}): PresentationDefinition {
+  // ── A TERM SHEET IS A LIST OF TERMS, NOT A BAG OF FIELDS ────────────────
+  //
+  // Each row says what is owed, by whom, to whom — and reading it as a flat
+  // record (my first attempt) silently produced an empty surface, which is the
+  // worst possible outcome for a screen somebody agrees from.
+  const carrier = input.proposal.terms?.terms ?? input.proposal.terms;
+  const sheet = Array.isArray(carrier) ? carrier.map(objectOrNull) : [];
+  const attributes: Record<string, string | number> = {};
+  let money: { amountMinor: string; currency: string } | undefined;
+  let owedByViewer: boolean | undefined;
+  for (const term of sheet) {
+    if (!term) continue;
+    const key = typeof term.key === "string" ? term.key : null;
+    if (!key) continue;
+    const settlement = objectOrNull(term.settlement);
+    if (settlement) {
+      // The amount, in the exact minor units the runtime stores.
+      money = canonicalMoney(settlement) ?? money;
+      // WHO PAYS WHOM, which is the one fact a person must not have to infer.
+      //
+      //   WHO_ASKED != WHO_PAYS
+      if (input.viewerOwnerId) owedByViewer = term.owedBy === input.viewerOwnerId;
+      continue;
+    }
+    if (typeof term.value === "string" || typeof term.value === "number") {
+      const unit = typeof term.unit === "string" && term.unit.trim() ? ` ${term.unit.trim()}` : "";
+      attributes[key] = `${term.value}${unit}`;
+    }
+  }
+
+  return validatePresentationDefinition({
+    primitive: "DETAIL",
+    version: 1,
+    data: {
+      entity: {
+        ref: input.proposal.id,
+        id: input.proposal.id,
+        title: typeof input.presentedAs?.title === "string" && input.presentedAs.title.trim()
+          ? input.presentedAs.title.trim()
+          : input.proposal.id,
+        ...(typeof input.presentedAs?.summary === "string" && input.presentedAs.summary.trim()
+          ? { description: input.presentedAs.summary.trim() }
+          : {}),
+        status: "PROPOSED",
+        badges: [
+          "بانتظار ردّك",
+          ...(owedByViewer === undefined ? [] : [owedByViewer ? "عليك الدفع" : "الدفع لك"]),
+        ],
+        ...(money ? { money } : {}),
+        ...(Object.keys(attributes).length > 0 ? { attributes } : {}),
+        actions: [{ intent: "approve", label: "قبول العرض" }],
+        provenance: {
+          canonicalKind: "economic_proposal",
+          version: input.proposal.version,
+          // WHO is asking. Carried, never drawn as a property of the terms.
+          proposerOwnerId: input.proposal.proposerOwnerId,
+          expiresAt: input.proposal.expiresAt
+            ? new Date(input.proposal.expiresAt).toISOString()
+            : null,
+        },
+      },
+      // Said plainly: this is somebody else's ask, and nothing has happened yet.
+      replyRequired: true,
+      proposalVersion: input.proposal.version,
     },
   });
 }
