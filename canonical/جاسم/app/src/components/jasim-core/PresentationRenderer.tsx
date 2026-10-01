@@ -282,7 +282,20 @@ export function PresentationRenderer({
     <div className="mt-3">
       <SchemaRenderer
         schema={schema}
-        onAction={(actionId) => onAction?.(actionId)}
+        //
+        // ── A HANDLER THAT DOES NOTHING IS NOT A HANDLER ──────────────────
+        //
+        // This wrapped an OPTIONAL handler in an always-defined arrow, so the
+        // card's own `onAction &&` guard could never fire and a button was
+        // drawn whether or not anything could receive the press. That is the
+        // mechanism behind every enabled-but-incapable control, not just the
+        // one in the conversation flow.
+        //
+        //   VISIBLE_CONTROL != EXECUTION_PERMISSION
+        //
+        // Passing the handler through unwrapped lets the guard mean what it
+        // says: no receiver, no control.
+        onAction={onAction ? (actionId) => onAction(actionId) : undefined}
         onSubmit={onSubmit}
         /*
           UI-2: a child is part of its parent's answer, not a second answer.

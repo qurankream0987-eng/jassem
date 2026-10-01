@@ -13,6 +13,7 @@
 // stays in economic_expressions / Block 3 tables. Nothing here is a second
 // source of truth.
 // ============================================================================
+import { sql } from "drizzle-orm";
 
 import {
   boolean,
@@ -152,6 +153,16 @@ export const referenceBindings = pgTable(
   (table) => [
     index("reference_bindings_conversation_idx").on(table.conversationId, table.referenceKey),
     index("reference_bindings_target_idx").on(table.targetKind, table.targetId),
+    /**
+     * ONE ANSWER TO «WHAT IS CURRENT».
+     *
+     * Two concurrent presses each read «nothing is current yet» and both
+     * inserted, so one key had two active bindings and «the current order»
+     * had two answers. The database now refuses the second.
+     */
+    uniqueIndex("reference_bindings_one_active_idx")
+      .on(table.conversationId, table.referenceKey)
+      .where(sql`"supersededAt" IS NULL`),
   ],
 );
 

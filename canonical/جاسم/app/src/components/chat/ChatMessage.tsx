@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { RunLifecycleCard } from '@/components/runtime/RunLifecycleCard';
 import { PresentationRenderer } from '@/components/jasim-core/PresentationRenderer';
+import { presentationActionsAreDispatchable } from '@/components/jasim-core/candidateActionTarget';
 import { SafeMarkdownPreview } from './SafeMarkdownPreview';
 import { RoutedNotice, TurnSurface } from '@/components/jasim-core/TurnSurface';
 import { TrustedProductActionMount } from '@/components/jasim-core/TrustedProductActionMount';
@@ -32,6 +33,8 @@ export interface ChatMessageProps {
    * to produce byte-identical surfaces are still two surfaces and both appear.
    */
   presentedByHostRecordId?: string | null;
+  /** A press on this turn's own generated surface. See `JasimChat`. */
+  onPresentationAction?: (intent: string, presentation: unknown) => void;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -214,6 +217,7 @@ export function ChatMessage({
   onActionClick,
   onBubbleClick,
   presentedByHostRecordId,
+  onPresentationAction,
 }: ChatMessageProps) {
   const [copied, setCopied] = useState(false);
   const displayContent = safeReceiptDisplayContent(message);
@@ -359,7 +363,24 @@ export function ChatMessage({
           {shouldRenderPresentation ? (
               <PresentationRenderer
                 presentation={presentation}
-                onAction={(intent) => onActionClick?.(intent, message.bubbleData)}
+                //
+                // ── A CONTROL IS DRAWN ONLY IF IT CAN BE PRESSED ──────────
+                //
+                //   VISIBLE_CONTROL != EXECUTION_PERMISSION
+                //
+                // No handler means the card's own existing condition draws no
+                // buttons at all — so a surface whose cards cannot be resolved
+                // to a canonical target shows nothing to press, rather than
+                // something that looks pressable and answers with a refusal.
+                //
+                // This decides only what is DRAWN. What may happen is the
+                // server's to decide, and it re-reads the thing under this
+                // owner either way.
+                onAction={
+                  onPresentationAction && presentationActionsAreDispatchable(presentation)
+                    ? (intent) => onPresentationAction(intent, presentation)
+                    : undefined
+                }
               />
             ) : null}
 

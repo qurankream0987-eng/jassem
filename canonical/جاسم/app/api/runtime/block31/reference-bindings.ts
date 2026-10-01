@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import {
   discoveryCandidates,
   discoveryResultSets,
@@ -43,6 +43,25 @@ export async function bindReference(
   },
 ) {
   return db.transaction(async (tx) => {
+    //
+    // ── SUPERSESSION HAS TO BE ONE THING AT A TIME ──────────────────────────
+    //
+    // Two presses arriving together each read «nothing is current yet» in their
+    // own snapshot and each inserted, leaving TWO active bindings for one key —
+    // so «the current order» had two answers and the review showed whichever
+    // was read first. Measured, not supposed: two concurrent selects produced
+    // two rows with `supersededAt IS NULL`.
+    //
+    //   CURRENT_ORDER_HAS_TWO_ACTIVE_BINDINGS = 0
+    //
+    // The lock is Postgres's own, taken for the transaction and released with
+    // it, and it is per (conversation, key) — so ordinals, deictics and orders
+    // never wait on each other, and a client mutex is not load-bearing for
+    // anything. The partial unique index alongside it means the invariant
+    // survives a writer that forgets to take the lock at all.
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtextextended(${`${input.conversationId}:${input.referenceKey}`}, 0))`,
+    );
     await tx
       .update(referenceBindings)
       .set({ supersededAt: new Date() })

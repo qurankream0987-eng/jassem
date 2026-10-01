@@ -86,3 +86,51 @@ export function candidateActionTarget(
     expectedPresentationVersion: `${kind}:${version}`,
   };
 }
+
+
+/**
+ * MAY A CONTROL BE DRAWN FOR THIS SURFACE AT ALL?
+ *
+ * ─── THE DEAD CONTROL LAW ───────────────────────────────────────────────────
+ *
+ *   VISIBLE_CONTROL != EXECUTION_PERMISSION
+ *
+ * A control must be backed by a trusted path, or not be drawn. The one thing
+ * it may never be is enabled, inviting, and incapable — which is what a
+ * historical grid became once its host handed its surface to something else.
+ *
+ * So a surface whose action-bearing cards cannot ALL be resolved to a
+ * canonical target gets no handler, and the card's own existing condition
+ * (`onAction &&`) then draws no buttons. Nothing in the renderer changes, and
+ * no half-dead row is possible: it is all of them or none.
+ *
+ *   MESSAGE_METADATA != EXECUTION_AUTHORITY
+ *
+ * This decides only whether to DRAW. What may actually happen is decided by
+ * the server, which re-reads the thing under this owner and compares its
+ * version — so a stored surface somebody tampered with buys nothing here.
+ */
+export function presentationActionsAreDispatchable(presentation: unknown): boolean {
+  const data = record(record(presentation)?.data);
+  const candidates = Array.isArray(data?.candidates) ? data.candidates : [];
+  const withActions = candidates
+    .map(record)
+    .filter((candidate): candidate is Record<string, unknown> =>
+      Boolean(candidate && Array.isArray(candidate.actions) && candidate.actions.length > 0));
+  if (withActions.length === 0) return false;
+  // Each card's OWN declared intents, never a name this file supplies. A kind
+  // of press nobody has declared yet is covered without an edit here, and this
+  // module still knows no intent, no kind and no domain.
+  return withActions.every((candidate) => {
+    const reference = typeof candidate.ref === 'string' ? candidate.ref : undefined;
+    if (!reference) return false;
+    const intents = (candidate.actions as unknown[])
+      .map(record)
+      .map((action) => (typeof action?.intent === 'string' ? action.intent : null))
+      .filter((intent): intent is string => Boolean(intent));
+    if (intents.length === 0) return false;
+    return intents.every(
+      (intent) => candidateActionTarget(presentation, `${intent}:${reference}`) !== null,
+    );
+  });
+}

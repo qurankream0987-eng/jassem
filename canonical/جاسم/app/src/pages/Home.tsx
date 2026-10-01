@@ -7,6 +7,7 @@ import {
   type WorkspacePresentationContext,
   type WorkspacePresentationReference,
 } from '@/components/jasim-core/ActiveGenerativeWorkspace';
+import { candidateActionTarget } from '@/components/jasim-core/candidateActionTarget';
 import { ActiveObjectsRail } from '@/components/jasim-core/ActiveObjectsRail';
 import { useRuntimeBubbles } from '@/hooks/useRuntimeBubbles';
 import type { BubbleSchema } from '@contracts/jasim';
@@ -159,7 +160,21 @@ export default function Home() {
   );
 
   const dispatchWorkspaceAction = useCallback(
-    async (intent: string, context: WorkspacePresentationContext) => {
+    async (
+      intent: string,
+      context: WorkspacePresentationContext,
+      /**
+       * WHERE THE PRESS CAME FROM — a label on the envelope, nothing more.
+       *
+       * The dispatcher reads neither this nor `presentationReference`; what it
+       * reads is the action type, the reference kind, the payload, the
+       * presentation version and whether the reference resolves under this
+       * owner. So a press from the conversation flow reaches the IDENTICAL
+       * boundary with the identical checks, and says truthfully where it came
+       * from rather than dressing up as a workspace.
+       */
+      source: 'WORKSPACE' | 'CONVERSATION' = 'WORKSPACE',
+    ) => {
       const normalizedIntent = intent.trim().toLowerCase();
       let actionType:
         | 'OPEN_REFERENCE'
@@ -214,19 +229,30 @@ export default function Home() {
 
       const result = await dispatch(
         createTrustedActionEnvelope({
-          actionId: `workspace:${actionType}:${targetReference.kind}:${targetReference.id}:${expectedPresentationVersion}`,
+          actionId: `${source.toLowerCase()}:${actionType}:${targetReference.kind}:${targetReference.id}:${expectedPresentationVersion}`,
           actionType,
           intent,
-          source: 'WORKSPACE',
+          source,
           targetReference,
           conversationReference: context.conversationReference,
           goalReference: context.goalReference,
-          presentationReference: {
-            kind: 'workspace',
-            id: context.conversationReference?.id ?? targetReference.id,
-          },
+          // A message's surface is not a workspace, a bubble or a living
+          // object, and there is no fourth kind. Rather than dress it as one of
+          // them it carries none: the field is optional and nothing reads it.
+          //
+          //   MESSAGE != SMART_BUBBLE
+          ...(source === 'WORKSPACE'
+            ? {
+                presentationReference: {
+                  kind: 'workspace' as const,
+                  id: context.conversationReference?.id ?? targetReference.id,
+                },
+              }
+            : {}),
           expectedPresentationVersion,
-          idempotencyKey: `workspace:${actionType}:${targetReference.id}`,
+          // The same key for the same selection, so a double press is one
+          // selection — the server's own idempotency, not a client mutex.
+          idempotencyKey: `${source.toLowerCase()}:${actionType}:${targetReference.id}`,
           payload,
         }),
       );
@@ -238,6 +264,57 @@ export default function Home() {
       toast.success('تم إرسال الإجراء إلى الحالة الموثوقة.');
     },
     [dispatch],
+  );
+
+  /**
+   * A PRESS ON A SURFACE THAT IS SITTING IN THE CONVERSATION.
+   *
+   * ─── THE DEFECT THIS CLOSES ───────────────────────────────────────────────
+   *
+   * Once a draft review takes the host, the discovery grid returns to its own
+   * message — and its select controls went to `handleActionClick`, which needs
+   * a REGISTERED SMART BUBBLE and otherwise answers «لا يملك سطحًا موثوقًا».
+   * Six controls that looked exactly as pressable as before, and were not.
+   *
+   *   VISIBLE_ENABLED_CONTROL_WITH_NO_EXECUTABLE_TRUSTED_PATH = DEFECT
+   *
+   * ─── AND WHY NO BUBBLE WAS EVER NEEDED ────────────────────────────────────
+   *
+   * Tracing the server shows the smart bubble was a CLIENT ROUTING ASSUMPTION
+   * and nothing else: the dispatcher reads the action type, the reference
+   * kind, the payload, the presentation version and whether the reference
+   * resolves under this owner. It never reads `source`, never reads
+   * `presentationReference`, and has no notion of a bubble.
+   *
+   *   MESSAGE != SMART_BUBBLE · NEW_SMART_BUBBLE_FOR_EVERY_MESSAGE = 0
+   *
+   * So this routes to the SAME boundary with the SAME checks. The message
+   * grants nothing; it only offers a way to reach what already existed.
+   *
+   *   MESSAGE_METADATA != EXECUTION_AUTHORITY
+   *
+   * The target is resolved from the surface's own canonical references, never
+   * from a position, an index or a title — and the server then re-reads the
+   * thing under this owner and refuses a version that has moved.
+   */
+  const dispatchConversationPresentationAction = useCallback(
+    (intent: string, presentation: unknown) => {
+      const candidate = candidateActionTarget(presentation, intent);
+      // Nothing addressable means nothing to press. The control is not drawn
+      // at all in that case, so this is the second half of the same rule.
+      if (!candidate || !currentConversation?.id) return;
+      void dispatchWorkspaceAction(
+        intent,
+        {
+          conversationReference: { kind: 'conversation', id: currentConversation.id },
+          targetReference: candidate.reference as WorkspacePresentationReference,
+          targetExpectedPresentationVersion: candidate.expectedPresentationVersion,
+          expectedPresentationVersion: candidate.expectedPresentationVersion,
+        },
+        'CONVERSATION',
+      );
+    },
+    [currentConversation?.id, dispatchWorkspaceAction],
   );
 
   const dispatchWorkspaceSubmit = useCallback(
@@ -429,6 +506,7 @@ export default function Home() {
                 ) : undefined
               }
               presentedByHostRecordId={presentedByHostRecordId}
+              onPresentationAction={dispatchConversationPresentationAction}
               messages={messages}
               isLoading={isLoading}
               isStreaming={isStreaming}

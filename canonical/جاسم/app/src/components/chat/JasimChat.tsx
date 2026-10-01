@@ -38,6 +38,17 @@ export interface JasimChatProps {
    */
   presentedByHostRecordId?: string | null;
   /**
+   * A press on a generated surface that is sitting in the conversation.
+   *
+   * Separate from `onActionClick`, which routes a SMART BUBBLE's action and
+   * needs a registered bubble to mean anything. A turn's surface is not a
+   * bubble, and routing one through that path is what left six controls
+   * enabled and incapable.
+   *
+   *   MESSAGE != SMART_BUBBLE
+   */
+  onPresentationAction?: (intent: string, presentation: unknown) => void;
+  /**
    * Arabic-first means Arabic is the default, not the alternative.
    * This defaulted to `false` and Home never passed it, so the entire empty
    * state — heading, subtitle and all four suggestions — shipped in English
@@ -184,6 +195,7 @@ export function JasimChat({
   rtl = true,
   surface,
   presentedByHostRecordId,
+  onPresentationAction,
 }: JasimChatProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -224,6 +236,7 @@ export function JasimChat({
                 onActionClick={onActionClick}
                 onBubbleClick={onBubbleClick}
                 presentedByHostRecordId={presentedByHostRecordId}
+                onPresentationAction={onPresentationAction}
               />
             ))}
             {isLoading && !isStreaming && <TypingIndicator />}
