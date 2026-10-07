@@ -8,15 +8,12 @@ import {
   generatedSystems,
   messages,
   proposalApprovals,
-  economicProposals,
-  economicEngagements,
-  economicMatches,
-  economicExpressions,
   referenceBindings,
   runs,
   runtimeTasks,
 } from "@db/schema";
 import { commercialOrders } from "@db/schema-block3";
+import { inboundAsksFor } from "./inbound-asks";
 import { commercialOrderVersion } from "./block31/conversation-orchestrator";
 import {
   ActiveWorkspaceProjectionSchema,
@@ -152,50 +149,23 @@ async function draftAwaitingReview(
 async function inboundProposalAwaitingReply(
   ownerId: string,
 ): Promise<{ proposalId: string; presentation: PresentationDefinition } | null> {
-  const rows = await db
-    .select({ proposal: economicProposals, engagement: economicEngagements })
-    .from(economicProposals)
-    .innerJoin(economicEngagements, eq(economicEngagements.id, economicProposals.engagementId))
-    .where(eq(economicProposals.status, "proposed"))
-    .orderBy(desc(economicProposals.createdAt))
-    .limit(50);
-  const mine = rows.filter(
-    (row) =>
-      row.engagement.participants.includes(ownerId) &&
-      row.proposal.proposerOwnerId !== ownerId,
-  );
-  const row = mine[0];
-  if (!row) return null;
-
-  // ── A UUID IS NOT A NAME FOR SOMETHING YOU ARE AGREEING TO ──────────────
+  // ONE reader, shared with the rail. See `inbound-asks.ts`.
   //
-  // A term sheet carries terms, not a label. The thing it is ABOUT is reached
-  // canonically — engagement → match → offering — and its PUBLISHED projection
-  // is what names it. Read only for the label: the terms shown are still the
-  // proposal's own, and nothing of the offering's current terms reaches them.
-  const [about] = await db
-    .select({ expression: economicExpressions })
-    .from(economicMatches)
-    .innerJoin(economicExpressions, eq(economicExpressions.id, economicMatches.offeringId))
-    .where(eq(economicMatches.id, row.engagement.matchId))
-    .limit(1);
-  const projectionOf = (about?.expression.publicProjection ?? {}) as Record<string, unknown>;
-
+  //   TWO_READERS_OF_ONE_ASK = 0
+  const [ask] = await inboundAsksFor(ownerId);
+  if (!ask) return null;
   return {
-    proposalId: row.proposal.id,
+    proposalId: ask.proposalId,
     presentation: projectInboundProposalForReview({
       proposal: {
-        id: row.proposal.id,
-        version: row.proposal.version,
-        terms: row.proposal.terms,
-        proposerOwnerId: row.proposal.proposerOwnerId,
-        expiresAt: row.proposal.expiresAt,
+        id: ask.proposalId,
+        version: ask.version,
+        terms: ask.terms,
+        proposerOwnerId: ask.proposerOwnerId,
+        expiresAt: ask.expiresAt,
       },
       viewerOwnerId: ownerId,
-      presentedAs: {
-        title: typeof projectionOf.semanticType === "string" ? projectionOf.semanticType : null,
-        summary: typeof projectionOf.summary === "string" ? projectionOf.summary : null,
-      },
+      presentedAs: ask.subject,
     }),
   };
 }

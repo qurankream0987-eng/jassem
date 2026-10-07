@@ -16,6 +16,7 @@ import {
   type LivingObjectsProjection,
 } from "./presentation-fabric";
 import type { RuntimeActionRecord, RuntimeWorldRecord } from "@db/schema-runtime";
+import { inboundAsksFor, type InboundAsk } from "./inbound-asks";
 
 type TaskRow = typeof runtimeTasks.$inferSelect;
 type RunRow = typeof runs.$inferSelect;
@@ -35,6 +36,19 @@ type LivingCandidate = {
   createdAt: Date;
   actions: RuntimeActionRecord[];
   sourcePriority: number;
+  /**
+   * THE VERSION THE RUNTIME KNOWS THIS THING BY, when that is not the rail's
+   * own `living:<updatedAt>` convention.
+   *
+   * The rail's version is what the trusted dispatcher compares when the person
+   * opens something, and the dispatcher resolves each kind by ITS OWN
+   * canonical version. For a term sheet that is the proposal's version — so a
+   * rail entry stamped with a timestamp instead would be refused as stale the
+   * moment somebody pressed it.
+   *
+   *   A VERSION ONLY ONE SIDE UNDERSTANDS IS NOT A VERSION
+   */
+  presentationVersion?: string;
 };
 
 type LivingGroup = {
@@ -272,7 +286,7 @@ function projectGroup(group: LivingGroup): LivingObjectProjection {
         primary.createdAt,
       ),
     ),
-    presentationVersion: `living:${latest.updatedAt.toISOString()}`,
+    presentationVersion: latest.presentationVersion ?? `living:${latest.updatedAt.toISOString()}`,
     durability,
     completion,
   };
@@ -283,6 +297,8 @@ export function buildLivingObjectsProjection(input: {
   runs: RunRow[];
   worlds: WorldRow[];
   bubbles: BubbleRow[];
+  /** Term sheets somebody is waiting on this person to answer. */
+  asks?: readonly InboundAsk[];
   limit: number;
   generatedAt?: Date;
 }): LivingObjectsProjection {
@@ -412,6 +428,44 @@ export function buildLivingObjectsProjection(input: {
     });
   }
 
+  // ── SOMETHING SOMEBODY IS ASKING OF YOU ──────────────────────────────────
+  //
+  // The rail is the only person-scoped thing JASIM draws, and the only place
+  // an ask can reach somebody who has not opened a conversation at all. Before
+  // this, a holder who never started a thread was never told that anybody had
+  // asked them for anything.
+  //
+  //   A REQUEST ADDRESSED TO ME IS NOT A FACT ABOUT MY THREAD
+  //
+  // `awaiting_approval` is not a new word: the existing vocabulary already
+  // maps it to WAITING_APPROVAL, which `attentionForStatus` already raises to
+  // APPROVAL_REQUIRED and the sort already lifts to the top. Nothing about
+  // status, attention or ordering is special-cased for an ask.
+  for (const ask of input.asks ?? []) {
+    const reference: LivingObjectReference = { kind: "economic_proposal", id: ask.proposalId };
+    addCandidate(groups, {
+      key: groupKeyForReference(reference, {}),
+      reference,
+      relatedReferences: [],
+      semanticType: "ask",
+      // The version the DISPATCHER knows a term sheet by, not the rail's
+      // `living:<updatedAt>` stamp — otherwise opening it is refused as stale.
+      presentationVersion: `economic_proposal:${ask.version}`,
+      title: ask.subject.title ?? ask.proposalId,
+      summary: ask.subject.summary ?? "عرضٌ بانتظار ردّك",
+      status: "awaiting_approval",
+      continuity: null,
+      updatedAt: ask.createdAt,
+      createdAt: ask.createdAt,
+      // The rail NOTIFIES and OPENS; agreeing happens where the terms are
+      // readable. A strip is not a place to accept a term sheet from.
+      //
+      //   RAIL != A PLACE TO AGREE FROM
+      actions: [],
+      sourcePriority: 0,
+    });
+  }
+
   const objects = [...groups.values()]
     .filter(isEligible)
     .map(projectGroup)
@@ -448,7 +502,7 @@ export async function getLivingObjectsProjection(input: {
     });
   }
 
-  const [tasks, runRows, worlds, bubbleRows] = await Promise.all([
+  const [tasks, runRows, worlds, bubbleRows, asks] = await Promise.all([
     db
       .select()
       .from(runtimeTasks)
@@ -478,6 +532,11 @@ export async function getLivingObjectsProjection(input: {
       .where(and(eq(bubbles.userId, ownerId), eq(bubbles.status, "active")))
       .orderBy(desc(bubbles.updatedAt))
       .limit(100),
+    // The SAME reader the conversation's workspace uses, so the rail and the
+    // surface can never disagree about what is waiting.
+    //
+    //   TWO_READERS_OF_ONE_ASK = 0
+    inboundAsksFor(input.ownerId),
   ]);
 
   return buildLivingObjectsProjection({
@@ -485,6 +544,7 @@ export async function getLivingObjectsProjection(input: {
     runs: runRows,
     worlds,
     bubbles: bubbleRows,
+    asks,
     limit,
   });
 }

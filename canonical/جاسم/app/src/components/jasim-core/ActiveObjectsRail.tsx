@@ -8,6 +8,7 @@ import {
   CircleAlert,
   CircleCheck,
   CircleDot,
+  Inbox,
   Globe2,
   Loader2,
   PanelRightClose,
@@ -91,6 +92,8 @@ function formatUpdatedAt(value: string): string {
 function semanticIcon(semanticType: LivingObjectProjection['semanticType']) {
   if (semanticType === 'world') return Globe2;
   if (semanticType === 'bubble') return Sparkles;
+  // Something somebody is asking of you, as opposed to something you set going.
+  if (semanticType === 'ask') return Inbox;
   return Activity;
 }
 

@@ -260,7 +260,26 @@ export function JasimChat({
           </div>
         </ScrollArea>
       ) : (
-        <EmptyState onSuggestionClick={handleSuggestionClick} rtl={rtl} />
+        /*
+          ── A SURFACE CAN EXIST BEFORE A WORD IS SAID ──────────────────────
+
+          The surface used to render ONLY beside messages, so a conversation
+          with nothing said in it could not show one at all. That is false for
+          anything addressed to the PERSON rather than produced by a turn: an
+          inbound term sheet is waiting before its recipient has typed
+          anything, and gating it on their having spoken hid it from exactly
+          the person it was waiting on.
+
+            A SURFACE IS NOT A REPLY
+
+          The empty state stays — JASIM still greets somebody with nothing to
+          show — and the surface sits above it when there IS something, so an
+          empty conversation with an ask reads as the ask, not as a greeting.
+        */
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-2">
+          {surface && <div className="mx-auto mt-2 w-full max-w-5xl">{surface}</div>}
+          <EmptyState onSuggestionClick={handleSuggestionClick} rtl={rtl} />
+        </div>
       )}
 
       {/* Suggestions */}

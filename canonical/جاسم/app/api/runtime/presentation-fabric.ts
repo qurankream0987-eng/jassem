@@ -600,7 +600,7 @@ export const ActiveWorkspaceProjectionSchema = z.object({
 }) satisfies z.ZodType<ActiveWorkspaceProjection>;
 
 export type LivingObjectReference = {
-  kind: "runtime_task" | "runtime_run" | "generated_system" | "smart_bubble";
+  kind: "runtime_task" | "runtime_run" | "generated_system" | "smart_bubble" | "economic_proposal";
   id: string;
 };
 
@@ -636,7 +636,7 @@ export type LivingObjectProjection = {
   id: string;
   underlyingReference: LivingObjectReference;
   relatedReferences: LivingObjectReference[];
-  semanticType: "process" | "world" | "bubble";
+  semanticType: "process" | "world" | "bubble" | "ask";
   title: string;
   summary: string;
   status: LivingObjectStatus;
@@ -668,7 +668,7 @@ export type LivingObjectsProjection = {
 
 const LivingObjectReferenceSchema = z
   .object({
-    kind: z.enum(["runtime_task", "runtime_run", "generated_system", "smart_bubble"]),
+    kind: z.enum(["runtime_task", "runtime_run", "generated_system", "smart_bubble", "economic_proposal"]),
     id: z.string().min(1).max(240),
   })
   .strict();
@@ -687,7 +687,7 @@ export const LivingObjectProjectionSchema: z.ZodType<LivingObjectProjection> = z
     id: z.string().min(1).max(300),
     underlyingReference: LivingObjectReferenceSchema,
     relatedReferences: z.array(LivingObjectReferenceSchema).max(20),
-    semanticType: z.enum(["process", "world", "bubble"]),
+    semanticType: z.enum(["process", "world", "bubble", "ask"]),
     title: z.string().min(1).max(240),
     summary: z.string().min(1).max(2_000),
     status: z.enum([

@@ -106,6 +106,9 @@ const expectedReferenceKinds: Partial<
     "smart_bubble",
     "generated_system",
     "execution_proposal",
+    // Opening an ask is a READ: it puts the person where the terms are
+    // legible. Agreeing is a different action with its own authority.
+    "economic_proposal",
   ],
   RESUME_OPERATION: ["execution_proposal"],
   REFRESH_PROJECTION: [

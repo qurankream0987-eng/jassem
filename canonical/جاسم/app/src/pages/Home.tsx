@@ -441,17 +441,43 @@ export default function Home() {
       toast.error(failure.message);
       return;
     }
-    const workspace = document.querySelector<HTMLElement>(
+    let workspace = document.querySelector<HTMLElement>(
       '[data-testid="active-generative-workspace"]',
     );
     if (!workspace) {
-      toast.info('افتح محادثة لاستعادة هذا السياق.');
+      //
+      // ── OPENING SOMETHING MUST LAND YOU WHERE YOU CAN READ IT ───────────
+      //
+      // This used to say «open a conversation to restore this context» — true,
+      // and useless to the person it mattered most to: somebody who has never
+      // started a thread and is being told, for the first time, that another
+      // party is waiting on their answer. The surface is conversation-scoped;
+      // so opening gives them one, rather than an instruction.
+      //
+      //   TELLING SOMEBODY TO FIND IT IS NOT SHOWING IT TO THEM
+      //
+      // It grants nothing: what then appears is the same canonical projection,
+      // read under the same owner, with the same version compared on any press.
+      try {
+        await createConversation();
+      } catch {
+        toast.info('افتح محادثة لاستعادة هذا السياق.');
+        return;
+      }
+      // Creating it IS the outcome. The surface mounts and loads itself from
+      // canonical state, so waiting for it to appear in the DOM here is a race
+      // that reports failure for a success — which is exactly what a first
+      // version of this did, bailing with «open a conversation» a moment
+      // after opening one.
+      //
+      //   A SLOW SUCCESS IS NOT A FAILURE
+      toast.info(`فُتح «${object.title}».`);
       return;
     }
     workspace.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     workspace.querySelector<HTMLElement>('h2[tabindex="-1"]')?.focus({ preventScroll: true });
     toast.info(`تم التركيز على «${object.title}».`);
-  }, [dispatch]);
+  }, [createConversation, dispatch]);
 
   return (
     // JASIM is Arabic-first. The document direction belongs at the root, not
@@ -585,14 +611,27 @@ export default function Home() {
             generated surface is the instrument, and only the instrument needed
             its ceiling removed.
           */}
-          {currentConversation?.id && (
+          {/*
+            ── AND IT IS NOT GATED ON HAVING A CONVERSATION ──────────────────
+
+            It was, and that hid the only person-scoped surface JASIM draws
+            from exactly the person who needed it: somebody who has never
+            opened a thread and is being told, for the first time, that another
+            party is waiting on their answer.
+
+              A REQUEST ADDRESSED TO ME IS NOT A FACT ABOUT MY THREAD
+
+            The gate cost nothing to remove, because the rail already returns
+            null when it holds nothing — the line above says so. So an empty
+            rail still reserves no height, and a person with no conversation at
+            all now learns that somebody asked them for something.
+          */}
           <div className="flex min-h-0 w-full shrink-0 lg:w-[min(13vw,11rem)]">
             <ActiveObjectsRail
               onOpen={handleLivingObjectOpen}
               className="max-h-[14dvh] w-full overflow-y-auto lg:max-h-none"
             />
           </div>
-          )}
         </div>
       </div>
 

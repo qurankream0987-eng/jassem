@@ -468,7 +468,19 @@ export function classifyPresentationTransition(
 }
 
 export type LivingObjectReference = {
-  kind: "runtime_task" | "runtime_run" | "generated_system" | "smart_bubble";
+  kind:
+    | "runtime_task"
+    | "runtime_run"
+    | "generated_system"
+    | "smart_bubble"
+    /**
+     * SOMETHING SOMEBODY IS ASKING OF THIS PERSON.
+     *
+     * The rail is the only person-scoped surface JASIM draws, and an inbound
+     * term sheet is addressed to a PERSON, not to a thread — so without it an
+     * ask cannot reach somebody who has not opened a conversation at all.
+     */
+    | "economic_proposal";
   id: string;
 };
 
@@ -491,7 +503,7 @@ export type LivingObjectProjection = {
   id: string;
   underlyingReference: LivingObjectReference;
   relatedReferences: LivingObjectReference[];
-  semanticType: "process" | "world" | "bubble";
+  semanticType: "process" | "world" | "bubble" | "ask";
   title: string;
   summary: string;
   status: LivingObjectStatus;
@@ -518,7 +530,7 @@ export type LivingObjectsProjection = {
 };
 
 const livingObjectReferenceSchema = z.object({
-  kind: z.enum(["runtime_task", "runtime_run", "generated_system", "smart_bubble"]),
+  kind: z.enum(["runtime_task", "runtime_run", "generated_system", "smart_bubble", "economic_proposal"]),
   id: z.string().min(1).max(240),
 }).strict();
 
@@ -533,7 +545,7 @@ export const LivingObjectProjectionSchema: z.ZodType<LivingObjectProjection> = z
   id: z.string().min(1).max(300),
   underlyingReference: livingObjectReferenceSchema,
   relatedReferences: z.array(livingObjectReferenceSchema).max(20),
-  semanticType: z.enum(["process", "world", "bubble"]),
+  semanticType: z.enum(["process", "world", "bubble", "ask"]),
   title: z.string().min(1).max(240),
   summary: z.string().min(1).max(2_000),
   status: z.enum([
